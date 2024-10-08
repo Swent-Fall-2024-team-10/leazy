@@ -14,12 +14,6 @@ import {
     updateEmail,
     updatePassword
 } from "firebase/auth";
-import { 
-    createTenantUser, 
-    createLandlordUser,
-    deleteLandlordData,
-    deleteTenantData,
-} from "../firestore/firestore";
 
 const provider = new GoogleAuthProvider();
 
@@ -34,9 +28,9 @@ export async function emailAndPasswordSignIn(email: string, password: string, us
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         if(userType === UserType.TENANT){
-            await createTenantUser(email, userData as TTenantData, user.uid);
+            //create tenant user in firestore
         } else if(userType === UserType.LANDLORD){
-            await createLandlordUser(email, userData as TLandlordData, user.uid);
+            //create landlord user in firestore
         }
         return user;
     } catch (error) {
@@ -51,9 +45,9 @@ export async function googleSignIn(userType:UserType, userData: TLandlordData | 
 
         if(user.email !== null){
             if(userType === UserType.TENANT){
-                createTenantUser(user.email, userData as TTenantData, user.uid);
+                // create tenant user in firestore
             } else if(userType === UserType.LANDLORD){
-                createLandlordUser(user.email, userData as TLandlordData, user.uid);
+                // create landlord user in firestore
             }
             return user;
         } else {

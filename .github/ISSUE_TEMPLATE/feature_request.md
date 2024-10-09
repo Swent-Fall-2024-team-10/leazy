@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**s there a specific issue your feature aims to address ? Please describe.**
+**Is there a specific issue your feature aims to address ? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
 **Describe the solution you'd like**

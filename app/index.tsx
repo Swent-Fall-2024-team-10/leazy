@@ -23,7 +23,7 @@ registerRootComponent(App);
 export default function App() {
   return (
     <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Home">
+      <Drawer.Navigator initialRouteName="Home" useLegacyImplementation = {false}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
         <Drawer.Screen name="Report" component={ReportScreen} />

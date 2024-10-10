@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function HomepageScreen () {
-  const navigation: any = useNavigation(); // Initialize navigation
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>(); 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Here’s what’s new</Text>

@@ -8,8 +8,6 @@ enum UserType {
 // Mock the entire module
 jest.mock('../firebase/auth/auth', () => ({
   emailAndPasswordSignIn: jest.fn(),
-  googleSignIn: jest.fn(),
-  GoogleLogIn: jest.fn(),
   emailAndPasswordLogIn: jest.fn(),
   deleteAccount: jest.fn(),
   signOutUser: jest.fn(),
@@ -21,8 +19,6 @@ jest.mock('../firebase/auth/auth', () => ({
 // Import the mocked functions and UserType
 import {
   emailAndPasswordSignIn,
-  googleSignIn,
-  GoogleLogIn,
   emailAndPasswordLogIn,
   deleteAccount,
   signOutUser,
@@ -41,26 +37,6 @@ describe('Authentication Methods', () => {
     const result = await emailAndPasswordSignIn('test@example.com', 'password', UserType.TENANT, {});
     
     expect(emailAndPasswordSignIn).toHaveBeenCalledWith('test@example.com', 'password', UserType.TENANT, {});
-    expect(result).not.toBeNull();
-    expect(typeof result).toBe('object');
-  });
-
-  test('googleSignIn - returns non-null object', async () => {
-    (googleSignIn as jest.Mock).mockResolvedValue({ uid: 'someuid' });
-    
-    const result = await googleSignIn(UserType.LANDLORD, {});
-    
-    expect(googleSignIn).toHaveBeenCalledWith(UserType.LANDLORD, {});
-    expect(result).not.toBeNull();
-    expect(typeof result).toBe('object');
-  });
-
-  test('GoogleLogIn - returns non-null object', async () => {
-    (GoogleLogIn as jest.Mock).mockResolvedValue({ uid: 'someuid' });
-    
-    const result = await GoogleLogIn();
-    
-    expect(GoogleLogIn).toHaveBeenCalled();
     expect(result).not.toBeNull();
     expect(typeof result).toBe('object');
   });
@@ -124,13 +100,6 @@ describe('Authentication Methods', () => {
     expect(result).toBeNull();
   });
 
-  test('googleSignIn - failed', async () => {
-    (googleSignIn as jest.Mock).mockResolvedValue(null);
-    
-    const result = await googleSignIn(UserType.LANDLORD, {});
-    
-    expect(result).toBeNull();
-  });
 
   test('signOutUser - error', async () => {
     (signOutUser as jest.Mock).mockImplementation((success, error) => {

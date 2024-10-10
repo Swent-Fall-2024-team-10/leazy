@@ -16,6 +16,8 @@ import {
 
 const provider = new GoogleAuthProvider();
 
+connectAuthEmulator(auth, "http://localhost:9099");
+
 export enum UserType {
     TENANT,
     LANDLORD,
@@ -36,30 +38,6 @@ export async function emailAndPasswordSignIn(email: string, password: string, us
         console.log(error);
         return null;
     }
-}
-
-export async function googleSignIn(userType:UserType, userData: TLandlordData | TTenantData): Promise<User | null>{
-        const userCredential = await signInWithPopup(auth, provider);
-        const user = userCredential.user;
-
-        if(user.email !== null){
-            if(userType === UserType.TENANT){
-                console.log("Creating tenant user in firestore");
-            } else if(userType === UserType.LANDLORD){
-                console.log("Creating landlord user in firestore");
-            }
-            return user;
-        } else {
-            return null;
-        }
-}
-
-
-
-export async function GoogleLogIn(): Promise<User|null>{
-    const userCredential = await signInWithPopup(auth, provider);
-    userCredential.user
-    return userCredential.user;
 }
 
 export async function emailAndPasswordLogIn(email: string, password:string): Promise<User|null>{

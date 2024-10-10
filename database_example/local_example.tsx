@@ -33,14 +33,15 @@ type Room = {
 }
 
 type Issue = {
-    userId : number;
     issueId : number;
+    userId : number;
     description : string;
     status : string;
     picture : string; // link to the picture in the database
 }
 
 type Residence = {
+    residenceID : number;
     address: Address;
     type: string;
     landlordID: number;
@@ -96,10 +97,11 @@ function getTenantUID(room : Room) : number {
 }
 
 // Functions related to residences
-function createResidence(address : Address, type : string, landlordID : number) : Residence {
+function createResidence(address : Address, type : string, landlordID : number, residenceID: number) : Residence {
     return {
         address: address,
         type: type,
+        residenceID: residenceID,
         landlordID: landlordID,
         tenants: [],
         rooms: [],

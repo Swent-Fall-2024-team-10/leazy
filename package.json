@@ -12,7 +12,16 @@
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+    "**/*.{ts,tsx,js,jsx}",
+    "!**/coverage/**",
+    "!**/node_modules/**",
+    "!**/babel.config.js",
+    "!**/expo-env.d.ts",
+    "!**/.expo/**"
+    ]
   },
   "dependencies": {
     "@expo/ngrok": "^4.1.0",
@@ -48,6 +57,7 @@
     "jest-expo": "~51.0.3",
     "react-test-renderer": "18.2.0",
     "ts-jest": "^29.2.5",
+    "@testing-library/react-native": "^12.7.2",
     "typescript": "~5.3.3"
   },
   "private": true

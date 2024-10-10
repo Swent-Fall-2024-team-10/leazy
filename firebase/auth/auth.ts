@@ -8,11 +8,10 @@ import {
     User, 
     signOut, 
     deleteUser, 
-    UserCredential, 
-    onAuthStateChanged, 
     createUserWithEmailAndPassword,
     updateEmail,
-    updatePassword
+    updatePassword,
+    connectAuthEmulator
 } from "firebase/auth";
 
 const provider = new GoogleAuthProvider();
@@ -28,9 +27,9 @@ export async function emailAndPasswordSignIn(email: string, password: string, us
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         if(userType === UserType.TENANT){
-            //create tenant user in firestore
+            console.log("Creating tenant user in firestore");
         } else if(userType === UserType.LANDLORD){
-            //create landlord user in firestore
+            console.log("Creating landlord user in firestore");
         }
         return user;
     } catch (error) {
@@ -45,9 +44,9 @@ export async function googleSignIn(userType:UserType, userData: TLandlordData | 
 
         if(user.email !== null){
             if(userType === UserType.TENANT){
-                // create tenant user in firestore
+                console.log("Creating tenant user in firestore");
             } else if(userType === UserType.LANDLORD){
-                // create landlord user in firestore
+                console.log("Creating landlord user in firestore");
             }
             return user;
         } else {
@@ -71,9 +70,8 @@ export async function emailAndPasswordLogIn(email: string, password:string): Pro
 export async function deleteAccount(){
     if(auth.currentUser !== null){
         try {
-            // figure out what data to delete after talking with adrien
+            console.log("Deleting user data");
             await deleteUser(auth.currentUser);
-            
         }
         catch (error) {
             

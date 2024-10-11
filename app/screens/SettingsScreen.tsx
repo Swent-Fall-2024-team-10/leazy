@@ -11,7 +11,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       {/* Custom Back Button at the top */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity testID='go-back-button' style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
@@ -54,3 +54,4 @@ const styles = StyleSheet.create({
     color: 'black',
   },
 });
+

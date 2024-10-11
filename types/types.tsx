@@ -6,3 +6,5 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
   };
   
+declare type TTenantData ={}
+declare type TLandlordData ={}

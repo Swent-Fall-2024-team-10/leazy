@@ -14,11 +14,8 @@ import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
 
 const Drawer = createDrawerNavigator();
 
-
-
 // Register the main component
 registerRootComponent(App);
-
 
 export default function App() {
   return (

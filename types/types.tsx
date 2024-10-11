@@ -6,5 +6,11 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
   };
   
-declare type TTenantData ={}
-declare type TLandlordData ={}
+export declare type TTenantData ={}
+export declare type TLandlordData ={}
+
+export enum UserType {
+    TENANT,
+    LANDLORD,
+    UNAUTHENTICATED
+}

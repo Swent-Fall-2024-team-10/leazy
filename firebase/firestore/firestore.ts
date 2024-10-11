@@ -6,7 +6,7 @@ import {
     updateDoc,
     deleteDoc
 } from "firebase/firestore";
-
+import { TTenantData, TLandlordData } from "../../types/types";
 /*temporary solutions before knwoing the DB schema*/
 
 export async function createTenantUser(email: string, tenantData: TTenantData, uid: string){

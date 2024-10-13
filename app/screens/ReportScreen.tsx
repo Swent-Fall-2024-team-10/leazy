@@ -1,69 +1,99 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image } from 'react-native';
-
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {CheckBox} from 'react-native-elements';
+import { ScrollView } from 'react-native-gesture-handler';
+import InputField from '../../components/forms/text_input';
+import Spacer from '@/components/Spacer';
+import SubmitButton from '@/components/buttons/SubmitButton';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
+  const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
-  
+  const [tick, setTick] = useState(false);
+
+  const currentDay = new Date();
+
+  const day = currentDay.getDate().toString().padStart(2, '0');
+  const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
+  const year = currentDay.getFullYear();
+
+  const hours = currentDay.getHours().toString().padStart(2, '0');
+  const minutes = currentDay.getMinutes().toString().padStart(2, '0');
+
   // Placeholder function for adding pictures
   const handleAddPicture = () => {
     // Placeholder function to add pictures
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Report an issue</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Create a new issue</Text>
+      <Text style={styles.date}>Current day : {day}/{month}/{year} at {hours}:{minutes} </Text>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name the issue"
-          value={issue}
-          onChangeText={setIssue}
+      <Spacer height={20} />
+
+      <InputField 
+        label="What kind of issue are you experiencing ?" 
+        value={issue} 
+        setValue={setIssue}
+        placeholder="Your issue..."
+      />
+      
+      <Spacer height={20} />
+
+      <Text>Please take a picture of the damage or situation if applicable</Text>
+      <TouchableOpacity style={styles.cameraButton} onPress={handleAddPicture}>
+      </TouchableOpacity>
+
+      <InputField 
+        label="Which room is the issue in ?" 
+        value={room} 
+        setValue={setRoom}
+        placeholder="e.g : Bedroom, Kitchen, Bathroom..."
+      />
+
+      <Spacer height={20} />
+
+      <InputField 
+        label="Please provide some description of the issue :" 
+        value={description} 
+        setValue={setDescription}
+        placeholder="e.g : The bathtub is leaking because of..."
+        height={100}
+        radius={20}
         />
-      </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline={true}
+      <Spacer height={20} />
+
+      <CheckBox
+        title='I would like to start a chat with the manager about this issue'
+        checked={tick}
+        onPress={() => setTick(!tick)}
         />
-      </View>
 
-      <View style={styles.pictureContainer}>
-        <Text style={styles.subHeader}>Add a picture</Text>
-        <Button title="Add Picture" onPress={handleAddPicture} />
-        {/* Picture Thumbnails Placeholder */}
-        <View style={styles.thumbnails}>
-          <View style={styles.thumbnailBox}><Text>Thumbnail 1</Text></View>
-          <View style={styles.thumbnailBox}><Text>Thumbnail 2</Text></View>
-        </View>
-      </View>
+      <Spacer height={20} />
 
-      <View style={styles.submitContainer}>
-        <Button title="Submit" onPress={() => { /* Handle submit */ }} />
-      </View>
-    </View>
+
+
+      <SubmitButton/>
+
+
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#d3d3d3',
+    backgroundColor: '#fff',
     padding: 20,
   },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+
   subHeader: {
+    textAlign: 'center',
     fontSize: 16,
     marginBottom: 10,
   },
@@ -95,4 +125,43 @@ const styles = StyleSheet.create({
   submitContainer: {
     marginTop: 20,
   },
+  cameraButton: {
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#efefef',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    textAlignVertical: 'top',
+    marginBottom: 20,
+    backgroundColor: '#fff',
+  },
+  label: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  
+  date: {
+    fontSize: 16,
+    marginBottom: 5,
+    textAlign: 'center',
+    color: '#7F7F7F',
+  },
+
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#0F5257',
+  }
+
 });

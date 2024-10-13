@@ -1,28 +1,45 @@
 import React from "react";
-import { View, Text, TextInput, TextStyle } from "react-native";
+import { View, Text, TextInput, TextStyle, StyleSheet } from "react-native";
 
 interface InputFieldProps {
   label: string;
   value: string;
   setValue: (value: string) => void;
   placeholder: string;
-  containerStyle? : TextStyle;
-  labelStyle? : TextStyle;
 }
 
 
-export default function InputField({ label, value, setValue, placeholder, containerStyle, labelStyle} : InputFieldProps) {
+export default function InputField({ label, value, setValue, placeholder} : InputFieldProps) {
   return (
     <View>
-    <Text style={labelStyle}> {label} </Text>
+    <Text style={styles.label}> {label} </Text>
     <TextInput
-      style={containerStyle}
+      style={styles.inputField}
       placeholder= {placeholder}
       value={value}
       onChangeText={setValue}
       multiline={true}
-      placeholderTextColor={"#D6D3F0"}
+      placeholderTextColor={"#7F7F7F"}
     />
     </View>
   );
 }
+
+
+const styles = StyleSheet.create({
+  inputField : {
+    flex: 1,
+    backgroundColor: "#D6D3F0",
+    padding: 10,
+    borderRadius: 100,
+    borderColor: "#7F7F7F",
+    borderWidth: 1,
+    color: "#9C92A3",
+  },
+
+  label : {
+    fontSize: 16,
+    marginBottom: 2.5,
+  }
+
+});

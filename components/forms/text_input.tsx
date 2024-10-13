@@ -6,15 +6,24 @@ interface InputFieldProps {
   value: string;
   setValue: (value: string) => void;
   placeholder: string;
+  height?: number;
+  radius?: number;
 }
 
 
-export default function InputField({ label, value, setValue, placeholder} : InputFieldProps) {
+export default function InputField({ label, value, setValue, placeholder, height, radius} : InputFieldProps) {
   return (
     <View>
     <Text style={styles.label}> {label} </Text>
     <TextInput
-      style={styles.inputField}
+      style={[
+        styles.inputField,
+        {
+          height: height,
+          borderRadius: radius || 100,
+        },
+        
+      ]}
       placeholder= {placeholder}
       value={value}
       onChangeText={setValue}
@@ -25,16 +34,14 @@ export default function InputField({ label, value, setValue, placeholder} : Inpu
   );
 }
 
-
 const styles = StyleSheet.create({
   inputField : {
     flex: 1,
     backgroundColor: "#D6D3F0",
     padding: 10,
-    borderRadius: 100,
     borderColor: "#7F7F7F",
     borderWidth: 1,
-    color: "#9C92A3",
+    color: "#0B3142",
   },
 
   label : {

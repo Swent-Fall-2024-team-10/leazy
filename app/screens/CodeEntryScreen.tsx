@@ -3,6 +3,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import CustomTextField from '@/components/CustomTextField';
 import CustomButton from '@/components/CustomButton';
+import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+
 
 const VALID_CODE = '1234';
 
@@ -11,6 +14,7 @@ interface FormErrors {
 }
 
 export default function CodeEntryScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [code, setCode] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -30,7 +34,7 @@ export default function CodeEntryScreen() {
       return;
     }
     
-    router.push('/screens/CodeApprovedScreen');
+    navigation.navigate('CodeApproved');
   };
 
   return (

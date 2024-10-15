@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import CustomTextField from '../../components/CustomTextField';
 import CustomButton from '@/components/CustomButton';
+import { emailAndPasswordLogIn } from '@/firebase/auth/auth';
+import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 
 // Simulated user data
 const MOCK_USERS = [
@@ -16,10 +18,10 @@ interface FormErrors {
 }
 
 export default function SignInScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>(); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
-  const router = useRouter();
 
   const validateForm = (): FormErrors => {
     let newErrors: FormErrors = {};
@@ -30,6 +32,7 @@ export default function SignInScreen() {
 
   const handleSignIn = () => {
     const formErrors = validateForm();
+    emailAndPasswordLogIn(email, password);
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
@@ -38,7 +41,6 @@ export default function SignInScreen() {
     const user = MOCK_USERS.find(u => u.email === email && u.password === password);
     if (user) {
       Alert.alert('Success', 'You have successfully signed in!');
-      router.push('/screens/PhotoScreen');
     } else {
       Alert.alert('Error', 'Invalid email or password');
     }
@@ -49,7 +51,7 @@ export default function SignInScreen() {
   };
 
   const handleSignUpPress = () => {
-    router.push('/screens/SignUpScreen');
+    navigation.navigate('SignUp');
   };
 
   return (

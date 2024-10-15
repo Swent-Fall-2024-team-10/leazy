@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { UserType } from '@/firebase/auth/auth';
 
-export default function CustomPicker({ selectedValue, onValueChange, items, style }: { selectedValue: string, onValueChange: (itemValue: string) => void, items: string[], style?: object }) {
+export default function CustomPicker({ selectedValue, onValueChange, style }: { selectedValue: UserType, onValueChange: (itemValue: UserType) => void, style?: object }) {
     return (
         <View style={[styles.pickerContainer, style]}>
             <Picker
@@ -11,7 +12,7 @@ export default function CustomPicker({ selectedValue, onValueChange, items, styl
                 style={styles.picker}
                 dropdownIconColor="#fff"  // Set arrow color to white
             >
-                {items.map((item, index) => (
+                {Object.values(UserType).map((item, index) => (
                     <Picker.Item key={index} label={item} value={item} />
                 ))}
             </Picker>

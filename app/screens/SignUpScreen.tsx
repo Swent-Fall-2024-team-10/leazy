@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import CustomTextField from '@/components/CustomTextField';
 import CustomButton from '@/components/CustomButton';
 import CustomPicker from '@/components/CustomPicker';
+import { UserType } from '@/firebase/auth/auth';
+import { emailAndPasswordSignIn } from '@/firebase/auth/auth';
+import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+
 
 interface FormErrors {
   firstName?: string;
@@ -14,15 +18,14 @@ interface FormErrors {
 }
 
 export default function SignUpScreen() {
-  const [userType, setUserType] = useState('Tenant');
-    const userTypes = ['Tenant', 'Manager'];
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [userType, setUserType] = useState(UserType.TENANT);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
-  const router = useRouter();
 
   const validateForm = (): FormErrors => {
     let newErrors: FormErrors = {};
@@ -45,10 +48,15 @@ export default function SignUpScreen() {
     }
     
     // Simulate successful registration
-    Alert.alert('Success', 'You have successfully registered!', [
-      { text: 'OK', onPress: () => router.push('/screens/CodeEntryScreen') }
-    ]);
-    console.log('Sign up successful:', { userType, firstName, lastName, email, password });
+    emailAndPasswordSignIn(email, password, userType, { firstName, lastName }).then((user) => {
+      if (user) {
+        Alert.alert('Success', 'You have successfully registered!');
+        console.log("User signed up:", user);
+        navigation.navigate('CodeEntry');
+      } else {
+        console.log("Sign up failed");
+      }
+    });    
   };
 
   const handleGoogleSignUp = () => {
@@ -64,7 +72,6 @@ export default function SignUpScreen() {
         <CustomPicker
           selectedValue={userType}
           onValueChange={(itemValue) => setUserType(itemValue)}
-          items={userTypes}
         />
         <Text style={styles.text}>Please enter your personal info</Text>
         

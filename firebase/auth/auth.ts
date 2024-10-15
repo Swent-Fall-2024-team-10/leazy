@@ -19,9 +19,9 @@ const provider = new GoogleAuthProvider();
 connectAuthEmulator(auth, "http://localhost:9099");
 
 export enum UserType {
-    TENANT,
-    LANDLORD,
-    UNAUTHENTICATED
+    TENANT = "Tenant",
+    LANDLORD = "Landlord",
+    UNAUTHENTICATED ="Unauthenticated"
 }
 
 export async function emailAndPasswordSignIn(email: string, password: string, userType: UserType, userData: TLandlordData | TTenantData): Promise<User|null>{

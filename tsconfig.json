@@ -3,6 +3,7 @@
     "jsx": "react",
     "esModuleInterop": true,
     "strict": true,
+    "jsx": "react-native",
     "paths": {
       "@/*": [
         "./*"

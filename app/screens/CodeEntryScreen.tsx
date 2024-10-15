@@ -6,15 +6,31 @@ import CustomButton from '@/components/CustomButton';
 
 const VALID_CODE = '1234';
 
+interface FormErrors {
+  code?: string;
+}
+
 export default function CodeEntryScreen() {
   const [code, setCode] = useState('');
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const validateForm = (): FormErrors => {
+    let newErrors: FormErrors = {};
+    if (code != VALID_CODE) newErrors.code= 'This code does not exist or has expired';
+    return newErrors;
+  };
 
   const handleSubmit = () => {
+    const formErrors = validateForm();
     const isValidCode = code === VALID_CODE;
-    const route = isValidCode ? '/screens/CodeApprovedScreen' : '/screens/CodeRejectedScreen';
-    
     console.log(`Code is ${isValidCode ? 'valid' : 'invalid'}`);
-    router.push(route);
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+    
+    router.push('/screens/CodeApprovedScreen');
   };
 
   return (
@@ -27,6 +43,7 @@ export default function CodeEntryScreen() {
         onChangeText={setCode}
       />
       <CustomButton size="medium" onPress={handleSubmit} title="Submit code"/>
+      {errors.code && <Text style={styles.errorText}>{errors.code}</Text>}
       <Text style={styles.text}>
         If you don't have a code please ask your residence manager to generate one for you.
       </Text>
@@ -63,5 +80,18 @@ const styles = StyleSheet.create({
     lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
     letterSpacing: 0.24,
     marginBottom: 23,
+  },
+  errorText: {
+    color: '#FF0004',
+    textAlign: 'center',
+    fontFamily: 'Inter',
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontWeight: '400',
+    lineHeight: 16,
+    letterSpacing: 0.16,
+    marginBottom: 20,
+    marginTop: 20,
+    width: 186
   },
 });

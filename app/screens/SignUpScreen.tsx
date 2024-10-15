@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import CustomTextField from '@/components/CustomTextField';
 import CustomButton from '@/components/CustomButton';

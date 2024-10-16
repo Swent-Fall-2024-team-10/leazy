@@ -31,7 +31,7 @@ export type Landlord = {
 export type Tenant = {
   userId: string; // uid of the user
   maintenanceRequests: string[]; // list of maintenance request ids
-  apartmentId: Apartment;
+  apartmentId: string;
 }
 
 export type Residence = {
@@ -45,7 +45,7 @@ export type Residence = {
 
 export type Apartment = {
   apartmentId: string;
-  residence: Residence;
+  residence: string;
   tenants: string[]; // list of tenant uids
   maintenanceRequests: string[]; // list of maintenance request ids
 }

@@ -6,6 +6,7 @@ import InputField from '../../components/forms/text_input';
 import Spacer from '@/components/Spacer';
 import SubmitButton from '@/components/buttons/SubmitButton';
 import { Color } from '@/types/types';
+import Close from '@/components/buttons/Close';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
@@ -32,6 +33,7 @@ export default function ReportScreen() {
     <ScrollView style={styles.container}
     automaticallyAdjustKeyboardInsets={true}
     >
+      <Close onPress={() => console.log("Close Pressed")}/>
       <Text style={styles.header}>Create a new issue</Text>
       <Text style={styles.date}>Current day : {day}/{month}/{year} at {hours}:{minutes} </Text>
 

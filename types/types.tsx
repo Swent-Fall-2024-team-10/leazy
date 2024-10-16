@@ -1,6 +1,7 @@
 // portions of this code were generated with chatGPT as an AI assistant
 
 import ReportScreen from "@/app/screens/ReportScreen";
+import { Button } from "react-native-elements";
 import { TextInput } from "react-native-gesture-handler";
 
 // Define the navigation stack types
@@ -16,6 +17,9 @@ export const Color = {
 
   ScreenHeader : "#0B3142",
   DateText : '#7F7F7F',
+
+  ButtonBackgroundDisabled : "#7F7F7F",
+  ButtonTextDisabled : "#FFFFFF",
 
   ButtonBackground : "#0F5257",
   ButtonBorder : "#7F7F7F",

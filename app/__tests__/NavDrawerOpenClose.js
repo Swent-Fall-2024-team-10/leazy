@@ -1,7 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { DrawerActions } from '@react-navigation/native';
-import App from '../index.tsx'; // Update to your actual drawer navigator file
+import App from '../index.tsx';
+
+// portions of this code were generated with chatGPT as an AI assistant
 
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');

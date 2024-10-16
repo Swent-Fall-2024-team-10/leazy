@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 
-// portions of this code were generated with chatGPT as an AI assistant
+// portions of this code were generated with chatGPT as an AI assistant //
 
 export default function HomepageScreen () {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>(); 

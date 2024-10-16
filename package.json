@@ -37,12 +37,12 @@
     ],
     "collectCoverage": true,
     "collectCoverageFrom": [
-    "**/*.{ts,tsx,js,jsx}",
-    "!**/coverage/**",
-    "!**/node_modules/**",
-    "!**/babel.config.js",
-    "!**/expo-env.d.ts",
-    "!**/.expo/**"
+      "**/*.{ts,tsx,js,jsx}",
+      "!**/coverage/**",
+      "!**/node_modules/**",
+      "!**/babel.config.js",
+      "!**/expo-env.d.ts",
+      "!**/.expo/**"
     ]
   },
   "dependencies": {
@@ -64,6 +64,7 @@
     "expo-web-browser": "~13.0.3",
     "firebase": "^10.14.0",
     "firebaseui": "^6.1.0",
+    "ob1": "^0.81.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",

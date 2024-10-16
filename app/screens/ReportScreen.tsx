@@ -35,7 +35,7 @@ export default function ReportScreen() {
       <Text style={styles.header}>Create a new issue</Text>
       <Text style={styles.date}>Current day : {day}/{month}/{year} at {hours}:{minutes} </Text>
 
-      <Spacer height={20} />
+      <Spacer height={20}/>
 
       <InputField 
         label="What kind of issue are you experiencing ?" 
@@ -78,7 +78,7 @@ export default function ReportScreen() {
 
       <Spacer height={20} />
 
-      <SubmitButton/>
+      <SubmitButton disabled={room == '' || description == '' || issue == ''}/>
 
     </ScrollView>
   );

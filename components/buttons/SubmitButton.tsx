@@ -7,15 +7,16 @@ import { Color } from "@/types/types";
 interface SubmitButtonProps {
   height?: number;
   disabled? : boolean;
+  onPress: () => void;
 }
 
-export default function SubmitButton({ height, disabled = true } : SubmitButtonProps) {
+export default function SubmitButton({ height, disabled = true, onPress} : SubmitButtonProps) {
   return (
     <View style={styles.submitContainer}>
         <Button
         title="Submit"
-        
-        onPress={() => console.log('Button Pressed')}
+
+        onPress={onPress}
         buttonStyle={[
           styles.submitButton,
         ]}

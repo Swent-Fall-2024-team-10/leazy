@@ -7,9 +7,16 @@ import Spacer from '@/components/Spacer';
 import SubmitButton from '@/components/buttons/SubmitButton';
 import { Color } from '@/types/types';
 import Close from '@/components/buttons/Close';
+import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+
 // portions of this code were generated with chatGPT as an AI assistant
 
-export default function ReportScreen() {
+interface ReportScreenProps {
+  navigation: NavigationProp<RootStackParamList>;
+}
+
+export default function ReportScreen( {navigation} : ReportScreenProps){
   const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
@@ -33,7 +40,7 @@ export default function ReportScreen() {
     <ScrollView style={styles.container}
     automaticallyAdjustKeyboardInsets={true}
     >
-      <Close onPress={() => console.log("Close Pressed")}/>
+      <Close onPress={() => navigation.navigate('Home')}/>
       <Text style={styles.header}>Create a new issue</Text>
       <Text style={styles.date}>Current day : {day}/{month}/{year} at {hours}:{minutes} </Text>
 
@@ -80,7 +87,13 @@ export default function ReportScreen() {
 
       <Spacer height={20} />
 
-      <SubmitButton disabled={room == '' || description == '' || issue == ''}/>
+      <SubmitButton 
+      disabled={room == '' || description == '' || issue == ''}
+      // For now navigate to the home screen, 
+      // this should be replaced to use the firebase API to send the report
+      // in the database and then navigate to the home screen
+      onPress={() => navigation.navigate('Home')}
+      />
 
     </ScrollView>
   );

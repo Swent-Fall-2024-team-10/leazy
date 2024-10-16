@@ -27,12 +27,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         flex : 1,
-        paddingBottom: 20,
+        paddingBottom: 3,
     },
 
     closeButton: {
         backgroundColor: Color.ReportScreenBackground,
-        padding: 2,
         width: 60,
         borderRadius: 5,
         alignItems: 'center',
@@ -48,6 +47,6 @@ const styles = StyleSheet.create({
     text: {
         color: Color.ScreenHeader,
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '800',
     }
 });

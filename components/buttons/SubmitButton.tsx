@@ -1,18 +1,18 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import { StyleSheet } from "react-native";
 import { Button } from "react-native-elements";
-import { Color } from "@/types/types";
+import { Color, FontSizes } from "@/types/types";
+import DropShadow from "react-native-drop-shadow";
 
 interface SubmitButtonProps {
-  height?: number;
-  disabled? : boolean;
+  disabled : boolean;
   onPress: () => void;
 }
 
-export default function SubmitButton({ height, disabled = true, onPress} : SubmitButtonProps) {
+export default function SubmitButton({ disabled = true, onPress} : SubmitButtonProps) {
   return (
-    <View style={styles.submitContainer}>
+    <DropShadow style={styles.submitContainer}>
         <Button
         title="Submit"
 
@@ -28,7 +28,7 @@ export default function SubmitButton({ height, disabled = true, onPress} : Submi
         disabled={disabled} // Disable button interaction
         disabledStyle={styles.submitButtonDisabled}
       />
-    </View>
+    </DropShadow>
 
   );
 }
@@ -36,6 +36,10 @@ export default function SubmitButton({ height, disabled = true, onPress} : Submi
 const styles = StyleSheet.create({
     submitContainer: {
         alignItems: 'center',
+        shadowColor: '#171717',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
     },
 
     submitButton : {
@@ -64,7 +68,7 @@ const styles = StyleSheet.create({
 
     submitText : {
         textAlign: 'center',
-        fontSize: 20,
+        fontSize: FontSizes.ButtonText,
         color: Color.ButtonText
     },
 

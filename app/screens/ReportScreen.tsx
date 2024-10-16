@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import {CheckBox} from 'react-native-elements';
+import { Text, StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '../../components/forms/text_input';
 import Spacer from '@/components/Spacer';
 import SubmitButton from '@/components/buttons/SubmitButton';
 import { Color } from '@/types/types';
 import Close from '@/components/buttons/Close';
-import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import CameraButton from '@/components/buttons/CameraButton';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
+import CloseConfirmation from '@/components/CloseConfirmation';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -21,6 +23,7 @@ export default function ReportScreen( {navigation} : ReportScreenProps){
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
   const [tick, setTick] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const currentDay = new Date();
 
@@ -31,6 +34,11 @@ export default function ReportScreen( {navigation} : ReportScreenProps){
   const hours = currentDay.getHours().toString().padStart(2, '0');
   const minutes = currentDay.getMinutes().toString().padStart(2, '0');
 
+  const handleClose = () => {
+    setIsVisible(true);
+  };
+
+
   // Placeholder function for adding pictures
   const handleAddPicture = () => {
     // Placeholder function to add pictures
@@ -40,30 +48,44 @@ export default function ReportScreen( {navigation} : ReportScreenProps){
     <ScrollView style={styles.container}
     automaticallyAdjustKeyboardInsets={true}
     >
-      <Close onPress={() => navigation.navigate('Home')}/>
+      <Close onPress={handleClose}/>
       <Text style={styles.header}>Create a new issue</Text>
       <Text style={styles.date}>Current day : {day}/{month}/{year} at {hours}:{minutes} </Text>
 
       <Spacer height={20}/>
+
+      {isVisible && (
+        <CloseConfirmation 
+          isVisible={isVisible}
+          onPressYes={() => {
+            navigation.navigate('Home');
+            setIsVisible(false);
+          }} 
+          onPressNo={() => setIsVisible(false)} 
+        />
+      )}
 
       <InputField 
         label="What kind of issue are you experiencing ?" 
         value={issue} 
         setValue={setIssue}
         placeholder="Your issue..."
+        radius={25}
+        height={40}
       />
       
       <Spacer height={20} />
 
-      <Text>Please take a picture of the damage or situation if applicable</Text>
-      <TouchableOpacity style={styles.cameraButton} onPress={handleAddPicture}>
-      </TouchableOpacity>
+      <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
+      <CameraButton onPress={handleAddPicture} />
 
       <InputField 
         label="Which room is the issue in ?" 
         value={room} 
         setValue={setRoom}
         placeholder="e.g : Bedroom, Kitchen, Bathroom..."
+        radius={25}
+        height={40}
       />
 
       <Spacer height={20} />
@@ -79,11 +101,18 @@ export default function ReportScreen( {navigation} : ReportScreenProps){
 
       <Spacer height={20} />
 
-      <CheckBox
-        title='I would like to start a chat with the manager about this issue'
-        checked={tick}
-        onPress={() => setTick(!tick)}
+      <View style={{ flexDirection : 'row'}}>
+        <BouncyCheckbox
+        iconImageStyle={styles.tickingBox}
+        iconStyle={styles.tickingBox}
+        innerIconStyle={styles.tickingBox}
+        unFillColor= {Color.ReportScreenBackground}
+        fillColor={Color.ButtonBackground}
+        onPress={(isChecked: boolean) => setTick(isChecked)}
         />
+
+        <Text style={styles.tickingBoxText}>I would like to start a chat with the manager about this issue</Text>
+      </View>
 
       <Spacer height={20} />
 
@@ -100,6 +129,17 @@ export default function ReportScreen( {navigation} : ReportScreenProps){
 }
 
 const styles = StyleSheet.create({
+  tickingBoxText : {
+    color: Color.TextInputLabel,
+    fontSize: 16,
+    width: 300,
+    fontWeight: '500',
+  },
+
+  tickingBox : {
+    borderRadius: 5,
+  },
+
   container: {
     flex: 1,
     backgroundColor: Color.ReportScreenBackground,
@@ -155,6 +195,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
     color: Color.ScreenHeader,
+  },
+
+  label : {
+    fontSize: 16,
+    marginBottom: 2.5,
+    fontWeight: "500",
+    color: Color.TextInputLabel,
   }
 
 });

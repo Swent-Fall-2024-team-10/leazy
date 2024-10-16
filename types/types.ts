@@ -10,17 +10,18 @@ declare type TTenantData ={}
 declare type TLandlordData ={}
 
 // Define types for firestore
-export type User = {
+export type User = { // User document Id is the uid from the authentication 
   uid: string;
   type: "tenant" | "landlord";
-  details: Person;
-}
-
-export type Person = {
   name: string;
   email: string;
   phone: string;
-  address: Address;
+  street: string;
+  number: string;
+  city: string;
+  canton: string;
+  zip: string;
+  country: string;
 }
 
 export type Landlord = {
@@ -36,27 +37,23 @@ export type Tenant = {
 
 export type Residence = {
   residenceId: string;
-  address: Address;
+  street: string;
+  number: string;
+  city: string;
+  canton: string;
+  zip: string;
+  country: string;  
   landlordId: string; // uid of the landlord
-  tenants: string[]; // list of tenant uids
+  tenantIds: string[]; // list of tenant uids
   laundryMachines: LaundryMachine[];
   apartments: string[]; // list of apartment ids
 }
 
 export type Apartment = {
   apartmentId: string;
-  residence: string;
+  residenceId: string;
   tenants: string[]; // list of tenant uids
   maintenanceRequests: string[]; // list of maintenance request ids
-}
-
-export type Address = {
-  street: string;
-  number: string;
-  city: string;
-  canton: string;
-  zip: string;
-  country: string;
 }
 
 export type LaundryMachine = {
@@ -70,7 +67,7 @@ export type MaintenanceRequest = {
   tenantId: string; // uid of the tenant
   residenceId: string; // id of the residence
   apartmentId: string; // id of the apartment
-  openedBy: User;
+  openedBy: string;
   requestDate: string;
   requestDescription: string;
   picture: string[]; // list of picture urls referenced in the database

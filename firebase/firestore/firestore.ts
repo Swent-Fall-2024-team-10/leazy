@@ -5,12 +5,10 @@ import { setDoc, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 // Import type definitions used throughout the functions.
 import {
   User,
-  Person,
   Landlord,
   Tenant,
   Residence,
   Apartment,
-  Address,
   LaundryMachine,
   MaintenanceRequest,
 } from "../../types/types";
@@ -79,7 +77,10 @@ export async function getLandlord(userId: string): Promise<Landlord | null> {
  * @param userId - The unique identifier of the landlord to update.
  * @param landlord - The partial landlord data to update.
  */
-export async function updateLandlord(userId: string, landlord: Partial<Landlord>) {
+export async function updateLandlord(
+  userId: string,
+  landlord: Partial<Landlord>
+) {
   const docRef = doc(db, "landlords", userId);
   await updateDoc(docRef, landlord);
 }
@@ -146,7 +147,9 @@ export async function createResidence(residence: Residence) {
  * @param residenceId - The unique identifier of the residence.
  * @returns The residence data or null if no residence is found.
  */
-export async function getResidence(residenceId: string): Promise<Residence | null> {
+export async function getResidence(
+  residenceId: string
+): Promise<Residence | null> {
   const docRef = doc(db, "residences", residenceId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Residence) : null;
@@ -157,7 +160,10 @@ export async function getResidence(residenceId: string): Promise<Residence | nul
  * @param residenceId - The unique identifier of the residence to update.
  * @param residence - The partial residence data to update.
  */
-export async function updateResidence(residenceId: string, residence: Partial<Residence>) {
+export async function updateResidence(
+  residenceId: string,
+  residence: Partial<Residence>
+) {
   const docRef = doc(db, "residences", residenceId);
   await updateDoc(docRef, residence);
 }
@@ -185,7 +191,9 @@ export async function createApartment(apartment: Apartment) {
  * @param apartmentId - The unique identifier of the apartment.
  * @returns The apartment data or null if no apartment is found.
  */
-export async function getApartment(apartmentId: string): Promise<Apartment | null> {
+export async function getApartment(
+  apartmentId: string
+): Promise<Apartment | null> {
   const docRef = doc(db, "apartments", apartmentId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Apartment) : null;
@@ -196,7 +204,10 @@ export async function getApartment(apartmentId: string): Promise<Apartment | nul
  * @param apartmentId - The unique identifier of the apartment to update.
  * @param apartment - The partial apartment data to update.
  */
-export async function updateApartment(apartmentId: string, apartment: Partial<Apartment>) {
+export async function updateApartment(
+  apartmentId: string,
+  apartment: Partial<Apartment>
+) {
   const docRef = doc(db, "apartments", apartmentId);
   await updateDoc(docRef, apartment);
 }
@@ -224,7 +235,9 @@ export async function createMaintenanceRequest(request: MaintenanceRequest) {
  * @param requestID - The unique identifier of the maintenance request.
  * @returns The maintenance request data or null if no request is found.
  */
-export async function getMaintenanceRequest(requestID: string): Promise<MaintenanceRequest | null> {
+export async function getMaintenanceRequest(
+  requestID: string
+): Promise<MaintenanceRequest | null> {
   const docRef = doc(db, "maintenanceRequests", requestID);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as MaintenanceRequest) : null;
@@ -235,7 +248,10 @@ export async function getMaintenanceRequest(requestID: string): Promise<Maintena
  * @param requestID - The unique identifier of the maintenance request to update.
  * @param request - The partial maintenance request data to update.
  */
-export async function updateMaintenanceRequest(requestID: string, request: Partial<MaintenanceRequest>) {
+export async function updateMaintenanceRequest(
+  requestID: string,
+  request: Partial<MaintenanceRequest>
+) {
   const docRef = doc(db, "maintenanceRequests", requestID);
   await updateDoc(docRef, request);
 }
@@ -254,8 +270,15 @@ export async function deleteMaintenanceRequest(requestID: string) {
  * @param residenceId - The unique identifier of the residence where the machine is located.
  * @param machine - The laundry machine object to be added.
  */
-export async function createLaundryMachine(residenceId: string, machine: LaundryMachine) {
-  const docRef = doc(db, `residences/${residenceId}/laundryMachines`, machine.id);
+export async function createLaundryMachine(
+  residenceId: string,
+  machine: LaundryMachine
+) {
+  const docRef = doc(
+    db,
+    `residences/${residenceId}/laundryMachines`,
+    machine.id
+  );
   await setDoc(docRef, machine);
 }
 
@@ -265,8 +288,15 @@ export async function createLaundryMachine(residenceId: string, machine: Laundry
  * @param machineId - The unique identifier of the laundry machine.
  * @returns The laundry machine data or null if no machine is found.
  */
-export async function getLaundryMachine(residenceId: string, machineId: string): Promise<LaundryMachine | null> {
-  const docRef = doc(db, `residences/${residenceId}/laundryMachines`, machineId);
+export async function getLaundryMachine(
+  residenceId: string,
+  machineId: string
+): Promise<LaundryMachine | null> {
+  const docRef = doc(
+    db,
+    `residences/${residenceId}/laundryMachines`,
+    machineId
+  );
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as LaundryMachine) : null;
 }
@@ -277,8 +307,16 @@ export async function getLaundryMachine(residenceId: string, machineId: string):
  * @param machineId - The unique identifier of the laundry machine to update.
  * @param machine - The partial laundry machine data to update.
  */
-export async function updateLaundryMachine(residenceId: string, machineId: string, machine: Partial<LaundryMachine>) {
-  const docRef = doc(db, `residences/${residenceId}/laundryMachines`, machineId);
+export async function updateLaundryMachine(
+  residenceId: string,
+  machineId: string,
+  machine: Partial<LaundryMachine>
+) {
+  const docRef = doc(
+    db,
+    `residences/${residenceId}/laundryMachines`,
+    machineId
+  );
   await updateDoc(docRef, machine);
 }
 
@@ -287,7 +325,14 @@ export async function updateLaundryMachine(residenceId: string, machineId: strin
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
-export async function deleteLaundryMachine(residenceId: string, machineId: string) {
-  const docRef = doc(db, `residences/${residenceId}/laundryMachines`, machineId);
+export async function deleteLaundryMachine(
+  residenceId: string,
+  machineId: string
+) {
+  const docRef = doc(
+    db,
+    `residences/${residenceId}/laundryMachines`,
+    machineId
+  );
   await deleteDoc(docRef);
 }

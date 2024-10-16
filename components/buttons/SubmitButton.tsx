@@ -1,6 +1,8 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { StyleSheet } from "react-native";
+import { Button } from "react-native-elements";
+import { Color } from "@/types/types";
 
 interface SubmitButtonProps {
   height?: number;
@@ -24,10 +26,9 @@ const styles = StyleSheet.create({
     },
 
     submitButton : {
-        backgroundColor: "#0F5257",
-        borderColor: "#7F7F7F",
+        backgroundColor: Color.ButtonBackground,
+        borderColor: Color.ButtonBorder,
         borderWidth: 1,
-        color: "#9C92A3",
         marginBottom: 100,
         width: 170,
         height: 44,
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     submitText : {
         textAlign: 'center',
         fontSize: 20,
-        color: '#fff'
+        color: Color.ButtonText
     },
 
 });

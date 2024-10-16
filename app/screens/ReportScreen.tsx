@@ -5,6 +5,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '../../components/forms/text_input';
 import Spacer from '@/components/Spacer';
 import SubmitButton from '@/components/buttons/SubmitButton';
+import { Color } from '@/types/types';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
@@ -28,7 +29,9 @@ export default function ReportScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container}
+    automaticallyAdjustKeyboardInsets={true}
+    >
       <Text style={styles.header}>Create a new issue</Text>
       <Text style={styles.date}>Current day : {day}/{month}/{year} at {hours}:{minutes} </Text>
 
@@ -75,11 +78,7 @@ export default function ReportScreen() {
 
       <Spacer height={20} />
 
-
-
       <SubmitButton/>
-
-
 
     </ScrollView>
   );
@@ -88,7 +87,7 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Color.ReportScreenBackground,
     padding: 20,
   },
 
@@ -97,23 +96,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  input: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 10,
-    fontSize: 16,
-  },
+
   pictureContainer: {
     marginBottom: 20,
   },
+
   thumbnails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
   },
+
   thumbnailBox: {
     width: 100,
     height: 100,
@@ -122,38 +115,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  submitContainer: {
-    marginTop: 20,
-  },
+
   cameraButton: {
     height: 150,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#efefef',
+    backgroundColor: Color.CameraButtonBackground,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Color.CameraButtonBorder,
     borderRadius: 5,
     marginBottom: 20,
   },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    textAlignVertical: 'top',
-    marginBottom: 20,
-    backgroundColor: '#fff',
-  },
-  label: {
-    fontSize: 16,
-    marginVertical: 10,
-  },
-  
+
   date: {
     fontSize: 16,
     marginBottom: 5,
     textAlign: 'center',
-    color: '#7F7F7F',
+    color: Color.DateText,
   },
 
   header: {
@@ -161,7 +139,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
-    color: '#0F5257',
+    color: Color.ScreenHeader,
   }
 
 });

@@ -1,5 +1,7 @@
 import React from "react";
-import { View, Text, TextInput, TextStyle, StyleSheet } from "react-native";
+import { View, Text, TextInput, TextStyle, StyleSheet, KeyboardAvoidingView } from "react-native";
+import { Color } from "@/types/types";
+import { Platform } from "react-native";
 
 interface InputFieldProps {
   label: string;
@@ -28,7 +30,7 @@ export default function InputField({ label, value, setValue, placeholder, height
       value={value}
       onChangeText={setValue}
       multiline={true}
-      placeholderTextColor={"#7F7F7F"}
+      placeholderTextColor={Color.TextInputPlaceholder}
     />
     </View>
   );
@@ -37,16 +39,18 @@ export default function InputField({ label, value, setValue, placeholder, height
 const styles = StyleSheet.create({
   inputField : {
     flex: 1,
-    backgroundColor: "#D6D3F0",
+    backgroundColor: Color.TextInputBackground,
     padding: 10,
-    borderColor: "#7F7F7F",
+    borderColor: Color.TextInputBorder,
     borderWidth: 1,
-    color: "#0B3142",
+    color: Color.TextInputText,
   },
 
   label : {
     fontSize: 16,
     marginBottom: 2.5,
+    fontWeight: "500",
+    color: Color.TextInputLabel,
   }
 
 });

@@ -5,11 +5,7 @@ export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
     Settings: undefined;     // No parameters for Settings screen
     IssueDetails: {
-        issue: {
-          title: string;
-          description: string;
-          status: 'Not started' | 'In progress' | 'Completed';
-        };
+        requestID: String
       };
       ListIssues: undefined;
   };

@@ -277,7 +277,7 @@ export async function createLaundryMachine(
   const docRef = doc(
     db,
     `residences/${residenceId}/laundryMachines`,
-    machine.id
+    machine.laundryMachineId
   );
   await setDoc(docRef, machine);
 }

@@ -188,7 +188,7 @@ describe("Firestore Functions", () => {
     country: "Switzerland",
     landlordId: "landlord123",
     tenantIds: ["tenant1", "tenant2"],
-    laundryMachines: [],
+    laundryMachineIds: [],
     apartments: ["apartment1", "apartment2"],
   };
 
@@ -293,7 +293,7 @@ const mockApartment: Apartment = {
 
   // LaundryMachine Functions Tests
   const mockLaundryMachine: LaundryMachine = {
-    id: "machine123",
+    laundryMachineId: "machine123",
     isAvailable: true,
     isFunctional: true,
   };
@@ -310,29 +310,29 @@ const mockApartment: Apartment = {
 
   test("should retrieve a laundry machine", async () => {
     (getLaundryMachine as jest.Mock).mockResolvedValue(mockLaundryMachine);
-    const machine = await getLaundryMachine(residenceId, mockLaundryMachine.id);
+    const machine = await getLaundryMachine(residenceId, mockLaundryMachine.laundryMachineId);
     expect(getLaundryMachine).toHaveBeenCalledWith(
       residenceId,
-      mockLaundryMachine.id
+      mockLaundryMachine.laundryMachineId
     );
     expect(machine).toEqual(mockLaundryMachine);
   });
 
   test("should update a laundry machine", async () => {
     const updatedData = { isAvailable: false };
-    await updateLaundryMachine(residenceId, mockLaundryMachine.id, updatedData);
+    await updateLaundryMachine(residenceId, mockLaundryMachine.laundryMachineId, updatedData);
     expect(updateLaundryMachine).toHaveBeenCalledWith(
       residenceId,
-      mockLaundryMachine.id,
+      mockLaundryMachine.laundryMachineId,
       updatedData
     );
   });
 
   test("should delete a laundry machine", async () => {
-    await deleteLaundryMachine(residenceId, mockLaundryMachine.id);
+    await deleteLaundryMachine(residenceId, mockLaundryMachine.laundryMachineId);
     expect(deleteLaundryMachine).toHaveBeenCalledWith(
       residenceId,
-      mockLaundryMachine.id
+      mockLaundryMachine.laundryMachineId
     );
   });
 });

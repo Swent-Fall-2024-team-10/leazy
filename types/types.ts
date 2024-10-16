@@ -45,7 +45,7 @@ export type Residence = {
   country: string;  
   landlordId: string; // uid of the landlord
   tenantIds: string[]; // list of tenant uids
-  laundryMachines: LaundryMachine[];
+  laundryMachineIds: string[];
   apartments: string[]; // list of apartment ids
 }
 
@@ -57,7 +57,7 @@ export type Apartment = {
 }
 
 export type LaundryMachine = {
-  id: string;
+  laundryMachineId: string;
   isAvailable: boolean;
   isFunctional: boolean;
 }

@@ -9,28 +9,7 @@ import { getAnalytics } from "firebase/analytics";
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function HomepageScreen() {
-  // analytics
-  const analytics = getAnalytics();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-  // function to create a user
-  const createUserTest = async () => {
-    const user: User = {
-      uid: "user123",
-      type: "tenant",
-      name: "John Doe",
-      email: "test@test.com",
-      phone: "1234567890",
-      street: "123 Main St",
-      number: "1",
-      city: "Zurich",
-      canton: "ZH",
-      zip: "8000",
-      country: "Switzerland",
-    };
-    console.log("Creating user...");
-    await createUser(user);
-  };
 
   return (
     <View style={styles.container}>
@@ -40,7 +19,6 @@ export default function HomepageScreen() {
           News from the landlord to the tenants
         </Text>
       </View>
-      <Button title="Create User" onPress={createUserTest} />
       <View style={styles.settingsButton}>
         <Button
           title="Go to Settings"

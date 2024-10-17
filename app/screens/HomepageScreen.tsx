@@ -2,9 +2,7 @@ import React from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
 import { RootStackParamList } from "../../types/types"; // Import or define your navigation types
-import { createUser } from "../../firebase/firestore/firestore"; // Import the function to create a user
-import { User } from "../../types/types"; // Import the User type
-import { getAnalytics } from "firebase/analytics";
+import Header from '../components/Header'; // Import the Header component
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -12,6 +10,7 @@ export default function HomepageScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
+    <Header>
     <View style={styles.container}>
       <Text style={styles.header}>Here’s what’s new</Text>
       <View style={styles.newsContainer}>
@@ -26,6 +25,7 @@ export default function HomepageScreen() {
         />
       </View>
     </View>
+    </Header>
   );
 }
 

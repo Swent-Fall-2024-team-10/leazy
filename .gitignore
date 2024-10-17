@@ -3,6 +3,8 @@ node_modules/
 dist/
 npm-debug.*
 *.jks
+*.js 
+*.js.map
 *.p8
 *.p12
 *.key
@@ -18,3 +20,6 @@ web-build/
 
 expo-env.d.ts
 # @end expo-cli
+
+# Ignore test coverage files
+coverage/

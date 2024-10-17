@@ -10,18 +10,6 @@ export default function HomepageScreen () {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>(); 
   return (
     <Header>
-    <View style={styles.container}>
-      <Text style={styles.header}>Here’s what’s new</Text>
-      <View style={styles.newsContainer}>
-        <Text style={styles.newsText}>News from the landlord to the tenants</Text>
-      </View>
-      <View style={styles.settingsButton}>
-        <Button
-          title="Go to Settings"
-          onPress={() => navigation.navigate('Settings')} // Navigate to Settings
-        />
-      </View>
-    </View>
     </Header>
   );
 };

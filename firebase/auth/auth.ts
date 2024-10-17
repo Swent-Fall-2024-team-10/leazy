@@ -13,7 +13,7 @@ import {
     updatePassword,
     connectAuthEmulator
 } from "firebase/auth";
-
+import { TLandlordData, TTenantData } from "../../types/types";
 const provider = new GoogleAuthProvider();
 
 connectAuthEmulator(auth, "http://localhost:9099");

@@ -1,89 +1,207 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image } from 'react-native';
+import { Text, StyleSheet, View, Alert} from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import InputField from '../../components/forms/text_input';
+import Spacer from '@/components/Spacer';
+import SubmitButton from '@/components/buttons/SubmitButton';
+import { Color } from '@/styles/styles';
+import Close from '@/components/buttons/Close';
+import { NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import CameraButton from '@/components/buttons/CameraButton';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
+import CloseConfirmation from '@/components/buttons/CloseConfirmation';
+import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
+import { MaintenanceRequest } from '@/types/types';
+import { db, auth} from '@/firebase/firebase';
+import { getApartment, getResidence, getTenant } from '@/firebase/firestore/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
-export default function ReportScreen() {
+interface ReportScreenProps {
+  navigation: NavigationProp<RootStackParamList>;
+}
+
+export default function ReportScreen({ navigation }: ReportScreenProps) {
+  const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
-  
-  // Placeholder function for adding pictures
-  const handleAddPicture = () => {
-    // Placeholder function to add pictures
+  const [tick, setTick] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [loading, setLoading] = useState(false); // Add loading state
+
+  const currentDay = new Date();
+  const day = currentDay.getDate().toString().padStart(2, '0');
+  const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
+  const year = currentDay.getFullYear();
+  const hours = currentDay.getHours().toString().padStart(2, '0');
+  const minutes = currentDay.getMinutes().toString().padStart(2, '0');
+
+  const handleClose = () => {
+
+    setIsVisible(true);
   };
 
+  // Placeholder function for adding pictures
+  const handleAddPicture = () => {
+    // Add logic to upload and link pictures if needed
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true); // Set loading to true when starting the submission
+      try {
+        const newRequest: MaintenanceRequest = {
+          requestID: '', 
+          tenantId: "auth.currentUser?.uid || ''", 
+          residenceId: "apartment.residenceId", 
+          apartmentId: "tenantId.apartmentId", 
+          openedBy: "tenantId.userId", 
+          requestTitle: issue,
+          requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
+          requestDescription: description,
+          picture: [], // Add uploaded picture URLs here
+          requestStatus: "notStarted",
+        };
+    
+        await addDoc(collection(db, 'maintenanceRequests'), newRequest);
+        Alert.alert('Success', 'Your maintenance request has been submitted.');
+        //reset the form 
+        setRoom('');
+        setIssue('');
+        setDescription('');
+        setTick(false);
+        navigation.navigate('Home');
+      } catch (error) {
+        Alert.alert('Error', 'There was an error submitting your request. Please try again.');
+      } finally {
+        setLoading(false); // Set loading to false after submission is complete
+      }
+  
+    
+  };
+
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Report an issue</Text>
+    <ScrollView style={styles.container} automaticallyAdjustKeyboardInsets={true}>
+      <Close onPress={handleClose} />
+      <Text style={styles.header}>Create a new issue</Text>
+      <Text style={styles.date}>
+        Current day: {day}/{month}/{year} at {hours}:{minutes}
+      </Text>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name the issue"
-          value={issue}
-          onChangeText={setIssue}
+      <Spacer height={20} />
+
+      {isVisible && (
+        <CloseConfirmation
+          isVisible={isVisible}
+          onPressYes={() => {
+            setRoom('');
+            setIssue('');
+            setDescription('');
+            setTick(false);
+            navigation.navigate('Home');
+            setIsVisible(false);
+          }}
+          onPressNo={() => {
+            setIsVisible(false)
+          }}
         />
-      </View>
+      )}
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline={true}
+      <InputField
+        label="What kind of issue are you experiencing?"
+        value={issue}
+        setValue={setIssue}
+        placeholder="Your issue..."
+        radius={25}
+        height={40}
+      />
+
+      <Spacer height={20} />
+
+      <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
+      <CameraButton onPress={handleAddPicture} />
+
+      <InputField
+        label="Which room is the issue in?"
+        value={room}
+        setValue={setRoom}
+        placeholder="e.g: Bedroom, Kitchen, Bathroom..."
+        radius={25}
+        height={40}
+      />
+
+      <Spacer height={20} />
+
+      <InputField
+        label="Please provide some description of the issue:"
+        value={description}
+        setValue={setDescription}
+        placeholder="e.g: The bathtub is leaking because of..."
+        height={100}
+        radius={20}
+      />
+
+      <Spacer height={20} />
+
+      <View style={{ flexDirection: 'row' }}>
+        <BouncyCheckbox
+          iconImageStyle={styles.tickingBox}
+          iconStyle={styles.tickingBox}
+          innerIconStyle={styles.tickingBox}
+          unFillColor={Color.ReportScreenBackground}
+          fillColor={Color.ButtonBackground}
+          onPress={(isChecked: boolean) => setTick(isChecked)}
         />
+        <Text style={styles.tickingBoxText}>
+          I would like to start a chat with the manager about this issue
+        </Text>
       </View>
 
-      <View style={styles.pictureContainer}>
-        <Text style={styles.subHeader}>Add a picture</Text>
-        <Button title="Add Picture" onPress={handleAddPicture} />
-        {/* Picture Thumbnails Placeholder */}
-        <View style={styles.thumbnails}>
-          <View style={styles.thumbnailBox}><Text>Thumbnail 1</Text></View>
-          <View style={styles.thumbnailBox}><Text>Thumbnail 2</Text></View>
-        </View>
-      </View>
+      <Spacer height={20} />
 
-      <View style={styles.submitContainer}>
-        <Button title="Submit" onPress={() => { /* Handle submit */ }} />
-      </View>
-    </View>
+      <SubmitButton
+        disabled={room === '' || description === '' || issue === ''}
+        onPress={handleSubmit}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  tickingBoxText : {
+    color: Color.TextInputLabel,
+    fontSize: 16,
+    width: 300,
+    fontWeight: '500',
+  },
+
+  tickingBox : {
+    borderRadius: 5,
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#d3d3d3',
+    backgroundColor: Color.ReportScreenBackground,
     padding: 20,
   },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+
   subHeader: {
+    textAlign: 'center',
     fontSize: 16,
     marginBottom: 10,
   },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  input: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 10,
-    fontSize: 16,
-  },
+
   pictureContainer: {
     marginBottom: 20,
   },
+
   thumbnails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
   },
+
   thumbnailBox: {
     width: 100,
     height: 100,
@@ -92,7 +210,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  submitContainer: {
-    marginTop: 20,
+
+  cameraButton: {
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Color.CameraButtonBackground,
+    borderWidth: 1,
+    borderColor: Color.CameraButtonBorder,
+    borderRadius: 5,
+    marginBottom: 20,
   },
+
+  date: {
+    fontSize: 16,
+    marginBottom: 5,
+    textAlign: 'center',
+    color: Color.DateText,
+  },
+
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: Color.ScreenHeader,
+  },
+
+  label : {
+    fontSize: 16,
+    marginBottom: 2.5,
+    fontWeight: "500",
+    color: Color.TextInputLabel,
+  }
+
 });

@@ -6,8 +6,8 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
   };
   
-declare type TTenantData ={}
-declare type TLandlordData ={}
+export declare type TTenantData ={}
+export declare type TLandlordData ={}
 
 // Define types for firestore
 export type User = { // User document Id is the uid from the authentication 
@@ -74,3 +74,4 @@ export type MaintenanceRequest = {
   picture: string[]; // list of picture urls referenced in the database
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 }
+

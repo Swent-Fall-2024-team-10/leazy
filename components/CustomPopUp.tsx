@@ -82,7 +82,9 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: FontSizes.ButtonText,
         color: Color.ButtonText,
-        fontWeight: '800'
+        fontWeight: '800',
+        textAlign: 'center',
+        lineHeight: 40,
     },
 
     buttonYes : {

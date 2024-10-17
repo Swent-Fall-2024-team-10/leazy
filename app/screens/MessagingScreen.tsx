@@ -1,12 +1,11 @@
 import React, { useState, useLayoutEffect, useCallback } from "react";
-import { IMessage, GiftedChat } from "react-native-gifted-chat";
+import { IMessage, GiftedChat, Bubble } from "react-native-gifted-chat";
 import {
   collection,
   addDoc,
   orderBy,
   query,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
@@ -45,13 +44,11 @@ export default function Chat() {
     if (currentUserEmail) {
       const collectionRef = collection(db, "chats");
 
-      // Add a where clause to filter by the current user's email
+      // Fetch all messages in Firestore
       const q = query(
         collectionRef,
         orderBy("createdAt", "desc") // Order by createdAt without filtering on Firestore
       );
-
-      console.log("list of messages: ", q);
 
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const allMessages = querySnapshot.docs.map((doc) => {
@@ -60,18 +57,17 @@ export default function Chat() {
             _id: data._id,
             createdAt: data.createdAt.toDate(),
             text: data.text,
-            user: data.user,
+            user: data.user, // Sender info
           } as IMessage;
         });
 
-        // Filter the messages that belong to the current user
+        // Filter messages where the current user is either the sender or the receiver
         const userMessages = allMessages.filter(
           (message) => message.user._id === currentUserEmail
         );
 
         setMessages(userMessages);
-
-        console.log("messages", userMessages);
+        console.log("filtered messages", userMessages);
       });
 
       return () => unsubscribe();
@@ -84,17 +80,48 @@ export default function Chat() {
     );
     const { _id, createdAt, text, user } = messages[0];
 
-    // Add the message to Firestore
+    // Define the receiver email (this could come from the chat context, or manually set for now)
+    const receiverEmail = "fakelandlord@leasyswent.com"; // Replace with dynamic receiver if needed
+
+    // Add the message to Firestore with sender and receiver info
     addDoc(collection(db, "chats"), {
       _id,
       createdAt,
       text,
-      user,
+      user, // Sender's info
     });
   }, []);
 
+  const renderBubble = (props: any) => {
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          left: {
+            backgroundColor: "#0F5257", // Other user's bubble background color
+          },
+          right: {
+            backgroundColor: "#FFFFFF", // Current user's bubble background color
+            borderWidth: 1, // Add stroke (border)
+            borderColor: "#7F7F7F", // Stroke color
+          },
+        }}
+        textStyle={{
+          left: {
+            color: "#FFFFFF", // Text color for other user's message
+          },
+          right: {
+            color: "#000000", // Text color for current user's message
+          },
+        }}
+      />
+    );
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, paddingBottom: 5, backgroundColor: "red" }}>
+    <SafeAreaView
+      style={{ flex: 1, paddingBottom: 5, backgroundColor: "white" }}
+    >
       <GiftedChat
         messages={messages}
         showAvatarForEveryMessage={false}
@@ -103,10 +130,11 @@ export default function Chat() {
         messagesContainerStyle={{
           backgroundColor: "#fff",
         }}
+        placeholder={"New message"}
         user={{
           _id: auth?.currentUser?.email || "", // Using current user's email as the ID
-          avatar: "https://i.pravatar.cc/300",
         }}
+        renderBubble={renderBubble}
       />
     </SafeAreaView>
   );

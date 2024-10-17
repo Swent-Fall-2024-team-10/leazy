@@ -1,0 +1,20 @@
+appId: "com.swent.leazy"
+---
+- launchApp
+
+- tapOn: "Go to Settings"
+
+- tapOn : 
+      id: "go-back-button"
+
+- tapOn:
+    point: "7%,6%"
+
+- tapOn: "Report"
+
+- tapOn: "Name the issue"
+- inputText: "Meastro test for e2e"
+
+- tapOn: "Description"
+- inputText: "This is a test for e2e"
+

@@ -1,29 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
-import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import { useNavigation, NavigationProp } from '@react-navigation/native'; 
+import { RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
+import { getTenant, getMaintenanceRequest, updateMaintenanceRequest } from '../../firebase/firestore/firestore'; // Firestore functions
+import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
 
 interface IssueItemProps {
-  issue: string;
-  status: 'Not started' | 'In progress' | 'Completed';
-  onStatusChange: (status: 'Not started' | 'In progress' | 'Completed') => void;
+  issue: MaintenanceRequest;
+  onStatusChange: (status: MaintenanceRequest['requestStatus']) => void;
   onArchive: () => void;
   isArchived: boolean;
 }
 
-const IssueItem: React.FC<IssueItemProps> = ({ issue, status, onStatusChange, onArchive, isArchived }) => {
+const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive, isArchived }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  
   const getStatusColor = () => {
-    switch (status) {
-      case 'In progress':
+    switch (issue.requestStatus) {
+      case 'inProgress':
         return '#F39C12';
-      case 'Not started':
+      case 'notStarted':
         return '#E74C3C';
-      case 'Completed':
+      case 'completed':
         return '#2ECC71';
+      case 'rejected':
+        return '#95A5A6';
       default:
         return '#95A5A6';
     }
@@ -33,22 +37,23 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, status, onStatusChange, on
     <View style={styles.issueItem}>
       <View style={styles.issueContent}>
         <View style={styles.issueTextContainer}>
-          <Text style={styles.issueText} numberOfLines={1}>{issue}</Text>
+          <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
         </View>
         <TouchableOpacity
           style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}
         >
-          <Text style={styles.statusText}>Status: {status}</Text>
+          <Text style={styles.statusText}>Status: {issue.requestStatus}</Text>
         </TouchableOpacity>
       </View>
-      {status === 'Completed' && !isArchived && (
+      {issue.requestStatus === 'completed' && !isArchived && (
         <TouchableOpacity onPress={onArchive} style={styles.archiveButton}>
           <Feather name="archive" size={24} color="#2C3E50" />
         </TouchableOpacity>
       )}
 
       <TouchableOpacity 
-        onPress={() => navigation.navigate('Home')} 
+        testID='arrowButton'
+        onPress={() => navigation.navigate('IssueDetails', { requestID: issue.requestID })}
         style={styles.arrowButton}>
         <Feather name="chevron-right" size={24} color="black" />
       </TouchableOpacity>
@@ -58,26 +63,43 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, status, onStatusChange, on
 
 const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [issues, setIssues] = useState([
-    { id: 1, text: 'Radiator in bedroom does...', status: 'In progress', archived: false },
-    { id: 2, text: 'Light in the kitchen does no...', status: 'Not started', archived: false },
-    { id: 3, text: 'Radiator in bedroom does...', status: 'Completed', archived: false },
-  ]);
+  const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [showArchived, setShowArchived] = useState(false);
 
-  const updateIssueStatus = (id, newStatus) => {
+  useEffect(() => {
+    // Fetch tenant data and then fetch all the maintenance requests for that tenant
+    const fetchTenantRequests = async () => {
+      try {
+        // Replace 'tenantId' with the actual tenant ID you want to fetch
+        const tenant: Tenant | null = await getTenant('tenantId'); 
+        
+        if (tenant && tenant.maintenanceRequests.length > 0) {
+          const requests = await Promise.all(
+            tenant.maintenanceRequests.map((requestId) => getMaintenanceRequest(requestId))
+          );
+
+          // Filter out any null requests that might have not been found
+          const validRequests = requests.filter((req): req is MaintenanceRequest => !!req);
+          setIssues(validRequests);
+        } else {
+          setIssues([]); // No requests for this tenant
+        }
+      } catch (error) {
+        console.error("Error fetching tenant's maintenance requests: ", error);
+      }
+    };
+
+    fetchTenantRequests();
+  }, []);
+
+  const archiveIssue = (requestID: string) => {
     setIssues(issues.map(issue => 
-      issue.id === id ? { ...issue, status: newStatus } : issue
+      issue.requestID === requestID ? { ...issue, requestStatus: 'completed' } : issue
     ));
+    updateMaintenanceRequest(requestID, { requestStatus: 'completed' }); // Update Firestore status
   };
 
-  const archiveIssue = (id) => {
-    setIssues(issues.map(issue => 
-      issue.id === id ? { ...issue, archived: true } : issue
-    ));
-  };
-
-  const filteredIssues = issues.filter(issue => issue.archived === showArchived);
+  const filteredIssues = issues.filter(issue => issue.requestStatus !== 'completed' || showArchived);
 
   return (
     <View style={styles.container}>
@@ -99,12 +121,11 @@ const MaintenanceIssues = () => {
           <View style={styles.viewBoxContainer}>
             {filteredIssues.map((issue) => (
               <IssueItem
-                key={issue.id}
-                issue={issue.text}
-                status={issue.status}
-                onStatusChange={(newStatus) => updateIssueStatus(issue.id, newStatus)}
-                onArchive={() => archiveIssue(issue.id)}
-                isArchived={issue.archived}
+                key={issue.requestID}
+                issue={issue}
+                onStatusChange={(newStatus) => updateMaintenanceRequest(issue.requestID, { requestStatus: newStatus })}
+                onArchive={() => archiveIssue(issue.requestID)}
+                isArchived={issue.requestStatus === 'completed'}
               />
             ))}
           </View>
@@ -114,8 +135,7 @@ const MaintenanceIssues = () => {
         </ScrollView>
       </Header>
 
-      {/* Replace modal for adding an issue with navigation to Homepage */}
-      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity testID="addButton" style={styles.addButton} onPress={() => navigation.navigate('Home')}>
         <Feather name="plus" size={24} color="white" />
       </TouchableOpacity>
     </View>

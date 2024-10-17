@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { RootStackParamList } from '../../types/types';
+import { MaintenanceRequest, RootStackParamList } from '../../types/types';
 import { MessageSquare} from 'react-native-feather';
 import StatusDropdown from '../components/StatusDropdown';
 import Header from '../components/Header';
 import StatusBadge from '../components/StatusBadge';
 import AdaptiveButton from '../components/AdaptiveButton';
+import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -20,18 +21,77 @@ import AdaptiveButton from '../components/AdaptiveButton';
 // for navigation: this is opened from ListIssuesScreen: button goBack to return to the list of issues 
 //(maybe replace the hamburger with a go back button?)
 
+// uri: 'https://via.placeholder.com/400x300'
+
 const IssueDetailsScreen: React.FC = () => {
   const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
   
+  const route = useRoute<RouteProp<RootStackParamList, 'IssueDetails'>>();
+  const { requestID } = route.params;
+
+  const [issue, setIssue] = useState<MaintenanceRequest | null>(null);
+  const [loading, setLoading] = useState(true);
     // Manage the status in the parent component
-    const [status, setStatus] = useState('in-progress');
+    const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('inProgress');
+    const [description, setDescription] = useState('');  // State pour la description modifiable
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Handle left arrow click
+    const handlePreviousImage = () => {
+      if (issue) {
+        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? issue.picture.length - 1 : prevIndex - 1));
+      }
+    };
+  
+    // Handle right arrow click
+    const handleNextImage = () => {
+      if (issue) {
+        setCurrentImageIndex((prevIndex) => (prevIndex === issue.picture.length - 1 ? 0 : prevIndex + 1));
+      }
+    };
+
+     // Récupérer l'issue depuis Firebase
+  useEffect(() => {
+    const fetchIssue = async () => {
+      const fetchedIssue = await getMaintenanceRequest(requestID);
+      if (fetchedIssue) {
+        setIssue(fetchedIssue);
+        setStatus(fetchedIssue.requestStatus);  // Mettre à jour le statut dans l'état
+        setDescription(fetchedIssue.requestDescription);  // Mettre à jour la description dans l'état
+      }
+      setLoading(false);
+    };
+
+    fetchIssue();
+  }, [requestID]);
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (!issue) {
+    return <Text>Issue not found.</Text>;
+  }
+
+  // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
+  const handleClose = async () => {
+    if (issue) {
+      await updateMaintenanceRequest(requestID, {
+        requestStatus: status,
+        requestDescription: description,  // On envoie la nouvelle description à Firebase
+      });
+      // Rediriger après la mise à jour
+      // Navigation vers la liste des issues après la mise à jour
+      navigation.navigate('ListIssues');
+    }
+  };
 
   return (
     <Header>
         <View style={styles.grayBackground}>
           <View style={styles.content}>
             <View style={styles.issueTitle}>
-              <Text style={styles.issueTitleText}>Issue #1: Radiator in bedroom stopped working overnight</Text>
+              <Text style={styles.issueTitleText}>{issue.requestTitle}</Text>
               <StatusBadge status={status} />
             </View>
 
@@ -40,25 +100,37 @@ const IssueDetailsScreen: React.FC = () => {
             icon = {<MessageSquare stroke="white" width={18} height={18} />}
             iconPosition= {'right'}
             ></AdaptiveButton>
+
+
             
             <Text style={styles.sectionTitle}>Images submitted</Text>
+            <View style={styles.imageCarouselContainer}>
+            <TouchableOpacity onPress={handlePreviousImage} style={styles.arrowButton}>
+              <Text style={styles.arrowText}>{'<'}</Text>
+            </TouchableOpacity>
+
             <Image
-              source={{ uri: 'https://via.placeholder.com/400x300' }}
+              source={{ uri: issue.picture[currentImageIndex] }}
               style={styles.image}
             />
+
+            <TouchableOpacity onPress={handleNextImage} style={styles.arrowButton}>
+              <Text style={styles.arrowText}>{'>'}</Text>
+            </TouchableOpacity>
+          </View>
 
             <View style={styles.descriptionContainer}>
               <Text style={styles.sectionTitle}>Description</Text>
               <View style={styles.descriptionBox}>
                 <Text style={styles.descriptionText}>
-                  For some reason the radiator stopped working at night, it worked perfectly yesterday...
+                  {description}
                 </Text>
               </View>
             </View>
 
             <StatusDropdown value={status} setValue={setStatus} ></StatusDropdown>
 
-            <AdaptiveButton title = {'Close'} onPress = {() => navigation.navigate('ListIssues')}>
+            <AdaptiveButton title = {'Close'} onPress = {handleClose}>
             </AdaptiveButton>
 
           </View>
@@ -159,6 +231,20 @@ const styles = StyleSheet.create({
   },
   closeButtonContainer: {
     alignItems: 'center',
+  },
+  imageCarouselContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  arrowButton: {
+    padding: 10,
+  },
+  arrowText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
 

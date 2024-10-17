@@ -1,12 +1,13 @@
 import React from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { View, Text, StyleSheet } from 'react-native';
+import { MaintenanceRequest } from '@/types/types';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 interface StatusDropdownProps {
   value: string;
-  setValue: React.Dispatch<React.SetStateAction<string>>;
+  setValue: React.Dispatch<React.SetStateAction<MaintenanceRequest["requestStatus"]>>;
 }
 
 const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, setValue }) => {

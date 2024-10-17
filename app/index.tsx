@@ -9,6 +9,8 @@ import SubrentScreen from './screens/SubrentScreen';
 import ReportScreen from './screens/ReportScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import IssueDetailsScreen from './screens/IssueDetailsScreen';
+import ListIssueScreen from './screens/ListIssueScreen';
+
 import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
 
 // portions of this code were generated with chatGPT as an AI assistant
@@ -27,7 +29,7 @@ export default function App() {
         }}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
-        <Drawer.Screen name="Report" component={ReportScreen} />
+        <Drawer.Screen name="Report" component={ListIssueScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />

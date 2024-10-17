@@ -55,6 +55,7 @@ container: {
     color: "#0f5257",
   },
   whiteBackground: {
+    width: '100%',
     position: 'absolute',
     backgroundColor: '#fff',
     marginHorizontal: 0,
@@ -66,7 +67,6 @@ container: {
     borderColor: 'light-grey',
     borderWidth: 0.5,
     // Shadow for iOS
-    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,

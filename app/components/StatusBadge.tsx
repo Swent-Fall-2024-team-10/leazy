@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
+import { MaintenanceRequest } from '@/types/types';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 interface StatusBadgeProps {
-  status: string;
+  status: MaintenanceRequest["requestStatus"];
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
@@ -12,9 +13,9 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         switch (status) {
             case 'completed':
                 return styles.completed;
-            case 'in-progress':
+            case 'inProgress':
                 return styles.inProgress;
-            case 'not-started':
+            case 'notStarted':
                 return styles.notStarted;
             default:
                 return styles.defaultStatus;

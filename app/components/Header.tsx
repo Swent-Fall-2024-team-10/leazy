@@ -55,6 +55,7 @@ container: {
     color: "#0f5257",
   },
   whiteBackground: {
+    width: '100%',
     position: 'absolute',
     backgroundColor: '#fff',
     marginHorizontal: 0,

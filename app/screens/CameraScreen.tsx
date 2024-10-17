@@ -35,8 +35,10 @@ export default function CameraScreen() {
           quality: 1,
           base64: true,
         });
-        await MediaLibrary.saveToLibraryAsync(photo.uri);
-        navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' });
+        if (photo){
+          {await MediaLibrary.saveToLibraryAsync(photo.uri);
+          navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' });}
+        }
       } catch (error) {
         Alert.alert('Error', 'Failed to take picture');
         console.error(error);

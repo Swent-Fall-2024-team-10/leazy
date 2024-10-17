@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import {within} from '@testing-library/dom'
 import SignInScreen from '../SignInScreen';  // Adjust the import path based on your file structure.
 import { useNavigation } from '@react-navigation/native';
 
@@ -36,6 +37,20 @@ describe('<SignInScreen />', () => {
     expect(getByText('Password is required')).toBeTruthy();
   });
 
+  // Test if email is wrong format
+  // Test if error is displayed when passwords do not match
+  test('displays error when email format is invalid', () => {
+    const { getByTestId, getByText } = render(<SignInScreen />);
+    
+    // Fill in the form with mismatching passwords
+    fireEvent.changeText(getByTestId('emailInput'), 'invalid');
+    fireEvent.changeText(getByTestId('passwordInput'), 'password123');
+    fireEvent.press(getByTestId('signInButton'));
+
+    // Check for error message
+    expect(getByText('Email is invalid')).toBeTruthy();
+  });
+
   test('allows entering email and password', () => {
     const { getByTestId } = render(<SignInScreen />);
     
@@ -46,32 +61,50 @@ describe('<SignInScreen />', () => {
     expect(getByTestId('passwordInput').props.value).toBe('password123');
   });
 
-  //test('displays error message when account doesn\'t exist (please make sure this account doesn\'t exist in the database)' , () => {
-  //  const { getByTestId, getByText } = render(<SignInScreen />);
+  // Test for an account that doesn't exist
+  //test('displays error message when account doesn\'t exist', async () => {
+  //  const { getByTestId} = render(<SignInScreen />);
   //  
-  //  // Fill in the form
+  //  
+  //  
+  //  
+  //  // Fill in the form with a non-existing account
   //  fireEvent.changeText(getByTestId('emailInput'), 'non.existing@account.com');
   //  fireEvent.changeText(getByTestId('passwordInput'), '123456');
   //  
-  //  // Press the Sign Up button
+  //  // Press the Sign In button
   //  fireEvent.press(getByTestId('signInButton'));
 //
-  //  // Check for error message
-  //  expect(getByText('An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.')).toBeTruthy();
+  //  // Wait for the error message to appear
+  //  await waitFor(() => {
+  //    const { getByText } = within(getByTestId('signInPopup'))
+  //    //expect(getByTestId('signInPopup')).toBeTruthy();
+  //    //expect(wrapper.find('CustomPopUp').exists()).toBeTruthy()
+  //    expect(getByText('Error')).toBeInTheDocument()
+  //    //expect(component.contains(<CustomPopUp/>)).toBe(true)
+  //    //expect(getByText('An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.')).toBeTruthy();
+  //  });
   //});
-
-  //test('displays error message when the password is wrong (please make sure this account exists with a different password in the database)' , () => {
-  //  const { getByTestId, getByText } = render(<SignInScreen />);
+//
+  // Test for an existing account but with the wrong password
+  //test('displays error message when the password is wrong', async () => {
+  //  const { getByTestId } = render(<SignInScreen />);
+  //  const { getByText } = within(getByTestId('signInPopup'))
   //  
-  //  // Fill in the form
+  //  // Fill in the form with an existing account but wrong password
   //  fireEvent.changeText(getByTestId('emailInput'), 'already.existing@account.com');
-  //  fireEvent.changeText(getByTestId('passwordInput'), 'password');
+  //  fireEvent.changeText(getByTestId('passwordInput'), 'wrongpassword');  // Intentionally wrong password
   //  
-  //  // Press the Sign Up button
+  //  // Press the Sign In button
   //  fireEvent.press(getByTestId('signInButton'));
 //
-  //  // Check for error message
-  //  expect(getByText('An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.')).toBeTruthy();
+  //  // Wait for the error pop-up or error message to appear
+  //  await waitFor(() => {
+  //    //expect(getByTestId('signInPopup')).toBeTruthy();  // Check if the pop-up is displayed
+  //    // Optionally, check the specific error message
+  //    expect(getByText('Error')).toBeInTheDocument()
+  //    //expect(getByTestId('An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.')).toBeTruthy();
+  //  });
   //});
 
   test('navigates to the sign-up screen when Sign Up is pressed', () => {

@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import SignUpScreen from '../SignUpScreen';  // Adjust the import path based on your file structure.
 import { useNavigation } from '@react-navigation/native';
+import CustomPopUp from '../../../components/CustomPopUp';
 
 // Mock useNavigation hook
 jest.mock('@react-navigation/native', () => ({
@@ -41,6 +42,25 @@ describe('<SignUpScreen />', () => {
     expect(getByText('Please confirm your password')).toBeTruthy();
   });
 
+  
+  // Test if email is wrong format
+  // Test if error is displayed when passwords do not match
+  test('displays error when email format is invalid', () => {
+    const { getByTestId, getByText } = render(<SignUpScreen />);
+    
+    // Fill in the form with mismatching passwords
+    fireEvent.changeText(getByTestId('firstNameInput'), 'Test');
+    fireEvent.changeText(getByTestId('lastNameInput'), 'User');
+    fireEvent.changeText(getByTestId('emailInput'), 'invalid');
+    fireEvent.changeText(getByTestId('passwordInput'), 'password123');
+    fireEvent.changeText(getByTestId('confirmPasswordInput'), 'password456');  // Mismatching passwords
+    fireEvent.press(getByTestId('signUpButton'));
+
+    // Check for error message
+    expect(getByText('Email is invalid')).toBeTruthy();
+  });
+  
+  
   // Test if error is displayed when passwords do not match
   test('displays error when passwords do not match', () => {
     const { getByTestId, getByText } = render(<SignUpScreen />);
@@ -75,20 +95,29 @@ describe('<SignUpScreen />', () => {
   });
 
   // Test navigation to the next screen after successful sign-up
-  //test('Displays error message when the account already exists (please make sure this account already exists in the database)', () => {
+  //test('Displays error message when the account already exists', async () => {
   //  const { getByTestId, getByText } = render(<SignUpScreen />);
-  //  
-  //  // Fill in the form
+//
+  //  // Fill in the form with details of an existing account
   //  fireEvent.changeText(getByTestId('firstNameInput'), 'Already Existing');
   //  fireEvent.changeText(getByTestId('lastNameInput'), 'Account');
   //  fireEvent.changeText(getByTestId('emailInput'), 'already.existing@account.com');
   //  fireEvent.changeText(getByTestId('passwordInput'), '123456');
   //  fireEvent.changeText(getByTestId('confirmPasswordInput'), '123456');
-  //  
+//
   //  // Press the Sign Up button
   //  fireEvent.press(getByTestId('signUpButton'));
 //
-  //  // Check for error message
-  //  expect(getByText('An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.')).toBeTruthy();
+  //  // Wait for the pop-up to appear as it may take time for the error handling
+  //  //await waitFor(() => {
+  //  //  expect(getByTestId('signUpPopup')).toBeTruthy();  // Ensure the pop-up is displayed
+  //  //});
+//
+  //  // Optionally, check if the correct error message is displayed
+  //  await waitFor(() => {
+  //    expect(component.contains(<CustomPopUp/>)).toBe(true)
+  //    //expect(getByText('An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
+  //    //)).toBeTruthy();  // Verify the specific error message
+  //  });
   //});
 });

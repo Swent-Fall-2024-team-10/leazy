@@ -5,6 +5,7 @@ import CustomButton from '../../components/CustomButton';
 import { emailAndPasswordLogIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import CustomPopUp from '../../components/CustomPopUp';
 
 interface FormErrors {
   email?: string;
@@ -16,10 +17,12 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [popup, setPopup] = useState(false);
 
   const validateForm = (): FormErrors => {
     let newErrors: FormErrors = {};
     if (!email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
     if (!password) newErrors.password = 'Password is required';
     return newErrors;
   };
@@ -38,7 +41,8 @@ export default function SignInScreen() {
         console.log("User signed in:", user);
       }
     }).catch((error) => {
-      Alert.alert('Error', 'An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.');
+      setPopup(true);
+      //Alert.alert('Error', 'An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.');
     });
   };
 
@@ -52,6 +56,12 @@ export default function SignInScreen() {
 
   return (
     <View style={styles.container}>
+      {popup && < CustomPopUp
+        testID="signInPopup"
+        text = "An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct."
+        onPress = {() => setPopup(false)}
+      />}
+
       <Text style={styles.title}>Welcome back to Leazy</Text>
       <CustomTextField
         testID="emailInput"

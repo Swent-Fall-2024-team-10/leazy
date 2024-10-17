@@ -7,6 +7,7 @@ import { UserType } from '../../firebase/auth/auth';
 import { emailAndPasswordSignIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import CustomPopUp from '../../components/CustomPopUp';
 
 
 interface FormErrors {
@@ -26,6 +27,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [popup, setPopup] = useState(false)
 
   const validateForm = (): FormErrors => {
     let newErrors: FormErrors = {};
@@ -54,7 +56,7 @@ export default function SignUpScreen() {
         navigation.navigate('CodeEntry' as never);
       } else {
         console.log("Sign up failed");
-        Alert.alert('Error', 'An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.');
+        setPopup(true)
       }
     });
   };
@@ -66,6 +68,11 @@ export default function SignUpScreen() {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+        {popup && <CustomPopUp
+          testID="signUpPopup"
+          text= 'An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
+          onPress={() => setPopup(false)}
+        />}
         <Text style={styles.title}>Welcome to Leazy</Text>
         <Text style={styles.text}>Are you renting or the manager of a property?</Text>
         

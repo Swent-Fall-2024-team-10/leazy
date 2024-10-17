@@ -6,7 +6,7 @@ import { createUser } from "../../firebase/firestore/firestore"; // Import the f
 import { User } from "../../types/types"; // Import the User type
 import { getAnalytics } from "firebase/analytics";
 
-// portions of this code were generated with chatGPT as an AI assistant
+// portions of this code were generated with chatGPT as an AI assistant //
 
 export default function HomepageScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

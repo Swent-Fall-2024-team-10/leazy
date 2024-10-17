@@ -5,10 +5,12 @@ export default function CustomTextField({
     value,
     onChangeText,
     placeholder,
+    testID,
     keyboardType = 'default',   // default value for keyboardType
     autoCapitalize = 'none',    // default value for autoCapitalize
     secureTextEntry = false     // default value for secureTextEntry
   }: {
+    testID: string,
     value: string,
     onChangeText: (text: string) => void,
     placeholder: string,
@@ -19,8 +21,10 @@ export default function CustomTextField({
     return (
       <View>
         <TextInput
+          testID={testID}
           style={[styles.input, styles.inputText]}
           placeholder={placeholder}
+          placeholderTextColor={'#7F7F7F'}
           value={value}
           onChangeText={onChangeText}
           keyboardType={keyboardType}        // added keyboardType prop

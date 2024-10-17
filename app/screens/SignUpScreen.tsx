@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import CustomTextField from '@/components/CustomTextField';
-import CustomButton from '@/components/CustomButton';
-import CustomPicker from '@/components/CustomPicker';
-import { UserType } from '@/firebase/auth/auth';
-import { emailAndPasswordSignIn } from '@/firebase/auth/auth';
+import CustomTextField from '../../components/CustomTextField';
+import CustomButton from '../../components/CustomButton';
+import CustomPicker from '../../components/CustomPicker';
+import { UserType } from '../../firebase/auth/auth';
+import { emailAndPasswordSignIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 
@@ -34,9 +34,9 @@ export default function SignUpScreen() {
     if (!email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
     if (!password) newErrors.password = 'Password is required';
-    // TODO can add password validation rules
-    //else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
+    if (password != confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     return newErrors;
   };
 
@@ -48,15 +48,15 @@ export default function SignUpScreen() {
     }
     
     // Simulate successful registration
-    emailAndPasswordSignIn(email, password, userType, { firstName, lastName }).then((user) => {
+    emailAndPasswordSignIn(email, password, userType).then((user) => {
       if (user) {
-        Alert.alert('Success', 'You have successfully registered!');
         console.log("User signed up:", user);
-        navigation.navigate('CodeEntry');
+        navigation.navigate('CodeEntry' as never);
       } else {
         console.log("Sign up failed");
+        Alert.alert('Error', 'An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.');
       }
-    });    
+    });
   };
 
   const handleGoogleSignUp = () => {
@@ -70,12 +70,14 @@ export default function SignUpScreen() {
         <Text style={styles.text}>Are you renting or the manager of a property?</Text>
         
         <CustomPicker
+          testID='userTypePicker'
           selectedValue={userType}
           onValueChange={(itemValue) => setUserType(itemValue)}
         />
         <Text style={styles.text}>Please enter your personal info</Text>
         
         <CustomTextField
+          testID='firstNameInput'
           placeholder="First name"
           value={firstName}
           onChangeText={setFirstName}
@@ -83,6 +85,7 @@ export default function SignUpScreen() {
         {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
         
         <CustomTextField
+          testID='lastNameInput'
           placeholder="Last name"
           value={lastName}
           onChangeText={setLastName}
@@ -92,6 +95,7 @@ export default function SignUpScreen() {
         <Text style={styles.text}>And choose an email and password</Text>
 
         <CustomTextField
+          testID='emailInput'
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
@@ -101,6 +105,7 @@ export default function SignUpScreen() {
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         
         <CustomTextField
+          testID='passwordInput'
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -109,6 +114,7 @@ export default function SignUpScreen() {
         {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
         
         <CustomTextField
+          testID='confirmPasswordInput'
           placeholder="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -116,11 +122,12 @@ export default function SignUpScreen() {
         />
         {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
 
-        <CustomButton size="small" onPress={handleSignUpPress} title= "Sign up"/>
+        <CustomButton testID='signUpButton'size="small" onPress={handleSignUpPress} title= "Sign up"/>
 
         <Text style={styles.text}>or</Text>
 
         <CustomButton 
+          testID='googleSignUpButton'
           title="Sign up with Google" 
           onPress={handleGoogleSignUp} 
           size="large" 

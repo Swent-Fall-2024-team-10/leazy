@@ -34,7 +34,7 @@ export default function CodeEntryScreen() {
       return;
     }
     
-    navigation.navigate('CodeApproved');
+    navigation.navigate('CodeApproved' as never);
   };
 
   return (

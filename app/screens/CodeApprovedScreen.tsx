@@ -2,6 +2,8 @@ import CustomButton from '@/components/CustomButton';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+
+
 export default function CodeApprovedScreen() {
   const address = "18 Chemin de Renens, 1004 Lausanne";
   const onNext = () => {

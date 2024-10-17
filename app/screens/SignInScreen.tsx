@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import CustomTextField from '../../components/CustomTextField';
-import CustomButton from '@/components/CustomButton';
-import { emailAndPasswordLogIn } from '@/firebase/auth/auth';
+import CustomButton from '../../components/CustomButton';
+import { emailAndPasswordLogIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
-
-// Simulated user data
-const MOCK_USERS = [
-  { email: 'user@example.com', password: '1234' },
-  { email: 'admin@example.com', password: '1234' },
-];
 
 interface FormErrors {
   email?: string;
@@ -32,18 +26,20 @@ export default function SignInScreen() {
 
   const handleSignIn = () => {
     const formErrors = validateForm();
-    emailAndPasswordLogIn(email, password);
+
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
-    
-    const user = MOCK_USERS.find(u => u.email === email && u.password === password);
-    if (user) {
-      Alert.alert('Success', 'You have successfully signed in!');
-    } else {
-      Alert.alert('Error', 'Invalid email or password');
-    }
+
+    emailAndPasswordLogIn(email, password).then((user) => {
+      if (user) {
+        Alert.alert('Success', 'You have successfully signed in!');
+        console.log("User signed in:", user);
+      }
+    }).catch((error) => {
+      Alert.alert('Error', 'An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.');
+    });
   };
 
   const handleGoogleSignIn = () => {
@@ -51,13 +47,14 @@ export default function SignInScreen() {
   };
 
   const handleSignUpPress = () => {
-    navigation.navigate('SignUp');
+    navigation.navigate('SignUp' as never);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome back to Leazy</Text>
       <CustomTextField
+        testID="emailInput"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
@@ -66,15 +63,17 @@ export default function SignInScreen() {
       />
       {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
       <CustomTextField
+        testID="passwordInput"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-      <CustomButton size="small" onPress={handleSignIn} title ="Sign in"/>
+      <CustomButton testID='signInButton' size="small" onPress={handleSignIn} title ="Sign in"/>
       <Text style={styles.text}>or</Text>
       <CustomButton 
+        testID='googleSignInButton'
         title="Sign in with Google" 
         onPress={handleGoogleSignIn} 
         size="large" 
@@ -84,7 +83,7 @@ export default function SignInScreen() {
 
       <View style={styles.horizontalLine} />
       <Text style={styles.text}>Don't have an account yet?</Text>
-      <CustomButton size="large" onPress={handleSignUpPress} title="Sign up"/>
+      <CustomButton testID='signUpButton'size="large" onPress={handleSignUpPress} title="Sign up"/>
     </View>
   );
 }

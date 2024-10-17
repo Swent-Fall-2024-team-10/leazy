@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, Image, View } from 'react-native';
 
-export default function CustomButton({ title, onPress, size = 'small', style = {}, image }: { title: string, onPress: () => void, size?: 'small' | 'medium' | 'large', style?: object, image?: any }) {
+export default function CustomButton({ title, onPress, size = 'small', style = {}, image, testID }: { title: string, onPress: () => void, size?: 'small' | 'medium' | 'large', style?: object, image?: any, testID: string }) {
     // Determine which style to use based on the size prop
     const getSizeStyle = () => {
         switch (size) {
@@ -15,7 +15,7 @@ export default function CustomButton({ title, onPress, size = 'small', style = {
     };
 
     return (
-        <TouchableOpacity style={[getSizeStyle(), style]} onPress={onPress}>
+        <TouchableOpacity testID={testID} style={[getSizeStyle(), style]} onPress={onPress}>
             <View style={styles.contentContainer}>
                 {image && <Image source={image} style={styles.buttonImage} />}
                 <Text style={styles.buttonText}>{title}</Text>

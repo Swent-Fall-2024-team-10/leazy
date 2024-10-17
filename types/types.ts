@@ -68,6 +68,7 @@ export type MaintenanceRequest = {
   residenceId: string; // id of the residence
   apartmentId: string; // id of the apartment
   openedBy: string;
+  requestTitle: string;
   requestDate: string;
   requestDescription: string;
   picture: string[]; // list of picture urls referenced in the database

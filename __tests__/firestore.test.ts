@@ -261,6 +261,7 @@ const mockApartment: Apartment = {
     requestDescription: "Leaking sink",
     picture: [],
     requestStatus: "inProgress",
+    requestTitle: "TestTitle",
   };
 
   test("should create a new maintenance request", async () => {

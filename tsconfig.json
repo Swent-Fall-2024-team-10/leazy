@@ -1,18 +1,21 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react",
+    "esModuleInterop": true,
     "strict": true,
     "jsx": "react-native",
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ], 
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
     }
   },
   "include": [
-    "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "firebase/__tests__/firestore_utils-test.js"  ]
+    "expo-env.d.ts",
+    "firebase/__tests__/firestore_utils-test.js"
+  ],
+  "extends": "expo/tsconfig.base"
 }

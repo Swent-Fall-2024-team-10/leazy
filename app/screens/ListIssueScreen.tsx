@@ -7,6 +7,9 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
 import { getTenant, getMaintenanceRequest, updateMaintenanceRequest } from '../../firebase/firestore/firestore'; // Firestore functions
 import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
+import { getAuth } from 'firebase/auth';
+
+// portions of this code were generated with chatGPT as an AI assistant
 
 interface IssueItemProps {
   issue: MaintenanceRequest;
@@ -66,31 +69,43 @@ const MaintenanceIssues = () => {
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [showArchived, setShowArchived] = useState(false);
 
+  // Initialize auth instance
+  const auth = getAuth();
+
+  // Access the current user's UID
+  const user = auth.currentUser;
+  const userId = user ? user.uid : null;
+
   useEffect(() => {
-    // Fetch tenant data and then fetch all the maintenance requests for that tenant
     const fetchTenantRequests = async () => {
       try {
-        // Replace 'tenantId' with the actual tenant ID you want to fetch
-        const tenant: Tenant | null = await getTenant('tenantId'); 
-        
+        if (!userId) {
+          console.error("User is not logged in");
+          return;
+        }
+
+        // Fetch tenant data and maintenance requests for that tenant
+        const tenant: Tenant | null = await getTenant(userId);
+
         if (tenant && tenant.maintenanceRequests.length > 0) {
           const requests = await Promise.all(
             tenant.maintenanceRequests.map((requestId) => getMaintenanceRequest(requestId))
           );
+          // Filter out null values
+          const filteredRequests = requests.filter(
+            (request): request is MaintenanceRequest => request !== null
+          );
 
-          // Filter out any null requests that might have not been found
-          const validRequests = requests.filter((req): req is MaintenanceRequest => !!req);
-          setIssues(validRequests);
-        } else {
-          setIssues([]); // No requests for this tenant
+          setIssues(filteredRequests);
         }
       } catch (error) {
-        console.error("Error fetching tenant's maintenance requests: ", error);
+        console.error("Error fetching tenant requests:", error);
       }
     };
 
     fetchTenantRequests();
-  }, []);
+  }, [userId]); // Re-run useEffect when userId changes
+
 
   const archiveIssue = (requestID: string) => {
     setIssues(issues.map(issue => 

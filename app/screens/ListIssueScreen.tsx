@@ -150,7 +150,7 @@ const MaintenanceIssues = () => {
         </ScrollView>
       </Header>
 
-      <TouchableOpacity testID="addButton" style={styles.addButton} onPress={() => navigation.navigate('ReportScreen')}>
+      <TouchableOpacity testID="addButton" style={styles.addButton} onPress={() => navigation.navigate('Report')}>
         <Feather name="plus" size={24} color="white" />
       </TouchableOpacity>
     </View>

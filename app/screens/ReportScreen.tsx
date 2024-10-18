@@ -71,7 +71,7 @@ export default function ReportScreen() {
         setIssue('');
         setDescription('');
         setTick(false);
-        navigation.navigate('Issues');
+        navigation.navigate('ListIssues');
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
       } finally {
@@ -101,7 +101,7 @@ export default function ReportScreen() {
               setIssue('');
               setDescription('');
               setTick(false);
-              navigation.navigate('Issues');
+              navigation.navigate('ListIssues');
               setIsVisible(false);
             }}
             onPressNo={() => {

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import CustomTextField from '../../components/CustomTextField';
-import CustomButton from '../../components/CustomButton';
-import CustomPicker from '../../components/CustomPicker';
+import CustomTextField from '../components/CustomTextField';
+import CustomButton from '../components/CustomButton';
+import CustomPicker from '../components/CustomPicker';
 import { UserType } from '../../firebase/auth/auth';
 import { emailAndPasswordSignIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
-import CustomPopUp from '../../components/CustomPopUp';
+import CustomPopUp from '../components/CustomPopUp';
 
 
 interface FormErrors {

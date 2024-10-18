@@ -24,7 +24,7 @@
       "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(@react-native|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|firebase))"
+      "node_modules/(?!(@react-native|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase)/)"
     ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [
@@ -56,6 +56,7 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "@react-navigation/stack": "^6.4.1",
+    "enzyme-matchers": "^7.1.2",
     "expo": "~51.0.28",
     "expo-av": "^14.0.7",
     "expo-camera": "~15.0.16",
@@ -68,12 +69,14 @@
     "expo-status-bar": "~1.12.1",
     "expo-system-ui": "~3.0.7",
     "expo-web-browser": "~13.0.3",
-    "firebase": "^10.14.0",
+    "firebase": "^10.14.1",
     "firebaseui": "^6.1.0",
     "ob1": "^0.81.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
+    "react-native-drop-shadow": "^1.0.0",
+    "react-native-elements": "^3.4.3",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-feather": "^1.1.2",
     "react-native-gesture-handler": "^2.20.0",
@@ -91,6 +94,8 @@
     "@babel/preset-modules": "^0.1.6",
     "@babel/preset-react": "^7.25.7",
     "@babel/preset-typescript": "^7.25.7",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.1",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^12.7.2",
     "@types/jest": "^29.5.13",

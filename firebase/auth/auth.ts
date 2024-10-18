@@ -17,15 +17,15 @@ import { TTenantData, TLandlordData } from "../../types/types";
 
 const provider = new GoogleAuthProvider();
 
-connectAuthEmulator(auth, "http://localhost:9099");
 
 export enum UserType {
-    TENANT,
-    LANDLORD,
-    UNAUTHENTICATED
+    TENANT = "Tenant",
+    LANDLORD = "Landlord",
+    UNAUTHENTICATED ="Unauthenticated"
 }
 
-export async function emailAndPasswordSignIn(email: string, password: string, userType: UserType, userData: TLandlordData | TTenantData): Promise<User|null>{
+// TODO add user data to firestore
+export async function emailAndPasswordSignIn(email: string, password: string, userType: UserType): Promise<User|null>{
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;

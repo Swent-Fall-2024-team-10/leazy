@@ -96,7 +96,7 @@ const IssueDetailsScreen: React.FC = () => {
             </View>
 
             <AdaptiveButton title = 'Open chat about this subject' 
-            onPress = { () => navigation.navigate('Settings')}
+            onPress = { () => navigation.navigate('Messaging')}
             icon = {<MessageSquare stroke="white" width={18} height={18} />}
             iconPosition= {'right'}
             ></AdaptiveButton>

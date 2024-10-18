@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import CustomTextField from '@/components/CustomTextField';
-import CustomButton from '@/components/CustomButton';
+import CustomTextField from '@/app/components/CustomTextField';
+import CustomButton from '@/app/components/CustomButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 

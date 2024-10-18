@@ -1,4 +1,4 @@
-import CustomButton from '@/components/CustomButton';
+import CustomButton from '@/app/components/CustomButton';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 

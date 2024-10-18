@@ -9,6 +9,7 @@ export type RootStackParamList = {
       requestID: string
     };
     ListIssues: undefined;
+    Messaging: undefined;
   };
 
 declare type TTenantData ={}

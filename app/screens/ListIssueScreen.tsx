@@ -66,7 +66,11 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
 
 const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
+  const [issues, setIssues] = useState([
+    { id: 1, issue: 'Radiator in bedroom does...', requestStatus: 'In progress', archived: false, requestID: "iubdkjjkbwqi21" },
+    { id: 2, issue: 'Light in the kitchen does no...', requestStatus: 'Not started', archived: false, requestID: "iwefwjksdfsdfdsf2" },
+    { id: 3, issue: 'Radiator in bedroom does...', requestStatus: 'Completed', archived: false, requestID: "sdsdfkjsdflkn vds,ms23" },
+  ]);
   const [showArchived, setShowArchived] = useState(false);
 
   // Initialize auth instance
@@ -96,7 +100,7 @@ const MaintenanceIssues = () => {
             (request): request is MaintenanceRequest => request !== null
           );
 
-          setIssues(filteredRequests);
+          //setIssues(filteredRequests);
         }
       } catch (error) {
         console.error("Error fetching tenant requests:", error);
@@ -150,7 +154,7 @@ const MaintenanceIssues = () => {
         </ScrollView>
       </Header>
 
-      <TouchableOpacity testID="addButton" style={styles.addButton} onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity testID="addButton" style={styles.addButton}>
         <Feather name="plus" size={24} color="white" />
       </TouchableOpacity>
     </View>

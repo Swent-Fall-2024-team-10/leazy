@@ -53,7 +53,6 @@ export default function SignUpScreen() {
     emailAndPasswordSignIn(email, password, userType).then((user) => {
       if (user) {
         console.log("User signed up:", user);
-        navigation.navigate('CodeEntry' as never);
       } else {
         console.log("Sign up failed");
         setPopup(true)

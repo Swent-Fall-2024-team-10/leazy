@@ -9,7 +9,7 @@ import SubrentScreen from './screens/SubrentScreen';
 import ReportScreen from './screens/ReportScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
-import auth from '@react-native-firebase/auth';
+import { auth } from '../firebase/firebase';
 import SignInScreen from './screens/SignInScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import CodeEntryScreen from './screens/CodeEntryScreen';
@@ -34,7 +34,7 @@ export default function App() {
 
   useEffect(() => {
     // Firebase listener for authentication state
-    const unsubscribe = auth().onAuthStateChanged(user => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
       setIsLoggedIn(!!user); // If user is not null, set as logged in
       setLoading(false);     // Set loading to false once we have the auth status
     });
@@ -60,7 +60,7 @@ const HomeDrawerNavigator = () => {
           headerShown: false, // This hides the default header
         }}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
-        <Drawer.Screen name="ListIssues" component={ListIssueScreen} />
+        <Drawer.Screen name="Issues" component={ListIssueScreen} />
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
@@ -89,8 +89,6 @@ const RootNavigator = () => {
         <Stack.Navigator initialRouteName="SignIn">
           <Stack.Screen name="SignIn" component={SignInScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
-          <Stack.Screen name="CodeEntry" component={CodeEntryScreen} />
-          <Stack.Screen name="CodeApproved" component={CodeApprovedScreen} />
         </Stack.Navigator>
       );
     };

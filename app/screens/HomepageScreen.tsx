@@ -4,7 +4,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native"; // Imp
 import { RootStackParamList } from "../../types/types"; // Import or define your navigation types
 import Header from '../components/Header'; // Import the Header component
 
-// portions of this code were generated with chatGPT as an AI assistant
+// portions of this code were generated with chatGPT as an AI assistant //
 
 export default function HomepageScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

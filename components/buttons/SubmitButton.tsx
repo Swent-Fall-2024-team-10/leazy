@@ -1,6 +1,5 @@
 import React from "react";
-import { View } from "react-native";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Button } from "react-native-elements";
 import { Color, FontSizes } from "@/styles/styles";
 import DropShadow from "react-native-drop-shadow";
@@ -46,7 +45,7 @@ const styles = StyleSheet.create({
         backgroundColor: Color.ButtonBackground,
         borderColor: Color.ButtonBorder,
         borderWidth: 1,
-        marginBottom: 100,
+        marginBottom: 200,
         width: 170,
         height: 44,
         borderRadius: 100,

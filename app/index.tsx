@@ -1,7 +1,6 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import HomepageScreen from './screens/HomepageScreen';
 import MyRentScreen from './screens/MyRentScreen';
@@ -14,16 +13,12 @@ import ListIssueScreen from './screens/ListIssueScreen';
 
 import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
 
-
 import CameraScreen from './screens/CameraScreen';
 import CapturedMediaScreen from './screens/CapturedMediaScreen';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 const Drawer = createDrawerNavigator();
-
-
-
 // Register the main component
 registerRootComponent(App);
 
@@ -36,7 +31,7 @@ export default function App() {
         }}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
-        <Drawer.Screen name="Report" component={ListIssueScreen} />
+        <Drawer.Screen name="Issues" component={ListIssueScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />

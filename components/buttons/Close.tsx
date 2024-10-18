@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     },
 
     closeButton: {
-        backgroundColor: Color.ReportScreenBackground,
+      
         width: 60,
         borderRadius: 5,
         alignItems: 'center',
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     arrowDown: {
         color: Color.ScreenHeader,
         fontSize: 24,
-        fontWeight: 'black',
+        fontWeight: '800',
     },
 
     text: {

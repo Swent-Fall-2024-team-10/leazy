@@ -8,6 +8,8 @@ export type RootStackParamList = {
       requestID: string
     };
     ListIssues: undefined;
+    ReportScreen: undefined;
+    Issues: undefined;
   };
   
 export declare type TTenantData ={}

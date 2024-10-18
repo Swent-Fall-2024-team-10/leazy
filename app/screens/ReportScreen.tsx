@@ -6,7 +6,7 @@ import Spacer from '@/components/Spacer';
 import SubmitButton from '@/components/buttons/SubmitButton';
 import { Color } from '@/styles/styles';
 import Close from '@/components/buttons/Close';
-import { NavigationProp } from '@react-navigation/native'; // Import NavigationProp
+import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 import CameraButton from '@/components/buttons/CameraButton';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
@@ -15,14 +15,16 @@ import { collection, addDoc } from 'firebase/firestore'; // Import Firestore fun
 import { MaintenanceRequest } from '@/types/types';
 import { db, auth} from '@/firebase/firebase';
 import { getApartment, getResidence, getTenant } from '@/firebase/firestore/firestore';
+import Header from '../components/Header';
+
 
 // portions of this code were generated with chatGPT as an AI assistant
 
-interface ReportScreenProps {
-  navigation: NavigationProp<RootStackParamList>;
-}
 
-export default function ReportScreen({ navigation }: ReportScreenProps) {
+
+export default function ReportScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
@@ -38,7 +40,6 @@ export default function ReportScreen({ navigation }: ReportScreenProps) {
   const minutes = currentDay.getMinutes().toString().padStart(2, '0');
 
   const handleClose = () => {
-
     setIsVisible(true);
   };
 
@@ -70,7 +71,7 @@ export default function ReportScreen({ navigation }: ReportScreenProps) {
         setIssue('');
         setDescription('');
         setTick(false);
-        navigation.navigate('Home');
+        navigation.navigate('Issues');
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
       } finally {
@@ -82,89 +83,93 @@ export default function ReportScreen({ navigation }: ReportScreenProps) {
 
 
   return (
-    <ScrollView style={styles.container} automaticallyAdjustKeyboardInsets={true}>
-      <Close onPress={handleClose} />
-      <Text style={styles.header}>Create a new issue</Text>
-      <Text style={styles.date}>
-        Current day: {day}/{month}/{year} at {hours}:{minutes}
-      </Text>
-
-      <Spacer height={20} />
-
-      {isVisible && (
-        <CloseConfirmation
-          isVisible={isVisible}
-          onPressYes={() => {
-            setRoom('');
-            setIssue('');
-            setDescription('');
-            setTick(false);
-            navigation.navigate('Home');
-            setIsVisible(false);
-          }}
-          onPressNo={() => {
-            setIsVisible(false)
-          }}
-        />
-      )}
-
-      <InputField
-        label="What kind of issue are you experiencing?"
-        value={issue}
-        setValue={setIssue}
-        placeholder="Your issue..."
-        radius={25}
-        height={40}
-      />
-
-      <Spacer height={20} />
-
-      <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
-      <CameraButton onPress={handleAddPicture} />
-
-      <InputField
-        label="Which room is the issue in?"
-        value={room}
-        setValue={setRoom}
-        placeholder="e.g: Bedroom, Kitchen, Bathroom..."
-        radius={25}
-        height={40}
-      />
-
-      <Spacer height={20} />
-
-      <InputField
-        label="Please provide some description of the issue:"
-        value={description}
-        setValue={setDescription}
-        placeholder="e.g: The bathtub is leaking because of..."
-        height={100}
-        radius={20}
-      />
-
-      <Spacer height={20} />
-
-      <View style={{ flexDirection: 'row' }}>
-        <BouncyCheckbox
-          iconImageStyle={styles.tickingBox}
-          iconStyle={styles.tickingBox}
-          innerIconStyle={styles.tickingBox}
-          unFillColor={Color.ReportScreenBackground}
-          fillColor={Color.ButtonBackground}
-          onPress={(isChecked: boolean) => setTick(isChecked)}
-        />
-        <Text style={styles.tickingBoxText}>
-          I would like to start a chat with the manager about this issue
+    <Header>
+      <ScrollView style={styles.container} automaticallyAdjustKeyboardInsets={true}>
+        <Close onPress={handleClose} />
+        <Text style={styles.header}>Create a new issue</Text>
+        <Text style={styles.date}>
+          Current day: {day}/{month}/{year} at {hours}:{minutes}
         </Text>
-      </View>
 
-      <Spacer height={20} />
+        <Spacer height={20} />
 
-      <SubmitButton
-        disabled={room === '' || description === '' || issue === ''}
-        onPress={handleSubmit}
-      />
-    </ScrollView>
+        {isVisible && (
+          <CloseConfirmation
+            isVisible={isVisible}
+            onPressYes={() => {
+              setRoom('');
+              setIssue('');
+              setDescription('');
+              setTick(false);
+              navigation.navigate('Issues');
+              setIsVisible(false);
+            }}
+            onPressNo={() => {
+              setIsVisible(false)
+            }}
+          />
+        )}
+
+        <InputField
+          label="What kind of issue are you experiencing?"
+          value={issue}
+          setValue={setIssue}
+          placeholder="Your issue..."
+          radius={25}
+          height={40}
+        />
+
+        <Spacer height={20} />
+
+        <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
+        <CameraButton onPress={handleAddPicture} />
+
+        <InputField
+          label="Which room is the issue in?"
+          value={room}
+          setValue={setRoom}
+          placeholder="e.g: Bedroom, Kitchen, Bathroom..."
+          radius={25}
+          height={40}
+        />
+
+        <Spacer height={20} />
+
+        <InputField
+          label="Please provide some description of the issue:"
+          value={description}
+          setValue={setDescription}
+          placeholder="e.g: The bathtub is leaking because of..."
+          height={100}
+          radius={20}
+        />
+
+        <Spacer height={20} />
+
+        <View style={{ flexDirection: 'row' }}>
+          <BouncyCheckbox
+            iconImageStyle={styles.tickingBox}
+            iconStyle={styles.tickingBox}
+            innerIconStyle={styles.tickingBox}
+            unFillColor={Color.ReportScreenBackground}
+            fillColor={Color.ButtonBackground}
+            onPress={(isChecked: boolean) => setTick(isChecked)}
+          />
+          <Text style={styles.tickingBoxText}>
+            I would like to start a chat with the manager about this issue
+          </Text>
+        </View>
+
+        <Spacer height={20} />
+
+        <SubmitButton
+          disabled={room === '' || description === '' || issue === ''}
+          onPress={handleSubmit}
+        />
+        <Spacer height={250} />
+      </ScrollView>
+
+    </Header>
   );
 }
 
@@ -182,7 +187,6 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: Color.ReportScreenBackground,
     padding: 20,
   },
 

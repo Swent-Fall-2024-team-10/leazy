@@ -23,10 +23,8 @@ import { registerRootComponent } from 'expo'; // Ensure you import this
 
 const Stack = createNativeStackNavigator();
 
-
 // Register the main component
 registerRootComponent(App);
-
 
 export default function App() {
   // Line added for testing camera
@@ -46,4 +44,3 @@ export default function App() {
 
   );
 }
-

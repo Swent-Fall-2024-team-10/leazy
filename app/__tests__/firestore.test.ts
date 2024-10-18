@@ -1,7 +1,7 @@
 // __tests__/userFunctions.test.ts
 
 // Mock Firestore functions directly
-jest.mock("../firebase/firestore/firestore", () => ({
+jest.mock("../../firebase/firestore/firestore", () => ({
   createUser: jest.fn(),
   getUser: jest.fn(),
   updateUser: jest.fn(),
@@ -70,7 +70,7 @@ import {
   getLaundryMachine,
   updateLaundryMachine,
   deleteLaundryMachine,
-} from "../firebase/firestore/firestore";
+} from "../../firebase/firestore/firestore";
 
 describe("Firestore Functions", () => {
   beforeEach(() => {

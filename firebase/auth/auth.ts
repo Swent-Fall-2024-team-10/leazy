@@ -4,7 +4,6 @@ import {
 import { 
     signInWithEmailAndPassword, 
     GoogleAuthProvider, 
-    signInWithPopup, 
     User, 
     signOut, 
     deleteUser, 
@@ -13,6 +12,8 @@ import {
     updatePassword,
     connectAuthEmulator
 } from "firebase/auth";
+
+import { TTenantData, TLandlordData } from "../../types/types";
 
 const provider = new GoogleAuthProvider();
 

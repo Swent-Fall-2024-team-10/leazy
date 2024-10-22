@@ -7,22 +7,28 @@ import DropShadow from "react-native-drop-shadow";
 interface SubmitButtonProps {
   disabled : boolean;
   onPress: () => void;
+  width: number;
+  height: number;
+  label: string;
 }
 
-export default function SubmitButton({ disabled = true, onPress} : SubmitButtonProps) {
+export default function SubmitButton({ disabled, onPress, width, height, label } : SubmitButtonProps) {
   return (
     <DropShadow style={styles.submitContainer}>
         <Button
-        title="Submit"
+        title={label}
 
         onPress={onPress}
         buttonStyle={[
           styles.submitButton,
+          {
+            width: width,
+            height: height,
+          },
         ]}
 
         titleStyle={[
           styles.submitText,
-  
         ]}
         disabled={disabled} // Disable button interaction
         disabledStyle={styles.submitButtonDisabled}
@@ -57,7 +63,6 @@ const styles = StyleSheet.create({
       backgroundColor: Color.ButtonBackgroundDisabled,
       borderColor: Color.ButtonBorder,
       borderWidth: 1,
-      marginBottom: 100,
       width: 170,
       height: 44,
       borderRadius: 100,

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, View, Alert} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import InputField from '../../components/forms/text_input';
-import Spacer from '@/components/Spacer';
-import SubmitButton from '@/components/buttons/SubmitButton';
+import InputField from '../components/forms/text_input';
+import Spacer from '@/app/components/Spacer';
+import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { Color } from '@/styles/styles';
-import Close from '@/components/buttons/Close';
+import Close from '@/app/components/buttons/Close';
 import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
-import CameraButton from '@/components/buttons/CameraButton';
+import CameraButton from '@/app/components/buttons/CameraButton';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import CloseConfirmation from '@/components/buttons/CloseConfirmation';
+import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
 import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
 import { MaintenanceRequest } from '@/types/types';
 import { db, auth} from '@/firebase/firebase';
@@ -59,7 +59,7 @@ export default function ReportScreen() {
           tenantId: auth.currentUser?.uid || '', 
           residenceId: "apartment.residenceId", 
           apartmentId: "tenantId.apartmentId", 
-          openedBy: tenantId?.userId || '', 
+          openedBy: auth.currentUser?.uid || '', 
           requestTitle: issue,
           requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
           requestDescription: description,
@@ -121,6 +121,8 @@ export default function ReportScreen() {
           placeholder="Your issue..."
           radius={25}
           height={40}
+          width={300}
+          backgroundColor={Color.TextInputBackground}
         />
 
         <Spacer height={20} />
@@ -135,6 +137,8 @@ export default function ReportScreen() {
           placeholder="e.g: Bedroom, Kitchen, Bathroom..."
           radius={25}
           height={40}
+          width={300}
+          backgroundColor={Color.TextInputBackground}
         />
 
         <Spacer height={20} />
@@ -145,6 +149,8 @@ export default function ReportScreen() {
           setValue={setDescription}
           placeholder="e.g: The bathtub is leaking because of..."
           height={100}
+          width={300}
+          backgroundColor={Color.TextInputBackground}
           radius={20}
         />
 
@@ -169,6 +175,9 @@ export default function ReportScreen() {
         <SubmitButton
           disabled={room === '' || description === '' || issue === ''}
           onPress={handleSubmit}
+          width={170}
+          height={44}
+          label="Submit"
         />
         <Spacer height={250} />
       </ScrollView>

@@ -18,6 +18,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ListIssueScreen from './screens/ListIssueScreen';
 import IssueDetailsScreen from './screens/IssueDetailsScreen';
 import Chat from './screens/MessagingScreen';
+import CameraScreen from './screens/CameraScreen';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -75,8 +76,6 @@ const RootNavigator = () => {
     <Stack.Navigator>
       {/* Drawer is nested here */}
       <Stack.Screen name="HomeDrawer" component={HomeDrawerNavigator} options={{ headerShown: false }} />
-      
-      {/* Additional screens that should not appear in the drawer */}
       <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} />
       <Stack.Screen name="Report" component={ReportScreen} />
       <Stack.Screen name="Messaging" component={Chat} />
@@ -99,6 +98,7 @@ const IssueStackNavigator = () => {
       <Stack.Screen name="Issues" component={ListIssueScreen} options={{ headerShown: false }} />
       <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: false }}/>
+      <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="Messaging" component={Chat} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );

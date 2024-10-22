@@ -10,10 +10,12 @@ interface InputFieldProps {
   placeholder: string;
   height: number;
   radius: number;
+  width: number;
+  backgroundColor: string;
 }
 
 
-export default function InputField({ label, value, setValue, placeholder, height = 40, radius = 25} : InputFieldProps) {
+export default function InputField({ label, value, setValue, placeholder, height = 40, width = 100, radius = 25} : InputFieldProps) {
   return (
     <View >
       <Text style={styles.label}> {label} </Text>

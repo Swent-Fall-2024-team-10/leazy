@@ -14,8 +14,9 @@ import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
 import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
 import { MaintenanceRequest } from '@/types/types';
 import { db, auth} from '@/firebase/firebase';
-import { getApartment, getResidence, getTenant } from '@/firebase/firestore/firestore';
+import { createMaintenanceRequest, getApartment, getResidence, getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
 import Header from '../components/Header';
+import { create } from 'react-test-renderer';
 
 
 // portions of this code were generated with chatGPT as an AI assistant
@@ -54,12 +55,15 @@ export default function ReportScreen() {
     const tenantId = await getTenant(auth.currentUser?.uid || '');
     console.log(tenantId);
       try {
+        if (!tenantId) {
+          throw new Error('Tenant not found');
+        }
         const newRequest: MaintenanceRequest = {
           requestID: '', 
-          tenantId: auth.currentUser?.uid || '', 
+          tenantId: tenantId.userId, 
           residenceId: "apartment.residenceId", 
-          apartmentId: "tenantId.apartmentId", 
-          openedBy: auth.currentUser?.uid || '', 
+          apartmentId: tenantId.apartmentId, 
+          openedBy: tenantId.userId, 
           requestTitle: issue,
           requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
           requestDescription: description,
@@ -67,7 +71,10 @@ export default function ReportScreen() {
           requestStatus: "notStarted",
         };
     
-        await addDoc(collection(db, 'maintenanceRequests'), newRequest);
+        const requestID = await addDoc(collection(db, 'maintenanceRequests'), newRequest);
+        await updateTenant(tenantId.userId, { maintenanceRequests: [...tenantId.maintenanceRequests, requestID.id] });
+        await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+        
         Alert.alert('Success', 'Your maintenance request has been submitted.');
         //reset the form 
         setRoom('');

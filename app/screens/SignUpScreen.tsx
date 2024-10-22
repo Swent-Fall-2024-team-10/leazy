@@ -8,8 +8,8 @@ import { emailAndPasswordSignIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 import CustomPopUp from '../components/CustomPopUp';
-import { createUser } from '@/firebase/firestore/firestore';
-import { User } from '@/types/types';
+import { createTenant, createUser } from '@/firebase/firestore/firestore';
+import { User, Tenant} from '@/types/types';
 
 interface FormErrors {
   firstName?: string;
@@ -71,8 +71,17 @@ export default function SignUpScreen() {
           zip: '',
           country: ''
         }
+        
+        const tenantNew : Tenant = {
+          userId: user.uid,
+          maintenanceRequests: [],
+          apartmentId: ''
+        }
 
         createUser(newUser);
+        createTenant(tenantNew);
+        
+        
 
         navigation.navigate('Home' as never);
       } else {

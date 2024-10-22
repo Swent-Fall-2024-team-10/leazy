@@ -76,9 +76,6 @@ const RootNavigator = () => {
     <Stack.Navigator>
       {/* Drawer is nested here */}
       <Stack.Screen name="HomeDrawer" component={HomeDrawerNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} />
-      <Stack.Screen name="Report" component={ReportScreen} />
-      <Stack.Screen name="Messaging" component={Chat} />
     </Stack.Navigator>
   );
 };

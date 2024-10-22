@@ -11,7 +11,6 @@ export type RootStackParamList = {
     };
 
     Issues: undefined;
-    ListIssues: undefined;
     Report: undefined;
     Messaging: undefined;
     CameraScreen: undefined;

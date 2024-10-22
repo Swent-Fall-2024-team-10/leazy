@@ -82,7 +82,7 @@ const IssueDetailsScreen: React.FC = () => {
       });
       // Rediriger après la mise à jour
       // Navigation vers la liste des issues après la mise à jour
-      navigation.navigate('ListIssues');
+      navigation.navigate('Issues');
     }
   };
 

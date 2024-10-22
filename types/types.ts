@@ -8,8 +8,11 @@ export type RootStackParamList = {
     IssueDetails: {
       requestID: string
     };
+    Issues: undefined;
     ListIssues: undefined;
+    Report: undefined;
     Messaging: undefined;
+    CameraScreen: undefined;
   };
 
 declare type TTenantData ={}

@@ -50,13 +50,16 @@ export default function ReportScreen() {
 
   const handleSubmit = async () => {
     setLoading(true); // Set loading to true when starting the submission
+
+    const tenantId = await getTenant(auth.currentUser?.uid || '');
+    console.log(tenantId);
       try {
         const newRequest: MaintenanceRequest = {
           requestID: '', 
-          tenantId: "auth.currentUser?.uid || ''", 
+          tenantId: auth.currentUser?.uid || '', 
           residenceId: "apartment.residenceId", 
           apartmentId: "tenantId.apartmentId", 
-          openedBy: "tenantId.userId", 
+          openedBy: tenantId?.userId || '', 
           requestTitle: issue,
           requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
           requestDescription: description,
@@ -71,12 +74,13 @@ export default function ReportScreen() {
         setIssue('');
         setDescription('');
         setTick(false);
-        navigation.navigate('ListIssues');
+        navigation.navigate('Issues');
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
       } finally {
         setLoading(false); // Set loading to false after submission is complete
       }
+  
   
     
   };
@@ -101,7 +105,7 @@ export default function ReportScreen() {
               setIssue('');
               setDescription('');
               setTick(false);
-              navigation.navigate('ListIssues');
+              navigation.navigate('Issues');
               setIsVisible(false);
             }}
             onPressNo={() => {

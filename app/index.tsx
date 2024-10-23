@@ -47,6 +47,8 @@ export default function App() {
     // You could return a loading spinner here while Firebase checks the auth state
     return null; 
   }
+  console.log(isLoggedIn);
+  console.log(auth.currentUser);
 
   return (
     <NavigationContainer>

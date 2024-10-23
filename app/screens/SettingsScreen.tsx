@@ -16,6 +16,7 @@ export default function SettingsScreen() {
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
 
+
       {/* Settings screen content */}
       <Text style={styles.text}>Settings Screen</Text>
       <Text style={styles.subText}>This will hold app settings.</Text>

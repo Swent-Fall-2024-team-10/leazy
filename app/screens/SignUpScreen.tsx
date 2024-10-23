@@ -80,10 +80,7 @@ export default function SignUpScreen() {
 
         createUser(newUser);
         createTenant(tenantNew);
-        
-        
 
-        navigation.navigate('Home' as never);
       } else {
         console.log("Sign up failed");
         setPopup(true)

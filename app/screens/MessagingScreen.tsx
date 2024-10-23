@@ -17,22 +17,22 @@ export default function Chat() {
   const [userSignedIn, setUserSignedIn] = useState(false); // Track if the user is signed in
 
   useLayoutEffect(() => {
-    const signInMockUser = async () => {
-      try {
-        // Attempt to sign in the mock user
-        await signInWithEmailAndPassword(
-          auth,
-          "mockuser@example.com",
-          "mockPassword123"
-        );
-        console.log("User signed in successfully");
-        setUserSignedIn(true); // User signed in successfully
-      } catch (error) {
-        console.error("Error signing in:", error);
-      }
-    };
+    // const signInMockUser = async () => {
+    //   try {
+    //     // Attempt to sign in the mock user
+    //     await signInWithEmailAndPassword(
+    //       auth,
+    //       "mockuser@example.com",
+    //       "mockPassword123"
+    //     );
+    //     console.log("User signed in successfully");
+    //     setUserSignedIn(true); // User signed in successfully
+    //   } catch (error) {
+    //     console.error("Error signing in:", error);
+    //   }
+    // };
 
-    signInMockUser();
+    // signInMockUser();
   }, []);
 
   useLayoutEffect(() => {

@@ -14,10 +14,8 @@ import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
 import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
 import { MaintenanceRequest } from '@/types/types';
 import { db, auth} from '@/firebase/firebase';
-import { createMaintenanceRequest, getApartment, getResidence, getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
+import { getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
 import Header from '../components/Header';
-import { create } from 'react-test-renderer';
-
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -46,6 +44,7 @@ export default function ReportScreen() {
 
   // Placeholder function for adding pictures
   const handleAddPicture = () => {
+    navigation.navigate('CameraScreen');
     // Add logic to upload and link pictures if needed
   };
 
@@ -84,6 +83,7 @@ export default function ReportScreen() {
         navigation.navigate('Issues');
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
+        console.log('Error submitting request:', error);
       } finally {
         setLoading(false); // Set loading to false after submission is complete
       }

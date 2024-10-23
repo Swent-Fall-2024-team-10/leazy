@@ -3,15 +3,17 @@ import { View, Image, StyleSheet, Dimensions, TouchableOpacity, Text, Alert } fr
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
-import { ref, uploadBytes } from 'firebase/storage';  // Firebase imports
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
 import { storage } from '../../firebase/firebase'; // Import storage from your Firebase config
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
-export type RootStackParamList = {
+export type ReportStackParamList = {
   Camera: undefined;
   CapturedMedia: { uri: string; type: 'photo' | 'video' };
+  setURL: (url: string) => void;
 };
 
-type CapturedMediaScreenRouteProp = RouteProp<RootStackParamList, 'CapturedMedia'>;
+type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;
 
 export default function CapturedMediaScreen() {
   const route = useRoute<CapturedMediaScreenRouteProp>();
@@ -24,16 +26,22 @@ export default function CapturedMediaScreen() {
       // Convert the URI to a blob for Firebase
       const response = await fetch(uri);
       const blob = await response.blob();
-
       const fileType = type === 'photo' ? 'image/jpeg' : 'video/mp4';
-      const fileName = type === 'photo' ? 'photo.jpg' : 'video.mp4';
+      const fileName = `${type}-${Date.now()}.${type === 'photo' ? 'jpg' : 'mp4'}`;
 
       // Create a reference to Firebase Storage
       const storageRef = ref(storage, `uploads/${fileName}`);
 
       // Upload the file
+      console.log('Uploading media to Firebase...');
+      console.log('File type:', fileType);
       await uploadBytes(storageRef, blob);
+      
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log('Media uploaded to Firebase:', downloadURL);
+      
       Alert.alert('Upload', 'Media uploaded successfully!');
+
       navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'Failed to upload media to Firebase');
@@ -115,6 +123,7 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     paddingHorizontal: 15,
+    backgroundColor: 'black',
   },
   infoContainer: {
     position: 'absolute',

@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';  // Import icons for back arrow
-
+import { RootStackParamList, AuthStackParamList } from '../../types/types';  // Import or define your navigation types
+import { auth } from '../../firebase/firebase';  // Import Firebase auth
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function SettingsScreen() {
@@ -16,6 +17,9 @@ export default function SettingsScreen() {
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={ () => auth.signOut()}>
+        <Text>Sign Out</Text>
+      </TouchableOpacity>
 
       {/* Settings screen content */}
       <Text style={styles.text}>Settings Screen</Text>

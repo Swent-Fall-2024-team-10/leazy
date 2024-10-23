@@ -5,16 +5,26 @@
 export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
     Settings: undefined;     // No parameters for Settings screen
+    ListIssues: undefined;   // No parameters for ListIssues screen
     
-    IssueDetails: {
-      requestID: string
-    };
+  };
 
+export type AuthStackParamList = {
+    SignIn: undefined;
+    SignUp: undefined;
+  };
+  
+export type ReportStackParamList = {
     Issues: undefined;
     Report: undefined;
     Messaging: undefined;
     CameraScreen: undefined;
-  };
+    CapturedMedia: { uri: string; type: 'photo' | 'video' };
+    IssueDetails: {
+      requestID: string
+    };
+    
+}
 
 declare type TTenantData ={}
 declare type TLandlordData ={}

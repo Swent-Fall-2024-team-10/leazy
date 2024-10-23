@@ -19,6 +19,7 @@ import ListIssueScreen from './screens/ListIssueScreen';
 import IssueDetailsScreen from './screens/IssueDetailsScreen';
 import Chat from './screens/MessagingScreen';
 import CameraScreen from './screens/CameraScreen';
+import CapturedMediaScreen from './screens/CapturedMediaScreen';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -63,7 +64,7 @@ const HomeDrawerNavigator = () => {
           headerShown: false, // This hides the default header
         }}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
-        <Drawer.Screen name="Issues" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
+        <Drawer.Screen name="ListIssues" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
@@ -98,6 +99,7 @@ const IssueStackNavigator = () => {
       <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }}/>
+      <Stack.Screen name="CapturedMedia" component={CapturedMediaScreen} options={{ headerShown: true }}/>
       <Stack.Screen name="Messaging" component={Chat} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );

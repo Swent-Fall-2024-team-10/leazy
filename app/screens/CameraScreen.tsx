@@ -5,10 +5,11 @@ import { Camera, CameraType, FlashMode, CameraView } from 'expo-camera';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import { RootStackParamList } from './CapturedMediaScreen';
+import { ReportStackParamList } from './CapturedMediaScreen';
+
 
 export default function CameraScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [type, setType] = useState<CameraType>("back");
   const [flash, setFlash] = useState<FlashMode>("off");

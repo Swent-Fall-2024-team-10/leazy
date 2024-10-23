@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { MaintenanceRequest, RootStackParamList } from '../../types/types';
+import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '../../types/types';
 import { MessageSquare} from 'react-native-feather';
 import StatusDropdown from '../components/StatusDropdown';
 import Header from '../components/Header';
@@ -24,9 +24,9 @@ import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/fire
 // uri: 'https://via.placeholder.com/400x300'
 
 const IssueDetailsScreen: React.FC = () => {
-  const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<DrawerNavigationProp<ReportStackParamList>>();
   
-  const route = useRoute<RouteProp<RootStackParamList, 'IssueDetails'>>();
+  const route = useRoute<RouteProp<ReportStackParamList, 'IssueDetails'>>();
   const { requestID } = route.params;
 
   const [issue, setIssue] = useState<MaintenanceRequest | null>(null);
@@ -100,8 +100,6 @@ const IssueDetailsScreen: React.FC = () => {
             icon = {<MessageSquare stroke="white" width={18} height={18} />}
             iconPosition= {'right'}
             ></AdaptiveButton>
-
-
             
             <Text style={styles.sectionTitle}>Images submitted</Text>
             <View style={styles.imageCarouselContainer}>

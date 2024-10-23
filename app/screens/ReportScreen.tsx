@@ -7,7 +7,7 @@ import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { Color } from '@/styles/styles';
 import Close from '@/app/components/buttons/Close';
 import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import { ReportStackParamList } from '../../types/types';  // Import or define your navigation types
 import CameraButton from '@/app/components/buttons/CameraButton';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
@@ -22,7 +22,7 @@ import Header from '../components/Header';
 
 
 export default function ReportScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
 
   const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
@@ -30,6 +30,7 @@ export default function ReportScreen() {
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state
+  const [url, setURL] = useState<string | null>(null); //
 
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
@@ -79,8 +80,10 @@ export default function ReportScreen() {
         setRoom('');
         setIssue('');
         setDescription('');
+        
+        const nextScreen = tick ? 'Messaging' : 'Issues';
         setTick(false);
-        navigation.navigate('Issues');
+        navigation.navigate(nextScreen);
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
         console.log('Error submitting request:', error);

@@ -30,8 +30,7 @@ export default function ReportScreen() {
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state
-  const [url, setURL] = useState<string | null>(null); //
-
+  const [pictureList, setPictureList] = useState<string[]>([]);
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
   const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
@@ -45,7 +44,7 @@ export default function ReportScreen() {
 
   // Placeholder function for adding pictures
   const handleAddPicture = () => {
-    navigation.navigate('CameraScreen');
+    navigation.navigate('CameraScreen', { setPictureList, pictureList });
     // Add logic to upload and link pictures if needed
   };
 
@@ -53,6 +52,7 @@ export default function ReportScreen() {
     setLoading(true); // Set loading to true when starting the submission
 
     const tenantId = await getTenant(auth.currentUser?.uid || '');
+    console.log('URL OF THE PICTURE : ' , pictureList)
     console.log(tenantId);
       try {
         if (!tenantId) {
@@ -67,7 +67,7 @@ export default function ReportScreen() {
           requestTitle: issue,
           requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
           requestDescription: description,
-          picture: [], // Add uploaded picture URLs here
+          picture: pictureList, 
           requestStatus: "notStarted",
         };
     
@@ -139,6 +139,7 @@ export default function ReportScreen() {
 
         <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
         <CameraButton onPress={handleAddPicture} />
+        
 
         <InputField
           label="Which room is the issue in?"

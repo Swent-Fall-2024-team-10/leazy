@@ -6,12 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
 import { storage } from '../../firebase/firebase'; // Import storage from your Firebase config
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-
-export type ReportStackParamList = {
-  Camera: undefined;
-  CapturedMedia: { uri: string; type: 'photo' | 'video' };
-  setURL: (url: string) => void;
-};
+import { ReportStackParamList } from '@/types/types';
 
 type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;
 
@@ -40,6 +35,10 @@ export default function CapturedMediaScreen() {
       const downloadURL = await getDownloadURL(storageRef);
       console.log('Media uploaded to Firebase:', downloadURL);
       
+      const previous = route.params.pictureList;
+
+      route.params.setPictureList([...previous, downloadURL]);
+
       Alert.alert('Upload', 'Media uploaded successfully!');
 
       navigation.goBack();

@@ -1,14 +1,21 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { Camera, CameraType, FlashMode, CameraView } from 'expo-camera';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import { ReportStackParamList } from './CapturedMediaScreen';
+import { ReportStackParamList } from '@/types/types';
+
+export type CameraStackParamList = {
+  setURL: (url: string) => void;
+}
+
+type CameraRouteProp = RouteProp<ReportStackParamList, 'CameraScreen'>;
 
 
 export default function CameraScreen() {
+  const route = useRoute<CameraRouteProp>();
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [type, setType] = useState<CameraType>("back");
@@ -38,7 +45,11 @@ export default function CameraScreen() {
         });
         if (photo){
           {await MediaLibrary.saveToLibraryAsync(photo.uri);
-          navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' });}
+          const pictureList = route.params.pictureList;
+          const setPictureList = route.params.setPictureList;
+ 
+            navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo', setPictureList, pictureList })
+          ;}
         }
       } catch (error) {
         Alert.alert('Error', 'Failed to take picture');

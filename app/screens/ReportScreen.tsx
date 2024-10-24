@@ -80,7 +80,7 @@ export default function ReportScreen() {
         setRoom('');
         setIssue('');
         setDescription('');
-        
+        setPictureList([]);
         const nextScreen = tick ? 'Messaging' : 'Issues';
         setTick(false);
         navigation.navigate(nextScreen);

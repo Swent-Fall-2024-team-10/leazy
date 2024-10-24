@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; 
-import { RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
+import { ReportStackParamList, RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
 import { getTenant, getMaintenanceRequest, updateMaintenanceRequest } from '../../firebase/firestore/firestore'; // Firestore functions
 import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
@@ -19,7 +19,7 @@ interface IssueItemProps {
 }
 
 const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive, isArchived }) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   
   const getStatusColor = () => {
     switch (issue.requestStatus) {
@@ -65,7 +65,7 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
 };
 
 const MaintenanceIssues = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [showArchived, setShowArchived] = useState(false);
 

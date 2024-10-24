@@ -27,7 +27,7 @@ export default function ReportScreen() {
   const [description, setDescription] = useState('');
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
   const [pictureList, setPictureList] = useState<string[]>([]);
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
@@ -97,6 +97,7 @@ export default function ReportScreen() {
   return (
     <Header>
       <ScrollView style={styles.container} automaticallyAdjustKeyboardInsets={true}>
+        
         <Close onPress={handleClose} />
         <Text style={styles.header}>Create a new issue</Text>
         <Text style={styles.date}>
@@ -136,7 +137,6 @@ export default function ReportScreen() {
         <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
         <CameraButton onPress={handleAddPicture} />
         
-
         <InputField
           label="Which room is the issue in?"
           value={room}

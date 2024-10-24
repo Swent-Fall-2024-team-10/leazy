@@ -19,8 +19,6 @@ import Header from '../components/Header';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
-
-
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
 
@@ -42,18 +40,22 @@ export default function ReportScreen() {
     setIsVisible(true);
   };
 
-  // Placeholder function for adding pictures
+  function resetStates() {
+    setRoom('');
+    setIssue('');
+    setDescription('');
+    setPictureList([]);
+  }
+
   const handleAddPicture = () => {
     navigation.navigate('CameraScreen', { setPictureList, pictureList });
-    // Add logic to upload and link pictures if needed
   };
 
   const handleSubmit = async () => {
     setLoading(true); // Set loading to true when starting the submission
 
     const tenantId = await getTenant(auth.currentUser?.uid || '');
-    console.log('URL OF THE PICTURE : ' , pictureList)
-    console.log(tenantId);
+    console.log('url list for the pictures : ' , pictureList)
       try {
         if (!tenantId) {
           throw new Error('Tenant not found');
@@ -71,16 +73,15 @@ export default function ReportScreen() {
           requestStatus: "notStarted",
         };
     
+        //this should be changed when the database function are updated
+        //this is not respecting the model view model pattern for now but this is a temporary solution
         const requestID = await addDoc(collection(db, 'maintenanceRequests'), newRequest);
         await updateTenant(tenantId.userId, { maintenanceRequests: [...tenantId.maintenanceRequests, requestID.id] });
         await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
         
         Alert.alert('Success', 'Your maintenance request has been submitted.');
         //reset the form 
-        setRoom('');
-        setIssue('');
-        setDescription('');
-        setPictureList([]);
+        resetStates();
         const nextScreen = tick ? 'Messaging' : 'Issues';
         setTick(false);
         navigation.navigate(nextScreen);
@@ -90,9 +91,6 @@ export default function ReportScreen() {
       } finally {
         setLoading(false); // Set loading to false after submission is complete
       }
-  
-  
-    
   };
 
 
@@ -111,9 +109,7 @@ export default function ReportScreen() {
           <CloseConfirmation
             isVisible={isVisible}
             onPressYes={() => {
-              setRoom('');
-              setIssue('');
-              setDescription('');
+              resetStates();
               setTick(false);
               navigation.navigate('Issues');
               setIsVisible(false);

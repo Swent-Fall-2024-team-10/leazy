@@ -89,6 +89,12 @@ export default function CameraScreen() {
         ref={cameraRef}
         zoom={zoom}
       >
+        <View style={styles.goBackButton}>
+          <TouchableOpacity style={styles.goBackButton} onPress={navigation.goBack}>
+            <Ionicons name="arrow-back" size={42} color="white" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.topButtonContainer}>
           <TouchableOpacity style={styles.iconButton} onPress={toggleCameraType}>
             <Ionicons name="camera-reverse" size={24} color="white" />
@@ -119,6 +125,12 @@ export default function CameraScreen() {
 }
 
 const styles = StyleSheet.create({
+  goBackButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    zIndex: 1,
+  },
   container: {
     flex: 1,
   },

@@ -4,6 +4,7 @@ type PictureContextType = {
   pictureList: string[];
   addPicture: (picture: string) => void;
   resetPictureList: () => void;
+  removePicture: (picture: string) => void;
 };
 
 const PictureContext = createContext<PictureContextType | undefined>(undefined);
@@ -15,12 +16,16 @@ export const PictureProvider = ({ children }: { children: ReactNode }) => {
     setPictureList((prevList) => [...prevList, picture]);
   };
 
+  const removePicture = (picture: string) => {
+    setPictureList((prevList) => prevList.filter((item) => item !== picture));
+  }
+
   const resetPictureList = () => {
     setPictureList([]);
   };
 
   return (
-    <PictureContext.Provider value={{ pictureList, addPicture, resetPictureList }}>
+    <PictureContext.Provider value={{ pictureList, addPicture, resetPictureList, removePicture }}>
       {children}
     </PictureContext.Provider>
   );

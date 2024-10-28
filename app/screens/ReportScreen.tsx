@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Text, StyleSheet, View, Alert} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, StyleSheet, View, Alert, Image} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '../components/forms/text_input';
 import Spacer from '@/app/components/Spacer';
@@ -36,10 +36,16 @@ export default function ReportScreen() {
   const hours = currentDay.getHours().toString().padStart(2, '0');
   const minutes = currentDay.getMinutes().toString().padStart(2, '0');
   const {pictureList, resetPictureList} = usePictureContext();
+  const {removePicture} = usePictureContext();
 
   const handleClose = () => {
     setIsVisible(true);
   };
+
+  useEffect(() => {
+    // Reset picture list when navigating away from the screen
+    return () => resetPictureList();
+  }, []);
 
   function resetStates() {
     setRoom('');
@@ -85,7 +91,7 @@ export default function ReportScreen() {
         const nextScreen = tick ? 'Messaging' : 'Issues';
         setTick(false);
         navigation.navigate(nextScreen);
-        
+
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
         console.log('Error submitting request:', error);
@@ -136,7 +142,17 @@ export default function ReportScreen() {
         <Spacer height={20} />
 
         <Text style={styles.label}>Please take a picture of the damage or situation if applicable</Text>
+        
         <CameraButton onPress={handleAddPicture} />
+
+        <View style={styles.thumbnails}>
+          {pictureList.map((picture, index) => (
+            <View key={index} style={styles.thumbnailBox}>
+              <Image source={{ uri: picture }} style={styles.thumbnailImage} />
+            </View>
+          ))}
+        </View>
+
         
         <InputField
           label="Which room is the issue in?"
@@ -195,6 +211,22 @@ export default function ReportScreen() {
 }
 
 const styles = StyleSheet.create({
+
+  thumbnailImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+
+  thumbnailBox: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+
   tickingBoxText : {
     color: Color.TextInputLabel,
     fontSize: 16,
@@ -225,15 +257,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
-  },
-
-  thumbnailBox: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
   },
 
   cameraButton: {

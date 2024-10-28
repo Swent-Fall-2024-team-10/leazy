@@ -19,8 +19,8 @@ export type ReportStackParamList = {
     Report: undefined;
     Messaging: undefined;
 
-    CameraScreen: { setPictureList: (url: string[]) => void, pictureList: string[]};
-    CapturedMedia: { uri: string; type: 'photo' | 'video'; setPictureList: (url: string[]) => void ; pictureList: string[]};
+    CameraScreen: undefined;
+    CapturedMedia: { uri: string; type: 'photo' | 'video'};
     IssueDetails: {
       requestID: string
     };

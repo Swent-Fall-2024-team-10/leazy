@@ -16,6 +16,7 @@ import { MaintenanceRequest } from '@/types/types';
 import { db, auth} from '@/firebase/firebase';
 import { getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
 import Header from '../components/Header';
+import { usePictureContext } from '../context/PictureContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -28,13 +29,13 @@ export default function ReportScreen() {
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
-  const [pictureList, setPictureList] = useState<string[]>([]);
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
   const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
   const year = currentDay.getFullYear();
   const hours = currentDay.getHours().toString().padStart(2, '0');
   const minutes = currentDay.getMinutes().toString().padStart(2, '0');
+  const {pictureList, resetPictureList} = usePictureContext();
 
   const handleClose = () => {
     setIsVisible(true);
@@ -44,11 +45,11 @@ export default function ReportScreen() {
     setRoom('');
     setIssue('');
     setDescription('');
-    setPictureList([]);
+    resetPictureList();
   }
 
   const handleAddPicture = () => {
-    navigation.navigate('CameraScreen', { setPictureList, pictureList });
+    navigation.navigate('CameraScreen');
   };
 
   const handleSubmit = async () => {
@@ -80,11 +81,11 @@ export default function ReportScreen() {
         await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
         
         Alert.alert('Success', 'Your maintenance request has been submitted.');
-        //reset the form 
         resetStates();
         const nextScreen = tick ? 'Messaging' : 'Issues';
         setTick(false);
         navigation.navigate(nextScreen);
+        
       } catch (error) {
         Alert.alert('Error', 'There was an error submitting your request. Please try again.');
         console.log('Error submitting request:', error);

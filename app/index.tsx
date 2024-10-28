@@ -20,6 +20,7 @@ import IssueDetailsScreen from './screens/IssueDetailsScreen';
 import Chat from './screens/MessagingScreen';
 import CameraScreen from './screens/CameraScreen';
 import CapturedMediaScreen from './screens/CapturedMediaScreen';
+import { PictureProvider } from './context/PictureContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -52,9 +53,11 @@ export default function App() {
   console.log(auth.currentUser);
 
   return (
-    <NavigationContainer>
-      {isLoggedIn ? <RootNavigator /> : <AuthStackNavigator />}
-    </NavigationContainer>
+    <PictureProvider>
+      <NavigationContainer>
+        {isLoggedIn ? <RootNavigator /> : <AuthStackNavigator />}
+      </NavigationContainer>
+    </PictureProvider>
   );
 }
 
@@ -94,14 +97,15 @@ const AuthStackNavigator = () => {
 
 const IssueStackNavigator = () => {
   return (
+    
     <Stack.Navigator>
-      <Stack.Screen name="Issues" component={ListIssueScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} options={{ headerShown: false }}/>
-      <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: false }}/>
-      <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }}/>
-      <Stack.Screen name="CapturedMedia" component={CapturedMediaScreen} options={{ headerShown: true }}/>
-      <Stack.Screen name="Messaging" component={Chat} options={{ headerShown: false }}/>
-    </Stack.Navigator>
+        <Stack.Screen name="Issues" component={ListIssueScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="CapturedMedia" component={CapturedMediaScreen} options={{ headerShown: true }}/>
+        <Stack.Screen name="Messaging" component={Chat} options={{ headerShown: false }}/>
+      </Stack.Navigator>
   );
 
 }

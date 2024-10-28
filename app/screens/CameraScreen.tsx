@@ -45,10 +45,8 @@ export default function CameraScreen() {
         });
         if (photo){
           {await MediaLibrary.saveToLibraryAsync(photo.uri);
-          const pictureList = route.params.pictureList;
-          const setPictureList = route.params.setPictureList;
  
-            navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo', setPictureList, pictureList })
+            navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' })
           ;}
         }
       } catch (error) {

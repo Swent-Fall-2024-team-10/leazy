@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext} from 'react';
 import { View, Image, StyleSheet, Dimensions, TouchableOpacity, Text, Alert } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebas
 import { storage } from '../../firebase/firebase'; // Import storage from your Firebase config
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { ReportStackParamList } from '@/types/types';
+import { usePictureContext } from '../context/PictureContext';
 
 type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;
 
@@ -15,6 +16,8 @@ export default function CapturedMediaScreen() {
   const navigation = useNavigation();
   const { uri, type } = route.params;
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const {addPicture} = usePictureContext();
 
   const handleUpload = useCallback(async () => {
     try {
@@ -35,9 +38,7 @@ export default function CapturedMediaScreen() {
       const downloadURL = await getDownloadURL(storageRef);
       console.log('Media uploaded to Firebase:', downloadURL);
       
-      const previous = route.params.pictureList;
-
-      route.params.setPictureList([...previous, downloadURL]);
+      addPicture(downloadURL);
 
       Alert.alert('Upload', 'Media uploaded successfully!');
 

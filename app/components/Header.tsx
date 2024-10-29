@@ -46,7 +46,7 @@ container: {
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#e9d5ff',
-    marginTop: -15,
+    marginTop: 15,
   },
   headerTitle: {
     fontSize: 26,

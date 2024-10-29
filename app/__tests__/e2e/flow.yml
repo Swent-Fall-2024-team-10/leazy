@@ -1,0 +1,33 @@
+appId: "com.swent.leazy"
+---
+- launchApp
+
+- tapOn:
+    point: "7%,6%" # Drawer
+
+- tapOn: "ListIssues"
+
+- tapOn : 
+      id: "addButton"
+
+- tapOn: "Your issue..."
+- inputText: "Test issue"
+- hideKeyboard
+
+- tapOn: "e.g: Bedroom, Kitchen, Bathroom..."
+- inputText: "Test room"
+- hideKeyboard
+
+- tapOn: "e.g: The bathtub is leaking because of..." 
+- inputText: "Test room"
+- hideKeyboard
+
+
+- scrollUntilVisible:
+    element: "Submit" # or any other selector
+    direction: DOWN
+
+- tapOn: "Submit"
+
+- tapOn: "Ok"
+

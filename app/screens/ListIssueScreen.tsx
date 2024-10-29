@@ -9,6 +9,11 @@ import { getTenant, getMaintenanceRequest, updateMaintenanceRequest } from '../.
 import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
 
+
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['Warning: ...', ]); // Ignore log notification by message
+LogBox.ignoreAllLogs();//Ignore all log notifications
+
 // portions of this code were generated with chatGPT as an AI assistant
 
 interface IssueItemProps {

@@ -1,7 +1,9 @@
 import React from "react";
 import { View, Text, TextInput, TextStyle, StyleSheet, KeyboardAvoidingView } from "react-native";
-import DropShadow from "react-native-drop-shadow";
+//import DropShadow from "react-native-drop-shadow";
 import { Color } from "@/styles/styles";
+import { UIManager } from 'react-native';
+
 
 interface InputFieldProps {
   label: string;
@@ -16,10 +18,12 @@ interface InputFieldProps {
 
 
 export default function InputField({ label, value, setValue, placeholder, height = 40, width = 100, radius = 25} : InputFieldProps) {
+  console.log(UIManager);
+  
   return (
-    <View >
+    <View>
       <Text style={styles.label}> {label} </Text>
-      <DropShadow style={styles.shadow}>
+      <View style={styles.shadow}>
         <TextInput
           style={[
             styles.inputField,
@@ -35,7 +39,7 @@ export default function InputField({ label, value, setValue, placeholder, height
           multiline={true}
           placeholderTextColor={Color.TextInputPlaceholder}
         />
-      </DropShadow>
+      </View>
     </View>
   );
 }

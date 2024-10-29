@@ -2,7 +2,7 @@ import React from "react";
 import { Text, StyleSheet, View } from "react-native";
 import { Button } from "react-native-elements";
 import { Color, FontSizes } from "@/styles/styles";
-import DropShadow from "react-native-drop-shadow";
+//import DropShadow from "react-native-drop-shadow";
 
 interface CloseConfirmationProps {
     isVisible: boolean;
@@ -14,7 +14,7 @@ interface CloseConfirmationProps {
 export default function CloseConfirmation( {onPressYes, onPressNo} : CloseConfirmationProps ) {
   return (
     <View style={styles.overlay}>
-        <DropShadow style={styles.frame}>
+        <View style={styles.frame}>
             
             <Text style={styles.text}>Are you sure you want to cancel the creation of this issue?</Text>
 
@@ -31,7 +31,7 @@ export default function CloseConfirmation( {onPressYes, onPressNo} : CloseConfir
                 buttonStyle={[styles.buttonNo, styles.buttons , styles.shadow]}/>
             </View>
 
-        </DropShadow>
+        </View>
     </View>
   );
 }

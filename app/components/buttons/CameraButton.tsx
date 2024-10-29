@@ -2,7 +2,7 @@ import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Color, FontSizes } from "@/styles/styles";
-import DropShadow from "react-native-drop-shadow";
+//import DropShadow from "react-native-drop-shadow";
 
 interface CloseProps {
     onPress: () => void;
@@ -12,14 +12,14 @@ export default function CameraButton( { onPress } : CloseProps) {
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Take Picture</Text>
-            <DropShadow style={styles.shadow}>
+            <View style={styles.shadow}>
 
                 <TouchableOpacity style={styles.cameraButton}
                     onPress={onPress}>
                     <AntDesign name="camera" size={50} color="white" />
                 </TouchableOpacity>
 
-            </DropShadow>
+            </View>
         </View>
     );
 

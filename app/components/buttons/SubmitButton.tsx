@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Button } from "react-native-elements";
 import { Color, FontSizes } from "@/styles/styles";
-import DropShadow from "react-native-drop-shadow";
+//import DropShadow from "react-native-drop-shadow";
 
 interface SubmitButtonProps {
   disabled : boolean;
@@ -14,7 +14,7 @@ interface SubmitButtonProps {
 
 export default function SubmitButton({ disabled, onPress, width, height, label } : SubmitButtonProps) {
   return (
-    <DropShadow style={styles.submitContainer}>
+    <View style={styles.submitContainer}>
         <Button
         title={label}
 
@@ -33,7 +33,7 @@ export default function SubmitButton({ disabled, onPress, width, height, label }
         disabled={disabled} // Disable button interaction
         disabledStyle={styles.submitButtonDisabled}
       />
-    </DropShadow>
+    </View>
 
   );
 }

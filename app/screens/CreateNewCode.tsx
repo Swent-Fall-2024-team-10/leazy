@@ -6,6 +6,7 @@ import CustomButton from "@/app/components/CustomButton";
 import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
 import { RootStackParamList } from "../../types/types"; // Import or define your navigation types
 import Header from "../components/Header";
+import { Clipboard, Share } from "react-native";
 
 // This screen is for the landlord to create a new code for a new tenant
 // The code will be used by the tenant to access the app for a specific residence
@@ -23,6 +24,25 @@ export default function CodeCreationScreen() {
     console.log("Create code");
   };
 
+  const copyToClipboard = () => {
+    Clipboard.setString(code);
+    alert("Code copied to clipboard!");
+  };
+
+  const shareCode = async () => {
+    try {
+      await Share.share({
+        message: `Here is your code: ${code}`,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("An unknown error occurred");
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header>
@@ -33,18 +53,34 @@ export default function CodeCreationScreen() {
 
           <CustomButton
             size="medium"
-            onPress={/*createCode*/ () => console.log("Create code")}
+            onPress={
+              /*createCode*/ () =>
+                setCode("JEHDHGW123123") /* Temporary code for testing */
+            }
             title="Create code"
             testID={""}
             style={styles.customButton}
           />
           {/* Only display the following if a code is created */}
-          <Text style={styles.text}>
-            Share the following code with a tenant:
-          </Text>
-
-          {/* Display the code once the create code function returns otherwise show three asterisks */}
-          <Text style={styles.text}>{code ? code : "******"}</Text>
+          {code ? (
+            <>
+              <Text style={styles.text}>
+                Share the following code with a tenant:
+              </Text>
+              <Text onPress={copyToClipboard} style={styles.CodeText}>
+                {code}
+              </Text>
+              <CustomButton
+                size="medium"
+                onPress={shareCode}
+                title="Share Code"
+                testID={""}
+                style={styles.customButton}
+              />
+            </>
+          ) : (
+            <Text style={styles.text}>******</Text>
+          )}
         </View>
       </Header>
     </View>
@@ -82,6 +118,17 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: "400",
     lineHeight: 24, // Adjust if necessary, using numeric value for lineHeight
+    letterSpacing: 0.24,
+    marginBottom: 23,
+  },
+  CodeText: {
+    color: "#00ff88",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 23,
   },

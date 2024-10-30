@@ -1,14 +1,22 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { Camera, CameraType, FlashMode, CameraView } from 'expo-camera';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import { RootStackParamList } from './CapturedMediaScreen';
+import { ReportStackParamList } from '@/types/types';
+
+export type CameraStackParamList = {
+  setURL: (url: string) => void;
+}
+
+type CameraRouteProp = RouteProp<ReportStackParamList, 'CameraScreen'>;
+
 
 export default function CameraScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute<CameraRouteProp>();
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [type, setType] = useState<CameraType>("back");
   const [flash, setFlash] = useState<FlashMode>("off");
@@ -35,8 +43,12 @@ export default function CameraScreen() {
           quality: 1,
           base64: true,
         });
-        await MediaLibrary.saveToLibraryAsync(photo.uri);
-        navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' });
+        if (photo){
+          {await MediaLibrary.saveToLibraryAsync(photo.uri);
+ 
+            navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' })
+          ;}
+        }
       } catch (error) {
         Alert.alert('Error', 'Failed to take picture');
         console.error(error);
@@ -75,6 +87,12 @@ export default function CameraScreen() {
         ref={cameraRef}
         zoom={zoom}
       >
+        <View style={styles.goBackButton}>
+          <TouchableOpacity style={styles.goBackButton} onPress={navigation.goBack}>
+            <Ionicons name="arrow-back" size={42} color="white" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.topButtonContainer}>
           <TouchableOpacity style={styles.iconButton} onPress={toggleCameraType}>
             <Ionicons name="camera-reverse" size={24} color="white" />
@@ -105,6 +123,12 @@ export default function CameraScreen() {
 }
 
 const styles = StyleSheet.create({
+  goBackButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    zIndex: 1,
+  },
   container: {
     flex: 1,
   },

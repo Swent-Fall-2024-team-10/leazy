@@ -8,7 +8,8 @@ import { emailAndPasswordSignIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 import CustomPopUp from '../components/CustomPopUp';
-
+import { createTenant, createUser } from '@/firebase/firestore/firestore';
+import { User, Tenant} from '@/types/types';
 
 interface FormErrors {
   firstName?: string;
@@ -53,6 +54,34 @@ export default function SignUpScreen() {
     emailAndPasswordSignIn(email, password, userType).then((user) => {
       if (user) {
         console.log("User signed up:", user);
+
+        // Create a new object of type User 
+
+        const landlordOrTenant = userType === UserType.TENANT ? "tenant" : "landlord";
+
+        const newUser : User = {
+          uid: user.uid,
+          type: landlordOrTenant,
+          name: firstName + " " + lastName,
+          email: email,
+          phone: '',
+          street: '',
+          number: '',
+          city: '',
+          canton: '',
+          zip: '',
+          country: ''
+        }
+        
+        const tenantNew : Tenant = {
+          userId: user.uid,
+          maintenanceRequests: [],
+          apartmentId: ''
+        }
+
+        createUser(newUser);
+        createTenant(tenantNew);
+
       } else {
         console.log("Sign up failed");
         setPopup(true)
@@ -164,6 +193,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    paddingTop: 70,
     backgroundColor: 'white',
   },
   title: {

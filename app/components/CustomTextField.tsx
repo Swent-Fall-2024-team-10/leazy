@@ -51,6 +51,8 @@ const styles = StyleSheet.create({
         flexShrink: 0, // Prevents the element from shrinking
         paddingLeft: 16,
         marginBottom: 23,
+        textAlign: 'left',
+        alignItems: 'center',
       },
       inputText: {
         flexShrink: 0,  // Prevents shrinking
@@ -60,7 +62,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontStyle: 'normal',
         fontWeight: '400',
-        lineHeight: 32,  // Adjust based on the actual line height
         letterSpacing: 0.2,
+        alignItems: 'center',
       },
 });

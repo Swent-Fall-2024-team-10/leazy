@@ -13,20 +13,20 @@ export default function HomepageScreen() {
 
   return (
     <Header>
-    <View style={styles.container}>
-      <Text style={styles.header}>Here’s what’s new</Text>
-      <View style={styles.newsContainer}>
-        <Text style={styles.newsText}>
-          News from the landlord to the tenants
-        </Text>
+      <View style={styles.container}>
+        <Text style={styles.header}>Here’s what’s new</Text>
+        <View style={styles.newsContainer}>
+          <Text style={styles.newsText}>
+            News from the landlord to the tenants
+          </Text>
+        </View>
+        <View style={styles.settingsButton}>
+          <Button
+            title="Go to Settings"
+            onPress={() => navigation.navigate("Settings")} // Navigate to Settings
+          />
+        </View>
       </View>
-      <View style={styles.settingsButton}>
-        <Button
-          title="Go to Settings"
-          onPress={() => navigation.navigate("Settings")} // Navigate to Settings
-        />
-      </View>
-    </View>
     </Header>
   );
 }
@@ -34,7 +34,6 @@ export default function HomepageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#d3d3d3", // Gray background similar to the mockup
     padding: 20,
   },
   header: {

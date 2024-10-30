@@ -16,10 +16,10 @@ const Header: React.FC<PropsWithChildren<{}>> = ({children}) => {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                    <Menu stroke="gray" />
+                    <Menu stroke="#0f5257" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Leazy</Text>
-                <User stroke="gray" />
+                <User stroke="#0f5257" />
             </View>
             {/* Content Rendered On Top of Background */}
             <View style={styles.contentContainer}>
@@ -46,12 +46,13 @@ container: {
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#e9d5ff',
-    marginTop: -15,
+    marginTop: 15,
   },
   headerTitle: {
     fontSize: 26,
+    fontWeight: '800',
     letterSpacing: 7.6,
-    fontFamily: "Inter-Regular",
+    fontFamily: "Inter-Bold",
     color: "#0f5257",
   },
   whiteBackground: {
@@ -64,7 +65,7 @@ container: {
     borderTopRightRadius: 32, // Only round the top corners
     height: height * 1.2,
     // Add black border
-    borderColor: 'light-grey',
+    borderColor: '#0f5257',
     borderWidth: 0.5,
     // Shadow for iOS
     shadowColor: '#000',

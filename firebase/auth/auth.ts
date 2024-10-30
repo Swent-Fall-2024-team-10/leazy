@@ -13,8 +13,8 @@ import {
     connectAuthEmulator
 } from "firebase/auth";
 
-import { TTenantData, TLandlordData } from "../../types/types";
 
+import { TLandlordData, TTenantData } from "../../types/types";
 const provider = new GoogleAuthProvider();
 
 

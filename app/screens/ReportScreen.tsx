@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, StyleSheet, View, Alert, Image} from 'react-native';
+import { Text, StyleSheet, View, Alert, Image, Modal} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '../components/forms/text_input';
 import Spacer from '@/app/components/Spacer';
@@ -114,18 +114,23 @@ export default function ReportScreen() {
         <Spacer height={20} />
 
         {isVisible && (
-          <CloseConfirmation
-            isVisible={isVisible}
-            onPressYes={() => {
-              resetStates();
-              setTick(false);
-              navigation.navigate('Issues');
-              setIsVisible(false);
-            }}
-            onPressNo={() => {
-              setIsVisible(false)
-            }}
-          />
+          <Modal
+              transparent={true}
+              animationType="fade"
+              visible={isVisible}
+              onRequestClose={() => setIsVisible(false)}
+          >
+              <CloseConfirmation
+                  isVisible={isVisible}
+                  onPressYes={() => {
+                      resetStates();
+                      setTick(false);
+                      navigation.navigate('Issues');
+                      setIsVisible(false);
+                  }}
+                  onPressNo={() => setIsVisible(false)}
+              />
+          </Modal>
         )}
 
         <InputField

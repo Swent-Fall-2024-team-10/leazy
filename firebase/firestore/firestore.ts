@@ -1,6 +1,13 @@
 // Import Firestore database instance and necessary Firestore functions.
 import { db } from "../firebase";
-import { setDoc, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  arrayUnion,
+} from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
 import {
@@ -11,6 +18,7 @@ import {
   Apartment,
   LaundryMachine,
   MaintenanceRequest,
+  TenantCode,
 } from "../../types/types";
 
 /**
@@ -335,4 +343,20 @@ export async function deleteLaundryMachine(
     machineId
   );
   await deleteDoc(docRef);
+}
+
+export async function generate_unique_code(
+  residenceId: string,
+  tenant_code: TenantCode
+) {
+
+  const residenceRef = doc(db, "residences", residenceId);
+  const residenceSnap = await getDoc(residenceRef);
+
+  // how to enforce that only the good landlord can do this? Through rules in firestore. Handle error if not the landlord
+  if (residenceSnap.exists()) {
+    await updateDoc(residenceRef, {
+      tenantCodes: arrayUnion(tenant_code),
+    });
+  }
 }

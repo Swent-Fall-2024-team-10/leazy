@@ -68,6 +68,13 @@ landlordId: string; // uid of the landlord
 tenantIds: string[]; // list of tenant uids
 laundryMachineIds: string[];
 apartments: string[]; // list of apartment ids
+tenantCodes: TenantCode[]; // list of tenant unique codes
+}
+
+export type TenantCode = {
+  tenantCode: string;
+  email: string;
+  used: boolean;
 }
 
 export type Apartment = {

@@ -52,12 +52,12 @@ export default function CodeCreationScreen() {
           </View>
 
           <CustomButton
-            size="medium"
+            size="large"
             onPress={
               /*createCode*/ () =>
                 setCode("JEHDHGW123123") /* Temporary code for testing */
             }
-            title="Create code"
+            title="Create a new code"
             testID={""}
             style={styles.customButton}
           />
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   customButton: {
-    marginBottom: 20,
+    marginBottom: 40,
     marginTop: 20,
     position: "relative",
     alignSelf: "center",

@@ -6,12 +6,14 @@ export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
     Settings: undefined;     // No parameters for Settings screen
     ListIssues: undefined;   // No parameters for ListIssues screen
-    
+    CodeEntry: undefined;
+    CodeApproved: undefined;
   };
 
 export type AuthStackParamList = {
     SignIn: undefined;
     SignUp: undefined;
+    
   };
   
 export type ReportStackParamList = {

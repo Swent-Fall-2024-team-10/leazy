@@ -72,6 +72,7 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
 const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
+
   const [showArchived, setShowArchived] = useState(false);
 
   // Initialize auth instance
@@ -101,7 +102,7 @@ const MaintenanceIssues = () => {
             (request): request is MaintenanceRequest => request !== null
           );
 
-          setIssues(filteredRequests);
+          //setIssues(filteredRequests);
         }
       } catch (error) {
         console.error("Error fetching tenant requests:", error);

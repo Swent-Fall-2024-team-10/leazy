@@ -54,6 +54,7 @@ export default function SignUpScreen() {
     emailAndPasswordSignIn(email, password, userType).then((user) => {
       if (user) {
         console.log("User signed up:", user);
+
         // Create a new object of type User 
 
         const landlordOrTenant = userType === UserType.TENANT ? "tenant" : "landlord";

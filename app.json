@@ -2,7 +2,7 @@
   "expo": {
     "name": "leazy",
     "slug": "leazy",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": true, 
-      "bundleIdentifier": "com.swent.leazy"
+      "bundleIdentifier": "com.leazy.swent"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.swent.leazy"
+      "package": "com.leazy.swent"
     },
     "web": {
       "bundler": "metro",
@@ -30,6 +30,11 @@
     },
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c434e53f-c28f-4c1d-9f4c-e16ed381a4aa"
+      }
     },
     "plugins": [
       [

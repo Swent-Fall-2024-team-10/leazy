@@ -89,8 +89,8 @@ const RootNavigator = () => {
 const AuthStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="SignIn">
-      <Stack.Screen name="SignIn" component={SignInScreen} />
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen name="SignIn" component={SignInScreen} options={ { headerShown : false }} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} options={ { headerShown : false }}/>
     </Stack.Navigator>
   );
 };

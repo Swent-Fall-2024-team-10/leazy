@@ -102,7 +102,7 @@ const MaintenanceIssues = () => {
             (request): request is MaintenanceRequest => request !== null
           );
 
-          //setIssues(filteredRequests);
+          setIssues(filteredRequests);
         }
       } catch (error) {
         console.error("Error fetching tenant requests:", error);

@@ -21,6 +21,7 @@ import Chat from "./screens/MessagingScreen";
 import CameraScreen from "./screens/CameraScreen";
 import CapturedMediaScreen from "./screens/CapturedMediaScreen";
 import { PictureProvider } from "./context/PictureContext";
+import CreateCode from "./screens/CreateNewCode";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -78,6 +79,7 @@ const HomeDrawerNavigator = () => {
       <Drawer.Screen name="My Rent" component={MyRentScreen} />
       <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
       <Drawer.Screen name="Subrent" component={SubrentScreen} />
+      <Drawer.Screen name="Add tenants" component={CreateCode} />
       <Drawer.Screen name="Settings" component={SettingsScreen} />
     </Drawer.Navigator>
   );

@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import StatusBadge from '../components/StatusBadge';
 import AdaptiveButton from '../components/AdaptiveButton';
 import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
+import Spacer from '../components/Spacer';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -125,7 +126,7 @@ const IssueDetailsScreen: React.FC = () => {
   return (
     <Header>
         <View style={styles.grayBackground}>
-          <View style={styles.content}>
+          <ScrollView style={styles.content} automaticallyAdjustKeyboardInsets = {true} showsVerticalScrollIndicator = {false}>
             <View style={styles.issueTitle}>
               <Text style={styles.issueTitleText}>Issue: {issue.requestTitle}</Text>
               <StatusBadge status={status} />
@@ -137,7 +138,7 @@ const IssueDetailsScreen: React.FC = () => {
             iconPosition= {'right'}
             ></AdaptiveButton>
             
-            <Text style={styles.sectionTitle}>Images submitted</Text>
+            <Text style={styles.sectionTitleImage}>Images submitted</Text>
             <View style={styles.imageCarouselContainer}>
 
               <ScrollView
@@ -194,8 +195,8 @@ const IssueDetailsScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </Modal>
-
-          </View>
+          <Spacer height={20} />
+          </ScrollView>
         </View>
     </Header>
   );
@@ -209,6 +210,7 @@ const styles = StyleSheet.create({
   },
   imagesText:{
     fontFamily: "Inter-Regular",
+    fontSize: 10,
   },
   closeModalButton: {
     position: 'absolute',
@@ -258,10 +260,12 @@ const styles = StyleSheet.create({
     right: 5,
   },
   grayBackground: {
+    height: Dimensions.get('window').height * 0.8,
     backgroundColor: '#F3F2F1',
     marginHorizontal: 10,
     marginVertical: 12,
     borderRadius: 32,
+    overflow: 'hidden',
     // Add black border
     borderColor: 'light-grey',
     borderWidth: 0.5,
@@ -281,7 +285,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   issueTitleText: {
-    marginBottom: 8,
+    marginBottom: 20,
+    paddingLeft: 8,
     fontSize: 16,
     letterSpacing: 0.2,
     fontFamily: "Inter-Bold",
@@ -297,6 +302,7 @@ const styles = StyleSheet.create({
   },
   descriptionContainer: {
     marginBottom: 16,
+    marginTop: -8,
   },
   descriptionBox: {
     backgroundColor: 'white',
@@ -318,6 +324,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
+  },
+  sectionTitleImage: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
   },
   descriptionText: {
     fontSize: 14,

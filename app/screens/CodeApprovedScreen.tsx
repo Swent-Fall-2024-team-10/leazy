@@ -20,7 +20,7 @@ export default function CodeApprovedScreen() {
         Welcome to {"\n"}
         {address}!
       </Text>
-      <Button onPress={onNext} title="Next" />
+      <CustomButton onPress={onNext} title="Next" testID={""} />
     </View>
   );
 }

@@ -1,3 +1,4 @@
+// SignUpScreen.js
 import React, { useState } from "react";
 import { Text, View, StyleSheet, ScrollView, Alert } from "react-native";
 import CustomTextField from "../components/CustomTextField";
@@ -5,20 +6,11 @@ import CustomButton from "../components/CustomButton";
 import CustomPicker from "../components/CustomPicker";
 import { UserType } from "../../firebase/auth/auth";
 import { emailAndPasswordSignIn } from "../../firebase/auth/auth";
-import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
-import { RootStackParamList } from "../../types/types"; // Import or define your navigation types
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { RootStackParamList } from "../../types/types";
 import CustomPopUp from "../components/CustomPopUp";
-import { createTenant, createUser } from "@/firebase/firestore/firestore";
-import { User, Tenant } from "@/types/types";
-import CodeEntryScreen from "./CodeEntryScreen";
-
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-}
+import { createUser } from "@/firebase/firestore/firestore"; // Only createUser is imported here
+import { User } from "../../types/types";
 
 export default function SignUpScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -28,22 +20,27 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<FormErrors>({});
+  interface Errors {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }
+
+  const [errors, setErrors] = useState<Errors>({});
   const [popup, setPopup] = useState(false);
 
-  const validateForm = (): FormErrors => {
-    let newErrors: FormErrors = {};
+  const validateForm = () => {
+    let newErrors: Errors = {};
     if (!firstName) newErrors.firstName = "First name is required";
     if (!lastName) newErrors.lastName = "Last name is required";
     if (!email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email is invalid";
     if (!password) newErrors.password = "Password is required";
-    else if (password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    if (!confirmPassword)
-      newErrors.confirmPassword = "Please confirm your password";
-    if (password != confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
+    else if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password";
+    if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
     return newErrors;
   };
 
@@ -58,37 +55,24 @@ export default function SignUpScreen() {
       if (user) {
         console.log("User signed up:", user);
 
-        // Create user and tenant objects
-        const landlordOrTenant =
-          userType === UserType.TENANT ? "tenant" : "landlord";
-        const newUser: User = {
-          uid: user.uid,
-          type: landlordOrTenant,
-          name: `${firstName} ${lastName}`,
-          email: email,
-          phone: "",
-          street: "",
-          number: "",
-          city: "",
-          canton: "",
-          zip: "",
-          country: "",
-        };
-        const tenantNew: Tenant = {
-          userId: user.uid,
-          maintenanceRequests: [],
-          apartmentId: "",
-        };
-
-        // Create user and tenant in database
-        createUser(newUser);
-        createTenant(tenantNew);
-
-        // Navigate to CodeEntryScreen if the user is a tenant
-        if (userType === UserType.TENANT) {
-          navigation.navigate('CodeEntry'); // Navigate to CodeEntryScreen for tenants
+        if (userType === UserType.LANDLORD) {
+          const newUser: User = {
+            type: "landlord",
+            name: `${firstName} ${lastName}`,
+            email,
+            phone: "",
+            street: "",
+            number: "",
+            city: "",
+            canton: "",
+            zip: "",
+            country: "",
+          };
+          createUser(newUser); // Create landlord in the database
+          navigation.navigate("Home");
         } else {
-          navigation.navigate('Home'); // Or another screen for landlords
+          // If Tenant, proceed to CodeEntryScreen without creating a user
+          navigation.navigate("CodeEntry", { userId: user.uid, firstName, lastName, email });
         }
       } else {
         console.log("Sign up failed");
@@ -96,6 +80,7 @@ export default function SignUpScreen() {
       }
     });
   };
+
 
   const handleGoogleSignUp = () => {
     Alert.alert(
@@ -200,6 +185,7 @@ export default function SignUpScreen() {
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   inputError: {

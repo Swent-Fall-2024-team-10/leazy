@@ -1,41 +1,75 @@
+// CodeEntryScreen.js
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+} from "@react-navigation/native";
 import CustomTextField from "@/app/components/CustomTextField";
 import CustomButton from "@/app/components/CustomButton";
-import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
-import { RootStackParamList } from "../../types/types"; // Import or define your navigation types
-import CodeApprovedScreen from "./CodeApprovedScreen";
-
-const VALID_CODE = "1234";
-
-interface FormErrors {
-  code?: string;
-}
+import { RootStackParamList } from "../../types/types";
+import {
+  validateTenantCode,
+  add_new_tenant,
+} from "@/firebase/firestore/firestore"; // Import createTenant here
 
 export default function CodeEntryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const { userId, firstName, lastName, email } = route.params as {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }; // Access tenant details passed from SignUpScreen
   const [code, setCode] = useState("");
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<{ code?: string }>({});
 
-  const validateForm = (): FormErrors => {
-    let newErrors: FormErrors = {};
-    if (code != VALID_CODE)
+  const validateForm = async () => {
+    let newErrors: { code?: string } = {};
+    const isValidCode = await validateTenantCode(code);
+    if (!isValidCode) {
       newErrors.code = "This code does not exist or has expired";
+    }
     return newErrors;
   };
 
-  const handleSubmit = () => {
-    const formErrors = validateForm();
-    const isValidCode = code === VALID_CODE;
-    console.log(`Code is ${isValidCode ? "valid" : "invalid"}`);
-
+  const handleSubmit = async () => {
+    const formErrors = await validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
 
-    navigation.navigate('CodeApproved'); // Navigate to CodeApprovedScreen if the code is valid
+    // Create the tenant user in the database after code is validated
+    const tenantNew = {
+      userId,
+      name: `${firstName} ${lastName}`,
+      email,
+      maintenanceRequests: [],
+      apartmentId: "",
+      residenceId: "",
+    };
+    try {
+      await add_new_tenant(
+        code,
+        `${firstName} ${lastName}`, // Name
+        email,
+        "1234567890", // Placeholder for phone; ideally would collect this
+        "Main Street", // Placeholder for address fields; ideally would collect this
+        "123", // Placeholder for street number
+        "CityName", // Placeholder for city
+        "CantonName", // Placeholder for canton
+        "12345", // Placeholder for ZIP
+        "CountryName" // Placeholder for country
+      );
+
+      navigation.navigate("CodeApproved"); // Navigate to the next screen
+    } catch (error) {
+      console.error("Failed to add new tenant:", error);
+      alert("There was an error adding the tenant. Please try again.");
+    }
   };
 
   return (
@@ -43,10 +77,17 @@ export default function CodeEntryScreen() {
       <Text style={styles.title}>Welcome to Leazy</Text>
       <Text style={styles.text}>Do you already have a code?</Text>
       <CustomTextField
+        testID="code-input"
         placeholder="Enter code"
         value={code}
-        onChangeText={setCode} testID={""}      />
-      <CustomButton size="medium" onPress={handleSubmit} title="Submit code" testID={""} />
+        onChangeText={setCode}
+      />
+      <CustomButton
+        size="medium"
+        onPress={handleSubmit}
+        title="Submit code"
+        testID={"submitButton"}
+      />
       {errors.code && <Text style={styles.errorText}>{errors.code}</Text>}
       <Text style={styles.text}>
         If you don't have a code please ask your residence manager to generate
@@ -55,6 +96,8 @@ export default function CodeEntryScreen() {
     </View>
   );
 }
+
+// Remaining styles as before...
 
 const styles = StyleSheet.create({
   container: {

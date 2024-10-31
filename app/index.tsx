@@ -22,7 +22,6 @@ import CameraScreen from "./screens/CameraScreen";
 import CapturedMediaScreen from "./screens/CapturedMediaScreen";
 import { PictureProvider } from "./context/PictureContext";
 import CreateCode from "./screens/CreateNewCode";
-
 // portions of this code were generated with chatGPT as an AI assistant
 
 const Drawer = createDrawerNavigator();

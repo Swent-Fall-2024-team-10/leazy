@@ -1,6 +1,18 @@
 // Import Firestore database instance and necessary Firestore functions.
 import { db } from "../firebase";
-import { setDoc, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  arrayUnion,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
 import {
@@ -11,6 +23,7 @@ import {
   Apartment,
   LaundryMachine,
   MaintenanceRequest,
+  TenantCode,
 } from "../../types/types";
 
 /**
@@ -18,8 +31,9 @@ import {
  * @param user - The user object to be added to the 'users' collection.
  */
 export async function createUser(user: User) {
-  const docRef = doc(db, "users", user.uid);
-  await setDoc(docRef, user);
+  const usersCollectionRef = collection(db, "users");
+  const docRef = await addDoc(usersCollectionRef, user);
+  return docRef.id;
 }
 
 /**
@@ -336,3 +350,150 @@ export async function deleteLaundryMachine(
   );
   await deleteDoc(docRef);
 }
+
+export async function add_new_tenant(
+  code: string,
+  name: string,
+  email: string,
+  phone: string,
+  street: string,
+  number: string,
+  city: string,
+  canton: string,
+  zip: string,
+  country: string
+) {
+  const tenantCodesRef = collection(db, "tenantCodes");
+  const q = query(tenantCodesRef, where("tenantCode", "==", code));
+  const querySnapshot = await getDocs(q);
+  // the code is unique so there should be only one document
+  const tenantCodeDoc = querySnapshot.docs[0];
+  const tenantCodeData = tenantCodeDoc.data();
+  const apartmentId = tenantCodeData.apartmentId;
+  const residenceId = tenantCodeData.residenceId;
+
+  // create a new user
+  const newUser: User = {
+    type: "tenant",
+    name: name,
+    email: email,
+    phone: phone,
+    street: street,
+    number: number,
+    city: city,
+    canton: canton,
+    zip: zip,
+    country: country,
+  };
+  const userId = await createUser(newUser);
+
+  const newTenant: Tenant = {
+    userId: userId,
+    maintenanceRequests: [],
+    apartmentId: apartmentId,
+    residenceId: residenceId,
+  };
+  await createTenant(newTenant);
+
+  const residenceRef = doc(db, "residences", residenceId);
+  await updateDoc(residenceRef, { tenantIds: arrayUnion(userId) });
+
+  const apartmentRef = doc(db, "apartments", apartmentId);
+  await updateDoc(apartmentRef, { tenants: arrayUnion(userId) });
+}
+
+export async function generate_unique_code(
+  residenceId: string,
+  apartmentId: string
+): Promise<string> {
+  try {
+    // Verify that the code doesn't already exist
+    const tenantCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const newTenantCode: TenantCode = {
+      tenantCode: tenantCode,
+      apartmentId: apartmentId,
+      residenceId: residenceId,
+      used: false,
+    };
+
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const docRef = await addDoc(tenantCodesRef, newTenantCode);
+
+    const residenceRef = doc(db, "residences", residenceId);
+    const residenceSnap = await getDoc(residenceRef);
+
+    if (residenceSnap.exists()) {
+      await updateDoc(residenceRef, {
+        tenantCodesID: arrayUnion(docRef.id),
+      });
+    } else {
+      throw new Error("Residence not found.");
+    }
+
+    return tenantCode;
+  } catch (error) {
+    console.error("Error generating tenant code:", error);
+    throw error;
+  }
+}
+
+/**
+ * Validates a tenant code, marking it as used if valid.
+ * @param inputCode - The tenant code to validate.
+ * @returns True if the code is valid and unused, false otherwise.
+ */
+export async function validateTenantCode(inputCode: string): Promise<Boolean> {
+  try {
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const q = query(
+      tenantCodesRef,
+      where("tenantCode", "==", inputCode),
+      where("used", "==", false)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return false;
+    }
+
+    const tenantCodeDoc = querySnapshot.docs[0];
+    const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
+
+    await updateDoc(tenantCodeRef, { used: true });
+
+    console.log(`Tenant code ${inputCode} validated and marked as used.`);
+    return true;
+  } catch (error) {
+    console.error("Error validating tenant code:", error);
+    return false;
+  }
+}
+
+/**
+ * Deletes all tenant codes marked as used in the tenantCodes collection.
+ * @returns The number of deleted documents.
+ */
+export async function deleteUsedTenantCodes(): Promise<number> {
+  try {
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const q = query(tenantCodesRef, where("used", "==", true));
+    const querySnapshot = await getDocs(q);
+
+    const deletePromises = querySnapshot.docs.map((docSnapshot) =>
+      deleteDoc(doc(db, "tenantCodes", docSnapshot.id))
+    );
+
+    await Promise.all(deletePromises);
+
+    console.log(`Deleted ${querySnapshot.size} used tenant codes.`);
+    return querySnapshot.size;
+  } catch (error) {
+    console.error("Error deleting used tenant codes:", error);
+    throw error;
+  }
+}
+
+// add the tenant everywhere in the DB
+// unit test are not valid
+// we need to have every collection in the db

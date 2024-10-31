@@ -7,6 +7,11 @@ import {
   updateDoc,
   deleteDoc,
   arrayUnion,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -347,16 +352,95 @@ export async function deleteLaundryMachine(
 
 export async function generate_unique_code(
   residenceId: string,
-  tenant_code: TenantCode
-) {
+  apartmentId: string
+): Promise<string> {
+  try {
+    // Verify that the code doesn't already exist
+    const tenantCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  const residenceRef = doc(db, "residences", residenceId);
-  const residenceSnap = await getDoc(residenceRef);
+    const newTenantCode: TenantCode = {
+      tenantCode: tenantCode,
+      apartmentId: apartmentId,
+      residenceId: residenceId,
+      used: false,
+    };
 
-  // how to enforce that only the good landlord can do this? Through rules in firestore. Handle error if not the landlord
-  if (residenceSnap.exists()) {
-    await updateDoc(residenceRef, {
-      tenantCodes: arrayUnion(tenant_code),
-    });
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const docRef = await addDoc(tenantCodesRef, newTenantCode);
+
+    const residenceRef = doc(db, "residences", residenceId);
+    const residenceSnap = await getDoc(residenceRef);
+
+    if (residenceSnap.exists()) {
+      await updateDoc(residenceRef, {
+        tenantCodesID: arrayUnion(docRef.id),
+      });
+    } else {
+      throw new Error("Residence not found.");
+    }
+
+    return tenantCode;
+  } catch (error) {
+    console.error("Error generating tenant code:", error);
+    throw error;
   }
 }
+
+/**
+ * Validates a tenant code, marking it as used if valid.
+ * @param inputCode - The tenant code to validate.
+ * @returns True if the code is valid and unused, false otherwise.
+ */
+export async function validateTenantCode(inputCode: string): Promise<Boolean> {
+  try {
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const q = query(
+      tenantCodesRef,
+      where("tenantCode", "==", inputCode),
+      where("used", "==", false)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return false;
+    }
+
+    const tenantCodeDoc = querySnapshot.docs[0];
+    const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
+
+    await updateDoc(tenantCodeRef, { used: true });
+
+    console.log(`Tenant code ${inputCode} validated and marked as used.`);
+    return true;
+  } catch (error) {
+    console.error("Error validating tenant code:", error);
+    return false;
+  }
+}
+
+
+/**
+ * Deletes all tenant codes marked as used in the tenantCodes collection.
+ * @returns The number of deleted documents.
+ */
+export async function deleteUsedTenantCodes(): Promise<number> {
+  try {
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const q = query(tenantCodesRef, where("used", "==", true));
+    const querySnapshot = await getDocs(q);
+
+    const deletePromises = querySnapshot.docs.map((docSnapshot) => 
+      deleteDoc(doc(db, "tenantCodes", docSnapshot.id))
+    );
+
+    await Promise.all(deletePromises);
+
+    console.log(`Deleted ${querySnapshot.size} used tenant codes.`);
+    return querySnapshot.size;
+  } catch (error) {
+    console.error("Error deleting used tenant codes:", error);
+    throw error;
+  }
+}
+
+// add the tenant everywhere in the DB

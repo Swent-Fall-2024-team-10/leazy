@@ -56,6 +56,8 @@ maintenanceRequests: string[]; // list of maintenance request ids
 apartmentId: string;
 }
 
+
+// I don't know if we'll use residenceId, but if it's used it should be the same as the UID of the document
 export type Residence = {
 residenceId: string;
 street: string;
@@ -68,12 +70,13 @@ landlordId: string; // uid of the landlord
 tenantIds: string[]; // list of tenant uids
 laundryMachineIds: string[];
 apartments: string[]; // list of apartment ids
-tenantCodes: TenantCode[]; // list of tenant unique codes
+tenantCodesID: string[]; // list of IDs of tenant unique codes
 }
 
 export type TenantCode = {
   tenantCode: string;
-  email: string;
+  apartmentId: string;
+  residenceId: string;
   used: boolean;
 }
 

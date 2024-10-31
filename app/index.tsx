@@ -17,6 +17,7 @@ import CodeApprovedScreen from './screens/CodeApprovedScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ListIssueScreen from './screens/ListIssueScreen';
 import IssueDetailsScreen from './screens/IssueDetailsScreen';
+import TestScreen from './screens/TestScreen';
 import Chat from './screens/MessagingScreen';
 import CameraScreen from './screens/CameraScreen';
 import CapturedMediaScreen from './screens/CapturedMediaScreen';
@@ -72,6 +73,7 @@ const HomeDrawerNavigator = () => {
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />
+        <Drawer.Screen name="TestScreen" component={TestScreen} />
       </Drawer.Navigator>
       );
     };

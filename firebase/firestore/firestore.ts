@@ -31,8 +31,9 @@ import {
  * @param user - The user object to be added to the 'users' collection.
  */
 export async function createUser(user: User) {
-  const docRef = doc(db, "users", user.uid);
-  await setDoc(docRef, user);
+  const usersCollectionRef = collection(db, "users");
+  const docRef = await addDoc(usersCollectionRef, user);
+  return docRef.id;
 }
 
 /**
@@ -350,6 +351,57 @@ export async function deleteLaundryMachine(
   await deleteDoc(docRef);
 }
 
+export async function add_new_tenant(
+  code: string,
+  name: string,
+  email: string,
+  phone: string,
+  street: string,
+  number: string,
+  city: string,
+  canton: string,
+  zip: string,
+  country: string
+) {
+  const tenantCodesRef = collection(db, "tenantCodes");
+  const q = query(tenantCodesRef, where("tenantCode", "==", code));
+  const querySnapshot = await getDocs(q);
+  // the code is unique so there should be only one document
+  const tenantCodeDoc = querySnapshot.docs[0];
+  const tenantCodeData = tenantCodeDoc.data();
+  const apartmentId = tenantCodeData.apartmentId;
+  const residenceId = tenantCodeData.residenceId;
+
+  // create a new user
+  const newUser: User = {
+    type: "tenant",
+    name: name,
+    email: email,
+    phone: phone,
+    street: street,
+    number: number,
+    city: city,
+    canton: canton,
+    zip: zip,
+    country: country,
+  };
+  const userId = await createUser(newUser);
+
+  const newTenant: Tenant = {
+    userId: userId,
+    maintenanceRequests: [],
+    apartmentId: apartmentId,
+    residenceId: residenceId,
+  };
+  await createTenant(newTenant);
+
+  const residenceRef = doc(db, "residences", residenceId);
+  await updateDoc(residenceRef, { tenantIds: arrayUnion(userId) });
+
+  const apartmentRef = doc(db, "apartments", apartmentId);
+  await updateDoc(apartmentRef, { tenants: arrayUnion(userId) });
+}
+
 export async function generate_unique_code(
   residenceId: string,
   apartmentId: string
@@ -418,7 +470,6 @@ export async function validateTenantCode(inputCode: string): Promise<Boolean> {
   }
 }
 
-
 /**
  * Deletes all tenant codes marked as used in the tenantCodes collection.
  * @returns The number of deleted documents.
@@ -429,7 +480,7 @@ export async function deleteUsedTenantCodes(): Promise<number> {
     const q = query(tenantCodesRef, where("used", "==", true));
     const querySnapshot = await getDocs(q);
 
-    const deletePromises = querySnapshot.docs.map((docSnapshot) => 
+    const deletePromises = querySnapshot.docs.map((docSnapshot) =>
       deleteDoc(doc(db, "tenantCodes", docSnapshot.id))
     );
 
@@ -444,3 +495,5 @@ export async function deleteUsedTenantCodes(): Promise<number> {
 }
 
 // add the tenant everywhere in the DB
+// unit test are not valid
+// we need to have every collection in the db

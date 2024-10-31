@@ -1,32 +1,52 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Clipboard,
+  Share,
+  ActivityIndicator,
+} from "react-native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 import CustomTextField from "@/app/components/CustomTextField";
 import CustomButton from "@/app/components/CustomButton";
-import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
-import { RootStackParamList } from "../../types/types"; // Import or define your navigation types
+import { RootStackParamList } from "../../types/types";
 import Header from "../components/Header";
-import { Clipboard, Share, ActivityIndicator } from "react-native";
+import { generate_unique_code } from "@/firebase/firestore/firestore";
 
 // This screen is for the landlord to create a new code for a new tenant
 // The code will be used by the tenant to access the app for a specific residence
 export default function CodeCreationScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [code, setCode] = useState("");
+  const [residenceId, setResidenceId] = useState("");
+  const [apartmentId, setApartmentId] = useState("");
   const [loading, setLoading] = useState(false);
 
   const goBack = () => {
     navigation.goBack();
   };
 
-  const createCode = () => {
+  const createCode = async () => {
+    if (!residenceId || !apartmentId) {
+      alert("Please enter both Residence ID and Apartment ID.");
+      return;
+    }
+
     setLoading(true); // Start loading
 
-    // Simulate a network request or code generation delay
-    setTimeout(() => {
-      setCode("JEHDHGW123123"); // Temporary code for testing
+    try {
+      // Assuming generateCode is an asynchronous function that takes residenceId and apartmentId as parameters
+      const generatedCode = await generate_unique_code(
+        residenceId,
+        apartmentId
+      );
+      setCode(generatedCode); // Set the generated code
+    } catch (error) {
+      alert("Failed to generate code. Please try again.");
+    } finally {
       setLoading(false); // End loading
-    }, 2000); // Adjust delay as needed
+    }
   };
 
   const copyToClipboard = () => {
@@ -54,6 +74,20 @@ export default function CodeCreationScreen() {
         <View style={styles.container}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Create a new code for a new tenant</Text>
+          </View>
+          <View style={styles.customTextField}>
+            <CustomTextField
+              testID="Residence ID"
+              value={residenceId}
+              onChangeText={setResidenceId}
+              placeholder="Enter residence ID"
+            />
+            <CustomTextField
+              testID="Apartment ID"
+              value={apartmentId}
+              onChangeText={setApartmentId}
+              placeholder="Enter apartment ID"
+            />
           </View>
 
           <CustomButton
@@ -96,6 +130,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  customTextField: {
+    marginBottom: 20,
+    marginTop: 20,
+    position: "relative",
+    alignSelf: "center",
+  },
   customButton: {
     marginBottom: 40,
     marginTop: 20,
@@ -118,11 +158,11 @@ const styles = StyleSheet.create({
   text: {
     color: "#0B3142",
     textAlign: "center",
-    fontFamily: "Inter", // Ensure Inter font is properly loaded in your project
+    fontFamily: "Inter",
     fontSize: 24,
     fontStyle: "normal",
     fontWeight: "400",
-    lineHeight: 24, // Adjust if necessary, using numeric value for lineHeight
+    lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 23,
   },

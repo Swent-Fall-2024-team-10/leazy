@@ -6,8 +6,10 @@ import { emailAndPasswordLogIn } from '../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 import CustomPopUp from '../components/CustomPopUp';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
 import { TextInput } from 'react-native-gesture-handler';
 import SubmitButton from '../components/buttons/SubmitButton';
+
 
 interface FormErrors {
   email?: string;
@@ -48,10 +50,6 @@ export default function SignInScreen() {
     });
   };
 
-  const handleGoogleSignIn = () => {
-    Alert.alert('Google Sign In', 'Google Sign In functionality would be implemented here.');
-  };
-
   const handleSignUpPress = () => {
     navigation.navigate('SignUp' as never);
   };
@@ -85,15 +83,7 @@ export default function SignInScreen() {
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
       <CustomButton testID='signInButton' size="small" onPress={handleSignIn} title ="Sign in"/>
       <Text style={styles.text}>or</Text>
-      <CustomButton 
-        testID='googleSignInButton'
-        title="Sign in with Google" 
-        onPress={handleGoogleSignIn} 
-        size="large" 
-        image={require('../../assets/images/google_logo.png')} 
-        style={styles.largeButton}
-      />
-
+      <GoogleSignInButton/>
       <View style={styles.horizontalLine} />
       <Text style={styles.text}>Don't have an account yet?</Text>
       <CustomButton testID='signUpButton'size="large" onPress={handleSignUpPress} title="Sign up"/>

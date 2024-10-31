@@ -4,15 +4,11 @@ import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; 
-import { ReportStackParamList, RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
-import { getTenant, getMaintenanceRequest, updateMaintenanceRequest } from '../../firebase/firestore/firestore'; // Firestore functions
+import { ReportStackParamList } from '../../types/types';  // Assuming this also includes navigation types
+import { updateMaintenanceRequest, getMaintenanceRequestsQuery } from '../../firebase/firestore/firestore'; // Firestore functions
 import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
-
-
-import { LogBox } from 'react-native';
-LogBox.ignoreLogs(['Warning: ...', ]); // Ignore log notification by message
-LogBox.ignoreAllLogs();//Ignore all log notifications
+import { onSnapshot } from 'firebase/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -72,7 +68,6 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
 const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
-
   const [showArchived, setShowArchived] = useState(false);
 
   // Initialize auth instance
@@ -90,20 +85,20 @@ const MaintenanceIssues = () => {
           return;
         }
 
-        // Fetch tenant data and maintenance requests for that tenant
-        const tenant: Tenant | null = await getTenant(userId);
+        // Get the Firestore query from the ViewModel
+        const query = getMaintenanceRequestsQuery(userId);
 
-        if (tenant && tenant.maintenanceRequests.length > 0) {
-          const requests = await Promise.all(
-            tenant.maintenanceRequests.map((requestId) => getMaintenanceRequest(requestId))
-          );
-          // Filter out null values
-          const filteredRequests = requests.filter(
-            (request): request is MaintenanceRequest => request !== null
-          );
+        // Set up the Firestore real-time listener using the query from the ViewModel
+        const unsubscribe = onSnapshot(query, (querySnapshot) => {
+          const updatedIssues: MaintenanceRequest[] = [];
+          querySnapshot.forEach((doc) => {
+            updatedIssues.push(doc.data() as MaintenanceRequest);
+          });
+          setIssues(updatedIssues); // Update state with real-time data
+        });
 
-          setIssues(filteredRequests);
-        }
+        // Cleanup the listener when the component unmounts
+        return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching tenant requests:", error);
       }

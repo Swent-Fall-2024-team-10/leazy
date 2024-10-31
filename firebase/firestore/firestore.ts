@@ -1,6 +1,6 @@
 // Import Firestore database instance and necessary Firestore functions.
 import { db } from "../firebase";
-import { setDoc, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { setDoc, doc, getDoc, updateDoc, deleteDoc, query, collection, where } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
 import {
@@ -241,6 +241,20 @@ export async function getMaintenanceRequest(
   const docRef = doc(db, "maintenanceRequests", requestID);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as MaintenanceRequest) : null;
+}
+
+/**
+ * Returns a Firestore query for maintenance requests by tenantId.
+ * This query can be used with onSnapshot to listen for real-time updates.
+ * @param tenantId - The unique identifier of the tenant.
+ * @returns A Firestore query for the maintenance requests collection.
+ */
+export function getMaintenanceRequestsQuery(tenantId: string) {
+  // Construct a query based on the tenantId
+  return query(
+    collection(db, 'maintenanceRequests'),
+    where('tenantId', '==', tenantId)
+  );
 }
 
 /**

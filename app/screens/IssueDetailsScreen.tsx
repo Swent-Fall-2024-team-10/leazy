@@ -58,7 +58,6 @@ const IssueDetailsScreen: React.FC = () => {
   const openFullScreen = (index: number) => {
     if (issue) {
     setCurrentImageIndex(index);
-    setFullScreenMode(true);
 
     Image.getSize(issue.picture[index], (width, height) => {
       const screenWidth = Dimensions.get('window').width * 0.9;
@@ -78,6 +77,7 @@ const IssueDetailsScreen: React.FC = () => {
       }
 
       setFullImageDimensions({ width: finalWidth, height: finalHeight });
+      setFullScreenMode(true);
     });
   }
   };

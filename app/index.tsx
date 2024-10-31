@@ -18,6 +18,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ListIssueScreen from './screens/ListIssueScreen';
 import IssueDetailsScreen from './screens/IssueDetailsScreen';
 import Chat from './screens/MessagingScreen';
+import CameraScreen from './screens/CameraScreen';
+import CapturedMediaScreen from './screens/CapturedMediaScreen';
+import { PictureProvider } from './context/PictureContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -46,11 +49,15 @@ export default function App() {
     // You could return a loading spinner here while Firebase checks the auth state
     return null; 
   }
+  console.log(isLoggedIn);
+  console.log(auth.currentUser);
 
   return (
-    <NavigationContainer>
-      {isLoggedIn ? <RootNavigator /> : <AuthStackNavigator />}
-    </NavigationContainer>
+    <PictureProvider>
+      <NavigationContainer>
+        {isLoggedIn ? <RootNavigator /> : <AuthStackNavigator />}
+      </NavigationContainer>
+    </PictureProvider>
   );
 }
 
@@ -60,7 +67,7 @@ const HomeDrawerNavigator = () => {
           headerShown: false, // This hides the default header
         }}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
-        <Drawer.Screen name="Issues" component={ListIssueScreen} />
+        <Drawer.Screen name="ListIssues" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
@@ -75,21 +82,31 @@ const RootNavigator = () => {
     <Stack.Navigator>
       {/* Drawer is nested here */}
       <Stack.Screen name="HomeDrawer" component={HomeDrawerNavigator} options={{ headerShown: false }} />
-      
-      {/* Additional screens that should not appear in the drawer */}
-      <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} />
-      <Stack.Screen name="Report" component={ReportScreen} />
-      <Stack.Screen name="Messaging" component={Chat} />
     </Stack.Navigator>
   );
 };
 
-    const AuthStackNavigator = () => {
-      return (
-        <Stack.Navigator initialRouteName="SignIn">
-          <Stack.Screen name="SignIn" component={SignInScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
-        </Stack.Navigator>
-      );
-    };
+const AuthStackNavigator = () => {
+  return (
+    <Stack.Navigator initialRouteName="SignIn">
+      <Stack.Screen name="SignIn" component={SignInScreen} options={ { headerShown : false }} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} options={ { headerShown : false }}/>
+    </Stack.Navigator>
+  );
+};
+
+const IssueStackNavigator = () => {
+  return (
     
+    <Stack.Navigator>
+        <Stack.Screen name="Issues" component={ListIssueScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="IssueDetails" component={IssueDetailsScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="CapturedMedia" component={CapturedMediaScreen} options={{ headerShown: true }}/>
+        <Stack.Screen name="Messaging" component={Chat} options={{ headerShown: false }}/>
+      </Stack.Navigator>
+  );
+
+}
+

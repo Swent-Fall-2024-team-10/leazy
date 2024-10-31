@@ -5,12 +5,27 @@
 export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
     Settings: undefined;     // No parameters for Settings screen
+    ListIssues: undefined;   // No parameters for ListIssues screen
+    
+  };
+
+export type AuthStackParamList = {
+    SignIn: undefined;
+    SignUp: undefined;
+  };
+  
+export type ReportStackParamList = {
+    Issues: undefined;
+    Report: undefined;
+    Messaging: undefined;
+
+    CameraScreen: undefined;
+    CapturedMedia: { uri: string; type: 'photo' | 'video'};
     IssueDetails: {
       requestID: string
     };
-    ListIssues: undefined;
-    Messaging: undefined;
-  };
+    
+}
 
 declare type TTenantData ={}
 declare type TLandlordData ={}
@@ -80,6 +95,7 @@ requestDescription: string;
 picture: string[]; // list of picture urls referenced in the database
 requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 }
+
 
 export const FontSizes = {
   ScreenHeader : 24,

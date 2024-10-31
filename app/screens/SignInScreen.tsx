@@ -7,6 +7,9 @@ import { useNavigation, NavigationProp } from '@react-navigation/native'; // Imp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 import CustomPopUp from '../components/CustomPopUp';
 import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { TextInput } from 'react-native-gesture-handler';
+import SubmitButton from '../components/buttons/SubmitButton';
+
 
 interface FormErrors {
   email?: string;
@@ -60,6 +63,7 @@ export default function SignInScreen() {
       />}
 
       <Text style={styles.title}>Welcome back to Leazy</Text>
+      
       <CustomTextField
         testID="emailInput"
         placeholder="Email"

@@ -4,10 +4,15 @@ import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; 
-import { RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
+import { ReportStackParamList, RootStackParamList } from '../../types/types';  // Assuming this also includes navigation types
 import { getTenant, getMaintenanceRequest, updateMaintenanceRequest } from '../../firebase/firestore/firestore'; // Firestore functions
 import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
+
+
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['Warning: ...', ]); // Ignore log notification by message
+LogBox.ignoreAllLogs();//Ignore all log notifications
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -19,7 +24,7 @@ interface IssueItemProps {
 }
 
 const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive, isArchived }) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   
   const getStatusColor = () => {
     switch (issue.requestStatus) {
@@ -65,12 +70,9 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
 };
 
 const MaintenanceIssues = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [issues, setIssues] = useState([
-    { id: 1, issue: 'Radiator in bedroom does...', requestStatus: 'In progress', archived: false, requestID: "iubdkjjkbwqi21" },
-    { id: 2, issue: 'Light in the kitchen does no...', requestStatus: 'Not started', archived: false, requestID: "iwefwjksdfsdfdsf2" },
-    { id: 3, issue: 'Radiator in bedroom does...', requestStatus: 'Completed', archived: false, requestID: "sdsdfkjsdflkn vds,ms23" },
-  ]);
+  const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
+  const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
+
   const [showArchived, setShowArchived] = useState(false);
 
   // Initialize auth instance
@@ -100,7 +102,7 @@ const MaintenanceIssues = () => {
             (request): request is MaintenanceRequest => request !== null
           );
 
-          //setIssues(filteredRequests);
+          setIssues(filteredRequests);
         }
       } catch (error) {
         console.error("Error fetching tenant requests:", error);
@@ -154,7 +156,7 @@ const MaintenanceIssues = () => {
         </ScrollView>
       </Header>
 
-      <TouchableOpacity testID="addButton" style={styles.addButton}>
+      <TouchableOpacity testID="addButton" style={styles.addButton} onPress={() => navigation.navigate('Report')}>
         <Feather name="plus" size={24} color="white" />
       </TouchableOpacity>
     </View>

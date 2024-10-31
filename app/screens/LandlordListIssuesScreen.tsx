@@ -106,7 +106,7 @@ const LandlordListIssuesScreen: React.FC = () => {
   const filteredIssues = issues.filter(
     (issue) => issue.requestStatus !== 'completed' || showArchived
   );
- 
+
   return (
     <View style={styles.container}>
       <Header>

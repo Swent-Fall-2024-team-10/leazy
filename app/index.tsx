@@ -14,6 +14,7 @@ import SignInScreen from "./screens/SignInScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import CodeEntryScreen from "./screens/CodeEntryScreen";
 import CodeApprovedScreen from "./screens/CodeApprovedScreen";
+import TenantFormScreen from "./screens/TenantFormScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ListIssueScreen from "./screens/ListIssueScreen";
 import IssueDetailsScreen from "./screens/IssueDetailsScreen";
@@ -105,6 +106,12 @@ const RootNavigator = () => {
         component={CodeApprovedScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="TenantForm"
+        component={TenantFormScreen}
+        options={{ headerShown: false }}
+      />
+
     </Stack.Navigator>
   );
 };

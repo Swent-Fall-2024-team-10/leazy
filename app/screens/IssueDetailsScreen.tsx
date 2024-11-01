@@ -87,7 +87,7 @@ const IssueDetailsScreen: React.FC = () => {
   };
 
   return (
-    <Header>
+    <Header showMenu={true}>
         <View style={styles.grayBackground}>
           <View style={styles.content}>
             <View style={styles.issueTitle}>

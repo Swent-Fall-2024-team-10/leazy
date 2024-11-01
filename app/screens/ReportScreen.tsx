@@ -102,7 +102,7 @@ export default function ReportScreen() {
 
 
   return (
-    <Header>
+    <Header showMenu={true}>
       <ScrollView style={styles.container} automaticallyAdjustKeyboardInsets={true}>
         
         <Close onPress={handleClose} />

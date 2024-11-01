@@ -12,7 +12,7 @@ export default function HomepageScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
-    <Header>
+    <Header showMenu={true}>
       <View style={styles.container}>
         <Text style={styles.header}>Here’s what’s new</Text>
         <View style={styles.newsContainer}>

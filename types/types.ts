@@ -11,7 +11,13 @@ export type RootStackParamList = {
     lastName: string;
     email: string;
   };
-  CodeApproved: undefined;
+  CodeApproved: {
+    code: string;
+  };
+  TenantForm: {
+    code: string;
+  };
+  SignIn: undefined;
 };
 
 export type AuthStackParamList = {

@@ -1,16 +1,20 @@
 import CustomButton from "@/app/components/CustomButton";
 import React from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
-import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
+import { View, Text, StyleSheet } from "react-native";
+import { useNavigation, NavigationProp, useRoute } from "@react-navigation/native"; // Import NavigationProp
 import { RootStackParamList } from "@/types/types";
 
 export default function CodeApprovedScreen() {
+  // retrieve the code from the previous screen
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const route = useRoute();
+  const { code } = route.params as { code: string };
 
   const address = "18 Chemin de Renens, 1004 Lausanne";
   const onNext = () => {
     console.log("Next button pressed");
-    navigation.navigate("Home"); // Redirect to the main app screen or appropriate screen
+    navigation.navigate("TenantForm", {code}); // Redirect to the main app screen or appropriate screen
   };
 
   return (

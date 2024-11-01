@@ -42,15 +42,6 @@ export default function CodeEntryScreen() {
       return;
     }
 
-    // Create the tenant user in the database after code is validated
-    const tenantNew = {
-      userId,
-      name: `${firstName} ${lastName}`,
-      email,
-      maintenanceRequests: [],
-      apartmentId: "",
-      residenceId: "",
-    };
     try {
       await add_new_tenant(
         code,
@@ -65,7 +56,7 @@ export default function CodeEntryScreen() {
         "CountryName" // Placeholder for country
       );
 
-      navigation.navigate("CodeApproved"); // Navigate to the next screen
+      navigation.navigate("CodeApproved", { code }); // Navigate to the next screen and pass the code
     } catch (error) {
       console.error("Failed to add new tenant:", error);
       alert("There was an error adding the tenant. Please try again.");

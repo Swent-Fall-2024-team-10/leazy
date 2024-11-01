@@ -363,43 +363,86 @@ export async function add_new_tenant(
   zip: string,
   country: string
 ) {
-  const tenantCodesRef = collection(db, "tenantCodes");
-  const q = query(tenantCodesRef, where("tenantCode", "==", code));
-  const querySnapshot = await getDocs(q);
-  // the code is unique so there should be only one document
-  const tenantCodeDoc = querySnapshot.docs[0];
-  const tenantCodeData = tenantCodeDoc.data();
-  const apartmentId = tenantCodeData.apartmentId;
-  const residenceId = tenantCodeData.residenceId;
+  try {
+    console.log("Code: ", code);
 
-  // create a new user
-  const newUser: User = {
-    type: "tenant",
-    name: name,
-    email: email,
-    phone: phone,
-    street: street,
-    number: number,
-    city: city,
-    canton: canton,
-    zip: zip,
-    country: country,
-  };
-  const userId = await createUser(newUser);
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const q = query(tenantCodesRef, where("tenantCode", "==", code));
+    const querySnapshot = await getDocs(q);
 
-  const newTenant: Tenant = {
-    userId: userId,
-    maintenanceRequests: [],
-    apartmentId: apartmentId,
-    residenceId: residenceId,
-  };
-  await createTenant(newTenant);
+    if (querySnapshot.empty) {
+      console.error("No matching documents for the given tenant code.");
+      return;
+    }
 
-  const residenceRef = doc(db, "residences", residenceId);
-  await updateDoc(residenceRef, { tenantIds: arrayUnion(userId) });
+    const tenantCodeDoc = querySnapshot.docs[0];
+    const tenantCodeData = tenantCodeDoc.data();
 
-  const apartmentRef = doc(db, "apartments", apartmentId);
-  await updateDoc(apartmentRef, { tenants: arrayUnion(userId) });
+    if (
+      !tenantCodeData ||
+      !tenantCodeData.apartmentId ||
+      !tenantCodeData.residenceId
+    ) {
+      console.error("Invalid tenant code data: ", tenantCodeData);
+      return;
+    }
+
+    const apartmentId = tenantCodeData.apartmentId;
+    const residenceId = tenantCodeData.residenceId;
+
+    console.log("Apartment ID:", apartmentId);
+    console.log("Residence ID:", residenceId);
+
+    // create a new user
+    const newUser: User = {
+      type: "tenant",
+      name: name,
+      email: email,
+      phone: phone,
+      street: street,
+      number: number,
+      city: city,
+      canton: canton,
+      zip: zip,
+      country: country,
+    };
+    const userId = await createUser(newUser);
+
+    const newTenant: Tenant = {
+      userId: userId,
+      maintenanceRequests: [],
+      apartmentId: apartmentId,
+      residenceId: residenceId,
+    };
+
+    await createTenant(newTenant);
+
+    const residencesRef = collection(db, "residences");
+    const residencesSnapshot = await getDocs(residencesRef);
+    const matchingResidenceDoc = residencesSnapshot.docs.find(
+      (doc) => doc.data().residenceId === residenceId
+    );
+    if (!matchingResidenceDoc) {
+      throw new Error(`Residence with ID ${residenceId} not found.`);
+    }
+    const residenceRef = doc(db, "residences", matchingResidenceDoc.id);
+    await updateDoc(residenceRef, { tenantIds: arrayUnion(userId) });
+
+    const apartmentsRef = collection(db, "apartments");
+    const apartmentsSnapshot = await getDocs(apartmentsRef);
+    const matchingApartmentDoc = apartmentsSnapshot.docs.find(
+      (doc) => doc.data().apartmentId === apartmentId
+    );
+
+    if (!matchingApartmentDoc) {
+      throw new Error(`Apartment with ID ${apartmentId} not found.`);
+    }
+    const apartmentRef = doc(db, "apartments", matchingApartmentDoc.id);
+    await updateDoc(apartmentRef, { tenants: arrayUnion(userId) });
+    console.log("Tenant profile created successfully.");
+  } catch (error) {
+    console.error("Error in add_new_tenant:", error);
+  }
 }
 
 export async function generate_unique_code(

@@ -124,7 +124,7 @@ const MaintenanceIssues = () => {
 
   return (
     <View style={styles.container}>
-      <Header>
+      <Header showMenu={true}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Maintenance issues</Text>

@@ -8,6 +8,9 @@ import { storage } from '../../firebase/firebase'; // Import storage from your F
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '../context/PictureContext';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+// portions of this code were generated with chatGPT as an AI assistant
 
 type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;
 
@@ -19,35 +22,36 @@ export default function CapturedMediaScreen() {
 
   const {addPicture} = usePictureContext();
 
-  const handleUpload = useCallback(async () => {
-    try {
-      // Convert the URI to a blob for Firebase
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const fileType = type === 'photo' ? 'image/jpeg' : 'video/mp4';
-      const fileName = `${type}-${Date.now()}.${type === 'photo' ? 'jpg' : 'mp4'}`;
+const handleUpload = useCallback(async () => {
+  try {
+    // Resize the image
+    const resizedImage = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 800, height: 600 } }], // Set target dimensions
+      { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+    );
 
-      // Create a reference to Firebase Storage
-      const storageRef = ref(storage, `uploads/${fileName}`);
+    // Get resized image size in MB
+    const response = await fetch(resizedImage.uri);
+    const blob = await response.blob();
+    
+    // Upload resized image as before
+    const fileName = `${type}-${Date.now()}.jpg`;
+    const storageRef = ref(storage, `uploads/${fileName}`);
+    await uploadBytes(storageRef, blob);
 
-      // Upload the file
-      console.log('Uploading media to Firebase...');
-      console.log('File type:', fileType);
-      await uploadBytes(storageRef, blob);
-      
-      const downloadURL = await getDownloadURL(storageRef);
-      console.log('Media uploaded to Firebase:', downloadURL);
-      
-      addPicture(downloadURL);
+    const downloadURL = await getDownloadURL(storageRef);
+    console.log(`Media uploaded to Firebase: ${downloadURL}`);
+    addPicture(downloadURL);
 
-      Alert.alert('Upload', 'Media uploaded successfully!');
-
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to upload media to Firebase');
-      console.error(error);
-    }
-  }, [uri, type, navigation]);
+    navigation.goBack();
+    
+    Alert.alert('Upload', 'Media uploaded successfully!');
+  } catch (error) {
+    console.error('Error uploading media:', error);
+    Alert.alert('Error', 'Failed to upload media to Firebase');
+  }
+}, [addPicture]);
 
   useEffect(() => {
     navigation.setOptions({

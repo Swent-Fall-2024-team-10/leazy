@@ -57,7 +57,7 @@ jobs:
             # mandatory
             -Dsonar.projectKey=Swent-Fall-2024-team-10_leazy
             -Dsonar.organization=swent-fall-2024-team-10
-            -Dsonar.javascript.lcov.reportPaths=../../coverage/lcov.info
+            -Dsonar.typescript.lcov.reportPaths=../../coverage/lcov.info
             # Comma-separated paths to directories containing main source files.
             #-Dsonar.sources= # optional, default is project base directory
             # Comma-separated paths to directories containing test source files.

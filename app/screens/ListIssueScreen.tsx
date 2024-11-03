@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; 
 import { ReportStackParamList } from '../../types/types';  // Assuming this also includes navigation types
 import { updateMaintenanceRequest, getMaintenanceRequestsQuery } from '../../firebase/firestore/firestore'; // Firestore functions
-import { MaintenanceRequest, Tenant } from '../../types/types'; // Importing types
+import { MaintenanceRequest} from '../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
+import { getIssueStatusColor, getIssueStatusText } from '../../utils/StatusHelper';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -21,21 +21,7 @@ interface IssueItemProps {
 
 const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive, isArchived }) => {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
-  
-  const getStatusColor = () => {
-    switch (issue.requestStatus) {
-      case 'inProgress':
-        return '#F39C12';
-      case 'notStarted':
-        return '#E74C3C';
-      case 'completed':
-        return '#2ECC71';
-      case 'rejected':
-        return '#95A5A6';
-      default:
-        return '#95A5A6';
-    }
-  };
+  const status = issue.requestStatus;
 
   return (
     <View style={styles.issueItem}>
@@ -44,9 +30,9 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
           <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
         </View>
         <TouchableOpacity
-          style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}
+          style={[styles.statusBadge, { backgroundColor: getIssueStatusColor(status) }]}
         >
-          <Text style={styles.statusText}>Status: {issue.requestStatus}</Text>
+          <Text style={styles.statusText}>Status: {getIssueStatusText(status)}</Text>
         </TouchableOpacity>
       </View>
       {issue.requestStatus === 'completed' && !isArchived && (

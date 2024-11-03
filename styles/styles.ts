@@ -55,4 +55,10 @@ export const Color = {
 
   CameraButtonBackground : "#0F5257",
   CameraButtonBorder : "#7F7F7F",
+
+  inProgress : '#F39C12',
+  notStarted : '#E74C3C',
+  completed : '#2ECC71',
+  rejected : '#95A5A6',
+  default : '#95A5A6',
 }

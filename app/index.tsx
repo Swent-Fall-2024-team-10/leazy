@@ -67,7 +67,7 @@ const HomeDrawerNavigator = () => {
           headerShown: false, // This hides the default header
         }}>
         <Drawer.Screen name="Home" component={HomepageScreen} />
-        <Drawer.Screen name="ListIssues" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
+        <Drawer.Screen name="List of Issues" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />

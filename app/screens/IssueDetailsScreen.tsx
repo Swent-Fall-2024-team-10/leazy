@@ -32,7 +32,7 @@ const IssueDetailsScreen: React.FC = () => {
   const [issue, setIssue] = useState<MaintenanceRequest | null>(null);
   const [loading, setLoading] = useState(true);
     // Manage the status in the parent component
-    const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('inProgress');
+    const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('notStarted');
     const [description, setDescription] = useState('');  // State pour la description modifiable
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -75,6 +75,7 @@ const IssueDetailsScreen: React.FC = () => {
 
   // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
   const handleClose = async () => {
+    console.log('Closing issue with status : ', status);
     if (issue) {
       await updateMaintenanceRequest(requestID, {
         requestStatus: status,

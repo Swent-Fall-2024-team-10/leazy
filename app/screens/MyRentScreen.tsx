@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-
+import Header from '../components/Header';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function MyRentScreen() {
   return (
-    <View style={styles.container}>
+    <Header>
       <Text style={styles.header}>Here is your rent information</Text>
 
       <View style={styles.infoContainer}>
@@ -23,7 +23,7 @@ export default function MyRentScreen() {
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>Pay your rent / unpaid yet</Text>
       </View>
-    </View>
+    </Header>
   );
 }
 

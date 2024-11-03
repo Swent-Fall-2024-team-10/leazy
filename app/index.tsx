@@ -21,6 +21,8 @@ import Chat from './screens/MessagingScreen';
 import CameraScreen from './screens/CameraScreen';
 import CapturedMediaScreen from './screens/CapturedMediaScreen';
 import { PictureProvider } from './context/PictureContext';
+import { Color } from '@/types/types';
+import { appStyles } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -63,11 +65,21 @@ export default function App() {
 
 const HomeDrawerNavigator = () => {
   return (
-      <Drawer.Navigator initialRouteName="Home" useLegacyImplementation = {false} screenOptions={{
+      <Drawer.Navigator initialRouteName="Home" 
+      useLegacyImplementation = {false} 
+      screenOptions={{
           headerShown: false, // This hides the default header
-        }}>
+          drawerStyle: {
+            backgroundColor: Color.HeaderBackground,
+          },
+          drawerActiveTintColor: Color.HeaderText,
+          drawerLabelStyle: appStyles.drawerLabel,
+          
+        }}
+      
+        >
         <Drawer.Screen name="Home" component={HomepageScreen} />
-        <Drawer.Screen name="List of Issues" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
+        <Drawer.Screen name="Maintenance Requests" component={IssueStackNavigator} options={{unmountOnBlur: true}}/>
         <Drawer.Screen name="My Rent" component={MyRentScreen} />
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />

@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         marginBottom: 10,
-        color: Color.ScreenHeader,
+        color: Color.HeaderText,
     },
   
     text: {

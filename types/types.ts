@@ -120,8 +120,9 @@ export const FontWeight = {
 }
 
 export const Color = {
+  HeaderBackground : '#e9d5ff',
 
-  ScreenHeader : "#0B3142",
+  HeaderText : "#0f5257",
   DateText : '#7F7F7F',
 
   ButtonBackgroundDisabled : "#7F7F7F",

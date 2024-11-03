@@ -1,15 +1,10 @@
-import ReportScreen from "@/app/screens/ReportScreen";
-import { Button } from "react-native-elements";
-import { TextInput } from "react-native-gesture-handler";
-
+import { StyleSheet } from "react-native";
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
     Settings: undefined;     // No parameters for Settings screen
   };
-  
-
 
 export const FontSizes = {
   ScreenHeader : 24,
@@ -35,7 +30,10 @@ export const FontWeight = {
 
 export const Color = {
 
-  ScreenHeader : "#0B3142",
+  HeaderText : "#0f5257",
+  HeaderBackground : "#F5F5F5",
+
+  ScreenHeader : "#0f5257",
   DateText : '#7F7F7F',
 
   ButtonBackgroundDisabled : "#7F7F7F",
@@ -62,3 +60,24 @@ export const Color = {
   rejected : '#95A5A6',
   default : '#95A5A6',
 }
+
+export const appStyles = StyleSheet.create({
+  header : {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#e9d5ff',
+    marginTop: 15,
+  },
+
+  drawerLabel : {
+    fontSize: 15,
+    fontWeight: '800',
+    fontFamily: "Inter-Bold",
+    color: Color.ScreenHeader,
+    alignItems: 'center',
+    borderColor: Color.ScreenHeader,
+  },
+
+});

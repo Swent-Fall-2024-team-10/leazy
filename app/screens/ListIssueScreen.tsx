@@ -108,7 +108,7 @@ const MaintenanceIssues = () => {
       <Header>
         <ScrollView style={styles.scrollView}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Maintenance issues</Text>
+            <Text style={styles.title}>Maintenance Requests</Text>
           </View>
 
           <View style={styles.switchContainer}>

@@ -1,23 +1,24 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Header from '../components/Header';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function SubrentScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Subrent Screen</Text>
-      <Text style={styles.subText}>This will display subrent-related information.</Text>
-    </View>
+    <Header>
+      <View style={styles.container}>
+        <Text style={styles.text}>Subrent Screen</Text>
+        <Text style={styles.subText}>This will display subrent-related information.</Text>
+      </View>
+    </Header>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#d3d3d3',
+    padding: 20,
   },
   text: {
     fontSize: 18,

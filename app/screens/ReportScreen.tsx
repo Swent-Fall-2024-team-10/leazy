@@ -62,7 +62,6 @@ export default function ReportScreen() {
     setLoading(true); // Set loading to true when starting the submission
 
     const tenantId = await getTenant(auth.currentUser?.uid || '');
-    console.log('url list for the pictures : ' , pictureList)
       try {
         if (!tenantId) {
           throw new Error('Tenant not found');

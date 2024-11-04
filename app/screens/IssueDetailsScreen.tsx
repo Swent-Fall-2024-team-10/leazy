@@ -75,7 +75,6 @@ const IssueDetailsScreen: React.FC = () => {
 
   // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
   const handleClose = async () => {
-    console.log('Closing issue with status : ', status);
     if (issue) {
       await updateMaintenanceRequest(requestID, {
         requestStatus: status,

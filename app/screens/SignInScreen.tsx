@@ -42,7 +42,6 @@ export default function SignInScreen() {
     emailAndPasswordLogIn(email, password).then((user) => {
       if (user) {
         Alert.alert('Success', 'You have successfully signed in!');
-        console.log("User signed in:", user);
       }
     }).catch((error) => {
       setPopup(true);

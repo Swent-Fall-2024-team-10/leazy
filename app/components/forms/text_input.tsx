@@ -14,11 +14,12 @@ interface InputFieldProps {
   radius: number;
   width: number;
   backgroundColor: string;
+  testID: string;
 }
 
 
-export default function InputField({ label, value, setValue, placeholder, height = 40, width = 100, radius = 25} : InputFieldProps) {
-  console.log(UIManager);
+export default function InputField({ label, value, setValue, placeholder, testID ,height = 40, width = 100, radius = 25} : InputFieldProps) {
+  // console.log(UIManager);
   
   return (
     <View>
@@ -38,6 +39,7 @@ export default function InputField({ label, value, setValue, placeholder, height
           onChangeText={setValue}
           multiline={true}
           placeholderTextColor={Color.TextInputPlaceholder}
+          testID={testID}
         />
       </View>
     </View>

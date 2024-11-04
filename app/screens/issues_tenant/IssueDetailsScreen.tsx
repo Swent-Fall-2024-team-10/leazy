@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '../../types/types';
+import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '@/types/types';
 import { MessageSquare} from 'react-native-feather';
-import StatusDropdown from '../components/StatusDropdown';
-import Header from '../components/Header';
-import StatusBadge from '../components/StatusBadge';
-import AdaptiveButton from '../components/AdaptiveButton';
+import StatusDropdown from '@/app/components/StatusDropdown';
+import Header from '@/app/components/Header';
+import StatusBadge from '@/app/components/StatusBadge';
+import AdaptiveButton from '@/app/components/AdaptiveButton';
 import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant

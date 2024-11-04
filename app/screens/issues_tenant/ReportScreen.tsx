@@ -144,6 +144,7 @@ export default function ReportScreen() {
           height={40}
           width={300}
           backgroundColor={Color.TextInputBackground}
+          testID="testIssueNameField"
         />
 
         <Spacer height={20} />
@@ -170,6 +171,7 @@ export default function ReportScreen() {
           height={40}
           width={300}
           backgroundColor={Color.TextInputBackground}
+          testID="testRoomNameField"
         />
 
         <Spacer height={20} />
@@ -183,6 +185,7 @@ export default function ReportScreen() {
           width={300}
           backgroundColor={Color.TextInputBackground}
           radius={20}
+          testID="testDescriptionField"
         />
 
         <Spacer height={20} />

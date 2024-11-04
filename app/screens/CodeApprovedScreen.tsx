@@ -7,7 +7,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function CodeApprovedScreen() {
   const address = "18 Chemin de Renens, 1004 Lausanne";
   const onNext = () => {
-    console.log("Next button pressed");
+    // console.log("Next button pressed");
   }
 
   return (
@@ -16,7 +16,12 @@ export default function CodeApprovedScreen() {
       <Text style={styles.text}>
         Welcome to {'\n'}{address}!
       </Text>
-      <CustomButton size="medium" onPress={onNext} title="Next"/>
+      <CustomButton 
+      size="medium" 
+      onPress={onNext} 
+      title="Next"
+      testID='testNextButton'
+      />
     </View>
   );
 }

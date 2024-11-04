@@ -41,7 +41,6 @@ const handleUpload = useCallback(async () => {
     await uploadBytes(storageRef, blob);
 
     const downloadURL = await getDownloadURL(storageRef);
-    console.log(`Media uploaded to Firebase: ${downloadURL}`);
     addPicture(downloadURL);
 
     navigation.goBack();

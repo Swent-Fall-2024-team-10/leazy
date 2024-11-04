@@ -6,7 +6,6 @@ import CustomButton from '@/app/components/CustomButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
 import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
 
-
 const VALID_CODE = '1234';
 
 interface FormErrors {
@@ -27,7 +26,7 @@ export default function CodeEntryScreen() {
   const handleSubmit = () => {
     const formErrors = validateForm();
     const isValidCode = code === VALID_CODE;
-    console.log(`Code is ${isValidCode ? 'valid' : 'invalid'}`);
+    // console.log(`Code is ${isValidCode ? 'valid' : 'invalid'}`);
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
@@ -45,8 +44,14 @@ export default function CodeEntryScreen() {
         placeholder="Enter code"
         value={code}
         onChangeText={setCode}
+        testID='testCodeInput'
       />
-      <CustomButton size="medium" onPress={handleSubmit} title="Submit code"/>
+      <CustomButton 
+      size="medium" 
+      onPress={handleSubmit} 
+      title="Submit code"
+      testID='testSubmitButton'
+      />
       {errors.code && <Text style={styles.errorText}>{errors.code}</Text>}
       <Text style={styles.text}>
         If you don't have a code please ask your residence manager to generate one for you.

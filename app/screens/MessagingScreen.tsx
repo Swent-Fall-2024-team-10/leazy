@@ -39,7 +39,6 @@ export default function Chat() {
     if (!userSignedIn) return; // Wait until the user is signed in
 
     const currentUserEmail = auth?.currentUser?.email;
-    console.log("currentUserEmail: ", currentUserEmail);
 
     if (currentUserEmail) {
       const collectionRef = collection(db, "chats");

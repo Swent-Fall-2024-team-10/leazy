@@ -30,6 +30,7 @@ export const FontWeight = {
 
 export const Color = {
 
+
   HeaderText : "#0f5257",
   HeaderBackground : "#F5F5F5",
 
@@ -78,6 +79,11 @@ export const appStyles = StyleSheet.create({
     color: Color.ScreenHeader,
     alignItems: 'center',
     borderColor: Color.ScreenHeader,
+  },
+
+  screenContainer : {
+    flex: 1,
+    padding: 20,
   },
 
 });

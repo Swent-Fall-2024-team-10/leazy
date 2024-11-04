@@ -38,6 +38,8 @@ export default function ReportScreen() {
   const {pictureList, resetPictureList} = usePictureContext();
   const {removePicture} = usePictureContext();
 
+  console.log("Remove this log as it's just to make sure sonarcloud works")
+
   const handleClose = () => {
     setIsVisible(true);
   };

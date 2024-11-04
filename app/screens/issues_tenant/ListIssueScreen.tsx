@@ -8,7 +8,7 @@ import { updateMaintenanceRequest, getMaintenanceRequestsQuery } from '../../../
 import { MaintenanceRequest} from '../../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
-import { getIssueStatusColor, getIssueStatusText } from '../../../utils/StatusHelper';
+import { getIssueStatusColor, getIssueStatusText } from '@/app/utils/StatusHelper'; 
 import { appStyles } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant

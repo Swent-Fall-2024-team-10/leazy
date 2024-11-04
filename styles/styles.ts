@@ -63,15 +63,6 @@ export const Color = {
 }
 
 export const appStyles = StyleSheet.create({
-  header : {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#e9d5ff',
-    marginTop: 15,
-  },
-
   drawerLabel : {
     fontSize: 15,
     fontWeight: '800',
@@ -85,5 +76,11 @@ export const appStyles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+
+  screenHeader : {
+
+  },
+
+
 
 });

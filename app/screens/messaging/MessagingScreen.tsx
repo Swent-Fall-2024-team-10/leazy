@@ -12,7 +12,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../../firebase/firebase";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Chat() {
+export default function MessagingScreen() {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [userSignedIn, setUserSignedIn] = useState(false); // Track if the user is signed in
 

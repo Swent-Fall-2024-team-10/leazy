@@ -6,24 +6,17 @@ import HomepageScreen from './screens/HomepageScreen';
 import MyRentScreen from './screens/MyRentScreen';
 import SharedElementsScreen from './screens/SharedElementsScreen';
 import SubrentScreen from './screens/SubrentScreen';
-import ReportScreen from './screens/ReportScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
 import { auth } from '../firebase/firebase';
-import SignInScreen from './screens/SignInScreen';
-import SignUpScreen from './screens/SignUpScreen';
-import CodeEntryScreen from './screens/CodeEntryScreen';
-import CodeApprovedScreen from './screens/CodeApprovedScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ListIssueScreen from './screens/ListIssueScreen';
-import IssueDetailsScreen from './screens/IssueDetailsScreen';
-import Chat from './screens/MessagingScreen';
-import CameraScreen from './screens/CameraScreen';
-import CapturedMediaScreen from './screens/CapturedMediaScreen';
 import { PictureProvider } from './context/PictureContext';
 import { Color } from '@/types/types';
 import { appStyles } from '@/styles/styles';
-
+import { ReportScreen, ListIssueScreen, IssueDetailsScreen } from './screens/issues_tenant';
+import { CodeApprovedScreen, CodeEntryScreen, SignInScreen, SignUpScreen } from './screens/auth';
+import { CameraScreen, CapturedMediaScreen } from './screens/camera';
+import { MessagingScreen } from './screens/messaging';
 // portions of this code were generated with chatGPT as an AI assistant
 
 const Drawer = createDrawerNavigator();
@@ -116,7 +109,7 @@ const IssueStackNavigator = () => {
         <Stack.Screen name="Report" component={ReportScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="CapturedMedia" component={CapturedMediaScreen} options={{ headerShown: true }}/>
-        <Stack.Screen name="Messaging" component={Chat} options={{ headerShown: false }}/>
+        <Stack.Screen name="Messaging" component={MessagingScreen} options={{ headerShown: false }}/>
       </Stack.Navigator>
   );
 

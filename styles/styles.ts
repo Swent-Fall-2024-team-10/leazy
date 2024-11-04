@@ -1,10 +1,15 @@
 import { StyleSheet } from "react-native";
+import { Header } from "react-native-elements";
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
     Settings: undefined;     // No parameters for Settings screen
   };
+
+export const Padding = {
+  Header : '8%',
+}
 
 export const FontSizes = {
   ScreenHeader : 24,
@@ -32,7 +37,7 @@ export const Color = {
 
 
   HeaderText : "#0f5257",
-  HeaderBackground : "#F5F5F5",
+  HeaderBackground : '#e9d5ff',
 
   ScreenHeader : "#0f5257",
   DateText : '#7F7F7F',
@@ -62,7 +67,20 @@ export const Color = {
   default : '#95A5A6',
 }
 
+
 export const appStyles = StyleSheet.create({
+  
+  appHeader :{
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: 7.6,
+    fontFamily: "Inter-Bold",
+    color: "#0f5257",
+    flex : 1,
+    textAlign: 'center',
+  },
+  
+  
   drawerLabel : {
     fontSize: 15,
     fontWeight: '800',
@@ -78,12 +96,16 @@ export const appStyles = StyleSheet.create({
   },
 
   screenHeader : {
+    flex: 1,
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
+    alignItems: 'center',
     textAlign: 'center',
     color: Color.ScreenHeader,
   },
+
+  
 
 
 

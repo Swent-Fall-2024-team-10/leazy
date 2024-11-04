@@ -11,12 +11,14 @@ import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
 import { auth } from '../firebase/firebase';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PictureProvider } from './context/PictureContext';
-import { Color } from '@/types/types';
+import { Color } from '@/styles/styles';
 import { appStyles } from '@/styles/styles';
 import { ReportScreen, ListIssueScreen, IssueDetailsScreen } from './screens/issues_tenant';
 import { CodeApprovedScreen, CodeEntryScreen, SignInScreen, SignUpScreen } from './screens/auth';
 import { CameraScreen, CapturedMediaScreen } from './screens/camera';
 import { MessagingScreen } from './screens/messaging';
+import CustomDrawerContent from '@/app/components/drawer/CustomDrawer';
+
 // portions of this code were generated with chatGPT as an AI assistant
 
 const Drawer = createDrawerNavigator();
@@ -60,6 +62,7 @@ const HomeDrawerNavigator = () => {
   return (
       <Drawer.Navigator initialRouteName="Home" 
       useLegacyImplementation = {false} 
+      drawerContent={props => <CustomDrawerContent {...props} />}
       screenOptions={{
           headerShown: false, // This hides the default header
           drawerStyle: {

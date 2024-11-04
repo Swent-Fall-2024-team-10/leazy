@@ -150,14 +150,16 @@ export default function ReportScreen() {
         
         <CameraButton onPress={handleAddPicture} />
 
-        <View style={styles.thumbnails}>
-          {pictureList.map((picture, index) => (
-            <View key={index} style={styles.thumbnailBox}>
-              <Image source={{ uri: picture }} style={styles.thumbnailImage} />
-            </View>
-          ))}
-        </View>
+        <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              >
+                {pictureList.map((image, index) => (
+                    <Image key={index} source={{ uri: image }} style={styles.thumbnailImage} />
+                ))}
+              </ScrollView>
 
+              <Spacer height={20} ></Spacer>
         
         <InputField
           label="Which room is the issue in?"
@@ -208,7 +210,6 @@ export default function ReportScreen() {
           height={44}
           label="Submit"
         />
-        <Spacer height={250} />
       </ScrollView>
 
     </Header>
@@ -218,6 +219,7 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
 
   thumbnailImage: {
+    marginHorizontal: 5,
     width: 100,
     height: 100,
     borderRadius: 10,

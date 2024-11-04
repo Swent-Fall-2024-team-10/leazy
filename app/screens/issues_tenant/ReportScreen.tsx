@@ -285,9 +285,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     textAlign: 'center',
     color: Color.DateText,
-  },
-
-  header: {
+  },  
+  
+  header : {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,

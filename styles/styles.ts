@@ -78,7 +78,11 @@ export const appStyles = StyleSheet.create({
   },
 
   screenHeader : {
-
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: Color.ScreenHeader,
   },
 
 

@@ -9,7 +9,7 @@ import Header from '@/app/components/Header';
 import StatusBadge from '@/app/components/StatusBadge';
 import AdaptiveButton from '@/app/components/AdaptiveButton';
 import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
-import Spacer from '../components/Spacer';
+import Spacer from '../../components/Spacer';
 
 // portions of this code were generated with chatGPT as an AI assistant
 

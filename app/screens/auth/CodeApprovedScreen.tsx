@@ -16,7 +16,7 @@ export default function CodeApprovedScreen() {
       <Text style={styles.text}>
         Welcome to {'\n'}{address}!
       </Text>
-      <CustomButton size="medium" onPress={onNext} title="Next"/>
+      <CustomButton size="medium" onPress={onNext} title="Next" testID='testNextButton'/>
     </View>
   );
 }

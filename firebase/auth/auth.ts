@@ -13,8 +13,6 @@ import {
     connectAuthEmulator
 } from "firebase/auth";
 
-
-import { TLandlordData, TTenantData } from "../../types/types";
 const provider = new GoogleAuthProvider();
 
 
@@ -36,7 +34,7 @@ export async function emailAndPasswordSignIn(email: string, password: string, us
         }
         return user;
     } catch (error) {
-        console.log(error);
+        console.log("Error while signing in to firebase : " , error);
         return null;
     }
 }

@@ -1,29 +1,32 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-
+import Header from '../components/Header';
+import { appStyles } from '@/styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function MyRentScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Here is your rent information</Text>
+    <Header>
+      <View style={appStyles.screenContainer}>
+        <Text style={styles.header}>Here is your rent information</Text>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Expire the: 04/10/24</Text>
-      </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>Expire the: 04/10/24</Text>
+        </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Tenant infos</Text>
-      </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>Tenant infos</Text>
+        </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Guarantor</Text>
-      </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>Guarantor</Text>
+        </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Pay your rent / unpaid yet</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>Pay your rent / unpaid yet</Text>
+        </View>
       </View>
-    </View>
+    </Header>
   );
 }
 

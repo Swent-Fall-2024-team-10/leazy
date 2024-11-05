@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import CustomTextField from '../components/CustomTextField';
-import CustomButton from '../components/CustomButton';
-import CustomPicker from '../components/CustomPicker';
-import { UserType } from '../../firebase/auth/auth';
-import { emailAndPasswordSignIn } from '../../firebase/auth/auth';
-import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
-import CustomPopUp from '../components/CustomPopUp';
+import CustomTextField from '@/app/components/CustomTextField';
+import CustomButton from '@/app/components/CustomButton';
+import CustomPicker from '@/app/components/CustomPicker';
+import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import CustomPopUp from '@/app/components/CustomPopUp';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { User, Tenant} from '@/types/types';
+import { User, Tenant, RootStackParamList} from '@/types/types';
 
 interface FormErrors {
   firstName?: string;
@@ -166,7 +164,7 @@ export default function SignUpScreen() {
           title="Sign up with Google" 
           onPress={handleGoogleSignUp} 
           size="large" 
-          image={require('../../assets/images/google_logo.png')} 
+          image={require('@/assets/images/auth/google_logo.png')} 
         />
 
       </View>

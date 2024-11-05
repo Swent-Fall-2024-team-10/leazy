@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions, Modal } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '../../types/types';
+import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '@/types/types';
 import { MessageSquare} from 'react-native-feather';
-import StatusDropdown from '../components/StatusDropdown';
-import Header from '../components/Header';
-import StatusBadge from '../components/StatusBadge';
-import AdaptiveButton from '../components/AdaptiveButton';
+import StatusDropdown from '@/app/components/StatusDropdown';
+import Header from '@/app/components/Header';
+import StatusBadge from '@/app/components/StatusBadge';
+import AdaptiveButton from '@/app/components/AdaptiveButton';
 import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
-import Spacer from '../components/Spacer';
+import Spacer from '../../components/Spacer';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -33,7 +33,7 @@ const IssueDetailsScreen: React.FC = () => {
   const [issue, setIssue] = useState<MaintenanceRequest | null>(null);
   const [loading, setLoading] = useState(true);
     // Manage the status in the parent component
-    const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('inProgress');
+    const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('notStarted');
     const [description, setDescription] = useState('');  // State pour la description modifiable
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [fullScreenMode, setFullScreenMode] = useState(false); // Track full-screen mode
@@ -112,6 +112,7 @@ const IssueDetailsScreen: React.FC = () => {
 
   // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
   const handleClose = async () => {
+    console.log('Closing issue with status : ', status);
     if (issue) {
       await updateMaintenanceRequest(requestID, {
         requestStatus: status,

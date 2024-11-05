@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import CustomTextField from '@/app/components/CustomTextField';
 import CustomButton from '@/app/components/CustomButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../types/types';  // Import or define your navigation types
+import { RootStackParamList } from '../../../types/types';  // Import or define your navigation types
 
 
 const VALID_CODE = '1234';

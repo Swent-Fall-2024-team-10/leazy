@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { RootStackParamList } from '../../types/types';
 import {Menu, User } from 'react-native-feather';
-
+import { Color } from '@/styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 // Get screen width and height
@@ -38,15 +38,15 @@ export default Header;
 const styles = StyleSheet.create({
 container: {
     flex: 1,
-    backgroundColor: '#e9d5ff',
+    backgroundColor: Color.HeaderBackground,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
     backgroundColor: '#e9d5ff',
-    marginTop: 15,
+    marginTop: '8%',
+    padding: '5%',
   },
   headerTitle: {
     fontSize: 26,

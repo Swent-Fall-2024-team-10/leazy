@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Text, StyleSheet, View, Alert, Image, Modal} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import InputField from '../components/forms/text_input';
+import InputField from '@/app/components/forms/text_input';
 import Spacer from '@/app/components/Spacer';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { Color } from '@/styles/styles';
 import Close from '@/app/components/buttons/Close';
 import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
-import { ReportStackParamList } from '../../types/types';  // Import or define your navigation types
+import { ReportStackParamList } from '@/types/types';  // Import or define your navigation types
 import CameraButton from '@/app/components/buttons/CameraButton';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
@@ -15,8 +15,8 @@ import { collection, addDoc } from 'firebase/firestore'; // Import Firestore fun
 import { MaintenanceRequest } from '@/types/types';
 import { db, auth} from '@/firebase/firebase';
 import { getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
-import Header from '../components/Header';
-import { usePictureContext } from '../context/PictureContext';
+import Header from '@/app/components/Header';
+import { usePictureContext } from '@/app/context/PictureContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -38,22 +38,24 @@ export default function ReportScreen() {
   const {pictureList, resetPictureList} = usePictureContext();
   const {removePicture} = usePictureContext();
 
-  const handleClose = () => {
-    setIsVisible(true);
-  };
-
-  useEffect(() => {
-    // Reset picture list when navigating away from the screen
-    return () => resetPictureList();
-  }, []);
-
+  
   function resetStates() {
     setRoom('');
     setIssue('');
     setDescription('');
     resetPictureList();
   }
+  const handleClose = () => {
+    setIsVisible(true);
+  };
 
+  useEffect(() => {
+    // Reset picture list when navigating away from the screen
+    return () => {
+      resetPictureList();
+    };
+  }, []);
+  
   const handleAddPicture = () => {
     navigation.navigate('CameraScreen');
   };
@@ -142,6 +144,7 @@ export default function ReportScreen() {
           height={40}
           width={300}
           backgroundColor={Color.TextInputBackground}
+          testID="testIssueNameField"
         />
 
         <Spacer height={20} />
@@ -170,6 +173,7 @@ export default function ReportScreen() {
           height={40}
           width={300}
           backgroundColor={Color.TextInputBackground}
+          testID="testRoomNameField"
         />
 
         <Spacer height={20} />
@@ -183,6 +187,7 @@ export default function ReportScreen() {
           width={300}
           backgroundColor={Color.TextInputBackground}
           radius={20}
+          testID="testDescriptionField"
         />
 
         <Spacer height={20} />
@@ -282,9 +287,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     textAlign: 'center',
     color: Color.DateText,
-  },
-
-  header: {
+  },  
+  
+  header : {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,

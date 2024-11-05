@@ -31,6 +31,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, setValue }) => {
         style={styles.dropdown}
         textStyle={styles.dropdownText}
         dropDownContainerStyle={styles.dropdownContainer}
+        listMode="SCROLLVIEW"
       />
     </View>
   );

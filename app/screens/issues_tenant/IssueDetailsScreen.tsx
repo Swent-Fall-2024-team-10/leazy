@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions, Modal } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '@/types/types';
@@ -9,6 +9,7 @@ import Header from '@/app/components/Header';
 import StatusBadge from '@/app/components/StatusBadge';
 import AdaptiveButton from '@/app/components/AdaptiveButton';
 import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
+import Spacer from '../components/Spacer';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -35,6 +36,9 @@ const IssueDetailsScreen: React.FC = () => {
     const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('notStarted');
     const [description, setDescription] = useState('');  // State pour la description modifiable
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [fullScreenMode, setFullScreenMode] = useState(false); // Track full-screen mode
+    const [fullImageDimensions, setFullImageDimensions] = useState({ width: 0, height: 0 });
+
 
     // Handle left arrow click
     const handlePreviousImage = () => {
@@ -49,6 +53,39 @@ const IssueDetailsScreen: React.FC = () => {
         setCurrentImageIndex((prevIndex) => (prevIndex === issue.picture.length - 1 ? 0 : prevIndex + 1));
       }
     };
+
+    // Open full-screen mode with the clicked image index
+  const openFullScreen = (index: number) => {
+    if (issue) {
+    setCurrentImageIndex(index);
+
+    Image.getSize(issue.picture[index], (width, height) => {
+      const screenWidth = Dimensions.get('window').width * 0.9;
+      const screenHeight = Dimensions.get('window').height * 0.9;
+
+      const aspectRatio = width / height;
+
+      let finalWidth, finalHeight;
+      if (width > height) {
+        // Landscape image
+        finalWidth = screenWidth;
+        finalHeight = screenWidth / aspectRatio;
+      } else {
+        // Portrait image
+        finalHeight = screenHeight;
+        finalWidth = screenHeight * aspectRatio;
+      }
+
+      setFullImageDimensions({ width: finalWidth, height: finalHeight });
+      setFullScreenMode(true);
+    });
+  }
+  };
+
+  // Close full-screen mode
+  const closeFullScreen = () => {
+    setFullScreenMode(false);
+  };
 
      // Récupérer l'issue depuis Firebase
   useEffect(() => {
@@ -90,9 +127,9 @@ const IssueDetailsScreen: React.FC = () => {
   return (
     <Header>
         <View style={styles.grayBackground}>
-          <View style={styles.content}>
+          <ScrollView style={styles.content} automaticallyAdjustKeyboardInsets = {true} showsVerticalScrollIndicator = {false}>
             <View style={styles.issueTitle}>
-              <Text style={styles.issueTitleText}>{issue.requestTitle}</Text>
+              <Text style={styles.issueTitleText}>Issue: {issue.requestTitle}</Text>
               <StatusBadge status={status} />
             </View>
 
@@ -102,21 +139,26 @@ const IssueDetailsScreen: React.FC = () => {
             iconPosition= {'right'}
             ></AdaptiveButton>
             
-            <Text style={styles.sectionTitle}>Images submitted</Text>
+            <Text style={styles.sectionTitleImage}>Images submitted</Text>
             <View style={styles.imageCarouselContainer}>
-            <TouchableOpacity onPress={handlePreviousImage} style={styles.arrowButton}>
-              <Text style={styles.arrowText}>{'<'}</Text>
-            </TouchableOpacity>
 
-            <Image
-              source={{ uri: issue.picture[currentImageIndex] }}
-              style={styles.image}
-            />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.scrollViewContainer}
+              >
+                {issue.picture.map((image, index) => (
+                  <TouchableOpacity key={index} onPress={() => openFullScreen(index)}>
+                    <Image key={index} source={{ uri: image }} style={styles.squareImage} />
+                  </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleNextImage} style={styles.arrowButton}>
-              <Text style={styles.arrowText}>{'>'}</Text>
-            </TouchableOpacity>
-          </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            <View style={styles.imagesTextView}>
+            <Text style={styles.imagesText}>Click on an image to expand it</Text>
+            </View>
 
             <View style={styles.descriptionContainer}>
               <Text style={styles.sectionTitle}>Description</Text>
@@ -132,18 +174,99 @@ const IssueDetailsScreen: React.FC = () => {
             <AdaptiveButton title = {'Close'} onPress = {handleClose}>
             </AdaptiveButton>
 
-          </View>
+            {/* Full-Screen Modal */}
+          <Modal visible={fullScreenMode} transparent={true} onRequestClose={closeFullScreen}>
+            <View style={styles.modalBackground}>
+              <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
+                <Text style={styles.closeModalText}>X</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={handlePreviousImage} style={[styles.arrowButton, styles.leftArrow]}>
+                <Text style={styles.arrowText}>{'<'}</Text>
+              </TouchableOpacity>
+
+              <Image
+                source={{ uri: issue.picture[currentImageIndex] }}
+                style={[styles.fullImage, fullImageDimensions]}
+                resizeMode="contain"
+              />
+
+              <TouchableOpacity onPress={handleNextImage} style={[styles.arrowButton, styles.rightArrow]}>
+                <Text style={styles.arrowText}>{'>'}</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+          <Spacer height={20} />
+          </ScrollView>
         </View>
     </Header>
   );
 };
 
 const styles = StyleSheet.create({
+  imagesTextView:{
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 32,
+  },
+  imagesText:{
+    fontFamily: "Inter-Regular",
+    fontSize: 10,
+  },
+  closeModalButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 2,
+  },
+  closeModalText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    borderRadius: 16,
+    borderColor: 'lightgrey',
+    borderWidth: 0.5,
+  },
+  imageCarouselContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  scrollViewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  squareImage: {
+    width: 150, // Square dimension
+    height: 150, // Square dimension
+    marginHorizontal: 5,
+    borderRadius: 8,
+    borderColor: 'lightgrey',
+    borderWidth: 0.5,
+  },
+  leftArrow: {
+    left: 5,
+  },
+  rightArrow: {
+    right: 5,
+  },
   grayBackground: {
+    height: Dimensions.get('window').height * 0.8,
     backgroundColor: '#F3F2F1',
     marginHorizontal: 10,
     marginVertical: 12,
     borderRadius: 32,
+    overflow: 'hidden',
     // Add black border
     borderColor: 'light-grey',
     borderWidth: 0.5,
@@ -163,10 +286,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   issueTitleText: {
-    marginBottom: 8,
+    marginBottom: 20,
+    paddingLeft: 8,
     fontSize: 16,
     letterSpacing: 0.2,
-    fontFamily: "Inter-Regular",
+    fontFamily: "Inter-Bold",
   },
   image: {
     width: '100%',
@@ -179,6 +303,7 @@ const styles = StyleSheet.create({
   },
   descriptionContainer: {
     marginBottom: 16,
+    marginTop: -8,
   },
   descriptionBox: {
     backgroundColor: 'white',
@@ -200,6 +325,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
+  },
+  sectionTitleImage: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
   },
   descriptionText: {
     fontSize: 14,
@@ -231,19 +362,17 @@ const styles = StyleSheet.create({
   closeButtonContainer: {
     alignItems: 'center',
   },
-  imageCarouselContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
   arrowButton: {
-    padding: 10,
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    zIndex: 1,
+    padding: 8,
   },
   arrowText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'white',
   },
 });
 

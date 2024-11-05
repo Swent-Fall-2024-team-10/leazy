@@ -24,10 +24,32 @@ export default function CapturedMediaScreen() {
 
 const handleUpload = useCallback(async () => {
   try {
-    // Resize the image
+
+    // Define a type for the dimensions object
+    type ImageDimensions = { width: number; height: number };
+
+    // Step 1: Get the original dimensions of the image using a promise
+    const getImageDimensions = (uri: string): Promise<ImageDimensions> => {
+      return new Promise((resolve, reject) => {
+        Image.getSize(
+          uri,
+          (width, height) => resolve({ width, height }),
+          (error) => reject(error)
+        );
+      });
+    };
+
+    // Retrieve dimensions with the correct type
+    const { width, height } = await getImageDimensions(uri);
+
+    // Step 2: Calculate target dimensions (e.g., 50% of original)
+    const targetWidth = width * 0.5; // Adjust 0.5 to the desired percentage
+    const targetHeight = height * 0.5; // Adjust 0.5 to the desired percentage
+
+    // Step 3: Resize the image using ImageManipulator
     const resizedImage = await ImageManipulator.manipulateAsync(
       uri,
-      [{ resize: { width: 800, height: 600 } }], // Set target dimensions
+      [{ resize: { width: targetWidth, height: targetHeight } }],
       { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
     );
 

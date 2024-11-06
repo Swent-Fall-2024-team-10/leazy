@@ -57,15 +57,9 @@ jobs:
       - name: Run tests with coverage
         run: |
           npx jest --coverage # Assuming Jest is configured with coverage
-        env:
-          CI: true
-
-      - name: Upload coverage to SonarCloud
-        run: |
-          npm run coverage # Use this if you have a dedicated script for generating coverage reports
-          # Make sure to set up coverage report paths in SonarCloud args below if using lcov or other format
 
       - name: Analyze with SonarCloud
+        if: always() # so the analysis runs even if the tests fail
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

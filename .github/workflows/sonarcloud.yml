@@ -26,7 +26,7 @@
 # Feel free to take a look at our documentation (https://docs.sonarcloud.io/getting-started/github/)
 # or reach out to our community forum if you need some help (https://community.sonarsource.com/c/help/sc/9)
 
-name: SonarCloud analysis
+name: SonarCloud Analysis
 
 on:
   push:
@@ -43,25 +43,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Analyze with SonarCloud
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        # You can pin the exact commit or the version.
-        # uses: SonarSource/sonarcloud-github-action@v2.2.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Adjust this if your project requires a different version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests with coverage
+        run: |
+          npm run test -- --coverage # Assuming Jest is configured with coverage
+        env:
+          CI: true
+
+      - name: Upload coverage to SonarCloud
+        run: |
+          npm run coverage # Use this if you have a dedicated script for generating coverage reports
+          # Make sure to set up coverage report paths in SonarCloud args below if using lcov or other format
+
+      - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          # Additional arguments for the SonarScanner CLI
-          args:
-            # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
-            # mandatory
+          args: |
             -Dsonar.projectKey=Swent-Fall-2024-team-10_leazy
             -Dsonar.organization=swent-fall-2024-team-10
-            # Comma-separated paths to directories containing main source files.
-            #-Dsonar.sources= # optional, default is project base directory
-            # Comma-separated paths to directories containing test source files.
-            #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
-            # Adds more detail to both client and server-side analysis logs, activating DEBUG mode for the scanner, and adding client-side environment variables and system properties to the server-side log of analysis report processing.
-            #-Dsonar.verbose= # optional, default is false
-          # When you need the analysis to take place in a directory other than the one from which it was launched, default is .
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info # Adjust if your coverage report is in a different location
           projectBaseDir: .
+

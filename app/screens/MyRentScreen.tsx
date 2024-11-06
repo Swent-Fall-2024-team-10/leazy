@@ -5,6 +5,7 @@ import { appStyles } from '@/styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function MyRentScreen() {
+  console.log("Delete this log")
   return (
     <Header>
       <View style={appStyles.screenContainer}>

@@ -66,7 +66,6 @@ jobs:
             #-Dsonar.verbose= # optional, default is false
           # When you need the analysis to take place in a directory other than the one from which it was launched, default is .
           projectBaseDir: .
-      - name: Install dependencies
-        run: npm install
-      - name: Test and coverage
-        run: npx jest --coverage
+          run: npm install
+          run: npx jest --coverage
+        

@@ -56,7 +56,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          npm run test -- --coverage # Assuming Jest is configured with coverage
+          npx jest --coverage # Assuming Jest is configured with coverage
         env:
           CI: true
 

@@ -59,7 +59,7 @@ jobs:
           npx jest --coverage # Assuming Jest is configured with coverage
 
       - name: Analyze with SonarCloud
-        if: always() # so the analysis runs even if the tests fail
+        if: always() # so the analysis runs even if the tests fail 
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

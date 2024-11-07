@@ -17,7 +17,7 @@ import {
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
 
-export const ManageMachinesScreen = () => {
+const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [newMachineId, setNewMachineId] = useState<string>("");
   const residenceId = "TEMPLATE_RESIDENCE_ID"; // Replace with actual residence ID
@@ -193,3 +193,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export default ManageMachinesScreen;

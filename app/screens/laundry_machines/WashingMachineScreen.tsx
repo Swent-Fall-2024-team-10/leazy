@@ -4,39 +4,30 @@ import {
   Text,
   Button,
   Modal,
+  TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  RefreshControl,
-  Image,
 } from "react-native";
 import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
-import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { appStyles } from "@/styles/styles";
 
-const WashingMachineScreen = () => {
+export const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
-  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(
-    null
-  );
-  const [refreshing, setRefreshing] = useState(false);
-  const residenceId = "TestResidence1"; // Replace with the actual residence ID
-
-  const fetchMachines = async () => {
-    setRefreshing(true);
-    const fetchedMachines = await getAllLaundryMachines(residenceId);
-    setMachines(fetchedMachines);
-    setRefreshing(false);
-  };
+  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchMachines();
-  }, [residenceId]);
+    // Fetch machines data from Firestore or use sample data
+    const initialMachines: LaundryMachine[] = [
+      { laundryMachineId: "123", isAvailable: true, isFunctional: true },
+      { laundryMachineId: "456", isAvailable: true, isFunctional: true },
+      { laundryMachineId: "789", isAvailable: true, isFunctional: false },
+    ];
+    setMachines(initialMachines);
+  }, []);
 
   const handleSetTimer = () => {
     if (selectedMachineId) {
@@ -45,83 +36,38 @@ const WashingMachineScreen = () => {
     setIsTimerModalVisible(false);
   };
 
-  const syncTimerWithFirestore = (
-    laundryMachineId: string,
-    time: number | null
-  ) => {
+  const syncTimerWithFirestore = (laundryMachineId: string, time: number | null) => {
+    // Firestore interaction logic to be added here
     console.log(
       `Syncing timer for machine ${laundryMachineId} with time ${time}`
     );
   };
 
-  const getStatus = (machine: LaundryMachine) => {
-    if (!machine.isFunctional) {
-      return {
-        statusText: "Under Maintenance",
-        style: styles.underMaintenanceBubble,
-      };
-    }
-    return machine.isAvailable
-      ? { statusText: "Available", style: styles.availableBubble }
-      : { statusText: "In Use", style: styles.inUseBubble };
-  };
-
   const renderMachines = () => {
-    return machines.map((machine) => {
-      const { statusText, style } = getStatus(machine);
-
-      return (
-        <View key={machine.laundryMachineId} style={styles.machineCard}>
-          <View style={{ flexDirection: "row" }}>
-            <Image
-              source={require("@/assets/images/washing_machine_icon_png.png")}
-              style={{ width: 120, height: 120, marginRight: '0.5%', marginLeft: '-1.5%' }}
-            />
-            <View
-              style={{
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={styles.machineTitle}>
-                Machine number: {machine.laundryMachineId}
-              </Text>
-              <View style={[styles.statusBubble, style]}>
-                <Text style={styles.statusText}>{statusText}</Text>
-              </View>
-
-              {/* Placeholder View for consistent layout */}
-              <View
-                style={{
-                  height: 40,
-                  width: 200,
-                  marginTop: 10,
-                  marginBottom: 10,
-                  alignItems: "center",
-                }}
-              >
-                {machine.isAvailable && machine.isFunctional && (
-                  <SubmitButton
-                    testID="set-timer-button"
-                    textStyle={appStyles.submitButtonText}
-                    style={appStyles.submitButton}
-                    width={200}
-                    height={40}
-                    disabled={false}
-                    label="Set Laundry Timer"
-                    onPress={() => {
-                      setSelectedMachineId(machine.laundryMachineId);
-                      setIsTimerModalVisible(true);
-                    }}
-                  />
-                )}
-              </View>
-            </View>
-          </View>
-        </View>
-      );
-    });
+    return machines.map((machine) => (
+      <View key={machine.laundryMachineId} style={styles.machineCard}>
+        <Text style={styles.machineTitle}>Machine {machine.laundryMachineId}</Text>
+        <Text style={machine.isAvailable ? styles.available : styles.inUse}>
+          {machine.isAvailable ? "Available" : "In Use"}
+        </Text>
+        <Text
+          style={machine.isFunctional ? styles.functional : styles.underMaintenance}
+        >
+          {machine.isFunctional ? "Functional" : "Under Maintenance"}
+        </Text>
+        {machine.isAvailable && machine.isFunctional && (
+          <TouchableOpacity
+            style={styles.timerButton}
+            onPress={() => {
+              setSelectedMachineId(machine.laundryMachineId);
+              setIsTimerModalVisible(true);
+            }}
+          >
+            <Text style={styles.timerButtonText}>Set Laundry Timer</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    ));
   };
 
   return (
@@ -129,39 +75,20 @@ const WashingMachineScreen = () => {
       <Header>
         <View style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
-          <ScrollView
-            contentContainerStyle={
-              machines.length === 0 && styles.centeredContent
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={fetchMachines}
-              />
-            }
-          >
-            {machines.length === 0 ? (
-              <Text style={styles.noMachinesText}>
-                No washing machines available
-              </Text>
-            ) : (
-              renderMachines()
-            )}
-          </ScrollView>
+          {renderMachines()}
           <Modal
             visible={isTimerModalVisible}
             transparent={true}
-            animationType="fade"
+            animationType="slide"
           >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalBubble}>
-                <Text style={styles.modalTitle}>Set Laundry Timer</Text>
-                <Button title="Set Timer" onPress={handleSetTimer} />
-                <Button
-                  title="Cancel"
-                  onPress={() => setIsTimerModalVisible(false)}
-                />
-              </View>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Set Laundry Timer</Text>
+              {/* Add input for setting timer duration here */}
+              <Button title="Set Timer" onPress={handleSetTimer} />
+              <Button
+                title="Cancel"
+                onPress={() => setIsTimerModalVisible(false)}
+              />
             </View>
           </Modal>
         </View>
@@ -172,88 +99,62 @@ const WashingMachineScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.69,
+    flex: 1,
     padding: 20,
   },
   title: {
     fontSize: 24,
-    fontFamily: "Inter", // Make sure Inter font is loaded in your project
     fontWeight: "bold",
     marginBottom: 20,
   },
   machineCard: {
     backgroundColor: "#f5f5f5",
     padding: 15,
-    borderRadius: 25,
+    borderRadius: 10,
     marginBottom: 10,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
     shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
   machineTitle: {
-    fontSize: 20,
-    color: "#0F5257",
+    fontSize: 18,
     fontWeight: "600",
   },
-  statusBubble: {
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 15,
-    marginTop: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusText: {
-    color: "#fff",
+  available: {
+    color: "green",
     fontWeight: "bold",
-    fontSize: 16,
+  },
+  inUse: {
+    color: "orange",
+    fontWeight: "bold",
+  },
+  functional: {
+    color: "blue",
+    fontWeight: "bold",
+  },
+  underMaintenance: {
+    color: "red",
+    fontWeight: "bold",
+  },
+  timerButton: {
+    backgroundColor: "#000",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  timerButtonText: {
+    color: "#fff",
     textAlign: "center",
   },
-  availableBubble: {
-    backgroundColor: "green",
-  },
-  inUseBubble: {
-    backgroundColor: "orange",
-  },
-  underMaintenanceBubble: {
-    backgroundColor: "red",
-  },
-  centeredContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  noMachinesText: {
-    fontSize: 18,
-    color: "gray",
-    textAlign: "center",
-  },
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  modalBubble: {
-    width: 250,
-    padding: 20,
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: 20,
   },
 });
-
-export default WashingMachineScreen;

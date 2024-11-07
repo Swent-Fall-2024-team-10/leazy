@@ -4,7 +4,8 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
     ListIssues: undefined;   // No parameters for ListIssues screen
     WashingMachine: undefined; // No parameters for WashingMachine screen
-};
+    ManageWashingMachine: undefined; // No parameters for CreateWashingMachine screen
+  };
 
 export type AuthStackParamList = {
   SignIn: undefined;

@@ -18,6 +18,7 @@ import { CodeApprovedScreen, CodeEntryScreen, SignInScreen, SignUpScreen } from 
 import { CameraScreen, CapturedMediaScreen } from './screens/camera';
 import { MessagingScreen } from './screens/messaging';
 import CustomDrawerContent from '@/app/components/drawer/CustomDrawer';
+import { WashingMachineScreen } from './screens/laundry_machines/LaundryMachineScreen';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -80,6 +81,7 @@ const HomeDrawerNavigator = () => {
         <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
         <Drawer.Screen name="Subrent" component={SubrentScreen} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />
+        <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
       </Drawer.Navigator>
       );
     };

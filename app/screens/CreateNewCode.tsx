@@ -42,8 +42,12 @@ export default function CodeCreationScreen() {
         apartmentId
       );
       setCode(generatedCode); // Set the generated code
-    } catch (error) {
-      alert("Failed to generate code. Please try again.");
+    } catch (error: any) {
+      if (error instanceof Error) {
+        alert(error.message); // Backend-provided error messages
+      } else {
+        alert("An unexpected error occurred. Please try again."); // Fallback for non-Error objects
+      }
     } finally {
       setLoading(false); // End loading
     }

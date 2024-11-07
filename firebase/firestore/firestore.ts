@@ -449,36 +449,48 @@ export async function generate_unique_code(
   residenceId: string,
   apartmentId: string
 ): Promise<string> {
-  try {
-    // Verify that the code doesn't already exist
+    // Generate a unique 6-digit tenant code
     const tenantCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const newTenantCode: TenantCode = {
-      tenantCode: tenantCode,
-      apartmentId: apartmentId,
-      residenceId: residenceId,
+      tenantCode,
+      apartmentId,
+      residenceId,
       used: false,
     };
 
-    const tenantCodesRef = collection(db, "tenantCodes");
-    const docRef = await addDoc(tenantCodesRef, newTenantCode);
+    // Check if the residence exists and get its data
+    const residencesRef = collection(db, "residences");
+    const residenceQuery = query(residencesRef, where("residenceId", "==", residenceId));
+    const residenceSnapshot = await getDocs(residenceQuery);
 
-    const residenceRef = doc(db, "residences", residenceId);
-    const residenceSnap = await getDoc(residenceRef);
+    if (residenceSnapshot.empty) {
+      throw new Error("No matching residence found for the given residence ID.");
+    }
+    
+    const residenceDoc = residenceSnapshot.docs[0];
+    // Check if the apartment exists in the apartments collection and belongs to the residence
+    const apartmentsRef = collection(db, "apartments");
+    const apartmentQuery = query(apartmentsRef, where("apartmentId", "==", apartmentId), where("residenceId", "==", residenceId));
+    const apartmentSnapshot = await getDocs(apartmentQuery);
 
-    if (residenceSnap.exists()) {
-      await updateDoc(residenceRef, {
-        tenantCodesID: arrayUnion(docRef.id),
-      });
-    } else {
-      throw new Error("Residence not found.");
+    if (apartmentSnapshot.empty) {
+      throw new Error(`Apartment with ID ${apartmentId} does not exist in residence with ID ${residenceId}.`);
     }
 
+    // Add the tenant code to the 'tenantCodes' collection
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const docRef = await addDoc(tenantCodesRef, newTenantCode);
+    console.log(`Tenant code ${tenantCode} created with ID: ${docRef.id}`);
+
+    // Update the 'tenantCodesID' array in the residence document
+    const residenceRef = doc(db, "residences", residenceDoc.id);
+    await updateDoc(residenceRef, {
+      tenantCodesID: arrayUnion(docRef.id),
+    });
+    console.log(`Updated residence ${residenceDoc.id} with tenant code ID: ${docRef.id}`);
+
     return tenantCode;
-  } catch (error) {
-    console.error("Error generating tenant code:", error);
-    throw error;
-  }
 }
 
 /**
@@ -488,6 +500,7 @@ export async function generate_unique_code(
  */
 export async function validateTenantCode(inputCode: string): Promise<Boolean> {
   try {
+    // fetch the UID of TenantCode who has this uniqu code: inputCode
     const tenantCodesRef = collection(db, "tenantCodes");
     const q = query(
       tenantCodesRef,

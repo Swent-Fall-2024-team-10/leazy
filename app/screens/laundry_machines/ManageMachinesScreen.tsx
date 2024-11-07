@@ -20,7 +20,7 @@ import {
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [newMachineId, setNewMachineId] = useState<string>("");
-  const residenceId = "TEMPLATE_RESIDENCE_ID"; // Replace with actual residence ID
+  const residenceId = "TEMPLATE_RESIDENCE_ID_FOR_WASHING_MACHINE"; // Replace with actual residence ID
 
   useEffect(() => {
     // Fetch all machines for the residence

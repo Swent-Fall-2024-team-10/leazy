@@ -2,11 +2,11 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import HomepageScreen from './screens/HomepageScreen';
-import MyRentScreen from './screens/MyRentScreen';
-import SharedElementsScreen from './screens/SharedElementsScreen';
-import SubrentScreen from './screens/SubrentScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import HomepageScreen from './screens/tenant/HomepageScreen';
+import MyRentScreen from './screens/tenant/MyRentScreen';
+import SharedElementsScreen from './screens/tenant/SharedElementsScreen';
+import SubrentScreen from './screens/tenant/SubrentScreen';
+import SettingsScreen from './screens/tenant/SettingsScreen';
 import { registerRootComponent } from 'expo'; // Ensures it works with Expo Go
 import { auth } from '../firebase/firebase';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';

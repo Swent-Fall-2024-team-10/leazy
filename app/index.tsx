@@ -18,7 +18,7 @@ import { CodeApprovedScreen, CodeEntryScreen, SignInScreen, SignUpScreen } from 
 import { CameraScreen, CapturedMediaScreen } from './screens/camera';
 import { MessagingScreen } from './screens/messaging';
 import CustomDrawerContent from '@/app/components/drawer/CustomDrawer';
-import { WashingMachineScreen } from './screens/laundry_machines/LaundryMachineScreen';
+import { WashingMachineScreen } from './screens/laundry_machines/WashingMachineScreen';
 
 // portions of this code were generated with chatGPT as an AI assistant
 

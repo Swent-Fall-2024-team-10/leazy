@@ -1,53 +1,73 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, Modal, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import Header from "@/app/components/Header";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { LaundryMachine } from "@/types/types";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { LaundryMachine, RootStackParamList } from "@/types/types";
 
 export const WashingMachineScreen = () => {
-  const navigation = useNavigation<any>();
-  const route = useRoute<RouteProp<Record<string, LaundryMachine>, string>>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const [machine, setMachine] = useState<LaundryMachine | null>(null);
+  const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
+  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (route.params) {
-      setMachine(route.params);
-    }
-  }, [route.params]);
+    // Fetch machines data from Firestore or use sample data
+    const initialMachines: LaundryMachine[] = [
+      { laundryMachineId: "123", isAvailable: true, isFunctional: true },
+      { laundryMachineId: "456", isAvailable: true, isFunctional: true },
+      { laundryMachineId: "789", isAvailable: true, isFunctional: false },
+    ];
+    setMachines(initialMachines);
+  }, []);
 
   const handleSetTimer = () => {
-    // Placeholder for setting a timer and syncing with Firestore
-    syncTimerWithFirestore(machine?.laundryMachineId, timer);
+    if (selectedMachineId) {
+      syncTimerWithFirestore(selectedMachineId, timer);
+    }
     setIsTimerModalVisible(false);
   };
 
-  const syncTimerWithFirestore = (laundryMachineId: string | undefined, time: number | null) => {
+  const syncTimerWithFirestore = (laundryMachineId: string, time: number | null) => {
     // Firestore interaction logic to be added here
-    console.log(`Syncing timer for machine ${laundryMachineId} with time ${time}`);
+    console.log(
+      `Syncing timer for machine ${laundryMachineId} with time ${time}`
+    );
   };
 
-  const renderMachineStatus = () => {
-    if (!machine) return null;
-
-    return (
-      <View style={styles.machineCard}>
+  const renderMachines = () => {
+    return machines.map((machine) => (
+      <View key={machine.laundryMachineId} style={styles.machineCard}>
         <Text style={styles.machineTitle}>Machine {machine.laundryMachineId}</Text>
         <Text style={machine.isAvailable ? styles.available : styles.inUse}>
           {machine.isAvailable ? "Available" : "In Use"}
         </Text>
-        <Text style={machine.isFunctional ? styles.functional : styles.underMaintenance}>
+        <Text
+          style={machine.isFunctional ? styles.functional : styles.underMaintenance}
+        >
           {machine.isFunctional ? "Functional" : "Under Maintenance"}
         </Text>
         {machine.isAvailable && machine.isFunctional && (
-          <TouchableOpacity style={styles.timerButton} onPress={() => setIsTimerModalVisible(true)}>
+          <TouchableOpacity
+            style={styles.timerButton}
+            onPress={() => {
+              setSelectedMachineId(machine.laundryMachineId);
+              setIsTimerModalVisible(true);
+            }}
+          >
             <Text style={styles.timerButtonText}>Set Laundry Timer</Text>
           </TouchableOpacity>
         )}
       </View>
-    );
+    ));
   };
 
   return (
@@ -55,13 +75,20 @@ export const WashingMachineScreen = () => {
       <Header>
         <View style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
-          {renderMachineStatus()}
-          <Modal visible={isTimerModalVisible} transparent={true} animationType="slide">
+          {renderMachines()}
+          <Modal
+            visible={isTimerModalVisible}
+            transparent={true}
+            animationType="slide"
+          >
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Set Laundry Timer</Text>
               {/* Add input for setting timer duration here */}
               <Button title="Set Timer" onPress={handleSetTimer} />
-              <Button title="Cancel" onPress={() => setIsTimerModalVisible(false)} />
+              <Button
+                title="Cancel"
+                onPress={() => setIsTimerModalVisible(false)}
+              />
             </View>
           </Modal>
         </View>
@@ -131,4 +158,3 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
-

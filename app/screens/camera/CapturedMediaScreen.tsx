@@ -9,12 +9,76 @@ import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { cacheFile, picFileUri } from '../../utils/cache';
-import { IconDimension, Color } from '@/styles/styles';
+import * as FileSystem from 'expo-file-system';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;
+
+
+const picDir = FileSystem.cacheDirectory + 'pictures/';
+const picFileUri = (picId: string) => picDir + `picture_${picId}.jpg`;
+
+/**
+ * Ensures the pictures directory exists
+ */
+async function ensureDirExists() {
+  const dirInfo = await FileSystem.getInfoAsync(picDir);
+  if (!dirInfo.exists) {
+    console.log("Pictures' directory doesn't exist, creating...");
+    await FileSystem.makeDirectoryAsync(picDir, { intermediates: true });
+  }
+}
+
+/**
+ * Saves a blob to the pictures directory with the specified ID
+ * @param {Blob} blob - The blob to save
+ * @param {string} picId - The picture ID to use in the filename
+ * @returns {Promise<string>} The URI of the saved file
+ */
+export const cacheImage = async (blob: Blob, picId: string): Promise<string> => {
+  await ensureDirExists();
+  
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    
+    fr.onerror = () => {
+      reject(new Error('Failed to read blob'));
+    };
+    
+    fr.onload = async () => {
+      try {
+        if (fr.result == null || typeof fr.result !== 'string') {
+          throw new Error('Failed to read file: result is null or not a string');
+        }
+
+        // Extract base64 data from data URL
+        const base64String = fr.result.split(',')[1];
+        
+        if (!base64String) {
+          throw new Error('Failed to extract base64 data from file');
+        }
+        
+        // Get file URI using existing naming convention
+        const fileUri = picFileUri(picId);
+        
+        // Write file
+        await FileSystem.writeAsStringAsync(
+          fileUri,
+          base64String,
+          { encoding: FileSystem.EncodingType.Base64 }
+        );
+        
+        resolve(fileUri);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    
+    // Start reading the blob as data URL
+    fr.readAsDataURL(blob);
+  });
+};
 
 export default function CapturedMediaScreen() {
 
@@ -61,16 +125,22 @@ const handleUpload = useCallback(async () => {
     const blob = await response.blob();
     
     // Store image in cache
-    
-    
-    const fileUri = picFileUri(Date.now().toString());
-    await cacheFile(blob, fileUri);
+    const fileUri = await cacheImage(blob, Date.now().toString());
     console.log(`Image saved to cache: ${fileUri}`);
-    addPicture(fileUri);
-
-    navigation.goBack();
     
-    Alert.alert('Upload', 'Photo added to maintenance request!');
+    
+    // Upload resized image as before
+    //const fileName = `${type}-${Date.now()}.jpg`;
+    //const storageRef = ref(storage, `uploads/${fileName}`);
+    //await uploadBytes(storageRef, blob);
+
+    //const downloadURL = await getDownloadURL(storageRef);
+    //console.log(`Media uploaded to Firebase: ${downloadURL}`);
+    //addPicture(downloadURL);
+
+    //navigation.goBack();
+    
+    //Alert.alert('Upload', 'Media uploaded successfully!');
   } catch (error) {
     console.error('Error uploading media:', error);
     Alert.alert('Error', 'Failed to upload media to Firebase');

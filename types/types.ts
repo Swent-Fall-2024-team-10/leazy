@@ -1,24 +1,9 @@
-// portions of this code were generated with chatGPT as an AI assistant
-
 // Define the navigation stack types
 export type RootStackParamList = {
-  Home: undefined; // No parameters for Home screen
-  Settings: undefined; // No parameters for Settings screen
-  ListIssues: undefined; // No parameters for ListIssues screen
-  CodeEntry: {
-    userId: string;
-    email: string;
-  };
-  CodeApproved: {
-    tenantCodeId: string;
-  };
-  TenantForm: {
-    userId: string;
-    email: string;
-  };
-  SignIn: undefined;
-  LandlordForm: { userId: string; email: string };
-
+    Home: undefined;         // No parameters for Home screen
+    Settings: undefined;     // No parameters for Settings screen
+    ListIssues: undefined;   // No parameters for ListIssues screen
+    WashingMachine: undefined; // No parameters for WashingMachine screen
 };
 
 export type AuthStackParamList = {

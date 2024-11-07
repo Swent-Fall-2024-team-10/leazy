@@ -4,7 +4,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '@/app/components/forms/text_input';
 import Spacer from '@/app/components/Spacer';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { Color } from '@/styles/styles';
+import { appStyles, Color } from '@/styles/styles';
 import Close from '@/app/components/buttons/Close';
 import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
 import { ReportStackParamList } from '@/types/types';  // Import or define your navigation types
@@ -105,7 +105,9 @@ export default function ReportScreen() {
 
   return (
     <Header>
-      <ScrollView style={styles.container} automaticallyAdjustKeyboardInsets={true}>
+      <ScrollView style={styles.container} 
+      automaticallyAdjustKeyboardInsets={true}
+      >
         
         <Close onPress={handleClose} />
         <Text style={styles.header}>Create a new issue</Text>
@@ -160,9 +162,8 @@ export default function ReportScreen() {
                 {pictureList.map((image, index) => (
                     <Image key={index} source={{ uri: image }} style={styles.thumbnailImage} />
                 ))}
-              </ScrollView>
+        </ScrollView>
 
-              <Spacer height={20} ></Spacer>
         
         <InputField
           label="Which room is the issue in?"
@@ -214,9 +215,18 @@ export default function ReportScreen() {
           width={170}
           height={44}
           label="Submit"
+          testID="testSubmitButton"
+          style={appStyles.submitButton}
+          textStyle={appStyles.submitButtonText}
         />
-      </ScrollView>
 
+        <View style={{  
+        marginBottom: '60%',
+        paddingBottom: '60%',
+        }}></View>
+      
+      </ScrollView>
+            
     </Header>
   );
 }

@@ -54,7 +54,7 @@ export const GoogleSignInButton = () => {
 const styles = StyleSheet.create({
  buttonGoogle: {
    width: '100%',
-   padding: 14,
+   padding: '4%',
    backgroundColor: '#ffffff',
    borderRadius: 8,
    borderWidth: 1,
@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
    shadowOpacity: 0.1,
    shadowRadius: 2,
  },
+ 
  buttonPlaceholder: {
    flexDirection: 'row',
    alignItems: 'center',

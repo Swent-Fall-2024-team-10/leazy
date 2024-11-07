@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "@/styles/styles";
+import { Color, FontSizes, FontWeight } from "@/styles/styles";
 //import DropShadow from "react-native-drop-shadow";
 
 interface SubmitButtonProps {
@@ -10,9 +10,12 @@ interface SubmitButtonProps {
   width: number;
   height: number;
   label: string;
+  testID: string;
+  style: any;
+  textStyle: any;
 }
 
-export default function SubmitButton({ disabled, onPress, width, height, label } : SubmitButtonProps) {
+export default function SubmitButton({ disabled, onPress, width, height, label, testID, style, textStyle } : SubmitButtonProps) {
   return (
     <View style={styles.submitContainer}>
         <Button
@@ -20,7 +23,7 @@ export default function SubmitButton({ disabled, onPress, width, height, label }
 
         onPress={onPress}
         buttonStyle={[
-          styles.submitButton,
+          style,
           {
             width: width,
             height: height,
@@ -28,10 +31,11 @@ export default function SubmitButton({ disabled, onPress, width, height, label }
         ]}
 
         titleStyle={[
-          styles.submitText,
+          textStyle
         ]}
         disabled={disabled} // Disable button interaction
         disabledStyle={styles.submitButtonDisabled}
+        testID={testID}
       />
     </View>
 
@@ -45,13 +49,13 @@ const styles = StyleSheet.create({
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.25,
         shadowRadius: 2,
+        padding: '5%',
     },
 
     submitButton : {
         backgroundColor: Color.ButtonBackground,
         borderColor: Color.ButtonBorder,
         borderWidth: 1,
-        marginBottom: 200,
         width: 170,
         height: 44,
         borderRadius: 100,
@@ -73,7 +77,8 @@ const styles = StyleSheet.create({
     submitText : {
         textAlign: 'center',
         fontSize: FontSizes.ButtonText,
-        color: Color.ButtonText
+        color: Color.ButtonText,
+        fontWeight: '800'
     },
 
 });

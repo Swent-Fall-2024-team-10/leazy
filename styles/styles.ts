@@ -7,6 +7,17 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
   };
 
+export const buttonSizes = {
+  largeButtonWidth : 263,
+  largeButtonHeight : 44,
+  
+  smallButtonWidth : 170,
+  smallButtonHeight : 44,
+
+  mediumButtonWidth : 200,
+  mediumButtonHeight : 44,
+}
+
 export const Padding = {
   Header : '8%',
 }
@@ -16,8 +27,10 @@ export const FontSizes = {
   
   DateText : 14,
   
-  ButtonText : 16,
+  ButtonText : 15,
   
+  confirmText : 16,
+
   TextInputText : 16,
   TextInputLabel : 16,
 
@@ -35,6 +48,9 @@ export const FontWeight = {
 
 export const Color = {
 
+  CancelColor : '#E74C3C',
+
+  ShadowColor : '#171717',
 
   HeaderText : "#0f5257",
   HeaderBackground : '#e9d5ff',
@@ -52,7 +68,7 @@ export const Color = {
   ReportScreenBackground : "#F5F5F5",
   
   TextInputPlaceholder : "#7F7F7F",
-  TextInputBackground : "#FFF",
+  TextInputBackground : "#D6D3F0",
   TextInputBorder : "#7F7F7F",
   TextInputText : "#0B3142",
   TextInputLabel : "#0B3142",
@@ -69,7 +85,27 @@ export const Color = {
 
 
 export const appStyles = StyleSheet.create({
+
+  submitButtonText : {
+      textAlign: 'center',
+      fontSize: FontSizes.ButtonText,
+      color: Color.ButtonText,
+      fontWeight: '300',
+      fontFamily: 'Inter-SemiBold',
+  },
+
+  submitButton : {
+      backgroundColor: Color.ButtonBackground,
+      borderColor: Color.ButtonBorder,
+      borderWidth: 1,
+      width: 170,
+      height: 44,
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
   
+
   appHeader :{
     fontSize: 26,
     fontWeight: '800',

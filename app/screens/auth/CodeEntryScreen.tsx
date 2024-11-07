@@ -45,8 +45,14 @@ export default function CodeEntryScreen() {
         placeholder="Enter code"
         value={code}
         onChangeText={setCode}
+        testID='codeInput'
       />
-      <CustomButton size="medium" onPress={handleSubmit} title="Submit code"/>
+      <CustomButton 
+      size="medium" 
+      onPress={handleSubmit} 
+      title="Submit code"
+      testID='submitCodeButton'
+      />
       {errors.code && <Text style={styles.errorText}>{errors.code}</Text>}
       <Text style={styles.text}>
         If you don't have a code please ask your residence manager to generate one for you.

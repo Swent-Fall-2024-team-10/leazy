@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import CustomTextField from '../../components/CustomTextField';
-import CustomButton from '../../components/CustomButton';
-import { emailAndPasswordLogIn } from '../../../firebase/auth/auth';
+import CustomTextField from '@/app/components/CustomTextField';
+import { emailAndPasswordLogIn } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../../types/types';  // Import or define your navigation types
-import CustomPopUp from '../../components/CustomPopUp';
-import { GoogleSignInButton } from '../../components/GoogleSignInButton';
-import { TextInput } from 'react-native-gesture-handler';
-import SubmitButton from '../../components/buttons/SubmitButton';
+import { RootStackParamList } from '@/types/types';  // Import or define your navigation types
+import CustomPopUp from '@/app/components/CustomPopUp';
+import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
+import SubmitButton from '@/app/components/buttons/SubmitButton';
+import { appStyles, buttonSizes } from '@/styles/styles';
 
 
 interface FormErrors {
@@ -62,7 +61,7 @@ export default function SignInScreen() {
         onPress = {() => setPopup(false)}
       />}
 
-      <Text style={styles.title}>Welcome back to Leazy</Text>
+      <Text style={[appStyles.screenHeader, { fontSize: 40 ,flex: 0, paddingBottom: '10%'}]}>Welcome back to Leazy</Text>
       
       <CustomTextField
         testID="emailInput"
@@ -81,12 +80,32 @@ export default function SignInScreen() {
         secureTextEntry
       />
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-      <CustomButton testID='signInButton' size="small" onPress={handleSignIn} title ="Sign in"/>
+      <SubmitButton 
+        disabled={false} 
+        onPress={handleSignIn} 
+        width={buttonSizes.largeButtonWidth} 
+        height={buttonSizes.largeButtonHeight} 
+        label="Sign in" 
+        testID='signInButton'
+        style={styles.largeButton}
+        textStyle={styles.buttonText}
+      />
+
       <Text style={styles.text}>or</Text>
       <GoogleSignInButton/>
       <View style={styles.horizontalLine} />
       <Text style={styles.text}>Don't have an account yet?</Text>
-      <CustomButton testID='signUpButton'size="large" onPress={handleSignUpPress} title="Sign up"/>
+      
+      <SubmitButton 
+        disabled={false} 
+        onPress={handleSignUpPress} 
+        width={buttonSizes.largeButtonWidth} 
+        height={buttonSizes.largeButtonHeight} 
+        label="Sign up" 
+        testID='signU'
+        style={styles.largeButton}
+        textStyle={styles.buttonText}
+      />
     </View>
   );
 }
@@ -98,16 +117,19 @@ const styles = StyleSheet.create({
     marginVertical: 20,    // Adds space above and below the line
     width: '100%',         // Line width (full width of the parent container)
   },
+
   inputError: {
     borderColor: '#FF004',
     borderWidth: 1,
   },
+
   errorText: {
     fontFamily: 'Inter',
     color: '#FF0004',
     fontSize: 12,
     marginBottom: 10,
   },
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -115,10 +137,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
   },
+
   title: {
     color: '#0B3142',
     textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
+    fontFamily: 'Inter Bold',  // Ensure Inter font is properly loaded in your project
     fontSize: 40,
     fontStyle: 'normal',
     fontWeight: '400',
@@ -126,6 +149,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     marginBottom: 24,
   },
+  
   smallButton: {
     width: 126,
     height: 43,
@@ -138,6 +162,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',     // Center content horizontally
     marginBottom: 23,
   },
+
   largeButton: {
     flexDirection: 'row',      // Arrange items horizontally
     alignItems: 'center',      // Align items vertically centered
@@ -153,6 +178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,     // Add padding to control text placement
     marginBottom: 23,
   },
+
   buttonText: {
     color: '#FFF',
     textAlign: 'center',
@@ -168,11 +194,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
     fontSize: 24,
+
     fontStyle: 'normal',
     fontWeight: '400',
     lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
     letterSpacing: 0.24,
-    marginBottom: 23,
   },
   socialIcon: {
     width: 24,

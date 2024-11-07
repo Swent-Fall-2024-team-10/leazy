@@ -72,6 +72,7 @@ export default function SignInScreen() {
         autoCapitalize="none"
       />
       {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+      
       <CustomTextField
         testID="passwordInput"
         placeholder="Password"
@@ -79,6 +80,7 @@ export default function SignInScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
+      
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
       <SubmitButton 
         disabled={false} 
@@ -87,8 +89,8 @@ export default function SignInScreen() {
         height={buttonSizes.largeButtonHeight} 
         label="Sign in" 
         testID='signInButton'
-        style={styles.largeButton}
-        textStyle={styles.buttonText}
+        style={appStyles.submitButton}
+        textStyle={appStyles.submitButtonText}
       />
 
       <Text style={styles.text}>or</Text>
@@ -103,8 +105,8 @@ export default function SignInScreen() {
         height={buttonSizes.largeButtonHeight} 
         label="Sign up" 
         testID='signU'
-        style={styles.largeButton}
-        textStyle={styles.buttonText}
+        style={appStyles.submitButton}
+        textStyle={appStyles.submitButtonText}
       />
     </View>
   );
@@ -150,45 +152,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   
-  smallButton: {
-    width: 126,
-    height: 43,
-    flexShrink: 0,  // Prevents shrinking
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#0F5257',
-    justifyContent: 'center', // Center content vertically
-    alignItems: 'center',     // Center content horizontally
-    marginBottom: 23,
-  },
-
-  largeButton: {
-    flexDirection: 'row',      // Arrange items horizontally
-    alignItems: 'center',      // Align items vertically centered
-    padding: 10,
-    width: 263,
-    height: 43,
-    flexShrink: 0,  // Prevents shrinking in flex containers
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#0F5257',
-    justifyContent: 'center',  // Center content vertically if needed
-    paddingHorizontal: 10,     // Add padding to control text placement
-    marginBottom: 23,
-  },
-
-  buttonText: {
-    color: '#FFF',
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Make sure Inter font is loaded in your project
-    fontSize: 20,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 20,  // Use a numeric value for lineHeight in React Native
-    letterSpacing: 0.2,
-  },
   text: {
     color: '#0B3142',
     textAlign: 'center',

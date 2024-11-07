@@ -20,7 +20,11 @@ export const buttonSizes = {
 
 export const Padding = {
   Header : '8%',
-}
+  LabelTop : '5%',
+  LabelBottom : '5%',
+
+  InputField : '1.25%',
+} as const;
 
 export const FontSizes = {
   ScreenHeader : 24,
@@ -34,8 +38,10 @@ export const FontSizes = {
   TextInputText : 16,
   TextInputLabel : 16,
 
+  backArrow : 32,
+
   label : 16,
-}
+} as const;
 
 export const FontWeight = {
   ScreenHeader : 'bold',
@@ -86,12 +92,10 @@ export const Color = {
 
 export const appStyles = StyleSheet.create({
   
-  
   backButton: {
-    alignSelf: 'flex-start',
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: Color.ScreenHeader,
+    top: '7.5%',
+    left: '7.5%',
+    position: 'absolute',
     borderRadius: 5,
   },
 
@@ -100,7 +104,6 @@ export const appStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
 
   submitButtonText : {
       textAlign: 'center',
@@ -114,13 +117,10 @@ export const appStyles = StyleSheet.create({
       backgroundColor: Color.ButtonBackground,
       borderColor: Color.ButtonBorder,
       borderWidth: 1,
-      width: 170,
-      height: 44,
       borderRadius: 100,
       justifyContent: 'center',
       alignItems: 'center',
   },
-  
 
   appHeader :{
     fontSize: 26,
@@ -130,6 +130,10 @@ export const appStyles = StyleSheet.create({
     color: "#0f5257",
     flex : 1,
     textAlign: 'center',
+  },
+
+  InputFieldContainer : {
+    padding: Padding.InputField,
   },
   
   

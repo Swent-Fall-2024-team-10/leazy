@@ -29,12 +29,10 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
       <View style={styles.issueContent}>
         <View style={styles.issueTextContainer}>
           <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
+        </View >
+        <View style={[styles.statusTextContainer, {backgroundColor: getIssueStatusColor(status)}]}>
+           <Text style={styles.statusText}>Status: {getIssueStatusText(status)}</Text>
         </View>
-        <TouchableOpacity
-          style={[styles.statusBadge, { backgroundColor: getIssueStatusColor(status) }]}
-        >
-          <Text style={styles.statusText}>Status: {getIssueStatusText(status)}</Text>
-        </TouchableOpacity>
       </View>
       {issue.requestStatus === 'completed' && !isArchived && (
         <TouchableOpacity onPress={onArchive} style={styles.archiveButton}>
@@ -149,6 +147,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+  statusTextContainer: {
+    borderRadius: 16,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+    marginTop: 15,
+  },
+
   titleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -180,7 +187,7 @@ const styles = StyleSheet.create({
     borderColor: '#7F7F7F',     
     width: 340,                 
     height: 110,                
-    marginBottom: 12,
+    marginBottom: '2%',
     padding: 16,
   },
   issueContent: {
@@ -237,6 +244,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginRight: 10,
   },
+  
   viewBoxContainer: {
     marginBottom: 80,
     paddingBottom: 80,

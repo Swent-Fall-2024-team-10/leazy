@@ -85,6 +85,22 @@ export const Color = {
 
 
 export const appStyles = StyleSheet.create({
+  
+  
+  backButton: {
+    alignSelf: 'flex-start',
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: Color.ScreenHeader,
+    borderRadius: 5,
+  },
+
+  backButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
 
   submitButtonText : {
       textAlign: 'center',

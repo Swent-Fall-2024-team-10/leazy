@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import CustomTextField from '@/app/components/CustomTextField';
 import CustomButton from '@/app/components/CustomButton';
 import CustomPicker from '@/app/components/CustomPicker';
@@ -8,6 +8,8 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
 import { User, Tenant, RootStackParamList} from '@/types/types';
+import { Color, appStyles } from '@/styles/styles';
+import { Ionicons } from '@expo/vector-icons';
 
 interface FormErrors {
   firstName?: string;
@@ -99,7 +101,12 @@ export default function SignUpScreen() {
           text= 'An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
           onPress={() => setPopup(false)}
         />}
-        <Text style={styles.title}>Welcome to Leazy</Text>
+
+        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+
+        <Text style={[appStyles.screenHeader, { fontSize: 40 ,flex: 0, paddingBottom: '10%'}]}>Welcome to Leazy</Text>
         <Text style={styles.text}>Are you renting or the manager of a property?</Text>
         
         <CustomPicker
@@ -195,7 +202,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   title: {
-    color: '#0B3142',
+    color: Color.ScreenHeader,
     textAlign: 'center',
     fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
     fontSize: 40,

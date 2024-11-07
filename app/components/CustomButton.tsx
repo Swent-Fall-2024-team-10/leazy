@@ -13,6 +13,7 @@ export default function CustomButton({ title, onPress, size = 'small', style = {
                 return styles.smallButton;
         }
     };
+    
 
     return (
         <TouchableOpacity testID={testID} style={[getSizeStyle(), style]} onPress={onPress}>

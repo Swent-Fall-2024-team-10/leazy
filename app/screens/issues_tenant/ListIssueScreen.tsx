@@ -27,13 +27,16 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue, onStatusChange, onArchive,
   return (
     <View style={styles.issueItem}>
       <View style={styles.issueContent}>
+
         <View style={styles.issueTextContainer}>
           <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
         </View >
+
         <View style={[styles.statusTextContainer, {backgroundColor: getIssueStatusColor(status)}]}>
            <Text style={styles.statusText}>Status: {getIssueStatusText(status)}</Text>
         </View>
       </View>
+      
       {issue.requestStatus === 'completed' && !isArchived && (
         <TouchableOpacity onPress={onArchive} style={styles.archiveButton}>
           <Feather name="archive" size={24} color="#2C3E50" />

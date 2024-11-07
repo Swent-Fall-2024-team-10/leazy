@@ -10,6 +10,8 @@ import StatusBadge from '@/app/components/StatusBadge';
 import AdaptiveButton from '@/app/components/AdaptiveButton';
 import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
 import Spacer from '../../components/Spacer';
+import { AntDesign } from '@expo/vector-icons';
+import { Icon } from 'react-native-elements';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -178,11 +180,11 @@ const IssueDetailsScreen: React.FC = () => {
           <Modal visible={fullScreenMode} transparent={true} onRequestClose={closeFullScreen}>
             <View style={styles.modalBackground}>
               <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
-                <Text style={styles.closeModalText}>X</Text>
+                <Icon name="close" type="font-awesome" color="white" size={24} />
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handlePreviousImage} style={[styles.arrowButton, styles.leftArrow]}>
-                <Text style={styles.arrowText}>{'<'}</Text>
+                <Icon name="chevron-left" type="font-awesome" color="white" size={24} />
               </TouchableOpacity>
 
               <Image
@@ -192,7 +194,7 @@ const IssueDetailsScreen: React.FC = () => {
               />
 
               <TouchableOpacity onPress={handleNextImage} style={[styles.arrowButton, styles.rightArrow]}>
-                <Text style={styles.arrowText}>{'>'}</Text>
+                <Icon name="chevron-right" type="font-awesome" color={"white"} size={24} />
               </TouchableOpacity>
             </View>
           </Modal>
@@ -204,32 +206,32 @@ const IssueDetailsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+
   imagesTextView:{
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 32,
   },
+
   imagesText:{
     fontFamily: "Inter-Regular",
     fontSize: 10,
   },
+
   closeModalButton: {
     position: 'absolute',
-    top: 40,
-    right: 20,
+    top: '5.5%',
+    right: '7%',
     zIndex: 2,
   },
-  closeModalText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
+
   modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   fullImage: {
     borderRadius: 16,
     borderColor: 'lightgrey',
@@ -254,12 +256,15 @@ const styles = StyleSheet.create({
     borderColor: 'lightgrey',
     borderWidth: 0.5,
   },
+
   leftArrow: {
-    left: 5,
+    left: '5%',
   },
+
   rightArrow: {
-    right: 5,
+    right: '5%',
   },
+
   grayBackground: {
     height: Dimensions.get('window').height * 0.8,
     backgroundColor: '#F3F2F1',
@@ -279,12 +284,14 @@ const styles = StyleSheet.create({
     // Shadow for Android
     elevation: 5,
   },
+
   content: {
     padding: 16,
   },
   issueTitle: {
     marginBottom: 16,
   },
+
   issueTitleText: {
     marginBottom: 20,
     paddingLeft: 8,
@@ -292,6 +299,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     fontFamily: "Inter-Bold",
   },
+
   image: {
     width: '100%',
     height: 200,
@@ -301,10 +309,12 @@ const styles = StyleSheet.create({
     borderColor: 'light-grey',
     borderWidth: 0.5,
   },
+
   descriptionContainer: {
     marginBottom: 16,
     marginTop: -8,
   },
+
   descriptionBox: {
     backgroundColor: 'white',
     borderRadius: 28,
@@ -321,24 +331,29 @@ const styles = StyleSheet.create({
     // Shadow for Android
     elevation: 5,
   },
+
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
   },
+
   sectionTitleImage: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     marginTop: 8,
   },
+
   descriptionText: {
     fontSize: 14,
     color: '#4b5563',
   },
+
   statusContainer: {
     marginBottom: 16,
   },
+
   statusDropdown: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -359,9 +374,7 @@ const styles = StyleSheet.create({
     // Shadow for Android
     elevation: 5,
   },
-  closeButtonContainer: {
-    alignItems: 'center',
-  },
+
   arrowButton: {
     position: 'absolute',
     top: '50%',
@@ -369,11 +382,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     padding: 8,
   },
-  arrowText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
+
 });
 
 export default IssueDetailsScreen;

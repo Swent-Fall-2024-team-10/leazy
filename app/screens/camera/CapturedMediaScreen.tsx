@@ -140,7 +140,7 @@ const handleUpload = useCallback(async () => {
 
     //navigation.goBack();
     
-    //Alert.alert('Upload', 'Media uploaded successfully!');
+    Alert.alert('Upload', 'Photo added to maintenance request!');
   } catch (error) {
     console.error('Error uploading media:', error);
     Alert.alert('Error', 'Failed to upload media to Firebase');

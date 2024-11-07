@@ -11,7 +11,7 @@ import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
 
-export const WashingMachineScreen = () => {
+const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -158,3 +158,5 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
+
+export default WashingMachineScreen;

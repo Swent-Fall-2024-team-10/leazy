@@ -48,8 +48,8 @@ export default function App() {
   }
   console.log(isLoggedIn);
   console.log(auth.currentUser);
-
-  return (
+  
+    return (
     <PictureProvider>
       <NavigationContainer>
         {isLoggedIn ? <RootNavigator /> : <AuthStackNavigator />}

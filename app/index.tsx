@@ -5,24 +5,10 @@ import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PictureProvider } from "./context/PictureContext";
-import {
-  ReportScreen,
-  ListIssueScreen,
-  IssueDetailsScreen,
-} from "./screens/issues_tenant";
-import AuthNavigator  from "./Navigators/AuthStackNavigator"; 
-import { CameraScreen, CapturedMediaScreen } from "./screens/camera";
-import { MessagingScreen } from "./screens/messaging";
-import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
-import CreateNewCode from "./screens/landlord/CreateNewCode";
-import WashingMachineScreen from "./screens/laundry_machines/WashingMachineScreen";
-import ManageMachinesScreen from "./screens/laundry_machines/ManageMachinesScreen";
-import LandlordFormScreen from "./screens/auth/LandlordFormScreen";
 import { AuthProvider } from "./Navigators/AuthContext";
 import { getUser, getTenant, getLandlord } from "@/firebase/firestore/firestore";
 import { User } from "firebase/auth";
 import  RootNavigator from "./Navigators/RootNavigator";
-import TenantHomeDrawerNavigator from "./Navigators/TenantHomeDrawerNavigator";
 
 // portions of this code were generated with chatGPT as an AI assistant
 

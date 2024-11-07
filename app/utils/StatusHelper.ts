@@ -1,4 +1,4 @@
-import { Color } from '@/styles/styles';
+import { Color } from '../../styles/styles';
 
 export function getIssueStatusColor(status: string) {
     switch (status) {

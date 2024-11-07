@@ -38,8 +38,7 @@ export async function createUser(user: TUser) {
   const docRef = doc(db, "users", user.uid);
   try {
     await setDoc(docRef, user);
-  }
-  catch(e) {
+  } catch (e) {
     console.error("Error creating tenant profile:", e);
   }
 }
@@ -90,13 +89,13 @@ export async function deleteUser(uid: string) {
  * Creates a new landlord document in Firestore.
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
-export async function createLandlord(landlord: Landlord){
+
+export async function createLandlord(landlord: Landlord) {
   const docRef = doc(db, "landlords", landlord.userId);
   try {
     await setDoc(docRef, landlord);
     console.log("Landlord profile created successfully.");
-  }
-  catch(e) {
+  } catch (e) {
     console.error("Error creating landlord profile:", e);
   }
 }
@@ -162,11 +161,9 @@ export async function createTenant(tenant: Tenant) {
   const docRef = doc(db, "tenants", tenant.userId);
   try {
     await setDoc(docRef, tenant);
-  }
-  catch(e) {
+  } catch (e) {
     console.error("Error creating tenant profile:", e);
   }
-  
 }
 
 /**
@@ -426,9 +423,6 @@ export async function updateLaundryMachine(
   if (!residenceId || !machineId) {
     throw new Error("Invalid laundry machine data");
   }
-  if (machine.laundryMachineId !== machineId) {
-    throw new Error("Machine ID mismatch");
-  }
 
   const docRef = doc(
     db,
@@ -443,7 +437,6 @@ export async function updateLaundryMachine(
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
- 
 export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string
@@ -517,12 +510,8 @@ export async function add_new_landlord(
   }
 }
 
-export async function add_new_tenant(
-  tenantCodeId: string,
-  userUID: string
-) {
+export async function add_new_tenant(tenantCodeId: string, userUID: string) {
   try {
-
     const tenantCodesRef = doc(db, "tenantCodes", tenantCodeId);
     const tenantCodeDoc = await getDoc(tenantCodesRef);
     const tenantCodeData = tenantCodeDoc.data();
@@ -562,12 +551,13 @@ export async function add_new_tenant(
     await updateDoc(apartmentRef, { tenants: arrayUnion(userUID) });
 
     const tenantDocRef = doc(db, "tenants", userUID);
-    console.log(apartmentId)
+
+    console.log(apartmentId);
+
     await updateDoc(tenantDocRef, {
       apartmentId: apartmentId,
       residenceId: residenceId,
     });
-
   } catch (error) {
     throw error;
   }
@@ -655,7 +645,7 @@ export async function validateTenantCode(
     const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
 
     await updateDoc(tenantCodeRef, { used: true });
-    
+
     return tenantCodeDoc.id;
   } catch (error) {
     return null;
@@ -689,9 +679,7 @@ export async function deleteUsedTenantCodes(): Promise<number> {
  * @returns A Firestore query for the washing machines collection.
  */
 export function getWashingMachinesQuery(residenceId: string) {
-  return query(
-    collection(db, `residences/${residenceId}/laundryMachines`)
-  );
+  return query(collection(db, `residences/${residenceId}/laundryMachines`));
 }
 /*
  * Returns a Firestore query for washing machines by residenceId.
@@ -700,9 +688,7 @@ export function getWashingMachinesQuery(residenceId: string) {
  * @returns A Firestore query for the washing machines collection.
  */
 export function getLaundryMachinesQuery(residenceId: string) {
-  return query(
-    collection(db, `residences/${residenceId}/laundryMachines`)
-  );
+  return query(collection(db, `residences/${residenceId}/laundryMachines`));
 }
 
 /**

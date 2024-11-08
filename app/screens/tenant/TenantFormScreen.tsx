@@ -17,8 +17,6 @@ import {
   useRoute,
   NavigationProp,
 } from "@react-navigation/native";
-//import CustomView
-import CustomTextField from "@/app/components/CustomTextField";
 import { RootStackParamList } from "../../../types/types";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 import InputField from "@/app/components/forms/text_input";
@@ -27,7 +25,7 @@ import Spacer from "@/app/components/Spacer";
 const TenantProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
-  // const { code } = route.params as { code: string };
+  const { code } = route.params as { code: string };
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -44,7 +42,7 @@ const TenantProfileScreen = () => {
   const handleSubmit = async () => {
     try {
       await add_new_tenant(
-        "something", //code,
+        code,
         `${firstName} ${lastName}`,
         email,
         phone,
@@ -200,7 +198,7 @@ const TenantProfileScreen = () => {
             }}
             disabled={false}
             disabledStyle={{ backgroundColor: Color.ButtonTextDisabled }}
-            titleStyle={{ color: "white" }} 
+            titleStyle={{ color: "white" }}
           />
         </View>
 

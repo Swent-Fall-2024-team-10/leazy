@@ -103,7 +103,6 @@ export type LaundryMachine = {
 };
 
 export type MaintenanceRequest = {
-<<<<<<< HEAD
   requestID: string;
   tenantId: string; // uid of the tenant
   residenceId: string; // id of the residence
@@ -160,16 +159,3 @@ export const Color = {
   CameraButtonBackground: "#0F5257",
   CameraButtonBorder: "#7F7F7F",
 };
-=======
-requestID: string;
-tenantId: string; // uid of the tenant
-residenceId: string; // id of the residence
-apartmentId: string; // id of the apartment
-openedBy: string;
-requestTitle: string;
-requestDate: string;
-requestDescription: string;
-picture: string[]; // list of picture urls referenced in the database
-requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
-}
->>>>>>> 81018d1c9c18496b959754e771e3ef0f5b8a460b

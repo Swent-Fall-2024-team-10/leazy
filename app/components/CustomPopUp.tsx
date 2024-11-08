@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, StyleSheet, View , TouchableOpacity} from "react-native";
-import { Color, FontSizes } from "../../types/types";
+import { Color, FontSizes } from "@/styles/styles";
 
 export default function CustomPopUp({text, onPress, testID}: {text: string, onPress: () => void, testID: string}) {
   return (
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         marginBottom: 10,
-        color: Color.ScreenHeader,
+        color: Color.HeaderText,
     },
   
     text: {

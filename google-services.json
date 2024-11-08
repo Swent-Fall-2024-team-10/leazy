@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "667437973264",
+    "project_id": "leazy-659ef",
+    "storage_bucket": "leazy-659ef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:667437973264:android:edd2f036b98dbf3d6a6f95",
+        "android_client_info": {
+          "package_name": "com.leazy.swent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "667437973264-18bgkii41onl7qtfeuk42efhf1660rgq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.leazy.swent",
+            "certificate_hash": "5f051ef253e97dba6253c09ca54c67ce83e0b0a5"
+          }
+        },
+        {
+          "client_id": "667437973264-rkntfuf9tclmn4ekihlhh593ug21an7f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSxm7yIrzHjSB7VKgt96tJ2FTRJBTAVhw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "667437973264-p6lfl944e82k7g9uukvfl4872ievpq35.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "667437973264-v9qb9v4h2j4gdkonbrmtobjsrmpod5jo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.leazy.swent"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

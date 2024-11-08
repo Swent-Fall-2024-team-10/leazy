@@ -14,8 +14,8 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, setValue }) => {
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState([
     { label: 'Completed', value: 'completed' },
-    { label: 'In Progress', value: 'in-progress' },
-    { label: 'Not Started', value: 'not-started' },
+    { label: 'In Progress', value: 'inProgress' },
+    { label: 'Not Started', value: 'notStarted' },
   ]);
 
   return (
@@ -31,6 +31,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, setValue }) => {
         style={styles.dropdown}
         textStyle={styles.dropdownText}
         dropDownContainerStyle={styles.dropdownContainer}
+        listMode="SCROLLVIEW"
       />
     </View>
   );

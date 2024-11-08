@@ -258,6 +258,20 @@ export async function getMaintenanceRequest(
 }
 
 /**
+ * Returns a Firestore query for maintenance requests by tenantId.
+ * This query can be used with onSnapshot to listen for real-time updates.
+ * @param tenantId - The unique identifier of the tenant.
+ * @returns A Firestore query for the maintenance requests collection.
+ */
+export function getMaintenanceRequestsQuery(tenantId: string) {
+  // Construct a query based on the tenantId
+  return query(
+    collection(db, 'maintenanceRequests'),
+    where('tenantId', '==', tenantId)
+  );
+}
+
+/**
  * Updates an existing maintenance request document in Firestore by request ID.
  * @param requestID - The unique identifier of the maintenance request to update.
  * @param request - The partial maintenance request data to update.

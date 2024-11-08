@@ -6,7 +6,7 @@ import { appStyles } from '@/styles/styles';
 
 export default function MyRentScreen() {
   return (
-    <Header showMenu={false}>
+    <Header>
       <View style={appStyles.screenContainer}>
         <Text style={styles.header}>Here is your rent information</Text>
 

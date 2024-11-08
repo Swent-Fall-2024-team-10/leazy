@@ -108,7 +108,7 @@ const LandlordListIssuesScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header showMenu = {false}>
+      <Header>
         <ScrollView style={styles.scrollView}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Maintenance issues</Text>

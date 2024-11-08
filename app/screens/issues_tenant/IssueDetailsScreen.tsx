@@ -125,7 +125,7 @@ const IssueDetailsScreen: React.FC = () => {
   };
 
   return (
-    <Header showMenu={true}>
+    <Header>
         <View style={styles.grayBackground}>
           <ScrollView style={styles.content} automaticallyAdjustKeyboardInsets = {true} showsVerticalScrollIndicator = {false}>
             <View style={styles.issueTitle}>

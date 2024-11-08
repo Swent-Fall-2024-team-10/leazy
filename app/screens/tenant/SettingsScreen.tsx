@@ -12,7 +12,7 @@ export default function SettingsScreen() {
   const navigation = useNavigation();  // Initialize navigation
 
   return (
-    <Header showMenu={false}>
+    <Header>
       <View style={styles.container}>
         <Text style={styles.text}>Settings Screen</Text>
         

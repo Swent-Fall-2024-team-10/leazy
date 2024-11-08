@@ -74,7 +74,7 @@ export default function CodeCreationScreen() {
 
   return (
     <View style={styles.container}>
-      <Header showMenu={true}>
+      <Header>
         <View style={styles.container}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Create a new code for a new tenant</Text>

@@ -106,7 +106,7 @@ const MaintenanceIssues = () => {
 
   return (
     <View style={styles.container}>
-      <Header showMenu={true}>
+      <Header>
         <ScrollView style={styles.scrollView}>
           <View style={styles.titleContainer}>
             <Text style={appStyles.screenHeader}>Maintenance Requests</Text>

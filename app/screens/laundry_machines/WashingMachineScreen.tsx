@@ -6,27 +6,34 @@ import {
   Modal,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
+import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
 
 const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
   const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const residenceId = "TEMPLATE_RESIDENCE_ID_FOR_WASHING_MACHINE"; // Replace with the actual residence ID
+
+  const fetchMachines = async () => {
+    setRefreshing(true);
+    const fetchedMachines = await getAllLaundryMachines(residenceId);
+    setMachines(fetchedMachines);
+    setRefreshing(false);
+  };
 
   useEffect(() => {
-    const initialMachines: LaundryMachine[] = [
-      { laundryMachineId: "123", isAvailable: true, isFunctional: true },
-      { laundryMachineId: "456", isAvailable: true, isFunctional: true },
-      { laundryMachineId: "789", isAvailable: true, isFunctional: false },
-    ];
-    setMachines(initialMachines);
-  }, []);
+    // Fetch machines when the component is mounted
+    fetchMachines();
+  }, [residenceId]);
 
   const handleSetTimer = () => {
     if (selectedMachineId) {
@@ -73,7 +80,13 @@ const WashingMachineScreen = () => {
       <Header>
         <View style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
-          {renderMachines()}
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={fetchMachines} />
+            }
+          >
+            {renderMachines()}
+          </ScrollView>
           <Modal
             visible={isTimerModalVisible}
             transparent={true}

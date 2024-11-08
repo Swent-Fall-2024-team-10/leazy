@@ -59,6 +59,7 @@ export default function ReportScreen() {
     setDescription('');
     clearFiles(pictureList);
     resetPictureList();
+    // might need to make this less grotesque as it now deletes every picture in the cache
   }
   const handleClose = () => {
     setIsVisible(true);

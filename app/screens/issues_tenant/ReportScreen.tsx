@@ -17,6 +17,19 @@ import { db, auth} from '@/firebase/firebase';
 import { getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
 import Header from '@/app/components/Header';
 import { usePictureContext } from '@/app/context/PictureContext';
+import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
+
+
+import { 
+  cacheImage, 
+  getPictureBlob, 
+  clearPictures,
+  base64ToBlob,
+  ensureDirExists,
+  picDir,
+  picFileUri 
+} from '../../utils/pictureCache';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -39,11 +52,13 @@ export default function ReportScreen() {
   const {removePicture} = usePictureContext();
 
   
-  function resetStates() {
+  async function resetStates() {
     setRoom('');
     setIssue('');
     setDescription('');
+    await clearPictures(pictureList);
     resetPictureList();
+    // might need to make this less grotesque as it now deletes every picture in the cache
   }
   const handleClose = () => {
     setIsVisible(true);
@@ -63,8 +78,19 @@ export default function ReportScreen() {
   const handleSubmit = async () => {
     setLoading(true); // Set loading to true when starting the submission
 
+    // Use getpictureblob to upload every picture
+    for (const picture of pictureList) {
+      const blob = await getPictureBlob(picture);
+
+      // Upload resized image as before
+      const fileName = `${picture}.jpeg`;
+      const storageRef = ref(storage, `uploads/${fileName}`);
+      await uploadBytes(storageRef, blob);
+    }
+
+
     const tenantId = await getTenant(auth.currentUser?.uid || '');
-    console.log('url list for the pictures : ' , pictureList)
+    console.log('uri list for the pictures : ' , pictureList)
       try {
         if (!tenantId) {
           throw new Error('Tenant not found');
@@ -89,9 +115,11 @@ export default function ReportScreen() {
         await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
         
         Alert.alert('Success', 'Your maintenance request has been submitted.');
+
         resetStates();
         const nextScreen = tick ? 'Messaging' : 'Issues';
         setTick(false);
+
         navigation.navigate(nextScreen);
 
       } catch (error) {
@@ -158,7 +186,7 @@ export default function ReportScreen() {
                 showsHorizontalScrollIndicator={false}
               >
                 {pictureList.map((image, index) => (
-                    <Image key={index} source={{ uri: image }} style={styles.thumbnailImage} />
+                    <Image key={index} source={{ uri: picFileUri(image) }} style={styles.thumbnailImage} />
                 ))}
               </ScrollView>
 

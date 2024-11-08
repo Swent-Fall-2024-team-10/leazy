@@ -8,18 +8,23 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  Image,
 } from "react-native";
 import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
 import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
+import CustomButton from "@/app/components/CustomButton";
+import StatusBadge from "@/app/components/StatusBadge";
 
 const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
-  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
+  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(
+    null
+  );
   const [refreshing, setRefreshing] = useState(false);
   const residenceId = "TEMPLATE_RESIDENCE_ID_FOR_WASHING_MACHINE"; // Replace with the actual residence ID
 
@@ -42,7 +47,10 @@ const WashingMachineScreen = () => {
     setIsTimerModalVisible(false);
   };
 
-  const syncTimerWithFirestore = (laundryMachineId: string, time: number | null) => {
+  const syncTimerWithFirestore = (
+    laundryMachineId: string,
+    time: number | null
+  ) => {
     console.log(
       `Syncing timer for machine ${laundryMachineId} with time ${time}`
     );
@@ -51,26 +59,41 @@ const WashingMachineScreen = () => {
   const renderMachines = () => {
     return machines.map((machine) => (
       <View key={machine.laundryMachineId} style={styles.machineCard}>
-        <Text style={styles.machineTitle}>Machine {machine.laundryMachineId}</Text>
-        <Text style={machine.isAvailable ? styles.available : styles.inUse}>
-          {machine.isAvailable ? "Available" : "In Use"}
-        </Text>
-        <Text
-          style={machine.isFunctional ? styles.functional : styles.underMaintenance}
-        >
-          {machine.isFunctional ? "Functional" : "Under Maintenance"}
-        </Text>
-        {machine.isAvailable && machine.isFunctional && (
-          <TouchableOpacity
-            style={styles.timerButton}
-            onPress={() => {
-              setSelectedMachineId(machine.laundryMachineId);
-              setIsTimerModalVisible(true);
-            }}
-          >
-            <Text style={styles.timerButtonText}>Set Laundry Timer</Text>
-          </TouchableOpacity>
-        )}
+        <View style={{ flexDirection: "row" }}>
+          <Image
+            source={require("@/assets/images/washing_machine_icon_png.png")}
+            style={{ width: 100, height: 100, marginRight: 20 }}
+          />
+          <View style={{ flexDirection: "column", alignItems: "center", position: "relative" }}>
+            <Text style={styles.machineTitle}>
+              Machine ID: {machine.laundryMachineId}
+            </Text>
+            <Text style={machine.isAvailable ? styles.available : styles.inUse}>
+              {machine.isAvailable ? "Available" : "In Use"}
+            </Text>
+            <Text
+              style={
+                machine.isFunctional
+                  ? styles.functional
+                  : styles.underMaintenance
+              }
+            >
+              {machine.isFunctional ? "Functional" : "Under Maintenance"}
+            </Text>
+            {machine.isAvailable && machine.isFunctional && (
+              <CustomButton
+                size="large"
+                style={{marginTop: 10, marginBottom: 10, width: 200}}
+                testID="set-timer-button"
+                onPress={() => {
+                  setSelectedMachineId(machine.laundryMachineId);
+                  setIsTimerModalVisible(true);
+                }}
+                title="Set Laundry Timer"
+              />
+            )}
+          </View>
+        </View>
       </View>
     ));
   };
@@ -82,7 +105,10 @@ const WashingMachineScreen = () => {
           <Text style={styles.title}>Laundry Machines</Text>
           <ScrollView
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={fetchMachines} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={fetchMachines}
+              />
             }
           >
             {renderMachines()}
@@ -122,11 +148,14 @@ const styles = StyleSheet.create({
   machineCard: {
     backgroundColor: "#f5f5f5",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 25,
     marginBottom: 10,
     shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
   },
   machineTitle: {
     fontSize: 18,
@@ -149,9 +178,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   timerButton: {
-    backgroundColor: "#000",
     padding: 10,
-    borderRadius: 5,
+    width: 200,
     marginTop: 10,
   },
   timerButtonText: {
@@ -162,7 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", 
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalBubble: {
     width: 250,

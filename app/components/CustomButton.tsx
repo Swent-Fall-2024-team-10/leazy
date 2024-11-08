@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F5257',
     justifyContent: 'center',
     paddingHorizontal: 10,
-    marginBottom: 23,
   },
   contentContainer: {
     flexDirection: 'row',       // Ensures the image and text are aligned horizontally

@@ -243,6 +243,8 @@ export default function ReportScreen() {
           height={44}
           label="Submit"
         />
+
+        <Spacer height={100} />
       </ScrollView>
 
     </Header>

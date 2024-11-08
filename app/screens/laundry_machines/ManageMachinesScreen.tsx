@@ -20,10 +20,10 @@ import {
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [newMachineId, setNewMachineId] = useState<string>("");
-  const residenceId = "TEMPLATE_RESIDENCE_ID_FOR_WASHING_MACHINE"; // Replace with actual residence ID
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const residenceId = "TestResidence1"; // Replace with actual residence ID
 
   useEffect(() => {
-    // Fetch all machines for the residence
     const fetchMachines = async () => {
       const fetchedMachines = await getAllLaundryMachines(residenceId);
       setMachines(fetchedMachines);
@@ -34,6 +34,18 @@ const ManageMachinesScreen = () => {
 
   const handleAddMachine = async () => {
     if (newMachineId.trim() === "") return;
+
+    // Check for existing machine ID
+    const idExists = machines.some(
+      (machine) => machine.laundryMachineId === newMachineId
+    );
+    if (idExists) {
+      setErrorMessage("A machine with this ID already exists.");
+      return;
+    }
+
+    // Clear any previous error message
+    setErrorMessage(null);
 
     const newMachine: LaundryMachine = {
       laundryMachineId: newMachineId,
@@ -67,15 +79,21 @@ const ManageMachinesScreen = () => {
 
   const renderMachineItem = ({ item }: { item: LaundryMachine }) => (
     <View style={styles.machineCard}>
-      <Text style={styles.machineTitle}>Machine {item.laundryMachineId}</Text>
-      <Text style={item.isAvailable ? styles.available : styles.inUse}>
-        {item.isAvailable ? "Available" : "In Use"}
-      </Text>
-      <Text
-        style={item.isFunctional ? styles.functional : styles.underMaintenance}
-      >
-        {item.isFunctional ? "Functional" : "Under Maintenance"}
-      </Text>
+      <View style={{ alignItems: "center" }}>
+        <Text style={styles.machineTitle}>
+          Washing machine {item.laundryMachineId}
+        </Text>
+        <Text style={item.isAvailable ? styles.available : styles.inUse}>
+          {item.isAvailable ? "Available" : "In Use"}
+        </Text>
+        <Text
+          style={
+            item.isFunctional ? styles.functional : styles.underMaintenance
+          }
+        >
+          {item.isFunctional ? "Functional" : "Under Maintenance"}
+        </Text>
+      </View>
       <TouchableOpacity
         style={styles.toggleButton}
         onPress={() => toggleMaintenanceStatus(item)}
@@ -96,10 +114,13 @@ const ManageMachinesScreen = () => {
   );
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <Header>
         <View style={styles.container}>
           <Text style={styles.title}>Manage Laundry Machines</Text>
+
+          {/* Display error message if ID already exists */}
+          {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
 
           {/* Input for adding a new machine */}
           <View style={styles.inputContainer}>
@@ -117,22 +138,29 @@ const ManageMachinesScreen = () => {
             data={machines}
             renderItem={renderMachineItem}
             keyExtractor={(item) => item.laundryMachineId}
+            style={{ flex: 1 }} // Allow FlatList to take up remaining space and be scrollable
+            contentContainerStyle={{ paddingBottom: 20 }} // Add some padding at the bottom
           />
         </View>
       </Header>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0.7,
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+    fontWeight: "bold",
   },
   inputContainer: {
     flexDirection: "row",
@@ -145,16 +173,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     marginRight: 10,
-    borderRadius: 5,
+    borderRadius: 25,
   },
   machineCard: {
     backgroundColor: "#f5f5f5",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 25,
     marginBottom: 10,
     shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
   },
   machineTitle: {
     fontSize: 18,
@@ -179,17 +210,33 @@ const styles = StyleSheet.create({
   toggleButton: {
     backgroundColor: "#007bff",
     padding: 10,
-    borderRadius: 5,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    borderRadius: 25,
     marginTop: 10,
   },
   deleteButton: {
     backgroundColor: "#ff4d4d",
     padding: 10,
-    borderRadius: 5,
+    borderWidth: 1,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
     marginTop: 10,
   },
   buttonText: {
     color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
     textAlign: "center",
   },
 });

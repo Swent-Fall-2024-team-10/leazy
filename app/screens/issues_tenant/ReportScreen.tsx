@@ -19,15 +19,9 @@ import Header from '@/app/components/Header';
 import { usePictureContext } from '@/app/context/PictureContext';
 import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
-
-
 import { 
-  cacheImage, 
   getPictureBlob, 
   clearPictures,
-  base64ToBlob,
-  ensureDirExists,
-  picDir,
   picFileUri 
 } from '../../utils/pictureCache';
 
@@ -78,23 +72,32 @@ export default function ReportScreen() {
   const handleSubmit = async () => {
     setLoading(true); // Set loading to true when starting the submission
 
-    // Use getpictureblob to upload every picture
-    for (const picture of pictureList) {
-      const blob = await getPictureBlob(picture);
 
-      // Upload resized image as before
-      const fileName = `${picture}.jpeg`;
-      const storageRef = ref(storage, `uploads/${fileName}`);
-      await uploadBytes(storageRef, blob);
-    }
-
-
-    const tenantId = await getTenant(auth.currentUser?.uid || '');
+    const tenantId = await getTenant("7OUEUmR82bCxt5Xgbli7");//auth.currentUser?.uid || '');
     console.log('uri list for the pictures : ' , pictureList)
       try {
         if (!tenantId) {
           throw new Error('Tenant not found');
         }
+
+        // Upload pictures to Firebase Storage
+        let pictureURLs: string[] = [];
+        
+        // Use getpictureblob to upload every picture
+        for (const picture of pictureList) {
+          const blob = await getPictureBlob(picture);
+          
+          // Upload resized image as before
+          const fileName = `${picture}.jpeg`;
+          const storageRef = ref(storage, `uploads/${fileName}`);
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
+          pictureURLs.push(downloadURL);
+
+
+          console.log('File uploaded to storage');
+        }
+
         const newRequest: MaintenanceRequest = {
           requestID: '', 
           tenantId: tenantId.userId, 
@@ -104,7 +107,7 @@ export default function ReportScreen() {
           requestTitle: issue,
           requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
           requestDescription: description,
-          picture: pictureList, 
+          picture: pictureURLs, 
           requestStatus: "notStarted",
         };
     
@@ -127,6 +130,7 @@ export default function ReportScreen() {
         console.log('Error submitting request:', error);
       } finally {
         setLoading(false); // Set loading to false after submission is complete
+        clearPictures(pictureList);
       }
   };
 

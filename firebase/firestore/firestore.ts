@@ -1,6 +1,16 @@
 // Import Firestore database instance and necessary Firestore functions.
 import { db } from "../firebase";
-import { setDoc, doc, getDoc, updateDoc, deleteDoc, query, collection, where } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  collection,
+  where,
+} from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
 import {
@@ -252,8 +262,8 @@ export async function getMaintenanceRequest(
 export function getMaintenanceRequestsQuery(tenantId: string) {
   // Construct a query based on the tenantId
   return query(
-    collection(db, 'maintenanceRequests'),
-    where('tenantId', '==', tenantId)
+    collection(db, "maintenanceRequests"),
+    where("tenantId", "==", tenantId)
   );
 }
 
@@ -349,4 +359,20 @@ export async function deleteLaundryMachine(
     machineId
   );
   await deleteDoc(docRef);
+}
+
+/**
+ * Fetches all laundry machines for a specific residence from Firestore.
+ * @param residenceId - The unique identifier of the residence.
+ * @returns An array of laundry machine objects.
+ */
+export async function getAllLaundryMachines(residenceId: string) {
+  const querySnapshot = await getDocs(
+    collection(db, `residences/${residenceId}/laundryMachines`)
+  );
+  const machines: LaundryMachine[] = [];
+  querySnapshot.forEach((doc) => {
+    machines.push(doc.data() as LaundryMachine);
+  });
+  return machines;
 }

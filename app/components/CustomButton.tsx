@@ -57,14 +57,11 @@ const styles = StyleSheet.create({
     padding: 10,
     width: 263,
     height: 43,
-    flexShrink: 0,
     borderRadius: 25,
     borderWidth: 1,
     borderColor: '#000',
     backgroundColor: '#0F5257',
     justifyContent: 'center',
-    paddingHorizontal: 10,
-    marginBottom: 23,
   },
   contentContainer: {
     flexDirection: 'row',       // Ensures the image and text are aligned horizontally

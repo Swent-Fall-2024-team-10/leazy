@@ -713,3 +713,17 @@ export async function getAllLaundryMachines(residenceId: string) {
   });
   return machines;
 }
+
+/**
+ * Creates a notification document for a specific laundry machine.
+ * @param machineId - The unique identifier of the laundry machine.
+ * @param userId - The unique identifier of the user to be notified.
+ * @returns A promise that resolves when the notification document is created.
+ */
+export async function createMachineNotification(userId: string) {
+  const docRef = doc(db, "notifications", userId); // Creates a reference to the document in 'notifications' collection
+  await setDoc(docRef, {
+    userId: userId,
+    scheduledTime: Timestamp.now(), // The scheduled notification time
+  });
+}

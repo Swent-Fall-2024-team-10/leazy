@@ -4,6 +4,7 @@ import {
   Text,
   Button,
   Modal,
+  TouchableOpacity,
   StyleSheet,
   ScrollView,
   RefreshControl,
@@ -12,15 +13,9 @@ import {
 import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
-import { getAllLaundryMachines, getWashingMachinesQuery, updateLaundryMachine } from "@/firebase/firestore/firestore";
+import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
 import CustomButton from "@/app/components/CustomButton";
-import { getAuth } from "firebase/auth";
-import { onSnapshot, Timestamp } from "firebase/firestore";
-import { TimerPickerModal } from "react-native-timer-picker";
-import { LinearGradient } from "expo-linear-gradient";
-
-// Define intervalIds outside of the component to persist across renders
-  const intervalIds: { [key: string]: NodeJS.Timeout } = {};
+import StatusBadge from "@/app/components/StatusBadge";
 
 const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -32,185 +27,80 @@ const WashingMachineScreen = () => {
     null
   );
   const [refreshing, setRefreshing] = useState(false);
-  const residenceId = "TestResidence1"; // Replace with the actual residence ID
-  const [remainingTimes, setRemainingTimes] = useState<{ [key: string]: string }>({});
-  const [duration, setDuration] = useState(new Date(0, 0, 0, 0, 30, 0)); // Default to 30 minutes
-  // Initialize auth instance
-  const auth = getAuth();
-
-  // Access the current user's UID
-  const user = auth.currentUser;
-  const userId = user ? user.uid : undefined;
+  const residenceId = "TEMPLATE_RESIDENCE_ID_FOR_WASHING_MACHINE"; // Replace with the actual residence ID
 
   const fetchMachines = async () => {
-      try {
-
-        // Get the Firestore query from the ViewModel
-        const query = getWashingMachinesQuery(residenceId);
-
-        //runs every time the query changes
-        //no need to call every time fetchWashingMachines
-        // Set up the Firestore real-time listener using the query from the ViewModel
-        const unsubscribe = onSnapshot(query, (querySnapshot) => {
-          const updatedMachines: LaundryMachine[] = [];
-          querySnapshot.forEach((doc) => {
-            updatedMachines.push(doc.data() as LaundryMachine);
-          });
-          setMachines(updatedMachines); // Update state with real-time data
-        });
-
-        // Cleanup the listener when the component unmounts
-        return () => unsubscribe();
-      } catch (error) {
-        console.error("Error fetching washing machines:", error);
-      }
+    setRefreshing(true);
+    const fetchedMachines = await getAllLaundryMachines(residenceId);
+    setMachines(fetchedMachines);
+    setRefreshing(false);
   };
 
   useEffect(() => {
-    fetchMachines();
-    // Clean up intervals on component unmount
-    return () => {
-      Object.values(intervalIds).forEach(clearInterval);
-  };
-  }, [residenceId]);
+    const initialMachines: LaundryMachine[] = [
+      { laundryMachineId: "123", isAvailable: true, isFunctional: true },
+      { laundryMachineId: "456", isAvailable: true, isFunctional: true },
+      { laundryMachineId: "789", isAvailable: true, isFunctional: false },
+    ];
+    setMachines(initialMachines);
+  }, []);
 
   const handleSetTimer = () => {
     if (selectedMachineId) {
-      const startTime = Timestamp.now(); // Current time as Firebase Timestamp
-      const durationMs = duration.getHours() * 3600 * 1000 + duration.getMinutes() * 60 * 1000 + duration.getSeconds() * 1000;
-        const estimatedFinishTime = Timestamp.fromMillis(
-            startTime.toMillis() + durationMs // Add duration in milliseconds
-        );
-      console.log(
-        `${durationMs} Syncing timer for machine`
-      );
-      syncTimerWithFirestore(selectedMachineId, false, startTime, estimatedFinishTime);
-      calculateTimer(selectedMachineId, estimatedFinishTime);
-      console.log(
-        `Syncing timer`
-      );
+      syncTimerWithFirestore(selectedMachineId, timer);
     }
     setIsTimerModalVisible(false);
-    setSelectedMachineId(null);
   };
 
-  const syncTimerWithFirestore = (laundryMachineId: string, isAvailable: boolean, startTime: Timestamp, estimatedFinishTime: Timestamp) => {
-    updateLaundryMachine(residenceId, laundryMachineId, {occupiedBy: userId,  isAvailable: isAvailable, startTime: startTime, estimatedFinishTime : estimatedFinishTime});
-  };
-
-  async function calculateTimer( laundryMachineId: string, estimatedFinishTime: Timestamp) {
-    // Find the machine by ID in the machines state
-    const machine = machines.find(m => m.laundryMachineId === laundryMachineId);
-    if (!machine || !estimatedFinishTime) return;
-     // Clear any existing interval for this machine
-     if (intervalIds[laundryMachineId]) {
-      clearInterval(intervalIds[laundryMachineId]);
-  }
-
-  // Set up the interval to update the remaining time
-  const intervalId = setInterval(() => {
-      const now = Date.now();
-      const remainingTimeMs = estimatedFinishTime.toMillis() - now;
-
-      if (remainingTimeMs <= 0) {
-          clearInterval(intervalId);
-          setRemainingTimes(prev => ({
-              ...prev,
-              [laundryMachineId]: "Cycle complete",
-          }));
-          delete intervalIds[laundryMachineId]; // Remove the interval ID from tracking
-          return;
-      }
-
-      // Calculate hours, minutes, and seconds
-      const hours = Math.floor((remainingTimeMs / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((remainingTimeMs / (1000 * 60)) % 60);
-      const seconds = Math.floor((remainingTimeMs / 1000) % 60);
-
-      // Format the remaining time
-      const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
-
-      // Update the remaining time for this machine
-      setRemainingTimes(prev => ({
-          ...prev,
-          [laundryMachineId]: formattedTime,
-      }));
-  }, 1000);
-
-  // Store the interval ID
-  intervalIds[laundryMachineId] = intervalId;
-}
-
-  const getStatus = (machine: LaundryMachine) => {
-    if (!machine.isFunctional) {
-      return {
-        statusText: "Under Maintenance",
-        style: styles.underMaintenanceBubble,
-      };
-    }
-    return machine.isAvailable
-      ? { statusText: "Available", style: styles.availableBubble }
-      : { statusText: "In Use", style: styles.inUseBubble };
+  const syncTimerWithFirestore = (
+    laundryMachineId: string,
+    time: number | null
+  ) => {
+    console.log(
+      `Syncing timer for machine ${laundryMachineId} with time ${time}`
+    );
   };
 
   const renderMachines = () => {
-    return machines.map((machine) => {
-      const { statusText, style } = getStatus(machine);
-
-      return (
-        <View key={machine.laundryMachineId} style={styles.machineCard}>
-          <View style={{ flexDirection: "row" }}>
-            <Image
-              source={require("@/assets/images/washing_machine_icon_png.png")}
-              style={{ width: 120, height: 120, marginRight: 20 }}
-            />
-            <View
-              style={{
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+    return machines.map((machine) => (
+      <View key={machine.laundryMachineId} style={styles.machineCard}>
+        <View style={{ flexDirection: "row" }}>
+          <Image
+            source={require("@/assets/images/washing_machine_icon_png.png")}
+            style={{ width: 100, height: 100, marginRight: 20 }}
+          />
+          <View style={{ flexDirection: "column", alignItems: "center", position: "relative" }}>
+            <Text style={styles.machineTitle}>
+              Machine ID: {machine.laundryMachineId}
+            </Text>
+            <Text style={machine.isAvailable ? styles.available : styles.inUse}>
+              {machine.isAvailable ? "Available" : "In Use"}
+            </Text>
+            <Text
+              style={
+                machine.isFunctional
+                  ? styles.functional
+                  : styles.underMaintenance
+              }
             >
-              <Text style={styles.machineTitle}>
-                Machine {machine.laundryMachineId}
-              </Text>
-              <View style={[styles.statusBubble, style]}>
-                <Text style={styles.statusText}>{statusText}</Text>
-              </View>
-
-              {/* Placeholder View for consistent layout */}
-              <View
-                style={{
-                  height: 40,
-                  width: 160,
-                  marginTop: 10,
-                  marginBottom: 10,
-                  alignItems: "center",
+              {machine.isFunctional ? "Functional" : "Under Maintenance"}
+            </Text>
+            {machine.isAvailable && machine.isFunctional && (
+              <CustomButton
+                size="large"
+                style={{marginTop: 10, marginBottom: 10, width: 200}}
+                testID="set-timer-button"
+                onPress={() => {
+                  setSelectedMachineId(machine.laundryMachineId);
+                  setIsTimerModalVisible(true);
                 }}
-              >
-                {machine.isAvailable && machine.isFunctional && (
-                  <CustomButton
-                    size="small"
-                    style={{ width: "100%" }}
-                    testID="set-timer-button"
-                    onPress={() => {
-                      setSelectedMachineId(machine.laundryMachineId);
-                      setIsTimerModalVisible(true);
-                    }}
-                    title="Set Timer"
-                  />
-                )}
-                {!machine.isAvailable && (
-                    <Text style={styles.remainingTime}>
-                        {remainingTimes[machine.laundryMachineId] || "Calculating..."}
-                    </Text>
-                )}
-              </View>
-            </View>
+                title="Set Laundry Timer"
+              />
+            )}
           </View>
         </View>
-      );
-    });
+      </View>
+    ));
   };
 
   return (
@@ -219,9 +109,6 @@ const WashingMachineScreen = () => {
         <View style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
           <ScrollView
-            contentContainerStyle={
-              machines.length === 0 && styles.centeredContent
-            }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -229,37 +116,24 @@ const WashingMachineScreen = () => {
               />
             }
           >
-            {machines.length === 0 ? (
-              <Text style={styles.noMachinesText}>
-                No washing machines available
-              </Text>
-            ) : (
-              renderMachines()
-            )}
+            {renderMachines()}
           </ScrollView>
-          <TimerPickerModal
+          <Modal
             visible={isTimerModalVisible}
-            setIsVisible={setIsTimerModalVisible}
-            onConfirm={(pickedDuration) => {
-              console.log(
-                `Syncing timer for `
-              );
-                const timestamp_duration = new Date(0, 0, 0, pickedDuration.hours, pickedDuration.minutes, pickedDuration.seconds);
-                setDuration(timestamp_duration);
-                console.log(
-                  `${duration}`
-                );
-                handleSetTimer();
-                setIsTimerModalVisible(false);
-            }}
-            modalTitle="Set Alarm"
-            onCancel={() => setIsTimerModalVisible(false)}
-            closeOnOverlayPress
-            LinearGradient={LinearGradient}
-            styles={{
-                theme: "light",
-            }}
-        />
+            transparent={true}
+            animationType="fade"
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalBubble}>
+                <Text style={styles.modalTitle}>Set Laundry Timer</Text>
+                <Button title="Set Timer" onPress={handleSetTimer} />
+                <Button
+                  title="Cancel"
+                  onPress={() => setIsTimerModalVisible(false)}
+                />
+              </View>
+            </View>
+          </Modal>
         </View>
       </Header>
     </>
@@ -268,19 +142,13 @@ const WashingMachineScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.69,
+    flex: 1,
     padding: 20,
   },
   title: {
     fontSize: 24,
-    fontFamily: "Inter", // Make sure Inter font is loaded in your project
     fontWeight: "bold",
     marginBottom: 20,
-  },
-    remainingTime: {
-    fontSize: 16,
-    color: "#333",
-    marginTop: 5,
   },
   machineCard: {
     backgroundColor: "#f5f5f5",
@@ -295,41 +163,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   machineTitle: {
-    fontSize: 25,
-    color: "#0F5257",
+    fontSize: 18,
     fontWeight: "600",
   },
-  statusBubble: {
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 15,
-    marginTop: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusText: {
-    color: "#fff",
+  available: {
+    color: "green",
     fontWeight: "bold",
-    fontSize: 16,
-    textAlign: "center",
   },
-  availableBubble: {
-    backgroundColor: "green",
+  inUse: {
+    color: "orange",
+    fontWeight: "bold",
   },
-  inUseBubble: {
-    backgroundColor: "orange",
+  functional: {
+    color: "blue",
+    fontWeight: "bold",
   },
-  underMaintenanceBubble: {
-    backgroundColor: "red",
+  underMaintenance: {
+    color: "red",
+    fontWeight: "bold",
   },
-  centeredContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  timerButton: {
+    padding: 10,
+    width: 200,
+    marginTop: 10,
   },
-  noMachinesText: {
-    fontSize: 18,
-    color: "gray",
+  timerButtonText: {
+    color: "#fff",
     textAlign: "center",
   },
   modalOverlay: {

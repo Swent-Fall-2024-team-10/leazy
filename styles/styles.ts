@@ -7,6 +7,8 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
   };
 
+export const buttonRadius = 100;
+
 export const buttonSizes = {
   largeButtonWidth : 263,
   largeButtonHeight : 44,
@@ -92,6 +94,55 @@ export const Color = {
 
 export const appStyles = StyleSheet.create({
   
+  carouselImageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    position: 'relative',
+  },
+
+  carouselScrollViewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  smallThumbnailImage: {
+    marginHorizontal: 5,
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+
+  mediumThumbnailImage: {
+    width: 150, // Square dimension
+    height: 150, // Square dimension
+    marginHorizontal: 5,
+    borderRadius: 8,
+    borderColor: 'lightgrey',
+    borderWidth: 0.5,
+  },
+
+  date: {
+    fontSize: 16,
+    marginBottom: 5,
+    textAlign: 'center',
+    color: Color.DateText,
+  },  
+
+  inputFieldLabel : {
+      fontSize: 16,
+      marginBottom: 2.5,
+      fontWeight: "500",
+      color: Color.TextInputLabel,
+      marginLeft: '3%',
+  },
+
+  scrollContainer : {
+    flex: 1,
+    paddingBottom: '15%',
+  },
+
   backButton: {
     top: '7.5%',
     left: '7.5%',
@@ -117,7 +168,7 @@ export const appStyles = StyleSheet.create({
       backgroundColor: Color.ButtonBackground,
       borderColor: Color.ButtonBorder,
       borderWidth: 1,
-      borderRadius: 100,
+      borderRadius: buttonRadius,
       justifyContent: 'center',
       alignItems: 'center',
   },

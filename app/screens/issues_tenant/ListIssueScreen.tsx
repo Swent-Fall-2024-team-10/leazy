@@ -109,32 +109,34 @@ const MaintenanceIssues = () => {
     <View style={styles.container}>
       <Header>
         <ScrollView style={styles.scrollView}>
-          <View style={styles.titleContainer}>
-            <Text style={appStyles.screenHeader}>Maintenance Requests</Text>
-          </View>
+          <View style={appStyles.scrollContainer}>
+            <View style={styles.titleContainer}>
+              <Text style={appStyles.screenHeader}>Maintenance Requests</Text>
+            </View>
 
-          <View style={styles.switchContainer}>
-            <Text> Archived Issues</Text>
-            <Switch
-              style={[{ marginLeft: 8 }, {marginRight: 8}, {marginBottom: 8}, {marginTop: 8}]}
-              value={showArchived}
-              onValueChange={setShowArchived}
-            />
-          </View>
-
-          <View style={styles.viewBoxContainer}>
-            {filteredIssues.map((issue) => (
-              <IssueItem
-                key={issue.requestID}
-                issue={issue}
-                onStatusChange={(newStatus) => updateMaintenanceRequest(issue.requestID, { requestStatus: newStatus })}
-                onArchive={() => archiveIssue(issue.requestID)}
-                isArchived={issue.requestStatus === 'completed'}
+            <View style={styles.switchContainer}>
+              <Text> Archived Issues</Text>
+              <Switch
+                style={[{ marginLeft: 8 }, {marginRight: 8}, {marginBottom: 8}, {marginTop: 8}]}
+                value={showArchived}
+                onValueChange={setShowArchived}
               />
-            ))}
-          </View>
+            </View>
 
-          <View style={[styles.viewBoxContainer, {height: 100}]}>
+            <View style={styles.viewBoxContainer}>
+              {filteredIssues.map((issue) => (
+                <IssueItem
+                  key={issue.requestID}
+                  issue={issue}
+                  onStatusChange={(newStatus) => updateMaintenanceRequest(issue.requestID, { requestStatus: newStatus })}
+                  onArchive={() => archiveIssue(issue.requestID)}
+                  isArchived={issue.requestStatus === 'completed'}
+                />
+              ))}
+            </View>
+
+            <View style={[styles.viewBoxContainer, {height: 100}]}>
+            </View>
           </View>
         </ScrollView>
       </Header>
@@ -234,8 +236,8 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: 'absolute',
-    right: 16,
-    bottom: 16,
+    right: '6%',
+    bottom: '3%',
     backgroundColor: '#2C3E50',
     borderRadius: 28,
     width: 56,
@@ -244,8 +246,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
     zIndex: 1,
-    marginBottom: 10,
-    marginRight: 10,
   },
   
   viewBoxContainer: {

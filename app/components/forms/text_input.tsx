@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TextInput, TextStyle, StyleSheet, KeyboardAvoidingView } from "react-native";
 //import DropShadow from "react-native-drop-shadow";
-import { Color } from "@/styles/styles";
+import { appStyles, Color } from "@/styles/styles";
 import { UIManager } from 'react-native';
 
 
@@ -23,7 +23,7 @@ export default function InputField({ label, value, setValue, placeholder, testID
   
   return (
     <View>
-      <Text style={styles.label}> {label} </Text>
+      <Text style={appStyles.inputFieldLabel}> {label} </Text>
       <View style={styles.shadow}>
         <TextInput
           style={[
@@ -62,12 +62,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: Color.TextInputText,
   },
-
-  label : {
-    fontSize: 16,
-    marginBottom: 2.5,
-    fontWeight: "500",
-    color: Color.TextInputLabel,
-  }
 
 });

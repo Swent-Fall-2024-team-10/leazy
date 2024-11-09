@@ -62,34 +62,13 @@ const styles = StyleSheet.create({
         padding: '5%',
     },
 
-    submitButton : {
-        backgroundColor: Color.ButtonBackground,
-        borderColor: Color.ButtonBorder,
-        borderWidth: 1,
-        width: 170,
-        height: 44,
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
     submitButtonDisabled : {
       backgroundColor: Color.ButtonBackgroundDisabled,
       borderColor: Color.ButtonBorder,
       borderWidth: 1,
-      width: 170,
-      height: 44,
       borderRadius: 100,
       justifyContent: 'center',
       alignItems: 'center',
-    },
-
-    submitText : {
-        
-        textAlign: 'center',
-        fontSize: FontSizes.ButtonText,
-        color: Color.ButtonText,
-        fontWeight: '800'
     },
 
     iconStyle: {
@@ -99,5 +78,4 @@ const styles = StyleSheet.create({
       marginRight: '1%', // Space between icon and text
       left: '5%'
     },
-
 });

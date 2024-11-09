@@ -12,6 +12,7 @@ import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/fire
 import Spacer from '../../components/Spacer';
 import { AntDesign } from '@expo/vector-icons';
 import { Icon } from 'react-native-elements';
+import { appStyles } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -142,16 +143,15 @@ const IssueDetailsScreen: React.FC = () => {
             ></AdaptiveButton>
             
             <Text style={styles.sectionTitleImage}>Images submitted</Text>
-            <View style={styles.imageCarouselContainer}>
-
+            <View style={appStyles.carouselImageContainer}>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollViewContainer}
+                contentContainerStyle={appStyles.carouselScrollViewContainer}
               >
                 {issue.picture.map((image, index) => (
                   <TouchableOpacity key={index} onPress={() => openFullScreen(index)}>
-                    <Image key={index} source={{ uri: image }} style={styles.squareImage} />
+                    <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
                   </TouchableOpacity>
 
                 ))}
@@ -234,25 +234,6 @@ const styles = StyleSheet.create({
 
   fullImage: {
     borderRadius: 16,
-    borderColor: 'lightgrey',
-    borderWidth: 0.5,
-  },
-  imageCarouselContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    position: 'relative',
-  },
-  scrollViewContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  squareImage: {
-    width: 150, // Square dimension
-    height: 150, // Square dimension
-    marginHorizontal: 5,
-    borderRadius: 8,
     borderColor: 'lightgrey',
     borderWidth: 0.5,
   },

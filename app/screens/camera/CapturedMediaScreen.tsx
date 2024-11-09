@@ -72,10 +72,6 @@ const handleUpload = useCallback(async () => {
     // Store image in cache
     const fileUri = await cacheImage(blob, Date.now().toString());
     console.log(`Image saved to cache: ${fileUri}`);
-    
-
-    //const downloadURL = await getDownloadURL(storageRef);
-    //console.log(`Media uploaded to Firebase: ${downloadURL}`);
     addPicture(fileUri);
 
     navigation.goBack();

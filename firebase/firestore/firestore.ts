@@ -362,6 +362,18 @@ export async function deleteLaundryMachine(
 }
 
 /**
+ * Returns a Firestore query for washing machines by residenceId.
+ * This query can be used with onSnapshot to listen for real-time updates.
+ * @param residenceId - The unique identifier of the residence.
+ * @returns A Firestore query for the washing machines collection.
+ */
+export function getWashingMachinesQuery(residenceId: string) {
+  return query(
+    collection(db, `residences/${residenceId}/laundryMachines`)
+  );
+}
+
+/**
  * Fetches all laundry machines for a specific residence from Firestore.
  * @param residenceId - The unique identifier of the residence.
  * @returns An array of laundry machine objects.

@@ -16,6 +16,7 @@ import {
   updateLaundryMachine,
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
+import { Timestamp } from "firebase/firestore";
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -51,6 +52,9 @@ const ManageMachinesScreen = () => {
       laundryMachineId: newMachineId,
       isAvailable: true,
       isFunctional: true,
+      occupiedBy: "none",
+      startTime: Timestamp.fromMillis(Date.now()),
+      estimatedFinishTime: Timestamp.fromMillis(Date.now())
     };
 
     await createLaundryMachine(residenceId, newMachine);

@@ -3,3 +3,4 @@ export {default as TenantFormScreen} from './TenantFormScreen';
 export {default as SharedElementsScreen} from './SharedElementsScreen';
 export {default as HomepageScreen} from './HomepageScreen';
 export {default as SubrentScreen} from './SubrentScreen';
+export {default as SettingsScreen} from './SettingsScreen';

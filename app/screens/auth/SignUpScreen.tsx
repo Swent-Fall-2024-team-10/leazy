@@ -62,6 +62,7 @@ export default function SignUpScreen() {
 
         if (userType === UserType.LANDLORD) {
           const newUser: User = {
+            uid: user.uid,
             type: "landlord",
             name: `${firstName} ${lastName}`,
             email,

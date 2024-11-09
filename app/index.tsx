@@ -2,11 +2,14 @@ import "react-native-gesture-handler";
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import HomepageScreen from "./screens/tenant/HomepageScreen";
-import MyRentScreen from "./screens/tenant/MyRentScreen";
-import SharedElementsScreen from "./screens/tenant/SharedElementsScreen";
-import SubrentScreen from "./screens/tenant/SubrentScreen";
-import SettingsScreen from "./screens/tenant/SettingsScreen";
+import {
+  TenantFormScreen,
+  SubrentScreen,
+  SharedElementsScreen,
+  SettingsScreen,
+  HomepageScreen,
+  MyRentScreen,
+} from "./screens/tenant/";
 import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -27,7 +30,6 @@ import {
 import { CameraScreen, CapturedMediaScreen } from "./screens/camera";
 import { MessagingScreen } from "./screens/messaging";
 import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
-import { TenantFormScreen } from "./screens/tenant/";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -90,7 +92,6 @@ const HomeDrawerNavigator = () => {
       <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
       <Drawer.Screen name="Subrent" component={SubrentScreen} />
       <Drawer.Screen name="Settings" component={SettingsScreen} />
-      <Drawer.Screen name="Report" component={ReportScreen} />
     </Drawer.Navigator>
   );
 };

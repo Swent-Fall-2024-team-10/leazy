@@ -16,6 +16,7 @@ import {
   updateLaundryMachine,
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -94,6 +95,7 @@ const ManageMachinesScreen = () => {
           {item.isFunctional ? "Functional" : "Under Maintenance"}
         </Text>
       </View>
+      <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
       <TouchableOpacity
         style={styles.toggleButton}
         onPress={() => toggleMaintenanceStatus(item)}
@@ -110,6 +112,7 @@ const ManageMachinesScreen = () => {
       >
         <Text style={styles.buttonText}>Delete Machine</Text>
       </TouchableOpacity>
+    </View>
     </View>
   );
 
@@ -219,6 +222,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.23,
     borderRadius: 25,
     marginTop: 10,
+    width: "80%",
   },
   deleteButton: {
     backgroundColor: "#ff4d4d",
@@ -232,6 +236,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.23,
     marginTop: 10,
+    width: "80%",
   },
   buttonText: {
     color: "#fff",

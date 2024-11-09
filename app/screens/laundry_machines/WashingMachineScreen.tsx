@@ -14,6 +14,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
 import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
 import CustomButton from "@/app/components/CustomButton";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
 
 const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -101,15 +102,15 @@ const WashingMachineScreen = () => {
                 }}
               >
                 {machine.isAvailable && machine.isFunctional && (
-                  <CustomButton
-                    size="large"
-                    style={{ width: "100%" }}
-                    testID="set-timer-button"
+                  <SubmitButton
+                    width={200}
+                    height={40}
+                    disabled={false}
+                    label="Set Laundry Timer"
                     onPress={() => {
                       setSelectedMachineId(machine.laundryMachineId);
                       setIsTimerModalVisible(true);
                     }}
-                    title="Set Laundry Timer"
                   />
                 )}
               </View>

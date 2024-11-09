@@ -9,12 +9,12 @@ export default function CodeApprovedScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const route = useRoute();
-  const { code } = route.params as { code: string };
+  const { tenantCodeId } = route.params as { tenantCodeId: string };
 
   const address = "18 Chemin de Renens, 1004 Lausanne";
   const onNext = () => {
     console.log("Next button pressed");
-    navigation.navigate("TenantForm", {code}); // Redirect to the main app screen or appropriate screen
+    navigation.navigate("TenantForm", {tenantCodeId}); // Redirect to the main app screen or appropriate screen
   };
 
   return (

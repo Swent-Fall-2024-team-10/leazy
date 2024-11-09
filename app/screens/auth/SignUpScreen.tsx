@@ -38,8 +38,6 @@ export default function SignUpScreen() {
 
   const validateForm = () => {
     let newErrors: Errors = {};
-    if (!firstName) newErrors.firstName = "First name is required";
-    if (!lastName) newErrors.lastName = "Last name is required";
     if (!email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email is invalid";
     if (!password) newErrors.password = "Password is required";
@@ -61,24 +59,10 @@ export default function SignUpScreen() {
         console.log("User signed up:", user);
 
         if (userType === UserType.LANDLORD) {
-          const newUser: User = {
-            uid: user.uid,
-            type: "landlord",
-            name: `${firstName} ${lastName}`,
-            email,
-            phone: "",
-            street: "",
-            number: "",
-            city: "",
-            canton: "",
-            zip: "",
-            country: "",
-          };
-          createUser(newUser); // Create landlord in the database
           navigation.navigate("Home");
         } else {
           // If Tenant, proceed to CodeEntryScreen without creating a user
-          navigation.navigate("CodeEntry", { userId: user.uid, firstName, lastName, email });
+          navigation.navigate("CodeEntry", { userId: user.uid, email });
         }
       } else {
         console.log("Sign up failed");
@@ -115,29 +99,8 @@ export default function SignUpScreen() {
           selectedValue={userType}
           onValueChange={(itemValue) => setUserType(itemValue)}
         />
-        <Text style={styles.text}>Please enter your personal info</Text>
-
-        <CustomTextField
-          testID="firstNameInput"
-          placeholder="First name"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        {errors.firstName && (
-          <Text style={styles.errorText}>{errors.firstName}</Text>
-        )}
-
-        <CustomTextField
-          testID="lastNameInput"
-          placeholder="Last name"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        {errors.lastName && (
-          <Text style={styles.errorText}>{errors.lastName}</Text>
-        )}
-
-        <Text style={styles.text}>And choose an email and password</Text>
+        
+        <Text style={styles.text}> Choose an email and a password</Text>
 
         <CustomTextField
           testID="emailInput"

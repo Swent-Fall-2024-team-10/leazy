@@ -398,7 +398,7 @@ export async function deleteLaundryMachine(
 }
 
 export async function add_new_tenant(
-  code: string,
+  tenantCodeId: string,
   name: string,
   email: string,
   phone: string,
@@ -410,16 +410,8 @@ export async function add_new_tenant(
   country: string
 ) {
   try {
-    const tenantCodesRef = collection(db, "tenantCodes");
-    const q = query(tenantCodesRef, where("tenantCode", "==", code));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      console.error("No matching documents for the given tenant code.");
-      return;
-    }
-
-    const tenantCodeDoc = querySnapshot.docs[0];
+    const tenantCodesRef = doc(db, "tenantCodes", tenantCodeId);
+    const tenantCodeDoc = await getDoc(tenantCodesRef);
     const tenantCodeData = tenantCodeDoc.data();
 
     if (
@@ -427,8 +419,7 @@ export async function add_new_tenant(
       !tenantCodeData.apartmentId ||
       !tenantCodeData.residenceId
     ) {
-      console.error("Invalid tenant code data: ", tenantCodeData);
-      return;
+      throw new Error("Invalid tenant code data.");
     }
 
     const apartmentId = tenantCodeData.apartmentId;
@@ -548,12 +539,16 @@ export async function generate_unique_code(
 /**
  * Validates a tenant code, marking it as used if valid.
  * @param inputCode - The tenant code to validate.
- * @returns True if the code is valid and unused, false otherwise.
+ * @returns The document ID of the tenant code if valid and unused, null otherwise.
  */
-export async function validateTenantCode(inputCode: string): Promise<Boolean> {
+export async function validateTenantCode(
+  inputCode: string
+): Promise<string | null> {
   try {
-    // fetch the UID of TenantCode who has this uniqu code: inputCode
+    console.log("inputCode:    ", inputCode);
+    // fetch the UID of TenantCode who has this unique code: inputCode
     const tenantCodesRef = collection(db, "tenantCodes");
+
     const q = query(
       tenantCodesRef,
       where("tenantCode", "==", inputCode),
@@ -562,17 +557,17 @@ export async function validateTenantCode(inputCode: string): Promise<Boolean> {
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      return false;
+      return null;
     }
 
     const tenantCodeDoc = querySnapshot.docs[0];
     const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
 
     await updateDoc(tenantCodeRef, { used: true });
-    return true;
+    return tenantCodeDoc.id;
   } catch (error) {
     console.error("Error validating tenant code:", error);
-    return false;
+    return null;
   }
 }
 

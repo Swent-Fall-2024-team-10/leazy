@@ -7,15 +7,13 @@ export type RootStackParamList = {
   ListIssues: undefined; // No parameters for ListIssues screen
   CodeEntry: {
     userId: string;
-    firstName: string;
-    lastName: string;
     email: string;
   };
   CodeApproved: {
-    code: string;
+    tenantCodeId: string;
   };
   TenantForm: {
-    code: string;
+    tenantCodeId: string;
   };
   SignIn: undefined;
 };

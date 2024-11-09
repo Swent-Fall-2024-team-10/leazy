@@ -9,54 +9,26 @@ import {
 import CustomTextField from "@/app/components/CustomTextField";
 import CustomButton from "@/app/components/CustomButton";
 import { RootStackParamList } from "@/types/types";
-import {
-  validateTenantCode,
-  add_new_tenant,
-} from "@/firebase/firestore/firestore"; // Import createTenant here
+import { validateTenantCode } from "@/firebase/firestore/firestore"; // Import createTenant here
 
 export default function CodeEntryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
-  const { userId, firstName, lastName, email } = route.params as {
+  const { userId, email } = route.params as {
     userId: string;
-    firstName: string;
-    lastName: string;
     email: string;
   }; // Access tenant details passed from SignUpScreen
   const [code, setCode] = useState("");
   const [errors, setErrors] = useState<{ code?: string }>({});
 
-  const validateForm = async () => {
-    let newErrors: { code?: string } = {};
-    const isValidCode = await validateTenantCode(code);
-    if (!isValidCode) {
-      newErrors.code = "This code does not exist or has expired";
-    }
-    return newErrors;
-  };
-
   const handleSubmit = async () => {
-    const formErrors = await validateForm();
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
-    }
-
     try {
-      await add_new_tenant(
-        code,
-        `${firstName} ${lastName}`, // Name
-        email,
-        "1234567890", // Placeholder for phone; ideally would collect this
-        "Main Street", // Placeholder for address fields; ideally would collect this
-        "123", // Placeholder for street number
-        "CityName", // Placeholder for city
-        "CantonName", // Placeholder for canton
-        "12345", // Placeholder for ZIP
-        "CountryName" // Placeholder for country
-      );
-
-      navigation.navigate("CodeApproved", { code }); // Navigate to the next screen and pass the code
+      const tenantCodeId = await validateTenantCode(code);
+      if (tenantCodeId === null) {
+        setErrors({ code: "Invalid code" });
+        throw new Error("Invalid code");
+      }
+      navigation.navigate("CodeApproved", { tenantCodeId }); // Navigate to the next screen and pass the tenant's code ID
     } catch (error) {
       console.error("Failed to add new tenant:", error);
       alert("There was an error adding the tenant. Please try again.");

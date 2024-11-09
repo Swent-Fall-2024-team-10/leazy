@@ -25,7 +25,7 @@ import Spacer from "@/app/components/Spacer";
 const TenantProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
-  const { code } = route.params as { code: string };
+  const { tenantCodeId } = route.params as { tenantCodeId: string };
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -42,7 +42,7 @@ const TenantProfileScreen = () => {
   const handleSubmit = async () => {
     try {
       await add_new_tenant(
-        code,
+        tenantCodeId,
         `${firstName} ${lastName}`,
         email,
         phone,

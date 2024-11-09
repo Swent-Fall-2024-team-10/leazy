@@ -34,7 +34,6 @@ export const FontWeight = {
 };
 
 export const Color = {
-
   ScreenBackground: "#FFFFFF",
 
   HeaderText: "#0f5257",
@@ -101,5 +100,102 @@ export const appStyles = StyleSheet.create({
     alignItems: "center",
     textAlign: "center",
     color: Color.ScreenHeader,
+  },
+});
+
+
+export const stylesForNonHeaderScreens = StyleSheet.create({
+  approvedText: {
+    color: "#3AB700",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 40,
+    fontWeight: "400",
+    lineHeight: 48,
+    letterSpacing: 0.4,
+    marginBottom: 23,
+  },
+  title: {
+    color: Color.TextInputText,
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 40,
+    fontWeight: "400",
+    lineHeight: 40,
+    letterSpacing: 0.4,
+    marginBottom: 24,
+  },
+  text: {
+    color: Color.TextInputText,
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontWeight: "400",
+    lineHeight: 24,
+    letterSpacing: 0.24,
+    marginBottom: 23,
+  },
+  errorText: {
+    color: "#FF0004",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 16,
+    fontWeight: "400",
+    lineHeight: 16,
+    letterSpacing: 0.16,
+    marginBottom: 20,
+    marginTop: 20,
+    width: 186,
+  },
+});
+
+export const stylesForHeaderScreens = StyleSheet.create({
+  titleContainer: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2C3E50",
+    textAlign: "center",
+  },
+  text: {
+    color: "#0B3142",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 24,
+    letterSpacing: 0.24,
+    marginBottom: 23,
+  },
+  CodeText: {
+    color: "#00ff88",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 24,
+    letterSpacing: 0.24,
+    marginBottom: 25,
+  },
+  errorText: {
+    color: "#FF0004",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 16,
+    letterSpacing: 0.16,
+    marginBottom: 20,
+    marginTop: 20,
+    width: 186,
   },
 });

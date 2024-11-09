@@ -25,12 +25,14 @@ export default function InputField({
   width,
   radius,
   backgroundColor,
+  style
 }: InputFieldProps) {
   const inputFieldStyles = [
     styles.inputField,
     height !== undefined && { height },
     radius !== undefined && { borderRadius: radius },
     backgroundColor !== undefined && { backgroundColor },
+    style || {}, // Make style optional by providing an empty object as default
   ];
 
   const textInputComponent = (

@@ -30,6 +30,7 @@ import {
 import { CameraScreen, CapturedMediaScreen } from "./screens/camera";
 import { MessagingScreen } from "./screens/messaging";
 import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
+import CreateNewCode from "./screens/landlord/CreateNewCode";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -90,6 +91,7 @@ const HomeDrawerNavigator = () => {
       />
       <Drawer.Screen name="My Rent" component={MyRentScreen} />
       <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
+      <Drawer.Screen name="Code Entry" component={CreateNewCode} />
       <Drawer.Screen name="Subrent" component={SubrentScreen} />
       <Drawer.Screen name="Settings" component={SettingsScreen} />
     </Drawer.Navigator>

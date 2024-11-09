@@ -1,3 +1,8 @@
+
+// portions of this code were generated with chatGPT as an AI assistant
+
+import { Timestamp } from "firebase/firestore";
+
 // Define the navigation stack types
 export type RootStackParamList = {
     Home: undefined;         // No parameters for Home screen
@@ -90,10 +95,13 @@ export type Apartment = {
 };
 
 export type LaundryMachine = {
-  laundryMachineId: string;
-  isAvailable: boolean;
-  isFunctional: boolean;
-};
+laundryMachineId: string;
+isAvailable: boolean;
+isFunctional: boolean;
+occupiedBy: string; //for a userID
+startTime: Timestamp;
+estimatedFinishTime: Timestamp;
+}
 
 export type MaintenanceRequest = {
   requestID: string;

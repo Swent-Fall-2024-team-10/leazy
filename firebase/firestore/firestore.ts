@@ -605,6 +605,18 @@ export async function deleteUsedTenantCodes(): Promise<number> {
   }
 }
 
-// add the tenant everywhere in the DB
-// unit test are not valid
-// we need to have every collection in the db
+/**
+ * Fetches all laundry machines for a specific residence from Firestore.
+ * @param residenceId - The unique identifier of the residence.
+ * @returns An array of laundry machine objects.
+ */
+export async function getAllLaundryMachines(residenceId: string) {
+  const querySnapshot = await getDocs(
+    collection(db, `residences/${residenceId}/laundryMachines`)
+  );
+  const machines: LaundryMachine[] = [];
+  querySnapshot.forEach((doc) => {
+    machines.push(doc.data() as LaundryMachine);
+  });
+  return machines;
+}

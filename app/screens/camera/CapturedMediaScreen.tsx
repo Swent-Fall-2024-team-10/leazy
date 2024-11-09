@@ -9,15 +9,7 @@ import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { 
-  cacheImage, 
-  getPictureBlob, 
-  clearPictures,
-  base64ToBlob,
-  ensureDirExists,
-  picDir,
-  picFileUri 
-} from '../../utils/pictureCache';
+import { cacheImage } from '../../utils/pictureCache';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -70,10 +62,6 @@ const handleUpload = useCallback(async () => {
     // Store image in cache
     const fileUri = await cacheImage(blob, Date.now().toString());
     console.log(`Image saved to cache: ${fileUri}`);
-    
-
-    //const downloadURL = await getDownloadURL(storageRef);
-    //console.log(`Media uploaded to Firebase: ${downloadURL}`);
     addPicture(fileUri);
 
     navigation.goBack();

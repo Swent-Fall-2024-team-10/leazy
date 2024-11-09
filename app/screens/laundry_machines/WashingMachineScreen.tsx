@@ -73,10 +73,10 @@ const WashingMachineScreen = () => {
   };
   }, [residenceId]);
 
-  const handleSetTimer = () => {
+  const handleSetTimer = (pickedDuration: Date) => {
     if (selectedMachineId) {
       const startTime = Timestamp.now(); // Current time as Firebase Timestamp
-      const durationMs = duration.getHours() * 3600 * 1000 + duration.getMinutes() * 60 * 1000 + duration.getSeconds() * 1000;
+      const durationMs = pickedDuration.getHours() * 3600 * 1000 + pickedDuration.getMinutes() * 60 * 1000 + pickedDuration.getSeconds() * 1000;
         const estimatedFinishTime = Timestamp.fromMillis(
             startTime.toMillis() + durationMs // Add duration in milliseconds
         );
@@ -248,7 +248,7 @@ const WashingMachineScreen = () => {
                 console.log(
                   `${duration}`
                 );
-                handleSetTimer();
+                handleSetTimer(timestamp_duration);
                 setIsTimerModalVisible(false);
             }}
             modalTitle="Set Alarm"

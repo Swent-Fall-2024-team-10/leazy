@@ -28,7 +28,7 @@ import {
 import { setLogLevel } from "firebase/firestore";
 
 // Set the log level to 'silent' to disable logging
-setLogLevel("silent");
+// setLogLevel("silent");
 
 /**
  * Creates a new user document in Firestore.
@@ -295,11 +295,23 @@ export async function getMaintenanceRequest(
  * @param tenantId - The unique identifier of the tenant.
  * @returns A Firestore query for the maintenance requests collection.
  */
-export function getMaintenanceRequestsQuery(tenantId: string) {
+export async function getMaintenanceRequestsQuery(userID: string) {
   // Construct a query based on the tenantId
+  const userRef = collection(db, "users");
+  const userSnapshot = await getDocs(userRef);
+  const matchingUserDoc = userSnapshot.docs.find(
+    (doc) => doc.data().uid === userID
+  );
+
+  if (!matchingUserDoc) {
+    throw new Error(`User with ID ${userID} not found.`);
+  }
+
+  const userDocId = matchingUserDoc.id;
+
   return query(
     collection(db, "maintenanceRequests"),
-    where("tenantId", "==", tenantId)
+    where("tenantId", "==", userDocId)
   );
 }
 

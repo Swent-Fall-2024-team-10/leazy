@@ -72,7 +72,6 @@ const TenantProfileScreen = () => {
             setValue={setFirstName}
             placeholder="First Name"
             testID="testFirstNameField"
-            style={{ marginBottom: 20 }}
             height={40}
             backgroundColor={Color.TextInputBackground}
           />

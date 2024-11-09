@@ -4,7 +4,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '@/app/components/forms/text_input';
 import Spacer from '@/app/components/Spacer';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, Color } from '@/styles/styles';
+import { appStyles, buttonSizes, Color } from '@/styles/styles';
 import Close from '@/app/components/buttons/Close';
 import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
 import { ReportStackParamList } from '@/types/types';  // Import or define your navigation types
@@ -105,10 +105,10 @@ export default function ReportScreen() {
 
   return (
     <Header>
-      <ScrollView style={styles.container} 
+      <ScrollView style={appStyles.screenContainer} 
       automaticallyAdjustKeyboardInsets={true}
       >
-        <View style={[appStyles.scrollContainer, {paddingBottom : '100%'}]}>
+        <View style={[appStyles.scrollContainer, {paddingBottom : '100%', marginBottom : '10%'}]}>
 
           <Close onPress={handleClose} />
           <Text style={appStyles.screenHeader}>Create a new issue</Text>
@@ -198,25 +198,23 @@ export default function ReportScreen() {
 
           <View style={{ flexDirection: 'row' }}>
             <BouncyCheckbox
-              iconImageStyle={styles.tickingBox}
-              iconStyle={styles.tickingBox}
-              innerIconStyle={styles.tickingBox}
-              unFillColor={Color.ReportScreenBackground}
+              iconImageStyle={appStyles.tickingBox}
+              iconStyle={appStyles.tickingBox}
+              innerIconStyle={appStyles.tickingBox}
+              unFillColor={Color.TextInputBackground}
               fillColor={Color.ButtonBackground}
               onPress={(isChecked: boolean) => setTick(isChecked)}
             />
-            <Text style={styles.tickingBoxText}>
+            <Text style={appStyles.inputFieldLabel}>
               I would like to start a chat with the manager about this issue
             </Text>
           </View>
 
-          <Spacer height={20} />
-
           <SubmitButton
             disabled={room === '' || description === '' || issue === ''}
             onPress={handleSubmit}
-            width={170}
-            height={44}
+            width={buttonSizes.mediumButtonWidth}
+            height={buttonSizes.mediumButtonHeight}
             label="Submit"
             testID="testSubmitButton"
             style={appStyles.submitButton}
@@ -228,20 +226,3 @@ export default function ReportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  tickingBoxText : {
-    color: Color.TextInputLabel,
-    fontSize: 16,
-    width: 300,
-    fontWeight: '500',
-  },
-
-  tickingBox : {
-    borderRadius: 5,
-  },
-
-  container: {
-    flex: 1,
-    padding: '6%',
-  },
-});

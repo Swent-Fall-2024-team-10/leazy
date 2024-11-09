@@ -1,3 +1,4 @@
+import { appStyles, buttonRadius, buttonSizes, Color } from '@/styles/styles';
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
 
@@ -33,7 +34,7 @@ const AdaptiveButton: React.FC<ButtonProps> = ({
     // rendering of the function
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
       {iconPosition === 'left' && iconElement}
-      <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+      <Text style={[appStyles.submitButtonText, textStyle]}>{title}</Text>
       {iconPosition === 'right' && iconElement}
     </TouchableOpacity>
   );
@@ -41,12 +42,14 @@ const AdaptiveButton: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#0f5257', // dark green
+    width: buttonSizes.veryLargeButtonWidth,
+    height: buttonSizes.veryLargeButtonHeight,
+    backgroundColor: Color.ButtonBackground, // dark green
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    borderRadius: 9999,
+    borderRadius: buttonRadius,
     marginBottom: 16,
   },
   buttonText: {

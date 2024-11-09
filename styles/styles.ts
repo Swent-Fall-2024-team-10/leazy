@@ -8,8 +8,18 @@ export type RootStackParamList = {
   };
 
 export const buttonRadius = 100;
+export const inputFieldHeight = 40;
+
+
+export const Boders = {
+
+}
 
 export const buttonSizes = {
+
+  veryLargeButtonWidth : 300,
+  veryLargeButtonHeight : 44,
+
   largeButtonWidth : 263,
   largeButtonHeight : 44,
   
@@ -18,6 +28,12 @@ export const buttonSizes = {
 
   mediumButtonWidth : 200,
   mediumButtonHeight : 44,
+}
+
+export const IconSizes = {
+  smallIcon : 24,
+  mediumIcon : 34,
+  largeIcon : 44,
 }
 
 export const Padding = {
@@ -31,6 +47,7 @@ export const Padding = {
 export const FontSizes = {
   ScreenHeader : 24,
   
+  legend : 10,
   DateText : 14,
   
   ButtonText : 15,
@@ -73,7 +90,9 @@ export const Color = {
   ButtonBorder : "#7F7F7F",
   ButtonText : "#FFFFFF",
 
-  ReportScreenBackground : "#F5F5F5",
+  IssueBorder : "#7F7F7F",
+  IssueBackground : "#EDEDED",
+  ScreenBackground : "#F5F5F5",
   
   TextInputPlaceholder : "#7F7F7F",
   TextInputBackground : "#D6D3F0",
@@ -94,6 +113,11 @@ export const Color = {
 
 export const appStyles = StyleSheet.create({
   
+  smallCaptionText:{
+    fontFamily: "Inter-Regular",
+    fontSize: FontSizes.legend,
+  },
+
   carouselImageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,9 +157,11 @@ export const appStyles = StyleSheet.create({
   inputFieldLabel : {
       fontSize: 16,
       marginBottom: 2.5,
-      fontWeight: "500",
+      fontWeight: "600",
       color: Color.TextInputLabel,
       marginLeft: '3%',
+      paddingBottom: '1%',
+      paddingTop: '1%',
   },
 
   scrollContainer : {
@@ -199,21 +225,29 @@ export const appStyles = StyleSheet.create({
 
   screenContainer : {
     flex: 1,
-    padding: 20,
+    padding: '6%',
   },
 
   screenHeader : {
     flex: 1,
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: '3%',
     alignItems: 'center',
     textAlign: 'center',
     color: Color.ScreenHeader,
   },
 
-  
+  tickingBox : {
+    borderRadius: 5,
+  },
 
-
+  expandedImageNextButton: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    zIndex: 1,
+    padding: 8,
+  },
 
 });

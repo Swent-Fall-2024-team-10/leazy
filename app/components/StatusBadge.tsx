@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     alignSelf: 'center',
     borderRadius: buttonRadius,
-    
+    marginBottom: '5%',
     paddingVertical: '1.5%',
     paddingHorizontal: '3%',
   },

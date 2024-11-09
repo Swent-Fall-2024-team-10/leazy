@@ -9,7 +9,7 @@ import { MaintenanceRequest} from '../../../types/types'; // Importing types
 import { getAuth } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
 import { getIssueStatusColor, getIssueStatusText } from '@/app/utils/StatusHelper'; 
-import { appStyles } from '@/styles/styles';
+import { appStyles, Color } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -186,14 +186,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#EDEDED', 
+    backgroundColor: Color.IssueBackground, 
     borderRadius: 30,           
     borderWidth: 1,             
-    borderColor: '#7F7F7F',     
+    borderColor: Color.IssueBorder,     
     width: 340,                 
     height: 110,                
     marginBottom: '2%',
-    padding: 16,
+    padding: '4%',
   },
   issueContent: {
     justifyContent:'space-between',

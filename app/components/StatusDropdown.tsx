@@ -2,6 +2,7 @@ import React from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaintenanceRequest } from '@/types/types';
+import { appStyles, buttonSizes, Color, inputFieldHeight } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -20,7 +21,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, setValue }) => {
 
   return (
     <View style={styles.statusContainer}>
-      <Text style={styles.sectionTitle}>Change status</Text>
+      <Text style={appStyles.inputFieldLabel}>Change status</Text>
       <DropDownPicker
         open={open}
         value={value}
@@ -46,9 +47,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusContainer: {
-    marginBottom: 16,
+    marginBottom: '5%',
   },
   dropdown: {
+    backgroundColor: Color.TextInputBackground,
     borderColor: 'black',
     borderWidth: 0.5,
     borderRadius: 32,
@@ -58,6 +60,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   dropdownContainer: {
+    backgroundColor: Color.TextInputBackground,
     borderColor: 'black',
     borderWidth: 0.5,
     borderRadius: 32,

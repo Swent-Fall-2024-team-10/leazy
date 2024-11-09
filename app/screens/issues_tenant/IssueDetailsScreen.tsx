@@ -12,7 +12,8 @@ import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/fire
 import Spacer from '../../components/Spacer';
 import { AntDesign } from '@expo/vector-icons';
 import { Icon } from 'react-native-elements';
-import { appStyles } from '@/styles/styles';
+import { appStyles, buttonSizes, Color, FontSizes, IconSizes } from '@/styles/styles';
+import SubmitButton from '@/app/components/buttons/SubmitButton';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -130,19 +131,20 @@ const IssueDetailsScreen: React.FC = () => {
   return (
     <Header>
         <View style={styles.grayBackground}>
-          <ScrollView style={styles.content} automaticallyAdjustKeyboardInsets = {true} showsVerticalScrollIndicator = {false}>
-            <View style={styles.issueTitle}>
-              <Text style={styles.issueTitleText}>Issue: {issue.requestTitle}</Text>
+          <ScrollView style={appStyles.screenContainer} automaticallyAdjustKeyboardInsets = {true} showsVerticalScrollIndicator = {false}>
+            <View>
+              <Text style={[appStyles.screenHeader, {textAlign : 'left', letterSpacing : 1.5, fontSize : 20, marginBottom : '10%'}]}> Issue : {issue.requestTitle}</Text>
               <StatusBadge status={status} />
             </View>
 
             <AdaptiveButton title = 'Open chat about this subject' 
-            onPress = { () => navigation.navigate('Messaging')}
-            icon = {<MessageSquare stroke="white" width={18} height={18} />}
-            iconPosition= {'right'}
+              onPress = { () => navigation.navigate('Messaging')}
+              icon = {<MessageSquare stroke="white" width={IconSizes.smallIcon} height={IconSizes.smallIcon} />}
+              iconPosition= {'right'}
+              style = {appStyles.submitButton}
             ></AdaptiveButton>
             
-            <Text style={styles.sectionTitleImage}>Images submitted</Text>
+            <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
             <View style={appStyles.carouselImageContainer}>
               <ScrollView
                 horizontal
@@ -159,11 +161,11 @@ const IssueDetailsScreen: React.FC = () => {
             </View>
 
             <View style={styles.imagesTextView}>
-            <Text style={styles.imagesText}>Click on an image to expand it</Text>
+              <Text style={appStyles.smallCaptionText}>Click on an image to expand it</Text>
             </View>
 
             <View style={styles.descriptionContainer}>
-              <Text style={styles.sectionTitle}>Description</Text>
+              <Text style={appStyles.inputFieldLabel}>Description</Text>
               <View style={styles.descriptionBox}>
                 <Text style={styles.descriptionText}>
                   {description}
@@ -173,18 +175,26 @@ const IssueDetailsScreen: React.FC = () => {
 
             <StatusDropdown value={status} setValue={setStatus} ></StatusDropdown>
 
-            <AdaptiveButton title = {'Close'} onPress = {handleClose}>
-            </AdaptiveButton>
+            <SubmitButton 
+              disabled = {false}
+              label = {'Close'} 
+              onPress = {handleClose} 
+              width = {buttonSizes.veryLargeButtonWidth} 
+              height = {buttonSizes.veryLargeButtonHeight} 
+              testID = {'saveChangesButton'}
+              style = {appStyles.submitButton} 
+              textStyle = {appStyles.submitButtonText}>
+            </SubmitButton>
 
             {/* Full-Screen Modal */}
           <Modal visible={fullScreenMode} transparent={true} onRequestClose={closeFullScreen}>
             <View style={styles.modalBackground}>
               <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
-                <Icon name="close" type="font-awesome" color="white" size={24} />
+                <Icon name="close" type="font-awesome" color="white" size={IconSizes.smallIcon} />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handlePreviousImage} style={[styles.arrowButton, styles.leftArrow]}>
-                <Icon name="chevron-left" type="font-awesome" color="white" size={24} />
+              <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]}>
+                <Icon name="chevron-left" type="font-awesome" color="white" size={IconSizes.smallIcon} />
               </TouchableOpacity>
 
               <Image
@@ -193,8 +203,8 @@ const IssueDetailsScreen: React.FC = () => {
                 resizeMode="contain"
               />
 
-              <TouchableOpacity onPress={handleNextImage} style={[styles.arrowButton, styles.rightArrow]}>
-                <Icon name="chevron-right" type="font-awesome" color={"white"} size={24} />
+              <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]}>
+                <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconSizes.smallIcon} />
               </TouchableOpacity>
             </View>
           </Modal>
@@ -210,13 +220,10 @@ const styles = StyleSheet.create({
   imagesTextView:{
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 32,
+    marginBottom: '10%'
   },
 
-  imagesText:{
-    fontFamily: "Inter-Regular",
-    fontSize: 10,
-  },
+
 
   closeModalButton: {
     position: 'absolute',
@@ -248,16 +255,16 @@ const styles = StyleSheet.create({
 
   grayBackground: {
     height: Dimensions.get('window').height * 0.8,
-    backgroundColor: '#F3F2F1',
-    marginHorizontal: 10,
-    marginVertical: 12,
+    backgroundColor: Color.IssueBackground,
+    marginHorizontal: '3%',
+    marginVertical: '3%',
     borderRadius: 32,
     overflow: 'hidden',
     // Add black border
-    borderColor: 'light-grey',
-    borderWidth: 0.5,
+    borderColor: Color.IssueBorder,
+    borderWidth: 1,
     // Shadow for iOS
-    shadowColor: '#000',
+    shadowColor: Color.ShadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -266,38 +273,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 
-  content: {
-    padding: 16,
-  },
-  issueTitle: {
-    marginBottom: 16,
-  },
-
-  issueTitleText: {
-    marginBottom: 20,
-    paddingLeft: 8,
-    fontSize: 16,
-    letterSpacing: 0.2,
-    fontFamily: "Inter-Bold",
-  },
-
-  image: {
-    width: '100%',
-    height: 200,
-    borderRadius: 32,
-    marginBottom: 16,
-    // Add black border
-    borderColor: 'light-grey',
-    borderWidth: 0.5,
-  },
-
   descriptionContainer: {
     marginBottom: 16,
     marginTop: -8,
   },
 
   descriptionBox: {
-    backgroundColor: 'white',
+    backgroundColor: Color.TextInputBackground,
     borderRadius: 28,
     // Add black border
     borderColor: 'black',
@@ -313,57 +295,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-
-  sectionTitleImage: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    marginTop: 8,
-  },
-
   descriptionText: {
-    fontSize: 14,
-    color: '#4b5563',
+    fontSize: FontSizes.TextInputText,
+    color: Color.TextInputText,
   },
-
-  statusContainer: {
-    marginBottom: 16,
-  },
-
-  statusDropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    // Add black border
-    borderColor: 'black',
-    borderWidth: 0.5,
-    borderRadius: 9999,
-    padding: 12,
-    backgroundColor: 'white',
-    width: '50%',
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-
-    // Shadow for Android
-    elevation: 5,
-  },
-
-  arrowButton: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -12 }],
-    zIndex: 1,
-    padding: 8,
-  },
-
 });
 
 export default IssueDetailsScreen;

@@ -16,30 +16,6 @@ export async function ensureDirExists() {
 }
 
 /**
- * Converts a base64 string to a Blob
- * @param {string} base64Data - The base64 string to convert
- * @param {string} contentType - The MIME type of the data
- * @returns {Blob} The resulting Blob
- */
-export const base64ToBlob = (base64Data: string, contentType: string = 'image/jpeg'): Blob => {
-  const byteCharacters = atob(base64Data);
-  const byteArrays: Uint8Array[] = [];
-
-  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-    const slice = byteCharacters.slice(offset, offset + 512);
-    const byteNumbers = new Array(slice.length);
-
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    byteArrays.push(new Uint8Array(byteNumbers));
-  }
-
-  return new Blob(byteArrays, { type: contentType });
-};
-
-/**
  * Saves a blob to the pictures directory with the specified ID
  * @param {Blob} blob - The blob to save
  * @param {string} picId - The picture ID to use in the filename
@@ -105,16 +81,13 @@ export const getPictureBlob = async (picId: string): Promise<Blob> => {
     }
 
     // Read the base64 data
-    const base64Data = await FileSystem.readAsStringAsync(fileUri, {
-      encoding: FileSystem.EncodingType.Base64
-    });
-
-    // Convert to Blob
-    return base64ToBlob(base64Data);
-} catch (error) {
+    const fetchResponse = await fetch(fileUri);
+    return await fetchResponse.blob();
+  } catch (error) {
     throw new Error(`Failed to get picture ${picId}: ${(error as Error).message}`);
-}
+  }
 };
+
 
 /**
  * Deletes multiple pictures from the pictures directory

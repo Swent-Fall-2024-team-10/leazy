@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
 import { MaintenanceRequest } from '@/types/types';
 import { getIssueStatusColor, getIssueStatusText } from '@/app/utils/StatusHelper';
-import { buttonRadius } from '@/styles/styles';
+import { defaultButtonRadius } from '@/styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 interface StatusBadgeProps {
@@ -22,7 +22,7 @@ export default StatusBadge;
 const styles = StyleSheet.create({
   statusBadge: {
     alignSelf: 'center',
-    borderRadius: buttonRadius,
+    borderRadius: defaultButtonRadius,
     marginBottom: '5%',
     paddingVertical: '1.5%',
     paddingHorizontal: '3%',

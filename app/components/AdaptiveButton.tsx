@@ -1,4 +1,4 @@
-import { appStyles, buttonRadius, buttonSizes, Color } from '@/styles/styles';
+import { appStyles, defaultButtonRadius, ButtonDimensions, Color } from '@/styles/styles';
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
 
@@ -42,14 +42,14 @@ const AdaptiveButton: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    width: buttonSizes.veryLargeButtonWidth,
-    height: buttonSizes.veryLargeButtonHeight,
+    width: ButtonDimensions.veryLargeButtonWidth,
+    height: ButtonDimensions.veryLargeButtonHeight,
     backgroundColor: Color.ButtonBackground, // dark green
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    borderRadius: buttonRadius,
+    borderRadius: defaultButtonRadius,
     marginBottom: 16,
   },
   buttonText: {

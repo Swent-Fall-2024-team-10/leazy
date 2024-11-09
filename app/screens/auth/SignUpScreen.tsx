@@ -8,7 +8,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
 import { User, Tenant, RootStackParamList} from '@/types/types';
-import { Color, FontSizes, Padding, appStyles, buttonSizes } from '@/styles/styles';
+import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 
@@ -178,8 +178,8 @@ export default function SignUpScreen() {
           testID='signUpButton' 
           disabled={false} 
           onPress={handleSignUpPress} 
-          width={buttonSizes.largeButtonWidth} 
-          height={buttonSizes.largeButtonHeight} 
+          width={ButtonDimensions.largeButtonWidth} 
+          height={ButtonDimensions.largeButtonHeight} 
           label="Sign up" 
           style={appStyles.submitButton} 
           textStyle={appStyles.submitButtonText} />
@@ -190,8 +190,8 @@ export default function SignUpScreen() {
           testID='googleSignUpButton' 
           disabled={false} 
           onPress={handleGoogleSignUp} 
-          width={buttonSizes.largeButtonWidth} 
-          height={buttonSizes.largeButtonHeight} 
+          width={ButtonDimensions.largeButtonWidth} 
+          height={ButtonDimensions.largeButtonHeight} 
           label="Sign up with Google" 
           style={appStyles.submitButton} 
           textStyle={appStyles.submitButtonText}
@@ -249,8 +249,8 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
     letterSpacing: 0.24,
-    paddingTop : Padding.LabelTop,
-    paddingBottom : Padding.LabelBottom,
+    paddingTop : LayoutPadding.LabelTop,
+    paddingBottom : LayoutPadding.LabelBottom,
   },
 
   text: {

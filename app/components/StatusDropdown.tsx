@@ -2,7 +2,7 @@ import React from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaintenanceRequest } from '@/types/types';
-import { appStyles, buttonSizes, Color, inputFieldHeight } from '@/styles/styles';
+import { appStyles, ButtonDimensions, Color, textInputHeight } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 

@@ -7,7 +7,7 @@ import { RootStackParamList } from '@/types/types';  // Import or define your na
 import CustomPopUp from '@/app/components/CustomPopUp';
 import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, buttonSizes } from '@/styles/styles';
+import { appStyles, ButtonDimensions } from '@/styles/styles';
 
 
 interface FormErrors {
@@ -85,8 +85,8 @@ export default function SignInScreen() {
       <SubmitButton 
         disabled={false} 
         onPress={handleSignIn} 
-        width={buttonSizes.largeButtonWidth} 
-        height={buttonSizes.largeButtonHeight} 
+        width={ButtonDimensions.largeButtonWidth} 
+        height={ButtonDimensions.largeButtonHeight} 
         label="Sign in" 
         testID='signInButton'
         style={appStyles.submitButton}
@@ -101,8 +101,8 @@ export default function SignInScreen() {
       <SubmitButton 
         disabled={false} 
         onPress={handleSignUpPress} 
-        width={buttonSizes.largeButtonWidth} 
-        height={buttonSizes.largeButtonHeight} 
+        width={ButtonDimensions.largeButtonWidth} 
+        height={ButtonDimensions.largeButtonHeight} 
         label="Sign up" 
         testID='signU'
         style={appStyles.submitButton}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Text, StyleSheet, View, Alert, Image, Modal} from 'react-native';
+import { Text, View, Alert, Image, Modal} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import InputField from '@/app/components/forms/text_input';
 import Spacer from '@/app/components/Spacer';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, buttonSizes, Color } from '@/styles/styles';
+import { appStyles, ButtonDimensions, Color } from '@/styles/styles';
 import Close from '@/app/components/buttons/Close';
 import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
 import { ReportStackParamList } from '@/types/types';  // Import or define your navigation types
@@ -120,10 +120,10 @@ export default function ReportScreen() {
 
           {isVisible && (
             <Modal
-                transparent={true}
-                animationType="fade"
-                visible={isVisible}
-                onRequestClose={() => setIsVisible(false)}
+              transparent={true}
+              animationType="fade"
+              visible={isVisible}
+              onRequestClose={() => setIsVisible(false)}
             >
                 <CloseConfirmation
                     isVisible={isVisible}
@@ -213,8 +213,8 @@ export default function ReportScreen() {
           <SubmitButton
             disabled={room === '' || description === '' || issue === ''}
             onPress={handleSubmit}
-            width={buttonSizes.mediumButtonWidth}
-            height={buttonSizes.mediumButtonHeight}
+            width={ButtonDimensions.mediumButtonWidth}
+            height={ButtonDimensions.mediumButtonHeight}
             label="Submit"
             testID="testSubmitButton"
             style={appStyles.submitButton}

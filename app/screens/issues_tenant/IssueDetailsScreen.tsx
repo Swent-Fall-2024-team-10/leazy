@@ -12,7 +12,7 @@ import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/fire
 import Spacer from '../../components/Spacer';
 import { AntDesign } from '@expo/vector-icons';
 import { Icon } from 'react-native-elements';
-import { appStyles, buttonSizes, Color, FontSizes, IconSizes } from '@/styles/styles';
+import { appStyles, ButtonDimensions, Color, FontSizes, IconDimension } from '@/styles/styles';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 
 // portions of this code were generated with chatGPT as an AI assistant
@@ -139,7 +139,7 @@ const IssueDetailsScreen: React.FC = () => {
 
             <AdaptiveButton title = 'Open chat about this subject' 
               onPress = { () => navigation.navigate('Messaging')}
-              icon = {<MessageSquare stroke="white" width={IconSizes.smallIcon} height={IconSizes.smallIcon} />}
+              icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}
               iconPosition= {'right'}
               style = {appStyles.submitButton}
             ></AdaptiveButton>
@@ -179,8 +179,8 @@ const IssueDetailsScreen: React.FC = () => {
               disabled = {false}
               label = {'Close'} 
               onPress = {handleClose} 
-              width = {buttonSizes.veryLargeButtonWidth} 
-              height = {buttonSizes.veryLargeButtonHeight} 
+              width = {ButtonDimensions.veryLargeButtonWidth} 
+              height = {ButtonDimensions.veryLargeButtonHeight} 
               testID = {'saveChangesButton'}
               style = {appStyles.submitButton} 
               textStyle = {appStyles.submitButtonText}>
@@ -190,11 +190,11 @@ const IssueDetailsScreen: React.FC = () => {
           <Modal visible={fullScreenMode} transparent={true} onRequestClose={closeFullScreen}>
             <View style={styles.modalBackground}>
               <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
-                <Icon name="close" type="font-awesome" color="white" size={IconSizes.smallIcon} />
+                <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]}>
-                <Icon name="chevron-left" type="font-awesome" color="white" size={IconSizes.smallIcon} />
+                <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
               </TouchableOpacity>
 
               <Image
@@ -204,7 +204,7 @@ const IssueDetailsScreen: React.FC = () => {
               />
 
               <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]}>
-                <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconSizes.smallIcon} />
+                <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
               </TouchableOpacity>
             </View>
           </Modal>

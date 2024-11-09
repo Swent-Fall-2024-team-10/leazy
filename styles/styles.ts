@@ -7,15 +7,15 @@ export type RootStackParamList = {
     Settings: undefined;     // No parameters for Settings screen
   };
 
-export const buttonRadius = 100;
-export const inputFieldHeight = 40;
+export const defaultButtonRadius = 100;
+export const textInputHeight = 40;
 
 
 export const Boders = {
 
 }
 
-export const buttonSizes = {
+export const ButtonDimensions = {
 
   veryLargeButtonWidth : 300,
   veryLargeButtonHeight : 44,
@@ -30,13 +30,13 @@ export const buttonSizes = {
   mediumButtonHeight : 44,
 }
 
-export const IconSizes = {
+export const IconDimension = {
   smallIcon : 24,
   mediumIcon : 34,
   largeIcon : 44,
 }
 
-export const Padding = {
+export const LayoutPadding = {
   Header : '8%',
   LabelTop : '5%',
   LabelBottom : '5%',
@@ -194,7 +194,7 @@ export const appStyles = StyleSheet.create({
       backgroundColor: Color.ButtonBackground,
       borderColor: Color.ButtonBorder,
       borderWidth: 1,
-      borderRadius: buttonRadius,
+      borderRadius: defaultButtonRadius,
       justifyContent: 'center',
       alignItems: 'center',
   },
@@ -210,7 +210,7 @@ export const appStyles = StyleSheet.create({
   },
 
   InputFieldContainer : {
-    padding: Padding.InputField,
+    padding: LayoutPadding.InputField,
   },
   
   

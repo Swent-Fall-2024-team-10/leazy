@@ -12,7 +12,7 @@ import {
 import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
-import { getAllLaundryMachines, getWashingMachinesQuery, updateLaundryMachine } from "@/firebase/firestore/firestore";
+import { createMachineNotification, getAllLaundryMachines, getWashingMachinesQuery, updateLaundryMachine } from "@/firebase/firestore/firestore";
 import CustomButton from "@/app/components/CustomButton";
 import { getAuth } from "firebase/auth";
 import { onSnapshot, Timestamp } from "firebase/firestore";
@@ -70,10 +70,13 @@ const WashingMachineScreen = () => {
           clearInterval(intervalId);
           setRemainingTimes(prev => ({
               ...prev,
-              [laundryMachineId]: "Cycle complete",
+              [laundryMachineId]: "Cycle completed",
           }));
           delete timerIntervals[laundryMachineId]; // Remove the interval ID from tracking
           return;
+      }
+      if (remainingTimeMs <= 3 * 60 * 1000 && userId) {
+        createMachineNotification(userId)
       }
 
       // Calculate hours, minutes, and seconds

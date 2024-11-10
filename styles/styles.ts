@@ -3,9 +3,9 @@ import { Header } from "react-native-elements";
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
-    Home: undefined;         // No parameters for Home screen
-    Settings: undefined;     // No parameters for Settings screen
-  };
+  Home: undefined; // No parameters for Home screen
+  Settings: undefined; // No parameters for Settings screen
+};
 
 export const defaultButtonRadius = 100;
 export const textInputHeight = 40;
@@ -63,32 +63,32 @@ export const FontSizes = {
 } as const;
 
 export const FontWeight = {
-  ScreenHeader : 'bold',
-  DateText : 'normal',
-  ButtonText : 'bold',
-  TextInputText : 'normal',
-  TextInputLabel : 'bold',
-  label : 'bold',
-}
+  ScreenHeader: "bold",
+  DateText: "normal",
+  ButtonText: "bold",
+  TextInputText: "normal",
+  TextInputLabel: "bold",
+  label: "bold",
+};
 
 export const Color = {
-
+  //ScreenBackground: "#FFFFFF",
   CancelColor : '#E74C3C',
 
   ShadowColor : '#171717',
 
-  HeaderText : "#0f5257",
-  HeaderBackground : '#e9d5ff',
+  HeaderText: "#0f5257",
+  HeaderBackground: "#e9d5ff",
 
-  ScreenHeader : "#0f5257",
-  DateText : '#7F7F7F',
+  ScreenHeader: "#0f5257",
+  DateText: "#7F7F7F",
 
-  ButtonBackgroundDisabled : "#7F7F7F",
-  ButtonTextDisabled : "#FFFFFF",
+  ButtonBackgroundDisabled: "#7F7F7F",
+  ButtonTextDisabled: "#FFFFFF",
 
-  ButtonBackground : "#0F5257",
-  ButtonBorder : "#7F7F7F",
-  ButtonText : "#FFFFFF",
+  ButtonBackground: "#0F5257",
+  ButtonBorder: "#7F7F7F",
+  ButtonText: "#FFFFFF",
 
   IssueBorder : "#7F7F7F",
   IssueBackground : "#EDEDED",
@@ -100,18 +100,29 @@ export const Color = {
   TextInputText : "#0B3142",
   TextInputLabel : "#0B3142",
 
-  CameraButtonBackground : "#0F5257",
-  CameraButtonBorder : "#7F7F7F",
+  CameraButtonBackground: "#0F5257",
+  CameraButtonBorder: "#7F7F7F",
 
-  inProgress : '#F39C12',
-  notStarted : '#E74C3C',
-  completed : '#2ECC71',
-  rejected : '#95A5A6',
-  default : '#95A5A6',
-}
-
+  inProgress: "#F39C12",
+  notStarted: "#E74C3C",
+  completed: "#2ECC71",
+  rejected: "#95A5A6",
+  default: "#95A5A6",
+};
 
 export const appStyles = StyleSheet.create({
+
+  tickingBox : {
+    borderRadius: 5,
+  },
+  
+  expandedImageNextButton: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    zIndex: 1,
+    padding: 8,
+  },
   
   smallCaptionText:{
     fontFamily: "Inter-Regular",
@@ -199,36 +210,35 @@ export const appStyles = StyleSheet.create({
       alignItems: 'center',
   },
 
-  appHeader :{
+  appHeader: {
     fontSize: 26,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 7.6,
     fontFamily: "Inter-Bold",
     color: "#0f5257",
-    flex : 1,
-    textAlign: 'center',
+    flex: 1,
+    textAlign: "center",
   },
 
   InputFieldContainer : {
     padding: LayoutPadding.InputField,
   },
-  
-  
-  drawerLabel : {
+
+  drawerLabel: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: "800",
     fontFamily: "Inter-Bold",
     color: Color.ScreenHeader,
-    alignItems: 'center',
+    alignItems: "center",
     borderColor: Color.ScreenHeader,
   },
 
-  screenContainer : {
+  screenContainer: {
     flex: 1,
     padding: '6%',
   },
 
-  screenHeader : {
+  screenHeader: {
     flex: 1,
     fontSize: 24,
     fontWeight: 'bold',
@@ -237,17 +247,108 @@ export const appStyles = StyleSheet.create({
     textAlign: 'center',
     color: Color.ScreenHeader,
   },
+});
+
+
+export const stylesForNonHeaderScreens = StyleSheet.create({
+  approvedText: {
+    color: "#3AB700",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 40,
+    fontWeight: "400",
+    lineHeight: 48,
+    letterSpacing: 0.4,
+    marginBottom: 23,
+  },
+  title: {
+    color: Color.TextInputText,
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 40,
+    fontWeight: "400",
+    lineHeight: 40,
+    letterSpacing: 0.4,
+    marginBottom: 24,
+  },
+  text: {
+    color: Color.TextInputText,
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontWeight: "400",
+    lineHeight: 24,
+    letterSpacing: 0.24,
+    marginBottom: 23,
+  },
+  errorText: {
+    color: "#FF0004",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 16,
+    fontWeight: "400",
+    lineHeight: 16,
+    letterSpacing: 0.16,
+    marginBottom: 20,
+    marginTop: 20,
+    width: 186,
+  },
+});
+
+export const stylesForHeaderScreens = StyleSheet.create({
+  titleContainer: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2C3E50",
+    textAlign: "center",
+  },
+  text: {
+    color: "#0B3142",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 24,
+    letterSpacing: 0.24,
+    marginBottom: 23,
+  },
+  CodeText: {
+    color: "#00ff88",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 24,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 24,
+    letterSpacing: 0.24,
+    marginBottom: 25,
+  },
+  errorText: {
+    color: "#FF0004",
+    textAlign: "center",
+    fontFamily: "Inter",
+    fontSize: 16,
+    fontStyle: "normal",
+    fontWeight: "400",
+    lineHeight: 16,
+    letterSpacing: 0.16,
+    marginBottom: 20,
+    marginTop: 20,
+    width: 186,
+  },
 
   tickingBox : {
     borderRadius: 5,
   },
 
-  expandedImageNextButton: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -12 }],
-    zIndex: 1,
-    padding: 8,
-  },
+
 
 });

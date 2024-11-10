@@ -23,24 +23,30 @@ interface FormErrors {
 export default function SignUpScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [userType, setUserType] = useState(UserType.TENANT);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [popup, setPopup] = useState(false)
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  interface Errors {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }
 
-  const validateForm = (): FormErrors => {
-    let newErrors: FormErrors = {};
-    if (!firstName) newErrors.firstName = 'First name is required';
-    if (!lastName) newErrors.lastName = 'Last name is required';
-    if (!email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
-    if (password != confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+  const [errors, setErrors] = useState<Errors>({});
+  const [popup, setPopup] = useState(false);
+
+  const validateForm = () => {
+    let newErrors: Errors = {};
+    if (!email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email is invalid";
+    if (!password) newErrors.password = "Password is required";
+    else if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password";
+    if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
     return newErrors;
   };
 
@@ -50,48 +56,30 @@ export default function SignUpScreen() {
       setErrors(formErrors);
       return;
     }
-    
-    // Simulate successful registration
+
     emailAndPasswordSignIn(email, password, userType).then((user) => {
       if (user) {
         console.log("User signed up:", user);
 
-        // Create a new object of type User 
-
-        const landlordOrTenant = userType === UserType.TENANT ? "tenant" : "landlord";
-
-        const newUser : User = {
-          uid: user.uid,
-          type: landlordOrTenant,
-          name: firstName + " " + lastName,
-          email: email,
-          phone: '',
-          street: '',
-          number: '',
-          city: '',
-          canton: '',
-          zip: '',
-          country: ''
+        if (userType === UserType.LANDLORD) {
+          navigation.navigate("Home");
+        } else {
+          // If Tenant, proceed to CodeEntryScreen without creating a user
+          navigation.navigate("CodeEntry", { userId: user.uid, email });
         }
-        
-        const tenantNew : Tenant = {
-          userId: user.uid,
-          maintenanceRequests: [],
-          apartmentId: ''
-        }
-
-        createUser(newUser);
-        createTenant(tenantNew);
-
       } else {
         console.log("Sign up failed");
-        setPopup(true)
+        setPopup(true);
       }
     });
   };
 
+
   const handleGoogleSignUp = () => {
-    Alert.alert('Google Sign Up', 'Google Sign Up functionality would be implemented here.');
+    Alert.alert(
+      "Google Sign Up",
+      "Google Sign Up functionality would be implemented here."
+    );
   };
 
   return (
@@ -122,22 +110,15 @@ export default function SignUpScreen() {
         <Text style={styles.label}>Are you renting or the manager of a property?</Text>
         
         <CustomPicker
-          testID='userTypePicker'
+          testID="userTypePicker"
           selectedValue={userType}
           onValueChange={(itemValue) => setUserType(itemValue)}
         />
-        <Text style={styles.label}>Please enter your personal info</Text>
         
+        <Text style={styles.label}> Choose an email and a password</Text>
+
         <CustomTextField
-          testID='firstNameInput'
-          placeholder="First name"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
-        
-        <CustomTextField
-          testID='lastNameInput'
+          testID="emailInput"
           placeholder="Last name"
           value={lastName}
           onChangeText={setLastName}
@@ -155,24 +136,28 @@ export default function SignUpScreen() {
           autoCapitalize="none"
         />
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-        
+
         <CustomTextField
-          testID='passwordInput'
+          testID="passwordInput"
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
-        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-        
+        {errors.password && (
+          <Text style={styles.errorText}>{errors.password}</Text>
+        )}
+
         <CustomTextField
-          testID='confirmPasswordInput'
+          testID="confirmPasswordInput"
           placeholder="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
         />
-        {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+        {errors.confirmPassword && (
+          <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+        )}
 
         <SubmitButton 
           testID='signUpButton' 
@@ -203,15 +188,16 @@ export default function SignUpScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   inputError: {
-    borderColor: '#FF004',
+    borderColor: "#FF004",
     borderWidth: 1,
   },
   
   errorText: {
-    fontFamily: 'Inter',
-    color: '#FF0004',
+    fontFamily: "Inter",
+    color: "#FF0004",
     fontSize: 12,
     marginBottom: 10,
   },
@@ -222,11 +208,11 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
     paddingTop: 70,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
 
   title: {

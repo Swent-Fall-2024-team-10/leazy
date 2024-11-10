@@ -1,89 +1,113 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Dimensions, Modal } from 'react-native';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { MaintenanceRequest, ReportStackParamList, RootStackParamList } from '@/types/types';
-import { MessageSquare} from 'react-native-feather';
-import StatusDropdown from '@/app/components/StatusDropdown';
-import Header from '@/app/components/Header';
-import StatusBadge from '@/app/components/StatusBadge';
-import AdaptiveButton from '@/app/components/AdaptiveButton';
-import { getMaintenanceRequest, updateMaintenanceRequest } from '@/firebase/firestore/firestore';
-import Spacer from '../../components/Spacer';
-import { AntDesign } from '@expo/vector-icons';
-import { Icon } from 'react-native-elements';
-import { appStyles, ButtonDimensions, Color, FontSizes, IconDimension } from '@/styles/styles';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  Dimensions,
+  Modal,
+} from "react-native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import {
+  MaintenanceRequest,
+  ReportStackParamList,
+  RootStackParamList,
+} from "@/types/types";
+import { MessageSquare } from "react-native-feather";
+import StatusDropdown from "@/app/components/StatusDropdown";
+import Header from "@/app/components/Header";
+import StatusBadge from "@/app/components/StatusBadge";
+import AdaptiveButton from "@/app/components/AdaptiveButton";
+import {
+  getMaintenanceRequest,
+  updateMaintenanceRequest,
+} from "@/firebase/firestore/firestore";
+import Spacer from "../../components/Spacer";
+import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "@/styles/styles";
+import { Icon } from "react-native-elements";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 // for the first adaptive button, upon click, go to the messaging screen (replace the onPressFunction)
 // container for the close button?
 
-// to do: connect this screen with firebase (or just with the other screen?): 
+// to do: connect this screen with firebase (or just with the other screen?):
 //title, status (actually no because just change with button), image (this, with firebase), description
 
-// for navigation: this is opened from ListIssuesScreen: button goBack to return to the list of issues 
+// for navigation: this is opened from ListIssuesScreen: button goBack to return to the list of issues
 //(maybe replace the hamburger with a go back button?)
 
 // uri: 'https://via.placeholder.com/400x300'
 
 const IssueDetailsScreen: React.FC = () => {
-  const navigation = useNavigation<DrawerNavigationProp<ReportStackParamList>>();
-  
-  const route = useRoute<RouteProp<ReportStackParamList, 'IssueDetails'>>();
+  const navigation =
+    useNavigation<DrawerNavigationProp<ReportStackParamList>>();
+
+  const route = useRoute<RouteProp<ReportStackParamList, "IssueDetails">>();
   const { requestID } = route.params;
 
   const [issue, setIssue] = useState<MaintenanceRequest | null>(null);
   const [loading, setLoading] = useState(true);
-    // Manage the status in the parent component
-    const [status, setStatus] = useState<MaintenanceRequest["requestStatus"]>('notStarted');
-    const [description, setDescription] = useState('');  // State pour la description modifiable
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [fullScreenMode, setFullScreenMode] = useState(false); // Track full-screen mode
-    const [fullImageDimensions, setFullImageDimensions] = useState({ width: 0, height: 0 });
+  // Manage the status in the parent component
+  const [status, setStatus] =
+    useState<MaintenanceRequest["requestStatus"]>("notStarted");
+  const [description, setDescription] = useState(""); // State pour la description modifiable
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [fullScreenMode, setFullScreenMode] = useState(false); // Track full-screen mode
+  const [fullImageDimensions, setFullImageDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
 
+  // Handle left arrow click
+  const handlePreviousImage = () => {
+    if (issue) {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === 0 ? issue.picture.length - 1 : prevIndex - 1
+      );
+    }
+  };
 
-    // Handle left arrow click
-    const handlePreviousImage = () => {
-      if (issue) {
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? issue.picture.length - 1 : prevIndex - 1));
-      }
-    };
-  
-    // Handle right arrow click
-    const handleNextImage = () => {
-      if (issue) {
-        setCurrentImageIndex((prevIndex) => (prevIndex === issue.picture.length - 1 ? 0 : prevIndex + 1));
-      }
-    };
+  // Handle right arrow click
+  const handleNextImage = () => {
+    if (issue) {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === issue.picture.length - 1 ? 0 : prevIndex + 1
+      );
+    }
+  };
 
-    // Open full-screen mode with the clicked image index
+  // Open full-screen mode with the clicked image index
   const openFullScreen = (index: number) => {
     if (issue) {
-    setCurrentImageIndex(index);
+      setCurrentImageIndex(index);
 
-    Image.getSize(issue.picture[index], (width, height) => {
-      const screenWidth = Dimensions.get('window').width * 0.9;
-      const screenHeight = Dimensions.get('window').height * 0.9;
+      Image.getSize(issue.picture[index], (width, height) => {
+        const screenWidth = Dimensions.get("window").width * 0.9;
+        const screenHeight = Dimensions.get("window").height * 0.9;
 
-      const aspectRatio = width / height;
+        const aspectRatio = width / height;
 
-      let finalWidth, finalHeight;
-      if (width > height) {
-        // Landscape image
-        finalWidth = screenWidth;
-        finalHeight = screenWidth / aspectRatio;
-      } else {
-        // Portrait image
-        finalHeight = screenHeight;
-        finalWidth = screenHeight * aspectRatio;
-      }
+        let finalWidth, finalHeight;
+        if (width > height) {
+          // Landscape image
+          finalWidth = screenWidth;
+          finalHeight = screenWidth / aspectRatio;
+        } else {
+          // Portrait image
+          finalHeight = screenHeight;
+          finalWidth = screenHeight * aspectRatio;
+        }
 
-      setFullImageDimensions({ width: finalWidth, height: finalHeight });
-      setFullScreenMode(true);
-    });
-  }
+        setFullImageDimensions({ width: finalWidth, height: finalHeight });
+        setFullScreenMode(true);
+      });
+    }
   };
 
   // Close full-screen mode
@@ -91,14 +115,14 @@ const IssueDetailsScreen: React.FC = () => {
     setFullScreenMode(false);
   };
 
-     // Récupérer l'issue depuis Firebase
+  // Récupérer l'issue depuis Firebase
   useEffect(() => {
     const fetchIssue = async () => {
       const fetchedIssue = await getMaintenanceRequest(requestID);
       if (fetchedIssue) {
         setIssue(fetchedIssue);
-        setStatus(fetchedIssue.requestStatus);  // Mettre à jour le statut dans l'état
-        setDescription(fetchedIssue.requestDescription);  // Mettre à jour la description dans l'état
+        setStatus(fetchedIssue.requestStatus); // Mettre à jour le statut dans l'état
+        setDescription(fetchedIssue.requestDescription); // Mettre à jour la description dans l'état
       }
       setLoading(false);
     };
@@ -116,26 +140,32 @@ const IssueDetailsScreen: React.FC = () => {
 
   // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
   const handleClose = async () => {
-    console.log('Closing issue with status : ', status);
+    console.log("Closing issue with status : ", status);
     if (issue) {
       await updateMaintenanceRequest(requestID, {
         requestStatus: status,
-        requestDescription: description,  // On envoie la nouvelle description à Firebase
+        requestDescription: description, // On envoie la nouvelle description à Firebase
       });
       // Rediriger après la mise à jour
       // Navigation vers la liste des issues après la mise à jour
-      navigation.navigate('Issues');
+      navigation.navigate("Issues");
     }
   };
 
   return (
     <Header>
-        <View style={styles.grayBackground}>
-          <ScrollView style={appStyles.screenContainer} automaticallyAdjustKeyboardInsets = {true} showsVerticalScrollIndicator = {false}>
-            <View>
-              <Text style={[appStyles.screenHeader, {textAlign : 'left', letterSpacing : 1.5, fontSize : 20, marginBottom : '10%'}]}> Issue : {issue.requestTitle}</Text>
-              <StatusBadge status={status} />
-            </View>
+      <View style={styles.grayBackground}>
+        <ScrollView
+          style={appStyles.screenContainer}
+          automaticallyAdjustKeyboardInsets={true}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <Text style={[appStyles.screenHeader, {textAlign : 'left', letterSpacing : 1.5, fontSize : 20, marginBottom : '10%'}]}> 
+              Issue : {issue.requestTitle}
+            </Text>
+            <StatusBadge status={status} />
+          </View>
 
             <AdaptiveButton title = 'Open chat about this subject' 
               onPress = { () => navigation.navigate('Messaging')}
@@ -173,7 +203,7 @@ const IssueDetailsScreen: React.FC = () => {
               </View>
             </View>
 
-            <StatusDropdown value={status} setValue={setStatus} ></StatusDropdown>
+          <StatusDropdown value={status} setValue={setStatus}></StatusDropdown>
 
             <SubmitButton 
               disabled = {false}
@@ -186,8 +216,12 @@ const IssueDetailsScreen: React.FC = () => {
               textStyle = {appStyles.submitButtonText}>
             </SubmitButton>
 
-            {/* Full-Screen Modal */}
-          <Modal visible={fullScreenMode} transparent={true} onRequestClose={closeFullScreen}>
+          {/* Full-Screen Modal */}
+          <Modal
+            visible={fullScreenMode}
+            transparent={true}
+            onRequestClose={closeFullScreen}
+          >
             <View style={styles.modalBackground}>
               <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
                 <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
@@ -209,8 +243,8 @@ const IssueDetailsScreen: React.FC = () => {
             </View>
           </Modal>
           <Spacer height={20} />
-          </ScrollView>
-        </View>
+        </ScrollView>
+      </View>
     </Header>
   );
 };
@@ -234,14 +268,14 @@ const styles = StyleSheet.create({
 
   modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   fullImage: {
     borderRadius: 16,
-    borderColor: 'lightgrey',
+    borderColor: "lightgrey",
     borderWidth: 0.5,
   },
 
@@ -259,7 +293,7 @@ const styles = StyleSheet.create({
     marginHorizontal: '3%',
     marginVertical: '3%',
     borderRadius: 32,
-    overflow: 'hidden',
+    overflow: "hidden",
     // Add black border
     borderColor: Color.IssueBorder,
     borderWidth: 1,
@@ -282,11 +316,11 @@ const styles = StyleSheet.create({
     backgroundColor: Color.TextInputBackground,
     borderRadius: 28,
     // Add black border
-    borderColor: 'black',
+    borderColor: "black",
     borderWidth: 0.5,
     padding: 12,
     // Shadow for iOS
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,

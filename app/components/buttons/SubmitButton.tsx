@@ -5,7 +5,7 @@ import { Color, FontSizes} from "@/styles/styles";
 //import DropShadow from "react-native-drop-shadow";
 
 interface SubmitButtonProps {
-  disabled : boolean;
+  disabled: boolean;
   onPress: () => void;
   width: number;
   height: number;
@@ -19,7 +19,7 @@ interface SubmitButtonProps {
 export default function SubmitButton({ disabled, onPress, width, height, label, testID, style, textStyle, image} : SubmitButtonProps) {
   return (
     <View style={styles.submitContainer}>
-        <Button
+      <Button
         title={label}
         onPress={onPress}
         buttonStyle={[
@@ -48,7 +48,6 @@ export default function SubmitButton({ disabled, onPress, width, height, label, 
         ]}
       />
     </View>
-
   );
 }
 

@@ -1,48 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, Alert, Image, Modal} from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import InputField from '@/app/components/forms/text_input';
-import Spacer from '@/app/components/Spacer';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, ButtonDimensions, Color } from '@/styles/styles';
-import Close from '@/app/components/buttons/Close';
-import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
-import { ReportStackParamList } from '@/types/types';  // Import or define your navigation types
-import CameraButton from '@/app/components/buttons/CameraButton';
+import React, { useState, useEffect } from "react";
+import { Text, View, Alert, Image, Modal } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import InputField from "@/app/components/forms/text_input";
+import Spacer from "@/app/components/Spacer";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { appStyles, ButtonDimensions, Color } from "@/styles/styles";
+import Close from "@/app/components/buttons/Close";
+import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
+import { ReportStackParamList } from "@/types/types"; // Import or define your navigation types
+import CameraButton from "@/app/components/buttons/CameraButton";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
-import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
-import { MaintenanceRequest } from '@/types/types';
-import { db, auth} from '@/firebase/firebase';
-import { getTenant, updateMaintenanceRequest, updateTenant } from '@/firebase/firestore/firestore';
-import Header from '@/app/components/Header';
-import { usePictureContext } from '@/app/context/PictureContext';
+import CloseConfirmation from "@/app/components/buttons/CloseConfirmation";
+import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
+import { MaintenanceRequest } from "@/types/types";
+import { db, auth } from "@/firebase/firebase";
+import {
+  getTenant,
+  updateMaintenanceRequest,
+  updateTenant,
+  getUser,
+} from "@/firebase/firestore/firestore";
+import Header from "@/app/components/Header";
+import { usePictureContext } from "@/app/context/PictureContext";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
 
-  const [room, setRoom] = useState('');
-  const [issue, setIssue] = useState('');
-  const [description, setDescription] = useState('');
+  const [room, setRoom] = useState("");
+  const [issue, setIssue] = useState("");
+  const [description, setDescription] = useState("");
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
   const currentDay = new Date();
-  const day = currentDay.getDate().toString().padStart(2, '0');
-  const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
+  const day = currentDay.getDate().toString().padStart(2, "0");
+  const month = (currentDay.getMonth() + 1).toString().padStart(2, "0");
   const year = currentDay.getFullYear();
-  const hours = currentDay.getHours().toString().padStart(2, '0');
-  const minutes = currentDay.getMinutes().toString().padStart(2, '0');
-  const {pictureList, resetPictureList} = usePictureContext();
-  const {removePicture} = usePictureContext();
+  const hours = currentDay.getHours().toString().padStart(2, "0");
+  const minutes = currentDay.getMinutes().toString().padStart(2, "0");
+  const { pictureList, resetPictureList } = usePictureContext();
+  const { removePicture } = usePictureContext();
 
-  
   function resetStates() {
-    setRoom('');
-    setIssue('');
-    setDescription('');
+    setRoom("");
+    setIssue("");
+    setDescription("");
     resetPictureList();
   }
   const handleClose = () => {
@@ -55,53 +59,79 @@ export default function ReportScreen() {
       resetPictureList();
     };
   }, []);
-  
+
   const handleAddPicture = () => {
-    navigation.navigate('CameraScreen');
+    navigation.navigate("CameraScreen");
   };
 
   const handleSubmit = async () => {
     setLoading(true); // Set loading to true when starting the submission
 
-    const tenantId = await getTenant(auth.currentUser?.uid || '');
-    console.log('url list for the pictures : ' , pictureList)
-      try {
-        if (!tenantId) {
-          throw new Error('Tenant not found');
-        }
-        const newRequest: MaintenanceRequest = {
-          requestID: '', 
-          tenantId: tenantId.userId, 
-          residenceId: "apartment.residenceId", 
-          apartmentId: tenantId.apartmentId, 
-          openedBy: tenantId.userId, 
-          requestTitle: issue,
-          requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
-          requestDescription: description,
-          picture: pictureList, 
-          requestStatus: "notStarted",
-        };
-    
-        //this should be changed when the database function are updated
-        //this is not respecting the model view model pattern for now but this is a temporary solution
-        const requestID = await addDoc(collection(db, 'maintenanceRequests'), newRequest);
-        await updateTenant(tenantId.userId, { maintenanceRequests: [...tenantId.maintenanceRequests, requestID.id] });
-        await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
-        
-        Alert.alert('Success', 'Your maintenance request has been submitted.');
-        resetStates();
-        const nextScreen = tick ? 'Messaging' : 'Issues';
-        setTick(false);
-        navigation.navigate(nextScreen);
+    // first get user then get tenantId
+    const userObj = await getUser(auth.currentUser?.uid || "");
+    if (userObj == null) {
+      Alert.alert("Error", "User not found");
+      setLoading(false);
+      return;
+    }
+    const { user, userUID } = userObj;
 
-      } catch (error) {
-        Alert.alert('Error', 'There was an error submitting your request. Please try again.');
-        console.log('Error submitting request:', error);
-      } finally {
-        setLoading(false); // Set loading to false after submission is complete
+    const tenantDoc = await getTenant(userUID);
+    console.log("tenantDoc: ", tenantDoc);
+
+    if (tenantDoc == null) {
+      console.log("user not found");
+      Alert.alert("Error", "Tenant not found");
+      setLoading(false);
+      return;
+    }
+
+    const {tenant, tenantUID} = tenantDoc;
+
+    console.log("url list for the pictures : ", pictureList);
+    try {
+      if (!tenant) {
+        throw new Error("Tenant not found");
       }
-  };
+      const newRequest: MaintenanceRequest = {
+        requestID: "",
+        tenantId: tenant.userId,
+        residenceId: "apartment.residenceId",
+        apartmentId: tenant.apartmentId,
+        openedBy: tenant.userId,
+        requestTitle: issue,
+        requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
+        requestDescription: description,
+        picture: pictureList,
+        requestStatus: "notStarted",
+      };
 
+      //this should be changed when the database function are updated
+      //this is not respecting the model view model pattern for now but this is a temporary solution
+      const requestID = await addDoc(
+        collection(db, "maintenanceRequests"),
+        newRequest
+      );
+      await updateTenant(tenantUID, {
+        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
+      });
+      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+
+      Alert.alert("Success", "Your maintenance request has been submitted.");
+      resetStates();
+      const nextScreen = tick ? "Messaging" : "Issues";
+      setTick(false);
+      navigation.navigate(nextScreen);
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "There was an error submitting your request. Please try again."
+      );
+      console.log("Error submitting request:", error);
+    } finally {
+      setLoading(false); // Set loading to false after submission is complete
+    }
+  };
 
   return (
     <Header>

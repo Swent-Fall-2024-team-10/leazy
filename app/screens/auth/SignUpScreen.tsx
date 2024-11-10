@@ -118,16 +118,6 @@ export default function SignUpScreen() {
         <Text style={styles.label}> Choose an email and a password</Text>
 
         <CustomTextField
-          testID="emailInput"
-          placeholder="Last name"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
-
-        <Text style={styles.label}>And choose an email and password</Text>
-
-        <CustomTextField
           testID='emailInput'
           placeholder="Email"
           value={email}

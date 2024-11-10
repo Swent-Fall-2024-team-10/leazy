@@ -17,6 +17,8 @@ export const Boders = {
 
 export const ButtonDimensions = {
 
+  fullWidthButtonWidth : 325,
+
   veryLargeButtonWidth : 300,
   veryLargeButtonHeight : 44,
 
@@ -111,6 +113,10 @@ export const Color = {
 };
 
 export const appStyles = StyleSheet.create({
+
+  label : {
+    color: Color.TextInputLabel,
+  },
 
   tickingBox : {
     borderRadius: 5,

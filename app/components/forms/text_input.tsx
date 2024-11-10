@@ -29,6 +29,7 @@ export default function InputField({
 }: InputFieldProps) {
   const inputFieldStyles = [
     styles.inputField,
+    width !== undefined && { width },
     height !== undefined && { height },
     radius !== undefined && { borderRadius: radius },
     backgroundColor !== undefined && { backgroundColor },
@@ -50,7 +51,7 @@ export default function InputField({
   if (label !== undefined) {
     return (
       <View>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={appStyles.label}>{label}</Text>
         {textInputComponent}
       </View>
     );
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     borderColor: Color.TextInputBorder,
     borderWidth: 1,
     color: Color.TextInputText,
-    shadowColor: "#171717",
+    shadowColor: Color.ShadowColor,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 2,

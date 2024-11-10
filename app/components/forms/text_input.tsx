@@ -51,7 +51,7 @@ export default function InputField({
   if (label !== undefined) {
     return (
       <View>
-        <Text style={appStyles.label}>{label}</Text>
+        <Text style={appStyles.inputFieldLabel}>{label}</Text>
         {textInputComponent}
       </View>
     );

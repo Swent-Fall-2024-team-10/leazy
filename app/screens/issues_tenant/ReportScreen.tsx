@@ -4,7 +4,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import InputField from "@/app/components/forms/text_input";
 import Spacer from "@/app/components/Spacer";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { appStyles, ButtonDimensions, Color } from "@/styles/styles";
+import { appStyles, ButtonDimensions, Color, textInputHeight } from "@/styles/styles";
 import Close from "@/app/components/buttons/Close";
 import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
 import { ReportStackParamList } from "@/types/types"; // Import or define your navigation types
@@ -22,6 +22,7 @@ import {
 } from "@/firebase/firestore/firestore";
 import Header from "@/app/components/Header";
 import { usePictureContext } from "@/app/context/PictureContext";
+import { Button } from "react-native-elements";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -138,7 +139,7 @@ export default function ReportScreen() {
       <ScrollView style={appStyles.screenContainer} 
       automaticallyAdjustKeyboardInsets={true}
       >
-        <View style={[appStyles.scrollContainer, {paddingBottom : '100%', marginBottom : '10%'}]}>
+        <View style={[appStyles.scrollContainer, {paddingBottom : '90%', marginBottom : '10%'}]}>
 
           <Close onPress={handleClose} />
           <Text style={appStyles.screenHeader}>Create a new issue</Text>
@@ -174,10 +175,11 @@ export default function ReportScreen() {
             setValue={setIssue}
             placeholder="Your issue..."
             radius={25}
-            height={40}
-            width={300}
+            height={textInputHeight}
+            width={ButtonDimensions.fullWidthButtonWidth}
             backgroundColor={Color.TextInputBackground}
             testID="testIssueNameField"
+            style={{alignContent: 'center'}}
           />
 
           <Spacer height={20} />
@@ -204,10 +206,11 @@ export default function ReportScreen() {
             setValue={setRoom}
             placeholder="e.g: Bedroom, Kitchen, Bathroom..."
             radius={25}
-            height={40}
-            width={300}
+            height={textInputHeight}
+            width={ButtonDimensions.fullWidthButtonWidth}
             backgroundColor={Color.TextInputBackground}
             testID="testRoomNameField"
+            style={{alignContent: 'center'}}
           />
 
           <Spacer height={20} />
@@ -218,10 +221,11 @@ export default function ReportScreen() {
             setValue={setDescription}
             placeholder="e.g: The bathtub is leaking because of..."
             height={100}
-            width={300}
+            width={ButtonDimensions.fullWidthButtonWidth}
             backgroundColor={Color.TextInputBackground}
             radius={20}
             testID="testDescriptionField"
+            style={{alignContent: 'center'}}
           />
 
           <Spacer height={20} />

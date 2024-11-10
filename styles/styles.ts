@@ -114,10 +114,6 @@ export const Color = {
 
 export const appStyles = StyleSheet.create({
 
-  label : {
-    color: Color.TextInputLabel,
-  },
-
   tickingBox : {
     borderRadius: 5,
   },
@@ -177,6 +173,7 @@ export const appStyles = StyleSheet.create({
       fontWeight: "600",
       color: Color.TextInputLabel,
       marginLeft: '3%',
+      marginRight: '3%',
       paddingBottom: '1%',
       paddingTop: '1%',
   },

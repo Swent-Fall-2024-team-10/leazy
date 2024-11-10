@@ -11,6 +11,7 @@ import Header from "@/app/components/Header";
 import { LaundryMachine } from "@/types/types";
 import {
   createMachineNotification,
+  getLaundryMachine,
   getWashingMachinesQuery,
   updateLaundryMachine,
 } from "@/firebase/firestore/firestore";
@@ -63,13 +64,11 @@ const WashingMachineScreen = () => {
       if (timerIntervals[laundryMachineId]) {
         return;
       }
-      console.log(`Starting timer for machine ${laundryMachineId}`);
-      console.log("Current remainingTimes:", remainingTimes);
       // Clean up existing timer if any
       cleanupTimer(laundryMachineId);
 
       // Set up the interval to update the remaining time
-      const intervalId = setInterval(() => {
+      const intervalId = setInterval(async () => {
         const now = Date.now();
         const remainingTimeMs = estimatedFinishTime.toMillis() - now;
 
@@ -79,12 +78,20 @@ const WashingMachineScreen = () => {
             ...prev,
             [laundryMachineId]: "Cycle completed",
           }));
-          delete timerIntervals[laundryMachineId]; // Remove the interval ID from tracking
+          delete timerIntervals[laundryMachineId];
           return;
         }
-        if (remainingTimeMs <= 3 * 60 * 1000 && userId) {
+
+        // Check if remaining time is under 3 minutes and notification hasn't been sent
+        //no entry for a specific machine in notificationStatus acts as a false
+      if ((remainingTimeMs <= 3 * 60 * 1000) && (remainingTimeMs >= 2 * 60 * 1000 + 59 * 1000) && userId) {
+        const initialData = await getLaundryMachine(residenceId, laundryMachineId);
+        if (!initialData) return;
+        const notificationAlreadySent = initialData.notificationScheduled || false;
+        if (!notificationAlreadySent){
           createMachineNotification(userId);
         }
+      }
 
         // Calculate hours, minutes, and seconds
         const hours = Math.floor((remainingTimeMs / (1000 * 60 * 60)) % 24);
@@ -94,11 +101,12 @@ const WashingMachineScreen = () => {
         // Format the remaining time
         const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
 
+         // Update the timer display
         setRemainingTimes((prev) => ({
-          ...prev,
-          [laundryMachineId]: formattedTime,
+        ...prev,
+        [laundryMachineId]: formattedTime,
         }));
-      }, 1000);
+    }, 1000);
 
       setTimerIntervals((prev) => ({
         ...prev,
@@ -131,6 +139,7 @@ const WashingMachineScreen = () => {
           } else if (machineData.isAvailable) {
             // Clear timer for available machines
             cleanupTimer(machineData.laundryMachineId);
+            
             setRemainingTimes((prev) => {
               const updated = { ...prev };
               delete updated[machineData.laundryMachineId];

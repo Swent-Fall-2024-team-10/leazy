@@ -1,4 +1,4 @@
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 
 admin.initializeApp();
@@ -12,10 +12,15 @@ export const sendNotificationOnTime = onDocumentCreated(
       return null;
     }
 
-    const { userId } = notificationData;
+    const {userId} = notificationData;
 
     // Fetch the user's FCM token from Firestore
-    const userSnapshot = await admin.firestore().collection("users").doc(userId).get();
+    const userSnapshot = await admin
+      .firestore()
+      .collection("users")
+      .doc(userId)
+      .get();
+
     const userToken = userSnapshot.data()?.fcmToken;
 
     if (!userToken) {
@@ -33,7 +38,8 @@ export const sendNotificationOnTime = onDocumentCreated(
     await admin.messaging().sendToDevice(userToken, payload);
     console.log(`Notification sent to user ${userId}`);
 
-    // Delete the notification document after sending to prevent duplicate notifications
+    // Delete the notification document after sending
+    // to prevent duplicate notifications
     await event.data?.ref.delete();
     return null;
   }

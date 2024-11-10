@@ -100,6 +100,7 @@ isFunctional: boolean;
 occupiedBy: string; //for a userID
 startTime: Timestamp;
 estimatedFinishTime: Timestamp;
+notificationScheduled: boolean;
 }
 
 export type MaintenanceRequest = {

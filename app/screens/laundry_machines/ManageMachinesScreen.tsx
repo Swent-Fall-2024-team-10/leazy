@@ -55,6 +55,7 @@ const ManageMachinesScreen = () => {
       occupiedBy: "none",
       startTime: Timestamp.fromMillis(Date.now()),
       estimatedFinishTime: Timestamp.fromMillis(Date.now()),
+      notificationScheduled: false,
     };
 
     await createLaundryMachine(residenceId, newMachine);

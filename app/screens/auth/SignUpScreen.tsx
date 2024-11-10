@@ -1,33 +1,22 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal } from 'react-native';
 import CustomTextField from '@/app/components/CustomTextField';
-import CustomButton from '@/app/components/CustomButton';
 import CustomPicker from '@/app/components/CustomPicker';
 import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
-import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { User, Tenant, RootStackParamList} from '@/types/types';
+import { RootStackParamList} from '@/types/types';
 import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-}
-
 export default function SignUpScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [userType, setUserType] = useState(UserType.TENANT);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
   interface Errors {
     firstName?: string;
     lastName?: string;

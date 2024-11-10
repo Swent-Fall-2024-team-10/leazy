@@ -13,8 +13,8 @@ import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
 import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
-import CustomButton from "@/app/components/CustomButton";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { appStyles } from "@/styles/styles";
 
 const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -73,10 +73,12 @@ const WashingMachineScreen = () => {
       return (
         <View key={machine.laundryMachineId} style={styles.machineCard}>
           <View style={{ flexDirection: "row" }}>
+
             <Image
               source={require("@/assets/images/washing_machine_icon_png.png")}
-              style={{ width: 120, height: 120, marginRight: 20 }}
+              style={{ width: 120, height: 120, marginRight: '0.5%', marginLeft: '-1.5%' }}
             />
+
             <View
               style={{
                 flexDirection: "column",
@@ -103,6 +105,9 @@ const WashingMachineScreen = () => {
               >
                 {machine.isAvailable && machine.isFunctional && (
                   <SubmitButton
+                    testID="set-timer-button"
+                    textStyle={appStyles.submitButtonText}
+                    style={appStyles.submitButton}
                     width={200}
                     height={40}
                     disabled={false}
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   machineTitle: {
-    fontSize: 25,
+    fontSize: 20,
     color: "#0F5257",
     fontWeight: "600",
   },

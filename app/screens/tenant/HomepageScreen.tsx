@@ -2,8 +2,6 @@ import React from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native"; // Import NavigationProp
 import { RootStackParamList } from "../../../types/types"; // Import or define your navigation types
-import { createUser } from "../../../firebase/firestore/firestore"; // Import the function to create a user
-import { User } from "../../../types/types"; // Import the User type
 import Header from '../../components/Header'; // Import the Header component
 
 // portions of this code were generated with chatGPT as an AI assistant //

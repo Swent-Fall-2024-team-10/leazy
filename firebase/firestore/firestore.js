@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteLaundryMachine = exports.updateLaundryMachine = exports.getLaundryMachine = exports.createLaundryMachine = exports.deleteMaintenanceRequest = exports.updateMaintenanceRequest = exports.getMaintenanceRequest = exports.createMaintenanceRequest = exports.deleteApartment = exports.updateApartment = exports.getApartment = exports.createApartment = exports.deleteResidence = exports.updateResidence = exports.getResidence = exports.createResidence = exports.deleteTenant = exports.updateTenant = exports.getTenant = exports.createTenant = exports.deleteLandlord = exports.updateLandlord = exports.getLandlord = exports.createLandlord = exports.deleteUser = exports.updateUser = exports.getUser = exports.createUser = void 0;
+exports.deleteUsedTenantCodes = exports.validateTenantCode = exports.generate_unique_code = exports.add_new_tenant = exports.deleteLaundryMachine = exports.updateLaundryMachine = exports.getLaundryMachine = exports.createLaundryMachine = exports.deleteMaintenanceRequest = exports.updateMaintenanceRequest = exports.getMaintenanceRequest = exports.createMaintenanceRequest = exports.deleteApartment = exports.updateApartment = exports.getApartment = exports.createApartment = exports.deleteResidence = exports.updateResidence = exports.getResidence = exports.createResidence = exports.deleteTenant = exports.updateTenant = exports.getTenant = exports.createTenant = exports.deleteLandlord = exports.updateLandlord = exports.getLandlord = exports.createLandlord = exports.deleteUser = exports.updateUser = exports.getUser = exports.createUser = void 0;
 // Import Firestore database instance and necessary Firestore functions.
 var firebase_1 = require("../firebase");
 var firestore_1 = require("firebase/firestore");
@@ -46,15 +46,15 @@ var firestore_1 = require("firebase/firestore");
  */
 function createUser(user) {
     return __awaiter(this, void 0, void 0, function () {
-        var docRef;
+        var usersCollectionRef, docRef;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    docRef = (0, firestore_1.doc)(firebase_1.db, "users", user.uid);
-                    return [4 /*yield*/, (0, firestore_1.setDoc)(docRef, user)];
+                    usersCollectionRef = (0, firestore_1.collection)(firebase_1.db, "users");
+                    return [4 /*yield*/, (0, firestore_1.addDoc)(usersCollectionRef, user)];
                 case 1:
-                    _a.sent();
-                    return [2 /*return*/];
+                    docRef = _a.sent();
+                    return [2 /*return*/, docRef.id];
             }
         });
     });
@@ -543,7 +543,7 @@ function createLaundryMachine(residenceId, machine) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    docRef = (0, firestore_1.doc)(firebase_1.db, "residences/".concat(residenceId, "/laundryMachines"), machine.id);
+                    docRef = (0, firestore_1.doc)(firebase_1.db, "residences/".concat(residenceId, "/laundryMachines"), machine.laundryMachineId);
                     return [4 /*yield*/, (0, firestore_1.setDoc)(docRef, machine)];
                 case 1:
                     _a.sent();
@@ -618,3 +618,138 @@ function deleteLaundryMachine(residenceId, machineId) {
     });
 }
 exports.deleteLaundryMachine = deleteLaundryMachine;
+function add_new_tenant(code) {
+    return __awaiter(this, void 0, void 0, function () {
+        var tenantCodesRef, q, querySnapshot, tenantCodeDoc, tenantCodeData, apartmentId, residenceId;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    tenantCodesRef = (0, firestore_1.collection)(firebase_1.db, "tenantCodes");
+                    q = (0, firestore_1.query)(tenantCodesRef, (0, firestore_1.where)("tenantCode", "==", code));
+                    return [4 /*yield*/, (0, firestore_1.getDocs)(q)];
+                case 1:
+                    querySnapshot = _a.sent();
+                    tenantCodeDoc = querySnapshot.docs[0];
+                    tenantCodeData = tenantCodeDoc.data();
+                    apartmentId = tenantCodeData.apartmentId;
+                    residenceId = tenantCodeData.residenceId;
+                    return [2 /*return*/, { apartmentId: apartmentId, residenceId: residenceId }];
+            }
+        });
+    });
+}
+exports.add_new_tenant = add_new_tenant;
+function generate_unique_code(residenceId, apartmentId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var tenantCode, newTenantCode, tenantCodesRef, docRef, residenceRef, residenceSnap, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 6, , 7]);
+                    tenantCode = Math.floor(100000 + Math.random() * 900000).toString();
+                    newTenantCode = {
+                        tenantCode: tenantCode,
+                        apartmentId: apartmentId,
+                        residenceId: residenceId,
+                        used: false,
+                    };
+                    tenantCodesRef = (0, firestore_1.collection)(firebase_1.db, "tenantCodes");
+                    return [4 /*yield*/, (0, firestore_1.addDoc)(tenantCodesRef, newTenantCode)];
+                case 1:
+                    docRef = _a.sent();
+                    residenceRef = (0, firestore_1.doc)(firebase_1.db, "residences", residenceId);
+                    return [4 /*yield*/, (0, firestore_1.getDoc)(residenceRef)];
+                case 2:
+                    residenceSnap = _a.sent();
+                    if (!residenceSnap.exists()) return [3 /*break*/, 4];
+                    return [4 /*yield*/, (0, firestore_1.updateDoc)(residenceRef, {
+                            tenantCodesID: (0, firestore_1.arrayUnion)(docRef.id),
+                        })];
+                case 3:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 4: throw new Error("Residence not found.");
+                case 5: return [2 /*return*/, tenantCode];
+                case 6:
+                    error_1 = _a.sent();
+                    console.error("Error generating tenant code:", error_1);
+                    throw error_1;
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.generate_unique_code = generate_unique_code;
+/**
+ * Validates a tenant code, marking it as used if valid.
+ * @param inputCode - The tenant code to validate.
+ * @returns True if the code is valid and unused, false otherwise.
+ */
+function validateTenantCode(inputCode) {
+    return __awaiter(this, void 0, void 0, function () {
+        var tenantCodesRef, q, querySnapshot, tenantCodeDoc, tenantCodeRef, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    tenantCodesRef = (0, firestore_1.collection)(firebase_1.db, "tenantCodes");
+                    q = (0, firestore_1.query)(tenantCodesRef, (0, firestore_1.where)("tenantCode", "==", inputCode), (0, firestore_1.where)("used", "==", false));
+                    return [4 /*yield*/, (0, firestore_1.getDocs)(q)];
+                case 1:
+                    querySnapshot = _a.sent();
+                    if (querySnapshot.empty) {
+                        return [2 /*return*/, false];
+                    }
+                    tenantCodeDoc = querySnapshot.docs[0];
+                    tenantCodeRef = (0, firestore_1.doc)(firebase_1.db, "tenantCodes", tenantCodeDoc.id);
+                    return [4 /*yield*/, (0, firestore_1.updateDoc)(tenantCodeRef, { used: true })];
+                case 2:
+                    _a.sent();
+                    console.log("Tenant code ".concat(inputCode, " validated and marked as used."));
+                    return [2 /*return*/, true];
+                case 3:
+                    error_2 = _a.sent();
+                    console.error("Error validating tenant code:", error_2);
+                    return [2 /*return*/, false];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.validateTenantCode = validateTenantCode;
+/**
+ * Deletes all tenant codes marked as used in the tenantCodes collection.
+ * @returns The number of deleted documents.
+ */
+function deleteUsedTenantCodes() {
+    return __awaiter(this, void 0, void 0, function () {
+        var tenantCodesRef, q, querySnapshot, deletePromises, error_3;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    tenantCodesRef = (0, firestore_1.collection)(firebase_1.db, "tenantCodes");
+                    q = (0, firestore_1.query)(tenantCodesRef, (0, firestore_1.where)("used", "==", true));
+                    return [4 /*yield*/, (0, firestore_1.getDocs)(q)];
+                case 1:
+                    querySnapshot = _a.sent();
+                    deletePromises = querySnapshot.docs.map(function (docSnapshot) {
+                        return (0, firestore_1.deleteDoc)((0, firestore_1.doc)(firebase_1.db, "tenantCodes", docSnapshot.id));
+                    });
+                    return [4 /*yield*/, Promise.all(deletePromises)];
+                case 2:
+                    _a.sent();
+                    console.log("Deleted ".concat(querySnapshot.size, " used tenant codes."));
+                    return [2 /*return*/, querySnapshot.size];
+                case 3:
+                    error_3 = _a.sent();
+                    console.error("Error deleting used tenant codes:", error_3);
+                    throw error_3;
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.deleteUsedTenantCodes = deleteUsedTenantCodes;
+// add the tenant everywhere in the DB
+add_new_tenant("658615");

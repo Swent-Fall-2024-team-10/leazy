@@ -2,11 +2,14 @@ import "react-native-gesture-handler";
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import HomepageScreen from "./screens/tenant/HomepageScreen";
-import MyRentScreen from "./screens/tenant/MyRentScreen";
-import SharedElementsScreen from "./screens/tenant/SharedElementsScreen";
-import SubrentScreen from "./screens/tenant/SubrentScreen";
-import SettingsScreen from "./screens/tenant/SettingsScreen";
+import {
+  TenantFormScreen,
+  SubrentScreen,
+  SharedElementsScreen,
+  SettingsScreen,
+  HomepageScreen,
+  MyRentScreen,
+} from "./screens/tenant/";
 import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -27,6 +30,7 @@ import {
 import { CameraScreen, CapturedMediaScreen } from "./screens/camera";
 import { MessagingScreen } from "./screens/messaging";
 import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
+import CreateNewCode from "./screens/landlord/CreateNewCode";
 import WashingMachineScreen from "./screens/laundry_machines/WashingMachineScreen";
 import ManageMachinesScreen from "./screens/laundry_machines/ManageMachinesScreen";
 
@@ -56,8 +60,6 @@ export default function App() {
     // You could return a loading spinner here while Firebase checks the auth state
     return null;
   }
-  console.log(isLoggedIn);
-  console.log(auth.currentUser);
 
   return (
     <PictureProvider>
@@ -110,6 +112,22 @@ const RootNavigator = () => {
       <Stack.Screen
         name="HomeDrawer"
         component={HomeDrawerNavigator}
+        options={{ headerShown: false }}
+      />
+      {/* Tenant Onboarding Screens */}
+      <Stack.Screen
+        name="CodeEntry"
+        component={CodeEntryScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CodeApproved"
+        component={CodeApprovedScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TenantForm"
+        component={TenantFormScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

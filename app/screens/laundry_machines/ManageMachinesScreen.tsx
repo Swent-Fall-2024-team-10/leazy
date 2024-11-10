@@ -3,6 +3,7 @@ import {
   View,
   Text,
   Button,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   FlatList,
@@ -16,9 +17,7 @@ import {
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { appStyles, Color } from "@/styles/styles";
-import { ScrollView } from "react-native-gesture-handler";
-import InputField from "@/app/components/forms/text_input";
+import { Color } from "@/styles/styles";
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -119,45 +118,45 @@ const ManageMachinesScreen = () => {
   );
 
   return (
+    <View style={{ flex: 1 }}>
       <Header>
-          <View style={appStyles.screenContainer}>
-            <Text style={appStyles.screenHeader}>Manage Laundry Machines</Text>
+        <View style={styles.container}>
+          <Text style={styles.title}>Manage Laundry Machines</Text>
 
-              <View style={styles.inputContainer}>
-                <InputField 
-                  placeholder="Enter Machine ID" 
-                  value={newMachineId} 
-                  setValue={setNewMachineId} 
-                  testID="newMachineId"
-                  backgroundColor={Color.TextInputBackground}
-                />
-            {/* Display error message if ID already exists */}
-            {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+          {/* Display error message if ID already exists */}
+          {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
 
-            {/* Input for adding a new machine */}
-          
-              <Button title="Add Machine" onPress={handleAddMachine} />
-            </View>
-
-            {/* List of machines */}
-            <FlatList
-              data={machines}
-              renderItem={renderMachineItem}
-              keyExtractor={(item) => item.laundryMachineId}
-              style={{ position: "absolute", top: "15%", left : '7%', right : '7%', width: "100%", flex: 1 }}  
-              contentContainerStyle={{ paddingBottom: '20%', marginBottom: '10%' }}           
+          {/* Input for adding a new machine */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input , {backgroundColor : Color.TextInputBackground}]}
+              placeholderTextColor={Color.TextInputPlaceholder}
+              placeholder="Enter Machine ID"
+              value={newMachineId}
+              onChangeText={setNewMachineId}
             />
+            <Button title="Add Machine" onPress={handleAddMachine} />
           </View>
+
+          {/* List of machines */}
+          <FlatList
+            data={machines}
+            renderItem={renderMachineItem}
+            keyExtractor={(item) => item.laundryMachineId}
+            style={{ flex: 1 }} // Allow FlatList to take up remaining space and be scrollable
+            contentContainerStyle={{ paddingBottom: 20 }} // Add some padding at the bottom
+          />
+        </View>
       </Header>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    top : '10%',
+    flex: 0.7,
+    padding: 20,
   },
-
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -169,11 +168,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   inputContainer: {
-    position : 'absolute',
     flexDirection: "row",
-    top : '9%',
-    left : '8%',
-    right : '8%',
+    alignItems: "center",
+    marginBottom: 20,
   },
   input: {
     flex: 1,

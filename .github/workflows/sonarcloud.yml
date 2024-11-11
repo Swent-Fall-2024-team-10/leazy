@@ -51,7 +51,7 @@ jobs:
         run: npm ci
 
       - name: Test and coverage
-        run: npx jest --no-cache --coverage
+        run: npm run test --no-cache --coverage
 
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.2.0

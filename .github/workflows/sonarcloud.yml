@@ -40,7 +40,7 @@ permissions:
 
 jobs:
   Analysis:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-2016
 
     steps:
       - uses: actions/checkout@v4

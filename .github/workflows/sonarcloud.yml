@@ -57,7 +57,6 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.2.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_SCANNER_OPTS: "-X"
         with:
           args:
             -Dsonar.projectKey=Swent-Fall-2024-team-10_leazy

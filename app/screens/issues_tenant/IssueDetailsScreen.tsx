@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  SafeAreaView,
   ScrollView,
   Dimensions,
   Modal,
@@ -26,7 +25,7 @@ import {
   getMaintenanceRequest,
   updateMaintenanceRequest,
 } from "@/firebase/firestore/firestore";
-import Spacer from "../../components/Spacer";
+import Spacer from "@/app/components/Spacer";
 import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "@/styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
@@ -256,9 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: '10%'
   },
-
-
-
+  
   closeModalButton: {
     position: 'absolute',
     top: '5.5%',
@@ -320,7 +317,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     padding: 12,
     // Shadow for iOS
-    shadowColor: "#000",
+    shadowColor: Color.ShadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,

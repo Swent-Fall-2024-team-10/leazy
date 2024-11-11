@@ -4,11 +4,11 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
-import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { storage } from '@/firebase/firebase'; // Import storage from your Firebase config
 import { ReportStackParamList } from '@/types/types';
-import { usePictureContext } from '../../context/PictureContext';
+import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { Color, IconDimension } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -79,12 +79,12 @@ const handleUpload = useCallback(async () => {
     navigation.setOptions({
       headerLeft: () => (
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Ionicons name="close" size={24} color="white" />
+          <Ionicons name="close" size={IconDimension.mediumIcon} color={Color.ButtonBackground}/>
         </TouchableOpacity>
       ),
       headerRight: () => (
         <TouchableOpacity onPress={handleUpload} style={styles.headerButton}>
-          <Ionicons name="cloud-upload-outline" size={24} color="white" />
+          <Ionicons name="cloud-upload-outline" size={IconDimension.mediumIcon} color={Color.ButtonBackground} />
         </TouchableOpacity>
       ),
     });
@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     paddingHorizontal: 15,
-    backgroundColor: 'black',
   },
   infoContainer: {
     position: 'absolute',

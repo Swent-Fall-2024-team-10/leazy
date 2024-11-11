@@ -22,7 +22,6 @@ import {
 } from "@/firebase/firestore/firestore";
 import Header from "@/app/components/Header";
 import { usePictureContext } from "@/app/context/PictureContext";
-import { Button } from "react-native-elements";
 
 // portions of this code were generated with chatGPT as an AI assistant
 

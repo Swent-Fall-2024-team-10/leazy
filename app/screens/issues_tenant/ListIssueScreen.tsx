@@ -156,8 +156,7 @@ const MaintenanceIssues = () => {
               ))}
             </View>
 
-            <View style={[styles.viewBoxContainer, {height: 100}]}>
-            </View>
+            <View style={[styles.viewBoxContainer, {height: 100}]}/>
           </View>
         </ScrollView>
       </Header>
@@ -167,7 +166,7 @@ const MaintenanceIssues = () => {
         style={styles.addButton}
         onPress={() => navigation.navigate("Report")}
       >
-        <Feather name="plus" size={24} color="white" />
+        <Feather name="plus" size={IconDimension.smallIcon} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -179,11 +178,11 @@ const styles = StyleSheet.create({
   },
 
   statusTextContainer: {
-    borderRadius: 16,
+    borderRadius: 25,
     paddingVertical: 5,
     paddingHorizontal: 8,
     alignSelf: 'flex-start',
-    marginTop: 15,
+    marginTop: '8%',
   },
 
   titleContainer: {
@@ -199,8 +198,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingTop: 15,
+    paddingTop: '6%',
   },
+
   issueItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,17 +219,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
   },
+
   issueTextContainer: {
     width: "100%",
     height: 32,
     borderRadius: 25,
-    backgroundColor: "#FFF",
+    backgroundColor: Color.IssueTextBackground,
     justifyContent: "center",
     paddingHorizontal: 12,
   },
   issueText: {
     fontSize: 16,
-    color: "#2C3E50",
+    color: Color.TextInputText,
   },
   statusBadge: {
     borderRadius: 16,
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: '6%',
     bottom: '3%',
-    backgroundColor: '#2C3E50',
+    backgroundColor: Color.ButtonBackground,
     borderRadius: 28,
     width: 56,
     height: 56,
@@ -267,9 +268,9 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   arrowButton: {
-    marginLeft: 10,
-    width: 40,
-    height: 40,
+    marginLeft: '4%',
+    width: '15%',
+    height: '100%',
     justifyContent: "center",
     alignItems: "center",
   },

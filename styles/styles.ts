@@ -1,5 +1,4 @@
 import { StyleSheet } from "react-native";
-import { Header } from "react-native-elements";
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -75,6 +74,8 @@ export const FontWeight = {
 
 export const Color = {
   //ScreenBackground: "#FFFFFF",
+
+  IssueTextBackground: "#FFFFFF",
   CancelColor : '#E74C3C',
 
   ShadowColor : '#171717',

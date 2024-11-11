@@ -61,5 +61,4 @@ jobs:
           args:
             -Dsonar.projectKey=Swent-Fall-2024-team-10_leazy
             -Dsonar.organization=swent-fall-2024-team-10
-            -sonar.javascript.lcov.reportPaths=./coverage/lcov.info
             #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/

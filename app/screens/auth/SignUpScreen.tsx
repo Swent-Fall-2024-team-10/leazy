@@ -59,10 +59,10 @@ export default function SignUpScreen() {
         console.log("User signed up:", user);
 
         if (userType === UserType.LANDLORD) {
-          navigation.navigate("Home");
+          navigation.navigate("LandlordForm", { userId: user.uid, email });
         } else {
           // If Tenant, proceed to CodeEntryScreen without creating a user
-          navigation.navigate("CodeEntry", { userId: user.uid, email });
+          navigation.navigate("TenantForm", { userId: user.uid, email});
         }
       } else {
         console.log("Sign up failed");

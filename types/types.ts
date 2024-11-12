@@ -13,9 +13,12 @@ export type RootStackParamList = {
     tenantCodeId: string;
   };
   TenantForm: {
-    tenantCodeId: string;
+    userId: string;
+    email: string;
   };
   SignIn: undefined;
+  LandlordForm: { userId: string; email: string };
+
 };
 
 export type AuthStackParamList = {

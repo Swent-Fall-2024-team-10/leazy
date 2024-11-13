@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect } from 'react'
 import * as Google from 'expo-auth-session/providers/google'
@@ -8,6 +8,8 @@ import { getUser } from '@/firebase/firestore/firestore'
 import { Navigation } from 'react-native-feather'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { RootStackParamList } from '@/types/types'
+import { Color, FontSizes, FontWeight } from '@/styles/styles'
+
 
 export const GoogleSignInButton = () => {
  const [request, response, promptAsync] = Google.useAuthRequest({
@@ -37,14 +39,12 @@ export const GoogleSignInButton = () => {
      disabled={!request}
    >
      <View style={styles.buttonPlaceholder}>
-       <Ionicons
-         name="logo-google"
-         size={30}
-         color="black"
-         style={styles.icon}
+       <Image
+          source={require('../../assets//images/auth/google_logo.png')}
+          style={styles.icon}
        />
        <Text style={styles.buttonText}>
-         Continue with Google
+         Sign in with Google
        </Text>
      </View>
    </TouchableOpacity>
@@ -52,35 +52,32 @@ export const GoogleSignInButton = () => {
 }
 
 const styles = StyleSheet.create({
- buttonGoogle: {
-   width: '100%',
-   padding: 14,
-   backgroundColor: '#ffffff',
-   borderRadius: 8,
-   borderWidth: 1,
-   borderColor: '#dadce0',
-   marginVertical: 8,
-   elevation: 2,
-   shadowColor: '#000',
-   shadowOffset: {
-     width: 0,
-     height: 2,
-   },
-   shadowOpacity: 0.1,
-   shadowRadius: 2,
- },
- buttonPlaceholder: {
-   flexDirection: 'row',
-   alignItems: 'center',
-   justifyContent: 'center',
- },
- icon: {
-   marginRight: 12,
- },
- buttonText: {
-   color: '#3c4043',
-   fontSize: 16,
-   textAlign: 'center',
-   fontWeight: '600',
- },
+  buttonGoogle: {
+    width: '70%',
+    padding: 12,  // Adjust padding to fit the Figma design
+    backgroundColor: Color.ButtonBackground,  // Use the button color from Figma
+    borderColor: Color.ButtonBorder,  // Use the border color from Figma
+    borderRadius: 100,
+    borderWidth: 0,  // No border if Figma design doesn't include it
+    marginVertical: 8,
+    elevation: 3,  // Slight elevation for shadow
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+  },
+  buttonPlaceholder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    height: 27,  // Adjust icon size to fit the Figma design
+    width: 27,  // Adjust icon size to fit the Figma design
+    marginRight: 18,  // Slightly tighter space between icon and text
+  },
+  buttonText: {
+    color: Color.ButtonText,  // White text for contrast on dark background
+    fontSize: FontSizes.ButtonText,  // Use the button text size from Figma
+    fontWeight: '500',  // Use the button text weight from Figma
+    textAlign: 'center',
+  },
 });

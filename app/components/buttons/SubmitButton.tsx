@@ -2,7 +2,6 @@ import React from "react";
 import { StyleSheet, View, Image } from "react-native";
 import { Button } from "react-native-elements";
 import { Color, FontSizes} from "@/styles/styles";
-//import DropShadow from "react-native-drop-shadow";
 
 interface SubmitButtonProps {
   disabled: boolean;
@@ -34,11 +33,11 @@ export default function SubmitButton({ disabled, onPress, width, height, label, 
             <Image
               source={image}
               style={styles.iconStyle}
-              resizeMode="contain"  // Adjusts image size within the icon space
+              resizeMode="contain"  
             />
           ) : undefined
         }
-        iconPosition="left"  // Places the icon to the left of the title
+        iconPosition="left"  
         disabled={disabled}
         disabledStyle={styles.submitButtonDisabled}
         testID={testID}
@@ -72,9 +71,9 @@ const styles = StyleSheet.create({
 
     iconStyle: {
       position: 'absolute',
-      width: 25,      // Adjust icon width as needed
-      height: 25,     // Adjust icon height as needed
-      marginRight: '1%', // Space between icon and text
+      width: 25,      
+      height: 25,   
+      marginRight: '1%',
       left: '5%'
     },
 });

@@ -17,6 +17,6 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "firebase/__tests__/firestore_utils-test.js"
-  ],
+, "app/__tests__/TenantFormScreen.test.tsx"  ],
   "extends": "expo/tsconfig.base"
 }

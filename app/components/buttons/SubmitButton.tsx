@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "@/styles/styles";
+import { Color, FontSizes } from "../../../styles/styles";
 
 interface SubmitButtonProps {
   disabled: boolean;
@@ -10,6 +10,7 @@ interface SubmitButtonProps {
   height: number;
   label: string;
   style?: StyleProp<ViewStyle>; // Add an optional style prop
+  testID?: string;
 }
 
 export default function SubmitButton({
@@ -19,6 +20,7 @@ export default function SubmitButton({
   height,
   label,
   style,
+  testID,
 }: SubmitButtonProps) {
   return (
     <View style={styles.submitContainer}>
@@ -36,6 +38,7 @@ export default function SubmitButton({
         titleStyle={[styles.submitText]}
         disabled={disabled} // Disable button interaction
         disabledStyle={styles.submitButtonDisabled}
+        testID={testID}
       />
     </View>
   );

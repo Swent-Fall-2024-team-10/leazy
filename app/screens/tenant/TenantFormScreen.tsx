@@ -2,27 +2,25 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   ScrollView,
   SafeAreaView,
 } from "react-native";
 import { Button } from "react-native-elements";
-import { Color } from "@/styles/styles";
-import { add_new_tenant } from "@/firebase/firestore/firestore";
+import { Color } from "../../../styles/styles";
+import { add_new_tenant } from "../../../firebase/firestore/firestore";
 import {
   useNavigation,
   useRoute,
   NavigationProp,
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../../types/types";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import InputField from "@/app/components/forms/text_input";
-import Spacer from "@/app/components/Spacer";
+import SubmitButton from "../../components/buttons/SubmitButton";
+import InputField from "../../components/forms/text_input";
+import Spacer from "../../components/Spacer";
 
-const TenantProfileScreen = () => {
+const TenantFormScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { tenantCodeId } = route.params as { tenantCodeId: string };
@@ -55,7 +53,11 @@ const TenantProfileScreen = () => {
       );
       navigation.navigate("Home");
     } catch (error) {
-      Alert.alert("Error", "Failed to create tenant profile.");
+      if (error instanceof Error) {
+        Alert.alert("Error", error.message);
+      } else {
+        Alert.alert("Error", "An unknown error occurred");
+      }
       console.error(error);
     }
   };
@@ -204,6 +206,7 @@ const TenantProfileScreen = () => {
         <Spacer height={40} />
 
         <SubmitButton
+          testID="submitButton"
           disabled={
             firstName === "" ||
             lastName === "" ||
@@ -242,4 +245,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TenantProfileScreen;
+export default TenantFormScreen;

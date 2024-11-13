@@ -10,10 +10,11 @@ import {
   validateTenantCode,
   add_new_tenant,
 } from "@/firebase/firestore/firestore";
-import { appStyles, stylesForNonHeaderScreens } from "@/styles/styles";
+import { appStyles, ButtonDimensions, Color, stylesForHeaderScreens, stylesForNonHeaderScreens } from "@/styles/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "@/app/components/forms/text_input";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 export default function CodeEntryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -40,35 +41,40 @@ export default function CodeEntryScreen() {
   };
 
   return (
-    <SafeAreaView style={[appStyles.screenContainer, { flex: 1 }]}>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <SafeAreaView style={[appStyles.screenContainer, { flex: 1 }]} >
+
+      <View style={[appStyles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={stylesForNonHeaderScreens.title}>Welcome to Leazy</Text>
         <Text style={stylesForNonHeaderScreens.text}>
           Do you already have a code?
         </Text>
         <View style={{ marginBottom: 25, width: '80%' }}>
           <InputField
+            backgroundColor={Color.TextInputBackground}
             testID="code-input"
             placeholder="Enter code"
             value={code}
             height={40}
             setValue={setCode}
-            style={{ flex: 0 }}
+            style={[{ flex: 0 }]}
           />
         </View>
 
         <SubmitButton
+          testID="submit-code-button"
+          textStyle={appStyles.submitButtonText}
           onPress={handleSubmit}
           label="Submit code"
-          width={200}
-          height={40}
+          width={ButtonDimensions.mediumButtonWidth}
+          height={ButtonDimensions.mediumButtonHeight}
           disabled={false}
-          style={{ marginBottom: 20 }}
+          style={[ appStyles.submitButton ,{ marginBottom: 20 }]}
         />
         {errors.code && (
           <Text style={stylesForNonHeaderScreens.errorText}>{errors.code}</Text>
         )}
-        <Text style={stylesForNonHeaderScreens.text}>
+
+        <Text style={[stylesForNonHeaderScreens.text, {padding : '5%'}]}>
           If you don't have a code please ask your residence manager to generate
           one for you.
         </Text>

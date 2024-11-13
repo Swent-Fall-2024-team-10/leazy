@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 import InputField from "@/app/components/forms/text_input";
-import Header from "../../components/Header";
+import Header from "@/app/components/Header";
 import { generate_unique_code } from "@/firebase/firestore/firestore";
 import { stylesForHeaderScreens, appStyles } from "@/styles/styles";
 
@@ -109,6 +109,8 @@ export default function CodeCreationScreen() {
         </View>
 
         <SubmitButton
+          testID="create-code-button"
+          textStyle={appStyles.submitButtonText}
           onPress={createCode}
           disabled={loading}
           width={180}
@@ -132,6 +134,9 @@ export default function CodeCreationScreen() {
               {code}
             </Text>
             <SubmitButton
+              testID="share-code-button"
+              style={appStyles.submitButton}
+              textStyle={appStyles.submitButtonText}
               onPress={shareCode}
               disabled={loading}
               label="Share Code"

@@ -1,7 +1,7 @@
 import React from "react";
-import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
+import { StyleSheet, View, Image } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "@/styles/styles";
+import { Color, FontSizes} from "@/styles/styles";
 
 interface SubmitButtonProps {
   disabled: boolean;
@@ -9,73 +9,71 @@ interface SubmitButtonProps {
   width: number;
   height: number;
   label: string;
-  style?: StyleProp<ViewStyle>; // Add an optional style prop
+  testID: string;
+  style: any;
+  textStyle: any;
+  image?: any;
 }
 
-export default function SubmitButton({
-  disabled,
-  onPress,
-  width,
-  height,
-  label,
-  style,
-}: SubmitButtonProps) {
+export default function SubmitButton({ disabled, onPress, width, height, label, testID, style, textStyle, image} : SubmitButtonProps) {
   return (
     <View style={styles.submitContainer}>
       <Button
         title={label}
         onPress={onPress}
         buttonStyle={[
-          styles.submitButton,
+          style,
           {
             width: width,
             height: height,
           },
-          style, // Merge custom style prop
         ]}
-        titleStyle={[styles.submitText]}
-        disabled={disabled} // Disable button interaction
+        icon={
+          image ? (
+            <Image
+              source={image}
+              style={styles.iconStyle}
+              resizeMode="contain"  
+            />
+          ) : undefined
+        }
+        iconPosition="left"  
+        disabled={disabled}
         disabledStyle={styles.submitButtonDisabled}
+        testID={testID}
+
+        titleStyle={[
+          textStyle
+        ]}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  submitContainer: {
-    alignItems: "center",
-    shadowColor: "#171717",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-  },
+    submitContainer: {
+        alignItems: 'center',
+        shadowColor: '#171717',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
+        padding: '5%',
+    },
 
-  submitButton: {
-    backgroundColor: Color.ButtonBackground,
-    borderColor: Color.ButtonBorder,
-    borderWidth: 1,
-    marginBottom: 200,
-    width: 170,
-    height: 44,
-    borderRadius: 100,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    submitButtonDisabled : {
+      backgroundColor: Color.ButtonBackgroundDisabled,
+      borderColor: Color.ButtonBorder,
+      borderWidth: 1,
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
-  submitButtonDisabled: {
-    backgroundColor: Color.ButtonBackgroundDisabled,
-    borderColor: Color.ButtonBorder,
-    borderWidth: 1,
-    width: 170,
-    height: 44,
-    borderRadius: 100,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  submitText: {
-    textAlign: "center",
-    fontSize: FontSizes.ButtonText,
-    color: Color.ButtonText,
-  },
+    iconStyle: {
+      position: 'absolute',
+      width: 25,      
+      height: 25,   
+      marginRight: '1%',
+      left: '5%'
+    },
 });

@@ -8,21 +8,21 @@ import {
   Switch,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import Header from "../../components/Header";
+import Header from "@/app/components/Header";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { ReportStackParamList } from "../../../types/types"; // Assuming this also includes navigation types
+import { ReportStackParamList, MaintenanceRequest } from "@/types/types"; // Assuming this also includes navigation types
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
-} from "../../../firebase/firestore/firestore"; // Firestore functions
-import { MaintenanceRequest } from "../../../types/types"; // Importing types
+} from "@/firebase/firestore/firestore"; // Firestore functions
 import { getAuth } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
 import {
   getIssueStatusColor,
   getIssueStatusText,
 } from "@/app/utils/StatusHelper";
-import { appStyles } from "@/styles/styles";
+import { appStyles, Color, IconDimension } from "@/styles/styles";
+import { Icon } from "react-native-elements";
 
 interface IssueItemProps {
   issue: MaintenanceRequest;
@@ -43,23 +43,17 @@ const IssueItem: React.FC<IssueItemProps> = ({
   return (
     <View style={styles.issueItem}>
       <View style={styles.issueContent}>
+
         <View style={styles.issueTextContainer}>
-          <Text style={styles.issueText} numberOfLines={1}>
-            {issue.requestTitle}
-          </Text>
+          <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
+        </View >
+
+        <View style={[styles.statusTextContainer, {backgroundColor: getIssueStatusColor(status)}]}>
+           <Text style={styles.statusText}>Status: {getIssueStatusText(status)}</Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getIssueStatusColor(status) },
-          ]}
-        >
-          <Text style={styles.statusText}>
-            Status: {getIssueStatusText(status)}
-          </Text>
-        </TouchableOpacity>
       </View>
-      {issue.requestStatus === "completed" && !isArchived && (
+      
+      {issue.requestStatus === 'completed' && !isArchived && (
         <TouchableOpacity onPress={onArchive} style={styles.archiveButton}>
           <Feather name="archive" size={24} color="#2C3E50" />
         </TouchableOpacity>
@@ -72,7 +66,7 @@ const IssueItem: React.FC<IssueItemProps> = ({
         }
         style={styles.arrowButton}
       >
-        <Feather name="chevron-right" size={24} color="black" />
+        <Icon name="chevron-right" size={IconDimension.mediumIcon} color="black" />
       </TouchableOpacity>
     </View>
   );
@@ -136,36 +130,34 @@ const MaintenanceIssues = () => {
     <View style={styles.container}>
       <Header>
         <ScrollView style={styles.scrollView}>
-          <View style={styles.titleContainer}>
-            <Text style={appStyles.screenHeader}>Maintenance Requests</Text>
-          </View>
+          <View style={appStyles.scrollContainer}>
+            <View style={styles.titleContainer}>
+              <Text style={appStyles.screenHeader}>Maintenance Requests</Text>
+            </View>
 
-          <View style={styles.switchContainer}>
-            <Text> Archived Issues</Text>
-            <Switch
-              style={{ marginHorizontal: 8, marginVertical: 8 }}
-              value={showArchived}
-              onValueChange={setShowArchived}
-            />
-          </View>
-
-          <View style={styles.viewBoxContainer}>
-            {filteredIssues.map((issue) => (
-              <IssueItem
-                key={issue.requestID}
-                issue={issue}
-                onStatusChange={(newStatus) =>
-                  updateMaintenanceRequest(issue.requestID, {
-                    requestStatus: newStatus,
-                  })
-                }
-                onArchive={() => archiveIssue(issue.requestID)}
-                isArchived={issue.requestStatus === "completed"}
+            <View style={styles.switchContainer}>
+              <Text> Archived Issues</Text>
+              <Switch
+                style={[{ marginLeft: 8 }, {marginRight: 8}, {marginBottom: 8}, {marginTop: 8}]}
+                value={showArchived}
+                onValueChange={setShowArchived}
               />
-            ))}
-          </View>
+            </View>
 
-          <View style={[styles.viewBoxContainer, { height: 100 }]} />
+            <View style={styles.viewBoxContainer}>
+              {filteredIssues.map((issue) => (
+                <IssueItem
+                  key={issue.requestID}
+                  issue={issue}
+                  onStatusChange={(newStatus) => updateMaintenanceRequest(issue.requestID, { requestStatus: newStatus })}
+                  onArchive={() => archiveIssue(issue.requestID)}
+                  isArchived={issue.requestStatus === 'completed'}
+                />
+              ))}
+            </View>
+
+            <View style={[styles.viewBoxContainer, {height: 100}]}/>
+          </View>
         </ScrollView>
       </Header>
 
@@ -174,7 +166,7 @@ const MaintenanceIssues = () => {
         style={styles.addButton}
         onPress={() => navigation.navigate("Report")}
       >
-        <Feather name="plus" size={24} color="white" />
+        <Feather name="plus" size={IconDimension.smallIcon} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -184,6 +176,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+  statusTextContainer: {
+    borderRadius: 25,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+    marginTop: '8%',
+  },
+
   titleContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -197,37 +198,39 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingTop: 15,
+    paddingTop: '6%',
   },
+
   issueItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    backgroundColor: "#EDEDED",
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "#7F7F7F",
-    width: 340,
-    height: 110,
-    marginBottom: 12,
-    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: Color.IssueBackground, 
+    borderRadius: 30,           
+    borderWidth: 1,             
+    borderColor: Color.IssueBorder,     
+    width: 340,                 
+    height: 110,                
+    marginBottom: '2%',
+    padding: '4%',
   },
   issueContent: {
     justifyContent: "space-between",
     alignItems: "center",
     flex: 1,
   },
+
   issueTextContainer: {
     width: "100%",
     height: 32,
     borderRadius: 25,
-    backgroundColor: "#FFF",
+    backgroundColor: Color.IssueTextBackground,
     justifyContent: "center",
     paddingHorizontal: 12,
   },
   issueText: {
     fontSize: 16,
-    color: "#2C3E50",
+    color: Color.TextInputText,
   },
   statusBadge: {
     borderRadius: 16,
@@ -247,24 +250,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   addButton: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    backgroundColor: "#2C3E50",
+    position: 'absolute',
+    right: '6%',
+    bottom: '3%',
+    backgroundColor: Color.ButtonBackground,
     borderRadius: 28,
     width: 56,
     height: 56,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    zIndex: 1,
   },
+  
   viewBoxContainer: {
     marginBottom: 80,
     paddingBottom: 80,
   },
   arrowButton: {
-    marginLeft: 10,
-    width: 40,
-    height: 40,
+    marginLeft: '4%',
+    width: '15%',
+    height: '100%',
     justifyContent: "center",
     alignItems: "center",
   },

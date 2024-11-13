@@ -17,6 +17,7 @@ import {
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { Color } from "@/styles/styles";
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -128,7 +129,8 @@ const ManageMachinesScreen = () => {
           {/* Input for adding a new machine */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
+              style={[styles.input , {backgroundColor : Color.TextInputBackground}]}
+              placeholderTextColor={Color.TextInputPlaceholder}
               placeholder="Enter Machine ID"
               value={newMachineId}
               onChangeText={setNewMachineId}

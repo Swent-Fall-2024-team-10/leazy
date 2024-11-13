@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal } from 'react-native';
 import CustomTextField from '@/app/components/CustomTextField';
-import CustomButton from '@/app/components/CustomButton';
 import CustomPicker from '@/app/components/CustomPicker';
 import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
+import { RootStackParamList} from '@/types/types';
+import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
+import { Ionicons } from '@expo/vector-icons';
+import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
 import { User, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
 import { TenantFormScreen } from '../tenant/';
@@ -21,11 +24,10 @@ interface FormErrors {
 export default function SignUpScreen() {
   const navigation= useNavigation<NavigationProp<RootStackParamList>>();
   const [userType, setUserType] = useState(UserType.TENANT);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
   interface Errors {
     firstName?: string;
     lastName?: string;
@@ -127,29 +129,41 @@ export default function SignUpScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      
+      
       <View style={styles.container}>
         {popup && (
-          <CustomPopUp
-            testID="signUpPopup"
-            text="An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account."
-            onPress={() => setPopup(false)}
-          />
+          <Modal
+              transparent={true}
+              animationType="fade"
+              visible={popup}
+              onRequestClose={() => setPopup(false)}
+          >
+            <CustomPopUp
+              testID="signUpPopup"
+              text= 'An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
+              onPress={() => setPopup(false)}
+            />
+          </Modal>
         )}
-        <Text style={styles.title}>Welcome to Leazy</Text>
-        <Text style={styles.text}>
-          Are you renting or the manager of a property?
-        </Text>
 
+        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack}>
+          <Ionicons name="arrow-back" size={FontSizes.backArrow} color={Color.ButtonBackground} style={appStyles.backButton} />
+        </TouchableOpacity>
+
+        <Text style={[appStyles.screenHeader, { fontSize: 40 ,flex: 0}]}>Welcome to Leazy</Text>
+        <Text style={styles.label}>Are you renting or the manager of a property?</Text>
+        
         <CustomPicker
           testID="userTypePicker"
           selectedValue={userType}
           onValueChange={(itemValue) => setUserType(itemValue)}
         />
         
-        <Text style={styles.text}> Choose an email and a password</Text>
+        <Text style={styles.label}> Choose an email and a password</Text>
 
         <CustomTextField
-          testID="emailInput"
+          testID='emailInput'
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
@@ -180,22 +194,30 @@ export default function SignUpScreen() {
           <Text style={styles.errorText}>{errors.confirmPassword}</Text>
         )}
 
-        <CustomButton
-          testID="signUpButton"
-          size="small"
-          onPress={handleSignUpPress}
-          title="Sign up"
-        />
-
+        <SubmitButton 
+          testID='signUpButton' 
+          disabled={false} 
+          onPress={handleSignUpPress} 
+          width={ButtonDimensions.largeButtonWidth} 
+          height={ButtonDimensions.largeButtonHeight} 
+          label="Sign up" 
+          style={appStyles.submitButton} 
+          textStyle={appStyles.submitButtonText} />
+        
         <Text style={styles.text}>or</Text>
-
-        <CustomButton 
-          testID='googleSignUpButton'
-          title="Sign up with Google" 
+        
+        <SubmitButton 
+          testID='googleSignUpButton' 
+          disabled={false} 
           onPress={handleGoogleSignUp} 
-          size="large" 
-          image={require('@/assets/images/auth/google_logo.png')} 
-        />
+          width={ButtonDimensions.largeButtonWidth} 
+          height={ButtonDimensions.largeButtonHeight} 
+          label="Sign up with Google" 
+          style={appStyles.submitButton} 
+          textStyle={appStyles.submitButtonText}
+          image={require('@/assets/images/auth/google_logo.png')}
+         />
+
       </View>
     </ScrollView>
   );
@@ -207,15 +229,18 @@ const styles = StyleSheet.create({
     borderColor: "#FF004",
     borderWidth: 1,
   },
+  
   errorText: {
     fontFamily: "Inter",
     color: "#FF0004",
     fontSize: 12,
     marginBottom: 10,
   },
+
   scrollContainer: {
     flexGrow: 1,
   },
+
   container: {
     flex: 1,
     justifyContent: "center",
@@ -224,26 +249,40 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     backgroundColor: "white",
   },
+
   title: {
-    color: "#0B3142",
-    textAlign: "center",
-    fontFamily: "Inter", // Ensure Inter font is properly loaded in your project
-    fontSize: 40,
-    fontStyle: "normal",
-    fontWeight: "400",
-    lineHeight: 40, // Use a numeric value for lineHeight in React Native
+    color: Color.ScreenHeader,
+    textAlign: 'center',
+    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
+    fontSize: FontSizes.ScreenHeader,
+    fontStyle: 'normal',
+    fontWeight: '400',
+    lineHeight: 40,  // Use a numeric value for lineHeight in React Native
     letterSpacing: 0.4,
     marginBottom: 24,
   },
-  text: {
-    color: "#0B3142",
-    textAlign: "center",
-    fontFamily: "Inter", // Ensure Inter font is properly loaded in your project
+  label: {
+    color: Color.TextInputLabel,
+    textAlign: 'center',
+    fontFamily: 'Inter SemiBold', 
     fontSize: 24,
-    fontStyle: "normal",
-    fontWeight: "400",
-    lineHeight: 24, // Adjust if necessary, using numeric value for lineHeight
+    fontStyle: 'normal',
+    fontWeight: '400',
+    lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
     letterSpacing: 0.24,
-    marginBottom: 23,
+    paddingTop : LayoutPadding.LabelTop,
+    paddingBottom : LayoutPadding.LabelBottom,
+  },
+
+  text: {
+    color: Color.TextInputLabel,
+    textAlign: 'center',
+    fontFamily: 'Inter SemiBold', 
+    fontSize: 24,
+    fontStyle: 'normal',
+    fontWeight: '400',
+    lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
+    letterSpacing: 0.24,
+    padding : '1.5%',
   },
 });

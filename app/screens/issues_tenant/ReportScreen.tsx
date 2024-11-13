@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, View, Alert, Image, Modal } from "react-native";
+import { Text, View, Alert, Image, Modal } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import InputField from "@/app/components/forms/text_input";
 import Spacer from "@/app/components/Spacer";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { Color } from "@/styles/styles";
+import { appStyles, ButtonDimensions, Color, textInputHeight } from "@/styles/styles";
 import Close from "@/app/components/buttons/Close";
 import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
 import { ReportStackParamList } from "@/types/types"; // Import or define your navigation types
@@ -135,205 +135,127 @@ export default function ReportScreen() {
 
   return (
     <Header>
-      <ScrollView
-        style={styles.container}
-        automaticallyAdjustKeyboardInsets={true}
+      <ScrollView style={appStyles.screenContainer} 
+      automaticallyAdjustKeyboardInsets={true}
       >
-        <Close onPress={handleClose} />
-        <Text style={styles.header}>Create a new issue</Text>
-        <Text style={styles.date}>
-          Current day: {day}/{month}/{year} at {hours}:{minutes}
-        </Text>
+        <View style={[appStyles.scrollContainer, {paddingBottom : '90%', marginBottom : '10%'}]}>
 
-        <Spacer height={20} />
-
-        {isVisible && (
-          <Modal
-            transparent={true}
-            animationType="fade"
-            visible={isVisible}
-            onRequestClose={() => setIsVisible(false)}
-          >
-            <CloseConfirmation
-              isVisible={isVisible}
-              onPressYes={() => {
-                resetStates();
-                setTick(false);
-                navigation.navigate("Issues");
-                setIsVisible(false);
-              }}
-              onPressNo={() => setIsVisible(false)}
-            />
-          </Modal>
-        )}
-
-        <InputField
-          label="What kind of issue are you experiencing?"
-          value={issue}
-          setValue={setIssue}
-          placeholder="Your issue..."
-          radius={25}
-          height={40}
-          width={300}
-          backgroundColor={Color.TextInputBackground}
-          testID="testIssueNameField"
-        />
-
-        <Spacer height={20} />
-
-        <Text style={styles.label}>
-          Please take a picture of the damage or situation if applicable
-        </Text>
-
-        <CameraButton onPress={handleAddPicture} />
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {pictureList.map((image, index) => (
-            <Image
-              key={index}
-              source={{ uri: image }}
-              style={styles.thumbnailImage}
-            />
-          ))}
-        </ScrollView>
-
-        <Spacer height={20}></Spacer>
-
-        <InputField
-          label="Which room is the issue in?"
-          value={room}
-          setValue={setRoom}
-          placeholder="e.g: Bedroom, Kitchen, Bathroom..."
-          radius={25}
-          height={40}
-          width={300}
-          backgroundColor={Color.TextInputBackground}
-          testID="testRoomNameField"
-        />
-
-        <Spacer height={20} />
-
-        <InputField
-          label="Please provide some description of the issue:"
-          value={description}
-          setValue={setDescription}
-          placeholder="e.g: The bathtub is leaking because of..."
-          height={100}
-          width={300}
-          backgroundColor={Color.TextInputBackground}
-          radius={20}
-          testID="testDescriptionField"
-        />
-
-        <Spacer height={20} />
-
-        <View style={{ flexDirection: "row" }}>
-          <BouncyCheckbox
-            iconImageStyle={styles.tickingBox}
-            iconStyle={styles.tickingBox}
-            innerIconStyle={styles.tickingBox}
-            unFillColor={Color.ReportScreenBackground}
-            fillColor={Color.ButtonBackground}
-            onPress={(isChecked: boolean) => setTick(isChecked)}
-          />
-          <Text style={styles.tickingBoxText}>
-            I would like to start a chat with the manager about this issue
+          <Close onPress={handleClose} />
+          <Text style={appStyles.screenHeader}>Create a new issue</Text>
+          <Text style={appStyles.date}>
+            Current day: {day}/{month}/{year} at {hours}:{minutes}
           </Text>
+
+          <Spacer height={20} />
+
+          {isVisible && (
+            <Modal
+              transparent={true}
+              animationType="fade"
+              visible={isVisible}
+              onRequestClose={() => setIsVisible(false)}
+            >
+                <CloseConfirmation
+                    isVisible={isVisible}
+                    onPressYes={() => {
+                        resetStates();
+                        setTick(false);
+                        navigation.navigate('Issues');
+                        setIsVisible(false);
+                    }}
+                    onPressNo={() => setIsVisible(false)}
+                />
+            </Modal>
+          )}
+
+          <InputField
+            label="What kind of issue are you experiencing?"
+            value={issue}
+            setValue={setIssue}
+            placeholder="Your issue..."
+            radius={25}
+            height={textInputHeight}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            backgroundColor={Color.TextInputBackground}
+            testID="testIssueNameField"
+            style={{alignContent: 'center'}}
+          />
+
+          <Spacer height={20} />
+
+          <Text style={appStyles.inputFieldLabel}>Please take a picture of the damage or situation if applicable</Text>
+          
+          <CameraButton onPress={handleAddPicture} />
+          
+          <View style={appStyles.carouselImageContainer}>
+            <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {pictureList.map((image, index) => (
+                        <Image key={index} source={{ uri: image }} style={appStyles.smallThumbnailImage} />
+                    ))}
+            </ScrollView>
+          </View>
+
+          
+          <InputField
+            label="Which room is the issue in?"
+            value={room}
+            setValue={setRoom}
+            placeholder="e.g: Bedroom, Kitchen, Bathroom..."
+            radius={25}
+            height={textInputHeight}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            backgroundColor={Color.TextInputBackground}
+            testID="testRoomNameField"
+            style={{alignContent: 'center'}}
+          />
+
+          <Spacer height={20} />
+
+          <InputField
+            label="Please provide a description of your issue:"
+            value={description}
+            setValue={setDescription}
+            placeholder="e.g: The bathtub is leaking because of..."
+            height={100}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            backgroundColor={Color.TextInputBackground}
+            radius={20}
+            testID="testDescriptionField"
+            style={{alignContent: 'center'}}
+          />
+
+          <Spacer height={20} />
+
+          <View style={{ flexDirection: 'row' }}>
+            <BouncyCheckbox
+              iconImageStyle={appStyles.tickingBox}
+              iconStyle={appStyles.tickingBox}
+              innerIconStyle={appStyles.tickingBox}
+              unFillColor={Color.TextInputBackground}
+              fillColor={Color.ButtonBackground}
+              onPress={(isChecked: boolean) => setTick(isChecked)}
+            />
+            <Text style={appStyles.inputFieldLabel}>
+              I would like to start a chat with the manager about this issue
+            </Text>
+          </View>
+
+          <SubmitButton
+            disabled={room === '' || description === '' || issue === ''}
+            onPress={handleSubmit}
+            width={ButtonDimensions.mediumButtonWidth}
+            height={ButtonDimensions.mediumButtonHeight}
+            label="Submit"
+            testID="testSubmitButton"
+            style={appStyles.submitButton}
+            textStyle={appStyles.submitButtonText}
+          />
         </View>
-
-        <Spacer height={20} />
-
-        <SubmitButton
-          disabled={room === "" || description === "" || issue === ""}
-          onPress={handleSubmit}
-          width={170}
-          height={44}
-          label="Submit"
-        />
       </ScrollView>
     </Header>
   );
 }
 
-const styles = StyleSheet.create({
-  thumbnailImage: {
-    marginHorizontal: 5,
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-
-  thumbnailBox: {
-    width: 100,
-    height: 100,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-
-  tickingBoxText: {
-    color: Color.TextInputLabel,
-    fontSize: 16,
-    width: 300,
-    fontWeight: "500",
-  },
-
-  tickingBox: {
-    borderRadius: 5,
-  },
-
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-
-  subHeader: {
-    textAlign: "center",
-    fontSize: 16,
-    marginBottom: 10,
-  },
-
-  pictureContainer: {
-    marginBottom: 20,
-  },
-
-  thumbnails: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-
-  cameraButton: {
-    height: 150,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Color.CameraButtonBackground,
-    borderWidth: 1,
-    borderColor: Color.CameraButtonBorder,
-    borderRadius: 5,
-    marginBottom: 20,
-  },
-
-  date: {
-    fontSize: 16,
-    marginBottom: 5,
-    textAlign: "center",
-    color: Color.DateText,
-  },
-
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-    color: Color.ScreenHeader,
-  },
-
-  label: {
-    fontSize: 16,
-    marginBottom: 2.5,
-    fontWeight: "500",
-    color: Color.TextInputLabel,
-  },
-});

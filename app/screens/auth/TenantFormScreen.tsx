@@ -21,7 +21,7 @@ import { emailAndPasswordSignIn } from "@/firebase/auth/auth";
 import { createUser, createTenant } from "@/firebase/firestore/firestore";
 import { Tenant } from "@/types/types";
 
-const TenantProfileScreen = () => {
+const TenantFormScreen = () => {
 
   const route = useRoute<RouteProp<AuthStackParamList, 'TenantForm' | 'LandlordForm'>>();
   const { email, password } = route.params;
@@ -68,7 +68,11 @@ const TenantProfileScreen = () => {
 
      
     } catch (error) {
-      Alert.alert("Error", "Failed to create tenant profile.");
+      if (error instanceof Error) {
+        Alert.alert("Error", error.message);
+      } else {
+        Alert.alert("Error", "An unknown error occurred");
+      }
       console.error(error);
     }
   };
@@ -239,4 +243,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TenantProfileScreen;
+export default TenantFormScreen;

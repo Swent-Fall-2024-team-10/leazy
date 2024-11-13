@@ -1,4 +1,5 @@
 node_modules/
+coverage/
 .expo/
 dist/
 npm-debug.*
@@ -21,6 +22,3 @@ package-lock.json
 
 expo-env.d.ts
 # @end expo-cli
-
-# Ignore test coverage files
-coverage/

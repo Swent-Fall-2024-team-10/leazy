@@ -2,21 +2,26 @@ import React from 'react';
 import { render, fireEvent, waitFor, screen } from '@testing-library/react-native';
 import ReportScreen from '../screens/issues_tenant/ReportScreen'; // Adjust import according to your file structure
 import { NavigationProp } from '@react-navigation/native';
-import { db, auth } from '@/firebase/firebase'; // Import the Firebase functions if needed
+import { db, auth } from '../../firebase/firebase'; // Import the Firebase functions if needed
 
 // Mock necessary Firebase functions
-jest.mock('../../firebase/firestore/firestore', () => ({
+jest.mock('../../firebase/firebase', () => ({
   getUser: jest.fn(),
   getTenant: jest.fn(),
   updateTenant: jest.fn(),
   updateMaintenanceRequest: jest.fn(),
-}));
-
-jest.mock('firebase/firestore', () => ({
   addDoc: jest.fn(),
   collection: jest.fn(),
+  auth: {
+    currentUser: { uid: 'user123' }, // Mock currentUser object
+  },
 }));
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+}));
+
+// Mock Context
 jest.mock('../context/PictureContext', () => ({
   usePictureContext: jest.fn(() => ({
     pictureList: ['fakePic1', 'fakePic2'],
@@ -24,9 +29,8 @@ jest.mock('../context/PictureContext', () => ({
   })),
 }));
 
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-}));
+// Mock global alert function
+global.alert = jest.fn();
 
 describe('ReportScreen', () => {
   let navigation: NavigationProp<any>;
@@ -36,10 +40,6 @@ describe('ReportScreen', () => {
     navigation = {
       navigate: jest.fn(),
     } as unknown as NavigationProp<any>;
-
-    jest.mock('@react-navigation/native', () => ({
-        useNavigation: jest.fn(),
-      }));
 
     // Reset all mocks before each test
     jest.clearAllMocks();
@@ -56,17 +56,14 @@ describe('ReportScreen', () => {
   });
 
   it('should call handleSubmit on Submit button press', async () => {
-    const mockGetUser = require('@/firebase/firestore/firestore').getUser;
-    const mockGetTenant = require('@/firebase/firestore/firestore').getTenant;
-    const mockAddDoc = require('firebase/firestore').addDoc;
-    const mockUpdateTenant = require('@/firebase/firestore/firestore').updateTenant;
-    const mockUpdateMaintenanceRequest = require('@/firebase/firestore/firestore').updateMaintenanceRequest;
+    const { getUser, getTenant, addDoc, updateTenant, updateMaintenanceRequest } = require('../../firebase/firebase');
 
-    mockGetUser.mockResolvedValue({ user: { userUID: 'user123' }, userUID: 'user123' });
-    mockGetTenant.mockResolvedValue({ tenant: { userId: 'user123', apartmentId: 'apt123' }, tenantUID: 'tenant123' });
-    mockAddDoc.mockResolvedValue({ id: 'request123' });
-    mockUpdateTenant.mockResolvedValue(true);
-    mockUpdateMaintenanceRequest.mockResolvedValue(true);
+    // Mock Firebase functions
+    getUser.mockResolvedValue({ user: { userUID: 'user123' }, userUID: 'user123' });
+    getTenant.mockResolvedValue({ tenant: { userId: 'user123', apartmentId: 'apt123' }, tenantUID: 'tenant123' });
+    addDoc.mockResolvedValue({ id: 'request123' });
+    updateTenant.mockResolvedValue(true);
+    updateMaintenanceRequest.mockResolvedValue(true);
 
     render(<ReportScreen />);
 
@@ -79,23 +76,25 @@ describe('ReportScreen', () => {
     fireEvent.press(screen.getByText('Submit'));
 
     // Wait for the submission to complete
-    await waitFor(() => expect(mockAddDoc).toHaveBeenCalledTimes(1));
-    expect(mockGetUser).toHaveBeenCalledWith(auth.currentUser?.uid);
-    expect(mockGetTenant).toHaveBeenCalledTimes(1);
-    expect(mockAddDoc).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+    await waitFor(() => expect(addDoc).toHaveBeenCalledTimes(1));
+
+    // Check Firebase function calls and data passed
+    expect(getUser).toHaveBeenCalledWith('user123');
+    expect(getTenant).toHaveBeenCalledTimes(1);
+    expect(addDoc).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       requestTitle: 'Leaky faucet',
       requestDescription: 'The faucet is leaking water.',
     }));
-    expect(mockUpdateTenant).toHaveBeenCalledTimes(1);
-    expect(mockUpdateMaintenanceRequest).toHaveBeenCalledTimes(1);
+    expect(updateTenant).toHaveBeenCalledTimes(1);
+    expect(updateMaintenanceRequest).toHaveBeenCalledTimes(1);
     expect(navigation.navigate).toHaveBeenCalledWith('Issues');
   });
 
   it('should show an error alert if user or tenant is not found', async () => {
-    const mockGetUser = require('@/firebase/firestore/firestore').getUser;
-    const mockGetTenant = require('@/firebase/firestore/firestore').getTenant;
+    const { getUser } = require('../../firebase/firebase');
 
-    mockGetUser.mockResolvedValue(null); // Simulate user not found
+    // Mock getUser to return null (user not found)
+    getUser.mockResolvedValue(null);
 
     render(<ReportScreen />);
 
@@ -108,11 +107,10 @@ describe('ReportScreen', () => {
     fireEvent.press(screen.getByText('Submit'));
 
     // Wait for the alert to be called
-    await waitFor(() => expect(mockGetUser).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getUser).toHaveBeenCalledTimes(1));
 
-    // Check for alert display (you can spy on the alert if you want)
-    expect(screen.getByText('Error')).toBeTruthy();
-    expect(screen.getByText('User not found')).toBeTruthy();
+    // Check for alert display (mocked global alert)
+    expect(global.alert).toHaveBeenCalledWith('Error', 'User not found');
   });
 
   it('should navigate to "CameraScreen" when Camera button is pressed', () => {

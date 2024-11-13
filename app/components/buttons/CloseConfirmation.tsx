@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, StyleSheet, View } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "@/styles/styles";
+import { Color, FontSizes } from "../../../styles/styles";
 //import DropShadow from "react-native-drop-shadow";
 
 interface CloseConfirmationProps {

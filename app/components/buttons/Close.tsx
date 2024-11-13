@@ -1,7 +1,7 @@
-import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
-import { Color } from "@/styles/styles";
+import { Color } from "../../../styles/styles";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface CloseProps {
     onPress: () => void;
@@ -14,7 +14,7 @@ export default function Close( { onPress } : CloseProps) {
                 onPress={onPress}
             >
                 <Text style={styles.text}>Close</Text>
-                <AntDesign name="down" style={styles.arrowDown} />
+                <Icon name="close" size={50} color="white" />
             </TouchableOpacity>
         </View>
     );

@@ -12,6 +12,9 @@ jest.mock('../../firebase/firebase', () => ({
   updateMaintenanceRequest: jest.fn(),
   addDoc: jest.fn(),
   collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  getDocs: jest.fn(),
   auth: {
     currentUser: { uid: 'user123' }, // Mock currentUser object
   },
@@ -56,9 +59,14 @@ describe('ReportScreen', () => {
   });
 
   it('should call handleSubmit on Submit button press', async () => {
-    const { getUser, getTenant, addDoc, updateTenant, updateMaintenanceRequest } = require('../../firebase/firebase');
+    const { getUser, getTenant, addDoc, updateTenant, updateMaintenanceRequest, query, where, getDocs } = require('../../firebase/firebase');
 
-    // Mock Firebase functions
+    // Mocking Firestore query and getDocs
+    query.mockReturnValue('mockQuery');
+    where.mockReturnValue('mockWhere');
+    getDocs.mockResolvedValue({ empty: false, docs: [] });
+
+    // Mocking Firebase functions
     getUser.mockResolvedValue({ user: { userUID: 'user123' }, userUID: 'user123' });
     getTenant.mockResolvedValue({ tenant: { userId: 'user123', apartmentId: 'apt123' }, tenantUID: 'tenant123' });
     addDoc.mockResolvedValue({ id: 'request123' });

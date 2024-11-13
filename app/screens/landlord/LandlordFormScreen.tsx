@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../../types/types";
-import { add_new_landlord } from "@/firebase/firestore/firestore";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import InputField from "@/app/components/forms/text_input";
-import Spacer from "@/app/components/Spacer";
-import { Color } from "@/styles/styles";
+import { add_new_landlord } from "../../../firebase/firestore/firestore";
+import SubmitButton from "../../components/buttons/SubmitButton";
+import InputField from "../../components/forms/text_input";
+import Spacer from "../../components/Spacer";
+import { Color } from "../../../styles/styles";
 
 const LandlordFormScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -185,10 +185,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   inputField: {
-    backgroundColor: "#E9D5FF", // Adjusted for soft purple
+    backgroundColor: Color.HeaderBackground, // Adjusted for soft purple
     borderRadius: 100,
     paddingHorizontal: 10,
-    height: 50,
+    height: 40,
     marginBottom: 20,
   },
   submitButton: {

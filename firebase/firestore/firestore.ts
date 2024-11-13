@@ -438,28 +438,30 @@ export async function add_new_landlord(
       throw new Error("Use the same email as the one you used to sign up.");
     }
 
-    // Create a new User object
-    const newUser: User = {
-      uid: auth.currentUser.uid,
-      type: "landlord",
-      name,
-      email,
-      phone,
-      street,
-      number,
-      city,
-      canton,
-      zip,
-      country,
-    };
+    console.log("Current user id:", auth.currentUser.uid);
+    const userObj = await getUser(auth.currentUser.uid);
+    if (!userObj) {
+      throw new Error("User doesn't exist.");
+    }
 
-    // Step 1: Create a user document in Firestore
-    const userId = await createUser(newUser);
+    const { user, userUID } = userObj;
+
+    user.email = email;
+    user.name = name;
+    user.phone = phone;
+    user.street = street;
+    user.number = number;
+    user.city = city;
+    user.canton = canton;
+    user.zip = zip;
+    user.country = country;
+
+    updateUser(userUID, user);
 
     // Step 2: Create a landlord document with the same userId
-    const landlordDocRef = doc(db, "landlords", userId);
+    const landlordDocRef = doc(db, "landlords", userUID);
     const newLandlord: Landlord = {
-      userId,
+      userId: userUID,
       residenceIds: [], // Initialize with no residence IDs
     };
 

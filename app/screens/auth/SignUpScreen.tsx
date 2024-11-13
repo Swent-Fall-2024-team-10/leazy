@@ -7,7 +7,8 @@ import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { User, Tenant, RootStackParamList} from '@/types/types';
+import { User, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
+import { TenantFormScreen } from '../tenant/';
 
 interface FormErrors {
   firstName?: string;
@@ -18,7 +19,7 @@ interface FormErrors {
 }
 
 export default function SignUpScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation= useNavigation<NavigationProp<RootStackParamList>>();
   const [userType, setUserType] = useState(UserType.TENANT);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -59,10 +60,55 @@ export default function SignUpScreen() {
         console.log("User signed up:", user);
 
         if (userType === UserType.LANDLORD) {
+
+          if (user.providerData[0].email != null) {
+          const newUser: User = {
+            uid: user.uid,
+            type: "landlord",
+            name: "",
+            email: user.providerData[0].email,
+            phone: "",
+            street: "",
+            number: "",
+            city: "",
+            canton: "",
+            zip: "",
+            country: "",
+
+          };
+          createUser(newUser);
+          }
+          else {
+            throw new Error("Email is null");
+          }
           navigation.navigate("LandlordForm", { userId: user.uid, email });
-        } else {
-          // If Tenant, proceed to CodeEntryScreen without creating a user
-          navigation.navigate("TenantForm", { userId: user.uid, email});
+        } else if (userType === UserType.TENANT) {
+            console.log("User signed up:", user);
+            if (user.providerData[0].email != null) {
+            const newUser: User = {
+              uid: user.uid,
+              type: "tenant",
+              name: "",
+              email: user.providerData[0].email,
+              phone: "",
+              street: "",
+              number: "",
+              city: "",
+              canton: "",
+              zip: "",
+              country: "",
+  
+            };
+            createUser(newUser);
+            }
+            else {
+              throw new Error("Email is null");
+            }
+            console.log(navigation.getState().routes);
+          navigation.navigate("TenantForm", { userId: user.uid, email });
+          console.log(navigation.getState().routes);
+
+          
         }
       } else {
         console.log("Sign up failed");

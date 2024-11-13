@@ -9,9 +9,20 @@ import { RootStackParamList} from '@/types/types';
 import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
+import { createTenant, createUser } from '@/firebase/firestore/firestore';
+import { User, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
+import { TenantFormScreen } from '../tenant/';
+
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
 
 export default function SignUpScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation= useNavigation<NavigationProp<RootStackParamList>>();
   const [userType, setUserType] = useState(UserType.TENANT);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,10 +62,55 @@ export default function SignUpScreen() {
         console.log("User signed up:", user);
 
         if (userType === UserType.LANDLORD) {
-          navigation.navigate("Home");
-        } else {
-          // If Tenant, proceed to CodeEntryScreen without creating a user
-          navigation.navigate("CodeEntry", { userId: user.uid, email });
+
+          if (user.providerData[0].email != null) {
+          const newUser: User = {
+            uid: user.uid,
+            type: "landlord",
+            name: "",
+            email: user.providerData[0].email,
+            phone: "",
+            street: "",
+            number: "",
+            city: "",
+            canton: "",
+            zip: "",
+            country: "",
+
+          };
+          createUser(newUser);
+          }
+          else {
+            throw new Error("Email is null");
+          }
+          navigation.navigate("LandlordForm", { userId: user.uid, email });
+        } else if (userType === UserType.TENANT) {
+            console.log("User signed up:", user);
+            if (user.providerData[0].email != null) {
+            const newUser: User = {
+              uid: user.uid,
+              type: "tenant",
+              name: "",
+              email: user.providerData[0].email,
+              phone: "",
+              street: "",
+              number: "",
+              city: "",
+              canton: "",
+              zip: "",
+              country: "",
+  
+            };
+            createUser(newUser);
+            }
+            else {
+              throw new Error("Email is null");
+            }
+            console.log(navigation.getState().routes);
+          navigation.navigate("TenantForm", { userId: user.uid, email });
+          console.log(navigation.getState().routes);
+
+          
         }
       } else {
         console.log("Sign up failed");

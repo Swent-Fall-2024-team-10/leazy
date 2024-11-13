@@ -409,6 +409,71 @@ export async function deleteLaundryMachine(
   await deleteDoc(docRef);
 }
 
+/**
+ * Adds a new landlord to Firestore, creating a user profile and a landlord profile.
+ * @param name - Full name of the landlord.
+ * @param email - Email address of the landlord.
+ * @param phone - Phone number of the landlord.
+ * @param street - Street address of the landlord.
+ * @param number - Building or unit number.
+ * @param city - City of residence.
+ * @param canton - Province/State.
+ * @param zip - Postal/ZIP code.
+ * @param country - Country.
+ */
+export async function add_new_landlord(
+  name: string,
+  email: string,
+  phone: string,
+  street: string,
+  number: string,
+  city: string,
+  canton: string,
+  zip: string,
+  country: string
+) {
+  try {
+    // Validate the current user email matches
+    if (email !== auth.currentUser?.email) {
+      throw new Error("Use the same email as the one you used to sign up.");
+    }
+
+    console.log("Current user id:", auth.currentUser.uid);
+    const userObj = await getUser(auth.currentUser.uid);
+    if (!userObj) {
+      throw new Error("User doesn't exist.");
+    }
+
+    const { user, userUID } = userObj;
+
+    user.email = email;
+    user.name = name;
+    user.phone = phone;
+    user.street = street;
+    user.number = number;
+    user.city = city;
+    user.canton = canton;
+    user.zip = zip;
+    user.country = country;
+
+    updateUser(userUID, user);
+
+    // Step 2: Create a landlord document with the same userId
+    const landlordDocRef = doc(db, "landlords", userUID);
+    const newLandlord: Landlord = {
+      userId: userUID,
+      residenceIds: [], // Initialize with no residence IDs
+    };
+
+    await setDoc(landlordDocRef, newLandlord); // Correct Firestore document creation
+
+    console.log("Landlord profile created successfully.");
+  } catch (error) {
+    console.error("Error in add_new_landlord:", error);
+    throw new Error("Failed to add new landlord.");
+  }
+}
+
 export async function add_new_tenant(
   tenantCodeId: string,
   name: string,
@@ -422,6 +487,10 @@ export async function add_new_tenant(
   country: string
 ) {
   try {
+    if (email !== auth.currentUser?.email) {
+      throw new Error("Use the same email as the one you used to sign up.");
+    }
+
     const tenantCodesRef = doc(db, "tenantCodes", tenantCodeId);
     const tenantCodeDoc = await getDoc(tenantCodesRef);
     const tenantCodeData = tenantCodeDoc.data();
@@ -437,28 +506,27 @@ export async function add_new_tenant(
     const apartmentId = tenantCodeData.apartmentId;
     const residenceId = tenantCodeData.residenceId;
 
-    // create a new user
-    if (!auth.currentUser) {
-      throw new Error("User not authenticated.");
+    const userObj = await getUser(auth.currentUser.uid);
+    if (!userObj) {
+      throw new Error("User not found.");
     }
+    const { user, userUID } = userObj;
 
-    const newUser: User = {
-      uid: auth.currentUser?.uid,
-      type: "tenant",
-      name: name,
-      email: email,
-      phone: phone,
-      street: street,
-      number: number,
-      city: city,
-      canton: canton,
-      zip: zip,
-      country: country,
-    };
-    const userId = await createUser(newUser);
+    user.email = email;
+    user.name = name;
+    user.phone = phone;
+    user.street = street;
+    user.number = number;
+    user.city = city;
+    user.canton = canton;
+    user.zip = zip;
+    user.country = country;
+
+    //update user with the new data
+    await updateUser(userUID, user);
 
     const newTenant: Tenant = {
-      userId: userId,
+      userId: userUID,
       maintenanceRequests: [],
       apartmentId: apartmentId,
       residenceId: residenceId,
@@ -475,7 +543,7 @@ export async function add_new_tenant(
       throw new Error(`Residence with ID ${residenceId} not found.`);
     }
     const residenceRef = doc(db, "residences", matchingResidenceDoc.id);
-    await updateDoc(residenceRef, { tenantIds: arrayUnion(userId) });
+    await updateDoc(residenceRef, { tenantIds: arrayUnion(userUID) });
 
     const apartmentsRef = collection(db, "apartments");
     const apartmentsSnapshot = await getDocs(apartmentsRef);
@@ -487,9 +555,9 @@ export async function add_new_tenant(
       throw new Error(`Apartment with ID ${apartmentId} not found.`);
     }
     const apartmentRef = doc(db, "apartments", matchingApartmentDoc.id);
-    await updateDoc(apartmentRef, { tenants: arrayUnion(userId) });
+    await updateDoc(apartmentRef, { tenants: arrayUnion(userUID) });
   } catch (error) {
-    console.error("Error in add_new_tenant:", error);
+    throw error;
   }
 }
 

@@ -33,6 +33,7 @@ import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
 import CreateNewCode from "./screens/landlord/CreateNewCode";
 import WashingMachineScreen from "./screens/laundry_machines/WashingMachineScreen";
 import ManageMachinesScreen from "./screens/laundry_machines/ManageMachinesScreen";
+import LandlordFormScreen from "./screens/landlord/LandlordFormScreen";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -128,6 +129,11 @@ const RootNavigator = () => {
       <Stack.Screen
         name="TenantForm"
         component={TenantFormScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LandlordForm"
+        component={LandlordFormScreen} // Ensure LandlordFormScreen is imported
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

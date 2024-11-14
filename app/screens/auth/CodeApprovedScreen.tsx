@@ -14,12 +14,12 @@ import SubmitButton from "@/app/components/buttons/SubmitButton";
 export default function CodeApprovedScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
-  const { tenantCodeId } = route.params as { tenantCodeId: string };
+  const { email, userId } = route.params as { email: string, userId: string };
 
   const address = "18 Chemin de Renens, 1004 Lausanne";
   const onNext = () => {
     console.log("Next button pressed");
-    navigation.navigate("TenantForm", { tenantCodeId });
+    navigation.navigate("TenantForm", { email, userId });
   };
 
   return (

@@ -10,7 +10,8 @@ export type RootStackParamList = {
     email: string;
   };
   CodeApproved: {
-    tenantCodeId: string;
+    userId: string;
+    email: string;
   };
   TenantForm: {
     userId: string;

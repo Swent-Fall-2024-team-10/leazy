@@ -80,8 +80,8 @@ describe("CodeEntryScreen", () => {
   });
 
   it("navigates to CodeApproved screen on successful code validation", async () => {
-    const mockTenantCodeId = "valid-tenant-code-id";
-    (validateTenantCode as jest.Mock).mockResolvedValue(mockTenantCodeId);
+    // Mock validateTenantCode to return a non-null value
+    (validateTenantCode as jest.Mock).mockResolvedValue("valid-tenant-code-id");
 
     const { getByTestId } = render(
       <TestWrapper>
@@ -92,13 +92,18 @@ describe("CodeEntryScreen", () => {
     const input = getByTestId("code-input");
     const submitButton = getByTestId("submit-code-button");
 
+    // Simulate user input and button press
     fireEvent.changeText(input, "VALID123");
     fireEvent.press(submitButton);
 
     await waitFor(() => {
+      // Ensure validateTenantCode was called with the correct code
       expect(validateTenantCode).toHaveBeenCalledWith("VALID123");
+
+      // Expect navigation to "CodeApproved" with email and userId
       expect(mockNavigate).toHaveBeenCalledWith("CodeApproved", {
-        tenantCodeId: mockTenantCodeId,
+        email: "test@example.com",
+        userId: "test-user-id",
       });
     });
   });
@@ -133,7 +138,6 @@ describe("CodeEntryScreen", () => {
   });
 
   it("handles Firebase validation error correctly", async () => {
-
     const mockAlert = jest.spyOn(Alert, "alert").mockImplementation();
 
     (validateTenantCode as jest.Mock).mockRejectedValue(
@@ -157,7 +161,6 @@ describe("CodeEntryScreen", () => {
         "There was an error adding the tenant. Please try again."
       );
     });
-
 
     mockAlert.mockRestore();
   });

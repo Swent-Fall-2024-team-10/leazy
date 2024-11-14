@@ -40,7 +40,7 @@ export default function CodeEntryScreen() {
         setErrors({ code: "Invalid code" });
         throw new Error("Invalid code");
       }
-      navigation.navigate("CodeApproved", { tenantCodeId }); // Navigate to the next screen and pass the code
+      navigation.navigate("CodeApproved", { email, userId }); // Navigate to the next screen and pass the code
     } catch (error) {
       Alert.alert("There was an error adding the tenant. Please try again.");
     }

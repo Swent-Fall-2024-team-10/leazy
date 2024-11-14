@@ -137,7 +137,7 @@ export async function updateLandlord(
   if (!landlord.userId || !landlord.residenceIds) {
     throw new Error("Invalid landlord data");
   }
-  
+
   const docRef = doc(db, "landlords", userId);
   await updateDoc(docRef, landlord);
 }

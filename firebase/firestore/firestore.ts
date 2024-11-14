@@ -390,6 +390,10 @@ export async function getLaundryMachine(
   residenceId: string,
   machineId: string
 ): Promise<LaundryMachine | null> {
+  if (!residenceId || !machineId) {
+    throw new Error("Invalid laundry machine data");
+  }
+
   const docRef = doc(
     db,
     `residences/${residenceId}/laundryMachines`,
@@ -410,6 +414,14 @@ export async function updateLaundryMachine(
   machineId: string,
   machine: Partial<LaundryMachine>
 ) {
+  if (!residenceId || !machineId) {
+    throw new Error("Invalid laundry machine data");
+  }
+
+  if (machine.laundryMachineId !== machineId) {
+    throw new Error("Machine ID mismatch");
+  }
+
   const docRef = doc(
     db,
     `residences/${residenceId}/laundryMachines`,
@@ -705,6 +717,10 @@ export async function deleteUsedTenantCodes(): Promise<number> {
  * @returns An array of laundry machine objects.
  */
 export async function getAllLaundryMachines(residenceId: string) {
+  if (!residenceId || typeof residenceId !== "string") {
+    throw new Error("Invalid residence ID");
+  }
+
   const querySnapshot = await getDocs(
     collection(db, `residences/${residenceId}/laundryMachines`)
   );

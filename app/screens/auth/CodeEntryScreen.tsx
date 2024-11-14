@@ -21,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "../../components/forms/text_input";
 import SubmitButton from "../../components/buttons/SubmitButton";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { Alert } from "react-native"; // Ensure Alert is imported
+import { Alert } from "react-native"; 
 
 export default function CodeEntryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

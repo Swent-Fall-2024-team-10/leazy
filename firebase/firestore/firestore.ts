@@ -6,12 +6,12 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
-  arrayUnion,
   collection,
   addDoc,
   query,
   where,
   getDocs,
+  arrayUnion,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.

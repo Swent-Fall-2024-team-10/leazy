@@ -695,7 +695,7 @@ export async function deleteUsedTenantCodes(): Promise<number> {
  * @param residenceId - The unique identifier of the residence.
  * @returns A Firestore query for the washing machines collection.
  */
-export function getWashingMachinesQuery(residenceId: string) {
+export function getLaundryMachinesQuery(residenceId: string) {
   return query(
     collection(db, `residences/${residenceId}/laundryMachines`)
   );

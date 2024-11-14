@@ -1,4 +1,10 @@
-import { TUser, Landlord, Tenant } from "../../../types/types";
+import {
+  TUser,
+  Landlord,
+  Tenant,
+  Residence,
+  Apartment,
+} from "../../../types/types";
 import {
   createUser,
   getUser,
@@ -15,6 +21,24 @@ import {
   getResidence,
   updateResidence,
   deleteResidence,
+  createApartment,
+  getApartment,
+  updateApartment,
+  deleteApartment,
+  createMaintenanceRequest,
+  getMaintenanceRequest,
+  updateMaintenanceRequest,
+  deleteMaintenanceRequest,
+  createLaundryMachine,
+  getLaundryMachine,
+  updateLaundryMachine,
+  deleteLaundryMachine,
+  add_new_landlord,
+  add_new_tenant,
+  generate_unique_code,
+  validateTenantCode,
+  getAllLaundryMachines,
+  deleteUsedTenantCodes,
 } from "../../../firebase/firestore/firestore";
 
 const {
@@ -832,6 +856,212 @@ describe("Firestore Functions", () => {
       await expect(deleteResidence("")).rejects.toThrow(
         "Firestore delete error"
       );
+    });
+  });
+
+  describe("createApartment", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (doc as jest.Mock).mockReturnValue("mockDocRef");
+      (setDoc as jest.Mock).mockResolvedValue(undefined);
+    });
+
+    const mockApartment: Apartment = {
+      apartmentId: "apt123",
+      residenceId: "res456",
+      tenants: [],
+      maintenanceRequests: [],
+    };
+
+    it("should successfully create an apartment document", async () => {
+      await createApartment(mockApartment);
+
+      expect(doc).toHaveBeenCalledWith(
+        "mockedFirestore",
+        "apartments",
+        mockApartment.apartmentId
+      );
+      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockApartment);
+    });
+
+    it("should throw an error if setDoc fails", async () => {
+      const mockError = new Error("Failed to create apartment");
+      (setDoc as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(createApartment(mockApartment)).rejects.toThrow(
+        "Failed to create apartment"
+      );
+
+      expect(doc).toHaveBeenCalledWith(
+        "mockedFirestore",
+        "apartments",
+        mockApartment.apartmentId
+      );
+      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockApartment);
+    });
+
+    it("should throw an error for invalid apartment data", async () => {
+      const invalidApartment = {
+        ...mockApartment,
+        apartmentId: "",
+      };
+
+      await expect(createApartment(invalidApartment)).rejects.toThrow();
+
+      const missingResidenceId: Apartment = {
+        apartmentId: "apt123",
+        residenceId: "",
+        tenants: [],
+        maintenanceRequests: [],
+      };
+
+      await expect(createApartment(missingResidenceId)).rejects.toThrow();
+    });
+  });
+
+  describe("getApartment", () => {
+    it("should return apartment data if the document exists", async () => {
+      const mockApartmentId = "apt123";
+      const mockApartmentData = {
+        apartmentId: "apt123",
+        residenceId: "res456",
+      };
+
+      (getDoc as jest.Mock).mockResolvedValue({
+        exists: () => true,
+        data: () => mockApartmentData,
+      });
+
+      const result = await getApartment(mockApartmentId);
+      expect(doc).toHaveBeenCalledWith(
+        "mockedFirestore",
+        "apartments",
+        mockApartmentId
+      );
+      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
+      expect(result).toEqual(mockApartmentData);
+    });
+
+    it("should throw an error for invalid apartmentId", async () => {
+      await expect(getApartment(null as unknown as string)).rejects.toThrow();
+      await expect(getApartment("")).rejects.toThrow();
+    });
+
+    it("should return null if the document does not exist", async () => {
+      const mockApartmentId = "nonexistent";
+      (getDoc as jest.Mock).mockResolvedValue({
+        exists: () => false,
+      });
+
+      const result = await getApartment(mockApartmentId);
+
+      expect(doc).toHaveBeenCalledWith(
+        "mockedFirestore",
+        "apartments",
+        mockApartmentId
+      );
+      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
+      expect(result).toBeNull();
+    });
+
+    it("should throw an error if getDoc fails", async () => {
+      const mockApartmentId = "apt123";
+      const mockError = new Error("Failed to get apartment");
+      (getDoc as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(getApartment(mockApartmentId)).rejects.toThrow(mockError);
+
+      expect(doc).toHaveBeenCalledWith(
+        "mockedFirestore",
+        "apartments",
+        mockApartmentId
+      );
+      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
+    });
+  });
+
+  describe("updateApartment", () => {
+    it("should throw an error for invalid apartmentId or Firestore failures", async () => {
+      const validApartmentData: Partial<Apartment> = {
+        apartmentId: "apt123",
+      };
+
+      await expect(
+        updateApartment(null as unknown as string, validApartmentData)
+      ).rejects.toThrow();
+      await expect(updateApartment("", validApartmentData)).rejects.toThrow();
+
+      const mockError = new Error("Firestore update error");
+      (doc as jest.Mock).mockReturnValue("mockDocRef");
+      (updateDoc as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(
+        updateApartment("apt123", validApartmentData)
+      ).rejects.toThrow(mockError);
+
+      expect(doc).toHaveBeenCalledWith(
+        "mockedFirestore",
+        "apartments",
+        "apt123"
+      );
+      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", validApartmentData);
+    });
+
+    it("should throw an error for invalid apartment data", async () => {
+      const mockApartmentId = "apt123";
+      const invalidApartmentData: Partial<Apartment> = {};
+      await expect(
+        updateApartment(mockApartmentId, invalidApartmentData)
+      ).rejects.toThrow();
+    });
+
+    it("should throw an error for missing apartmentId", async () => {
+      const validApartmentData: Partial<Apartment> = {
+        residenceId: "res456",
+      };
+      await expect(
+        updateApartment(null as unknown as string, validApartmentData)
+      ).rejects.toThrow();
+    });
+
+    it("should throw an error for empty string apartmentId", async () => {
+      const validApartmentData: Partial<Apartment> = {
+        residenceId: "res456",
+      };
+      await expect(updateApartment("", validApartmentData)).rejects.toThrow();
+    });
+
+    it("should successfully update an apartment document with the provided data", async () => {
+      (updateDoc as jest.Mock).mockResolvedValue(undefined);
+      await updateApartment("apt123", { residenceId: "res456" });
+      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", {
+        residenceId: "res456",
+      });
+    });
+
+    it("should throw an error if updateDoc fails", async () => {
+      const mockError = new Error("Firestore update error");
+      (updateDoc as jest.Mock).mockRejectedValue(mockError);
+    });
+  });
+
+  describe("deleteApartment", () => {
+    it("should successfully delete an apartment document", async () => {
+      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
+      await deleteApartment("apt123");
+    });
+
+    it("should throw an error if deleteDoc fails", async () => {
+      const mockError = new Error("Firestore delete error");
+      (deleteDoc as jest.Mock).mockRejectedValue(mockError);
+      await expect(deleteApartment("apt123")).rejects.toThrow(mockError);
+    });
+
+    it("should throw an error for invalid apartmentId", async () => {
+      await expect(
+        deleteApartment(null as unknown as string)
+      ).rejects.toThrow();
+      await expect(deleteApartment("")).rejects.toThrow();
     });
   });
 });

@@ -59,7 +59,7 @@ const LandlordFormScreen = () => {
         Alert.alert("Success", "Landlord profile created successfully!");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to create tenant profile.");
+      Alert.alert("Error", "Failed to create landlord profile.");
       console.error(error);
     }
   };

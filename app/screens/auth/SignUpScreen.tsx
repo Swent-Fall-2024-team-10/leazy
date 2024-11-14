@@ -63,7 +63,7 @@ export default function SignUpScreen() {
         if (userType === UserType.LANDLORD) {
 
           if (user.providerData[0].email != null) {
-          const newUser: TUser = {
+          const newUser: User = {
             uid: user.uid,
             type: "landlord",
             name: "",
@@ -86,7 +86,7 @@ export default function SignUpScreen() {
         } else if (userType === UserType.TENANT) {
             console.log("User signed up:", user);
             if (user.providerData[0].email != null) {
-            const newUser: TUser = {
+            const newUser: User = {
               uid: user.uid,
               type: "tenant",
               name: "",

@@ -16,7 +16,7 @@ import {
 
 // Import type definitions used throughout the functions.
 import {
-  TUser,
+  User,
   Landlord,
   Tenant,
   Residence,
@@ -33,7 +33,7 @@ import {
  * Creates a new user document in Firestore.
  * @param user - The user object to be added to the 'users' collection.
  */
-export async function createUser(user: TUser): Promise<string> {
+export async function createUser(user: User): Promise<string> {
   const usersCollectionRef = collection(db, "users");
   const docRef = await addDoc(usersCollectionRef, user);
   if (!docRef.id) {
@@ -49,14 +49,14 @@ export async function createUser(user: TUser): Promise<string> {
  */
 export async function getUser(
   uid: string
-): Promise<{ user: TUser; userUID: string } | null> {
+): Promise<{ user: User; userUID: string } | null> {
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("uid", "==", uid));
   const querySnapshot = await getDocs(q);
 
   if (!querySnapshot.empty) {
     const doc = querySnapshot.docs[0]; // Assume `uid` is unique, so take the first result
-    return { user: doc.data() as TUser, userUID: doc.id };
+    return { user: doc.data() as User, userUID: doc.id };
   } else {
     return null;
   }
@@ -67,7 +67,7 @@ export async function getUser(
  * @param uid - The unique identifier of the user to update.
  * @param user - The partial user data to update.
  */
-export async function updateUser(uid: string, user: Partial<TUser>) {
+export async function updateUser(uid: string, user: Partial<User>) {
   const docRef = doc(db, "users", uid);
   await updateDoc(docRef, user);
 }
@@ -248,6 +248,9 @@ export async function deleteResidence(residenceId: string) {
  * @param apartment - The apartment object to be added to the 'apartments' collection.
  */
 export async function createApartment(apartment: Apartment) {
+  if (!apartment.apartmentId || !apartment.residenceId) {
+    throw new Error("Invalid apartment data");
+  }
   const docRef = doc(db, "apartments", apartment.apartmentId);
   await setDoc(docRef, apartment);
 }
@@ -260,6 +263,9 @@ export async function createApartment(apartment: Apartment) {
 export async function getApartment(
   apartmentId: string
 ): Promise<Apartment | null> {
+  if (!apartmentId || typeof apartmentId !== "string") {
+    throw new Error("Invalid apartmentId");
+  }
   const docRef = doc(db, "apartments", apartmentId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Apartment) : null;

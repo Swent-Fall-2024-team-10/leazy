@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, StyleSheet, StyleProp, ViewStyle } from "react-native";
-import { appStyles, Color } from "@/styles/styles";
+import { appStyles, Color } from "../../../styles/styles";
 
 interface InputFieldProps {
   label?: string;

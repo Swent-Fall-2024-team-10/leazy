@@ -72,7 +72,7 @@ export default function ReportScreen() {
     setLoading(true); // Set loading to true when starting the submission
 
 
-    const tenantId = await getTenant("7OUEUmR82bCxt5Xgbli7");//auth.currentUser?.uid || '');
+    const tenantId = await getTenant(auth.currentUser?.uid || '');
     console.log('uri list for the pictures : ' , pictureList)
       try {
         if (!tenantId) {

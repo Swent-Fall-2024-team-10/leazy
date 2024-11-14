@@ -1,5 +1,5 @@
 // Import Firestore database instance and necessary Firestore functions.
-import { db, auth } from "@/firebase/firebase";
+import { db, auth } from "../firebase";
 import {
   setDoc,
   doc,
@@ -25,7 +25,6 @@ import {
   MaintenanceRequest,
   TenantCode,
 } from "../../types/types";
-import { setLogLevel } from "firebase/firestore";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
@@ -37,6 +36,9 @@ import { setLogLevel } from "firebase/firestore";
 export async function createUser(user: User): Promise<string> {
   const usersCollectionRef = collection(db, "users");
   const docRef = await addDoc(usersCollectionRef, user);
+  if (!docRef.id) {
+    throw new Error("Failed to add document.");
+  }
   return docRef.id;
 }
 
@@ -75,6 +77,9 @@ export async function updateUser(uid: string, user: Partial<User>) {
  * @param uid - The unique identifier of the user to delete.
  */
 export async function deleteUser(uid: string) {
+  if (!uid || typeof uid !== "string") {
+    throw new Error("Invalid UID");
+  }
   const docRef = doc(db, "users", uid);
   await deleteDoc(docRef);
 }
@@ -84,8 +89,10 @@ export async function deleteUser(uid: string) {
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
 export async function createLandlord(landlord: Landlord): Promise<string> {
-  const usersRef = collection(db, "users");
-  const docRef = doc(db, "landlords");
+  if (!landlord.userId) {
+    throw new Error("Invalid landlord data");
+  }
+  const docRef = doc(db, "landlords", landlord.userId);
   await setDoc(docRef, landlord);
   return landlord.userId;
 }
@@ -98,6 +105,10 @@ export async function createLandlord(landlord: Landlord): Promise<string> {
 export async function getLandlord(
   userId: string
 ): Promise<{ landlord: Landlord; landlordUID: string } | null> {
+  if (!userId || typeof userId !== "string") {
+    throw new Error("Invalid userId");
+  }
+
   const docRef = collection(db, "landlords");
   const q = query(docRef, where("userId", "==", userId));
   const querySnapshot = await getDocs(q);
@@ -118,6 +129,15 @@ export async function updateLandlord(
   userId: string,
   landlord: Partial<Landlord>
 ) {
+  if (!userId || typeof userId !== "string") {
+    throw new Error("Invalid userId");
+  }
+
+  //test that a landlord has a userId and residenceIds
+  if (!landlord.userId || !landlord.residenceIds) {
+    throw new Error("Invalid landlord data");
+  }
+  
   const docRef = doc(db, "landlords", userId);
   await updateDoc(docRef, landlord);
 }

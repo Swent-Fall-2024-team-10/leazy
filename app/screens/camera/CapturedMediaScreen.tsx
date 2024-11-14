@@ -4,17 +4,21 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
-import { storage } from '@/firebase/firebase'; // Import storage from your Firebase config
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Color, IconDimension } from '@/styles/styles';
+import { cacheFile, picFileUri } from '../../utils/cache';
+import { Color, IconDimension } from '../../../styles/styles';
+
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;
 
 export default function CapturedMediaScreen() {
+
   const route = useRoute<CapturedMediaScreenRouteProp>();
   const navigation = useNavigation();
   const { uri, type } = route.params;
@@ -57,18 +61,17 @@ const handleUpload = useCallback(async () => {
     const response = await fetch(resizedImage.uri);
     const blob = await response.blob();
     
-    // Upload resized image as before
-    const fileName = `${type}-${Date.now()}.jpg`;
-    const storageRef = ref(storage, `uploads/${fileName}`);
-    await uploadBytes(storageRef, blob);
-
-    const downloadURL = await getDownloadURL(storageRef);
-    console.log(`Media uploaded to Firebase: ${downloadURL}`);
-    addPicture(downloadURL);
+    // Store image in cache
+    
+    
+    const fileUri = picFileUri(Date.now().toString());
+    await cacheFile(blob, fileUri);
+    console.log(`Image saved to cache: ${fileUri}`);
+    addPicture(fileUri);
 
     navigation.goBack();
     
-    Alert.alert('Upload', 'Media uploaded successfully!');
+    Alert.alert('Upload', 'Photo added to maintenance request!');
   } catch (error) {
     console.error('Error uploading media:', error);
     Alert.alert('Error', 'Failed to upload media to Firebase');

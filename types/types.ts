@@ -39,9 +39,6 @@ export type ReportStackParamList = {
   };
 };
 
-declare type TTenantData = {};
-declare type TLandlordData = {};
-
 // Define types for firestore
 export type User = {
   uid: string; // uid of the user for authentication

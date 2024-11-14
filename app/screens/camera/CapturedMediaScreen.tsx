@@ -9,7 +9,7 @@ import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { cacheImage } from '../../utils/pictureCache';
+import { cacheFile, picFileUri } from '../../utils/cache';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -60,7 +60,10 @@ const handleUpload = useCallback(async () => {
     const blob = await response.blob();
     
     // Store image in cache
-    const fileUri = await cacheImage(blob, Date.now().toString());
+    
+    
+    const fileUri = picFileUri(Date.now().toString());
+    await cacheFile(blob, fileUri);
     console.log(`Image saved to cache: ${fileUri}`);
     addPicture(fileUri);
 

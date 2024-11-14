@@ -8,20 +8,20 @@ import {
   Switch,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import Header from "@/app/components/Header";
+import Header from "../../components/Header";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { ReportStackParamList, MaintenanceRequest } from "@/types/types"; // Assuming this also includes navigation types
+import { ReportStackParamList, MaintenanceRequest } from "../../../types/types"; // Assuming this also includes navigation types
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
-} from "@/firebase/firestore/firestore"; // Firestore functions
+} from "../../../firebase/firestore/firestore"; // Firestore functions
 import { getAuth } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
 import {
   getIssueStatusColor,
   getIssueStatusText,
-} from "@/app/utils/StatusHelper";
-import { appStyles, Color, IconDimension } from "@/styles/styles";
+} from "../../utils/StatusHelper";
+import { appStyles, Color, IconDimension } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 
 interface IssueItemProps {

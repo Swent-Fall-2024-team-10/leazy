@@ -142,8 +142,7 @@ const LandlordFormScreen = () => {
         <Spacer height={30} />
 
         <SubmitButton
-          disabled={
-            !firstName ||
+          disabled={!firstName ||
             !lastName ||
             !email ||
             !phone ||
@@ -152,14 +151,14 @@ const LandlordFormScreen = () => {
             !city ||
             !canton ||
             !number ||
-            !country
-          }
+            !country}
           onPress={handleSubmit}
           width={200}
           height={55}
           label="Next"
-          style={styles.submitButtonCustom}
-        />
+          style={styles.submitButtonCustom} 
+          testID={""} 
+          textStyle={undefined}/>
       </ScrollView>
     </SafeAreaView>
   );

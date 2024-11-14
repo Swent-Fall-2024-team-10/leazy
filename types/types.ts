@@ -38,7 +38,7 @@ export type ReportStackParamList = {
 };
 
 // Define types for firestore
-export type User = {
+export type TUser = {
   uid: string; // uid of the user for authentication
   type: "tenant" | "landlord";
   name: string;

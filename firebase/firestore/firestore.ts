@@ -258,6 +258,9 @@ export async function deleteResidence(residenceId: string) {
  * @param apartment - The apartment object to be added to the 'apartments' collection.
  */
 export async function createApartment(apartment: Apartment) {
+  if (!apartment.apartmentId || !apartment.residenceId) {
+    throw new Error("Invalid apartment data");
+  }
   const docRef = doc(db, "apartments", apartment.apartmentId);
   await setDoc(docRef, apartment);
 }
@@ -270,6 +273,9 @@ export async function createApartment(apartment: Apartment) {
 export async function getApartment(
   apartmentId: string
 ): Promise<Apartment | null> {
+  if (!apartmentId || typeof apartmentId !== "string") {
+    throw new Error("Invalid apartmentId");
+  }
   const docRef = doc(db, "apartments", apartmentId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Apartment) : null;

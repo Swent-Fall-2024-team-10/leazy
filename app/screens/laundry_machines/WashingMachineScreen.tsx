@@ -12,7 +12,7 @@ import { LaundryMachine } from "@/types/types";
 import {
   createMachineNotification,
   getLaundryMachine,
-  getWashingMachinesQuery,
+  getLaundryMachinesQuery,
   updateLaundryMachine,
 } from "@/firebase/firestore/firestore";
 import { getAuth } from "firebase/auth";
@@ -120,7 +120,7 @@ const WashingMachineScreen = () => {
     setRefreshing(true);
     try {
       // Get the Firestore query from the ViewModel
-      const query = getWashingMachinesQuery(residenceId);
+      const query = getLaundryMachinesQuery(residenceId);
 
       //runs every time the query changes
       //no need to call every time fetchWashingMachines
@@ -185,6 +185,23 @@ const WashingMachineScreen = () => {
       }
     });
   }, [machines]); // Only run when machines changes
+
+  // Function to reset the machine's status to "Available" in Firestore
+  const handleResetMachine = async (laundryMachineId: string) => {
+    await updateLaundryMachine(residenceId, laundryMachineId, {
+      isAvailable: true,
+      occupiedBy: "none",
+    });
+
+    // Update local state for UI
+    setRemainingTimes((prev) => ({
+      ...prev,
+      [laundryMachineId]: "Available",
+    }));
+
+    // Clean up the timer if it exists
+    cleanupTimer(laundryMachineId);
+  };
 
   const handleSetTimer = (pickedDuration: Date) => {
     if (selectedMachineId) {
@@ -288,6 +305,30 @@ const WashingMachineScreen = () => {
                       "Calculating..."}
                   </Text>
                 )}
+
+                {/* Reset button, shown only when cycle is complete */}
+                {!machine.isAvailable &&
+                  remainingTimes[machine.laundryMachineId] === "Cycle completed" &&
+                  machine.occupiedBy === userId && ( // Only show if the user started the cycle
+                    <SubmitButton
+                    width={200}
+                    height={40}
+                    label="Unlock"
+                    onPress={() => handleResetMachine(machine.laundryMachineId)}
+                    disabled={false}                    />
+                  )}
+
+                  {/* Cancel Timer button, shown only when the timer is active */}
+                {!machine.isAvailable &&
+                  machine.occupiedBy === userId && // Only show if the user started the timer
+                  remainingTimes[machine.laundryMachineId] !== "Cycle completed" && (
+                    <SubmitButton
+                    width={200}
+                    height={40}
+                    label="Cancel Timer"
+                    onPress={() => handleResetMachine(machine.laundryMachineId)} 
+                    disabled={false}                    />
+                  )}
               </View>
             </View>
           </View>

@@ -19,7 +19,8 @@ const RootNavigator = () => {
                 )
             } else {
                 return(
-                    <Stack.Navigator initialRouteName="CodeEntry">
+                    <Stack.Navigator 
+                    initialRouteName="CodeEntry">
                         <Stack.Screen
                             name="CodeEntry"
                             component={CodeEntryScreen}

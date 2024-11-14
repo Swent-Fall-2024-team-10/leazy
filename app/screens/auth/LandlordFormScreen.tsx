@@ -55,11 +55,11 @@ const LandlordFormScreen = () => {
           userId: user.uid,
           residenceIds: [],
         };
-        const tenantUID = await createLandlord(landlordData);
+        await createLandlord(landlordData);
         Alert.alert("Success", "Landlord profile created successfully!");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to create tenant profile.");
+      Alert.alert("Error", "Failed to create landlord profile.");
       console.error(error);
     }
   };

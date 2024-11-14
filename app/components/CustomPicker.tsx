@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { UserType } from '../../firebase/auth/auth';
-import { Color } from '@/styles/styles';
+import { Color } from '../../styles/styles';
 
 export default function CustomPicker({ selectedValue, onValueChange, style, testID }: { testID:string, selectedValue: UserType, onValueChange: (itemValue: UserType) => void, style?: object }) {
     return (

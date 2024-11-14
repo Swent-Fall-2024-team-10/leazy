@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
-import { MaintenanceRequest } from '@/types/types';
-import { getIssueStatusColor, getIssueStatusText } from '@/app/utils/StatusHelper';
-import { defaultButtonRadius } from '@/styles/styles';
+import { MaintenanceRequest } from '../../types/types';
+import { getIssueStatusColor, getIssueStatusText } from '../utils/StatusHelper';
+import { defaultButtonRadius } from '../../styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 interface StatusBadgeProps {

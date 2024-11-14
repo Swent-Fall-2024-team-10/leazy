@@ -5,16 +5,15 @@ import {
   NavigationProp,
   useRoute,
 } from "@react-navigation/native";
-import { RootStackParamList } from "@/types/types";
+import { RootStackParamList } from "../../../types/types";
 import {
   validateTenantCode,
   add_new_tenant,
-} from "@/firebase/firestore/firestore";
-import { appStyles, ButtonDimensions, Color, stylesForHeaderScreens, stylesForNonHeaderScreens } from "@/styles/styles";
+} from "../../../firebase/firestore/firestore";
+import { appStyles, ButtonDimensions, Color, stylesForHeaderScreens, stylesForNonHeaderScreens } from "../../../styles/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputField from "@/app/components/forms/text_input";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import InputField from "../../components/forms/text_input";
+import SubmitButton from "../../components/buttons/SubmitButton";
 
 export default function CodeEntryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import CustomTextField from '@/app/components/CustomTextField';
-import { emailAndPasswordLogIn } from '@/firebase/auth/auth';
+import CustomTextField from '../../components/CustomTextField';
+import { emailAndPasswordLogIn } from '../../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '@/types/types';  // Import or define your navigation types
-import CustomPopUp from '@/app/components/CustomPopUp';
-import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, ButtonDimensions } from '@/styles/styles';
+import { RootStackParamList } from '../../../types/types';  // Import or define your navigation types
+import CustomPopUp from '../../components/CustomPopUp';
+import { GoogleSignInButton } from '../../components/GoogleSignInButton';
+import SubmitButton from '../../components/buttons/SubmitButton';
+import { appStyles, ButtonDimensions } from '../../../styles/styles';
 
 
 interface FormErrors {

@@ -25,7 +25,7 @@ import {
   getMaintenanceRequest,
   updateMaintenanceRequest,
 } from "../../../firebase/firestore/firestore";
-import Spacer from "@/app/components/Spacer";
+import Spacer from "../../components/Spacer";
 import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";

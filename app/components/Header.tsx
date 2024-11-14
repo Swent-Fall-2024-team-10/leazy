@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { RootStackParamList } from '../../types/types';
 import {Menu, User } from 'react-native-feather';
-import { Color } from '@/styles/styles';
+import { Color } from '../../styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 // Get screen width and height

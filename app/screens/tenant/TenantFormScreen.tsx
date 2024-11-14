@@ -9,18 +9,16 @@ import {
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import { Button } from "react-native-elements";
-import { appStyles, ButtonDimensions, Color } from "@/styles/styles";
-import { add_new_tenant } from "@/firebase/firestore/firestore";
+import { appStyles, ButtonDimensions, Color } from "../../../styles/styles";
+import { add_new_tenant } from "../../../firebase/firestore/firestore";
 import {
   useNavigation,
   useRoute,
   NavigationProp,
 } from "@react-navigation/native";
 import { RootStackParamList } from "../../../types/types";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import InputField from "@/app/components/forms/text_input";
-import Spacer from "@/app/components/Spacer";
+import SubmitButton from "../../components/buttons/SubmitButton";
+import InputField from "../../components/forms/text_input";
 
 const TenantProfileScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

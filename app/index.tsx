@@ -14,8 +14,7 @@ import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PictureProvider } from "./context/PictureContext";
-import { Color } from "@/styles/styles";
-import { appStyles } from "@/styles/styles";
+import { Color, appStyles } from "../styles/styles";
 import {
   ReportScreen,
   ListIssueScreen,

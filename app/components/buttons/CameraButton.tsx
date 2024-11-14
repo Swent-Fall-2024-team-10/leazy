@@ -1,7 +1,7 @@
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
-import { Color, FontSizes } from "@/styles/styles";
+import { Color, FontSizes } from "../../../styles/styles";
 //import DropShadow from "react-native-drop-shadow";
 
 interface CloseProps {

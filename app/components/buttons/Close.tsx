@@ -1,7 +1,7 @@
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
-import { Color } from "@/styles/styles";
+import { Color } from "../../../styles/styles";
 
 interface CloseProps {
     onPress: () => void;

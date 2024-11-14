@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Header from '../../components/Header';
-import { appStyles } from '@/styles/styles';
+import { appStyles } from '../../../styles/styles';
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function MyRentScreen() {

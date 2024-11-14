@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal } from 'react-native';
-import CustomTextField from '@/app/components/CustomTextField';
-import CustomPicker from '@/app/components/CustomPicker';
-import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
+import CustomTextField from '../../../app/components/CustomTextField';
+import CustomPicker from '../../../app/components/CustomPicker';
+import { emailAndPasswordSignIn, UserType } from '../../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import CustomPopUp from '@/app/components/CustomPopUp';
-import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
+import CustomPopUp from '../../../app/components/CustomPopUp';
+import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '../../../styles/styles';
 import { Ionicons } from '@expo/vector-icons';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { User, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
+import SubmitButton from '../../../app/components/buttons/SubmitButton';
+import { createTenant, createUser } from '../../../firebase/firestore/firestore';
+import { User, Tenant, RootStackParamList, AuthStackParamList} from '../../../types/types';
 import { TenantFormScreen } from '../tenant/';
 
 interface FormErrors {

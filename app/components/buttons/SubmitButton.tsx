@@ -1,7 +1,8 @@
 import React from "react";
 import { StyleSheet, View, Image } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "../../../styles/styles";
+import { Color, FontSizes} from "../../../styles/styles";
+
 
 interface SubmitButtonProps {
   disabled: boolean;

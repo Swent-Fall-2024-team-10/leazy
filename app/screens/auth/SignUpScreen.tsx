@@ -10,7 +10,7 @@ import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { User, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
+import { TUser, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
 import { TenantFormScreen } from '../tenant/';
 
 interface FormErrors {
@@ -64,7 +64,7 @@ export default function SignUpScreen() {
         if (userType === UserType.LANDLORD) {
 
           if (user.providerData[0].email != null) {
-          const newUser: User = {
+          const newUser: TUser = {
             uid: user.uid,
             type: "landlord",
             name: "",
@@ -87,7 +87,7 @@ export default function SignUpScreen() {
         } else if (userType === UserType.TENANT) {
             console.log("User signed up:", user);
             if (user.providerData[0].email != null) {
-            const newUser: User = {
+            const newUser: TUser = {
               uid: user.uid,
               type: "tenant",
               name: "",

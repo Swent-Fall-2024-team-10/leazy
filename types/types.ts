@@ -42,7 +42,7 @@ declare type TTenantData = {};
 declare type TLandlordData = {};
 
 // Define types for firestore
-export type User = {
+export type TUser = {
   uid: string; // uid of the user for authentication
   type: "tenant" | "landlord";
   name: string;

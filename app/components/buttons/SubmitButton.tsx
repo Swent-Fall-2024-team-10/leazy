@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View, Image } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes} from "@/styles/styles";
+import { Color, FontSizes } from "../../../styles/styles";
 
 interface SubmitButtonProps {
   disabled: boolean;
@@ -9,10 +9,10 @@ interface SubmitButtonProps {
   width: number;
   height: number;
   label: string;
-  testID: string;
-  style: any;
-  textStyle: any;
+  style?: any; // Add an optional style prop
+  testID?: string;
   image?: any;
+  textStyle?: any;
 }
 
 export default function SubmitButton({ disabled, onPress, width, height, label, testID, style, textStyle, image} : SubmitButtonProps) {

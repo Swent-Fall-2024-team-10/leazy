@@ -6,6 +6,6 @@ module.exports = {
       '^.+\\.(ts|tsx)$': 'ts-jest',
     },
     transformIgnorePatterns: [
-      'node_modules/(?!(firebase|@firebase)/)',
+      'node_modules/(?!(firebase|@firebase|react-native-elements)/)',
     ],
   };

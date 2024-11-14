@@ -5,12 +5,11 @@ import CustomPicker from '@/app/components/CustomPicker';
 import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
-import { RootStackParamList} from '@/types/types';
 import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { TUser, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
+import { User, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
 import { TenantFormScreen } from '../tenant/';
 
 interface FormErrors {

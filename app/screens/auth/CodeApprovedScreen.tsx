@@ -17,10 +17,6 @@ export default function CodeApprovedScreen() {
   const { tenantCodeId } = route.params as { tenantCodeId: string };
 
   const address = "18 Chemin de Renens, 1004 Lausanne";
-  const onNext = () => {
-    console.log("Next button pressed");
-    navigation.navigate("TenantForm", { tenantCodeId });
-  };
 
   return (
     <SafeAreaView style={appStyles.screenContainer}>

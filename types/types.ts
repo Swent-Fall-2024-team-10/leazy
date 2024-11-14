@@ -24,6 +24,14 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
+  TenantForm: {
+    email: string;
+    password: string;
+  };
+  LandlordForm: {
+    email: string;
+    password: string;
+  };
 };
 
 export type ReportStackParamList = {

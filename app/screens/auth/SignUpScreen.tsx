@@ -5,13 +5,11 @@ import CustomPicker from '@/app/components/CustomPicker';
 import { emailAndPasswordSignIn, UserType } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '@/app/components/CustomPopUp';
-import { RootStackParamList} from '@/types/types';
 import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '@/styles/styles';
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import { TUser, Tenant, RootStackParamList, AuthStackParamList} from '@/types/types';
-import { TenantFormScreen } from '../tenant/';
+import {AuthStackParamList} from '@/types/types';
 
 interface FormErrors {
   firstName?: string;
@@ -22,7 +20,7 @@ interface FormErrors {
 }
 
 export default function SignUpScreen() {
-  const navigation= useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation= useNavigation<NavigationProp<AuthStackParamList>>();
   const [userType, setUserType] = useState(UserType.TENANT);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,74 +55,11 @@ export default function SignUpScreen() {
       return;
     }
 
-    emailAndPasswordSignIn(email, password, userType).then((user) => {
-      if (user) {
-        console.log("User signed up:", user);
-
-        if (userType === UserType.LANDLORD) {
-
-          if (user.providerData[0].email != null) {
-          const newUser: TUser = {
-            uid: user.uid,
-            type: "landlord",
-            name: "",
-            email: user.providerData[0].email,
-            phone: "",
-            street: "",
-            number: "",
-            city: "",
-            canton: "",
-            zip: "",
-            country: "",
-
-          };
-          createUser(newUser);
-          }
-          else {
-            throw new Error("Email is null");
-          }
-          navigation.navigate("LandlordForm", { userId: user.uid, email });
-        } else if (userType === UserType.TENANT) {
-            console.log("User signed up:", user);
-            if (user.providerData[0].email != null) {
-            const newUser: TUser = {
-              uid: user.uid,
-              type: "tenant",
-              name: "",
-              email: user.providerData[0].email,
-              phone: "",
-              street: "",
-              number: "",
-              city: "",
-              canton: "",
-              zip: "",
-              country: "",
-  
-            };
-            createUser(newUser);
-            }
-            else {
-              throw new Error("Email is null");
-            }
-            console.log(navigation.getState().routes);
-          navigation.navigate("TenantForm", { userId: user.uid, email });
-          console.log(navigation.getState().routes);
-
-          
-        }
-      } else {
-        console.log("Sign up failed");
-        setPopup(true);
-      }
-    });
-  };
-
-
-  const handleGoogleSignUp = () => {
-    Alert.alert(
-      "Google Sign Up",
-      "Google Sign Up functionality would be implemented here."
-    );
+    if(userType == UserType.TENANT) {
+      navigation.navigate('TenantForm', { email: email, password: password });
+    } else {
+      navigation.navigate('LandlordForm', { email: email, password: password });
+    }
   };
 
   return (
@@ -203,20 +138,6 @@ export default function SignUpScreen() {
           label="Sign up" 
           style={appStyles.submitButton} 
           textStyle={appStyles.submitButtonText} />
-        
-        <Text style={styles.text}>or</Text>
-        
-        <SubmitButton 
-          testID='googleSignUpButton' 
-          disabled={false} 
-          onPress={handleGoogleSignUp} 
-          width={ButtonDimensions.largeButtonWidth} 
-          height={ButtonDimensions.largeButtonHeight} 
-          label="Sign up with Google" 
-          style={appStyles.submitButton} 
-          textStyle={appStyles.submitButtonText}
-          image={require('@/assets/images/auth/google_logo.png')}
-         />
 
       </View>
     </ScrollView>

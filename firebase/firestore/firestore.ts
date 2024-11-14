@@ -34,10 +34,14 @@ import { setLogLevel } from "firebase/firestore";
  * Creates a new user document in Firestore.
  * @param user - The user object to be added to the 'users' collection.
  */
-export async function createUser(user: TUser): Promise<string> {
-  const usersCollectionRef = collection(db, "users");
-  const docRef = await addDoc(usersCollectionRef, user);
-  return docRef.id;
+export async function createUser(user: TUser) {
+  const docRef = doc(db, "users", user.uid);
+  try {
+    await setDoc(docRef, user);
+  }
+  catch(e) {
+    console.error("Error creating tenant profile:", e);
+  }
 }
 
 /**
@@ -83,11 +87,15 @@ export async function deleteUser(uid: string) {
  * Creates a new landlord document in Firestore.
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
-export async function createLandlord(landlord: Landlord): Promise<string> {
-  const usersRef = collection(db, "users");
-  const docRef = doc(db, "landlords");
-  await setDoc(docRef, landlord);
-  return landlord.userId;
+export async function createLandlord(landlord: Landlord){
+  const docRef = doc(db, "landlords", landlord.userId);
+  try {
+    await setDoc(docRef, landlord);
+    console.log("Landlord profile created successfully.");
+  }
+  catch(e) {
+    console.error("Error creating landlord profile:", e);
+  }
 }
 
 /**
@@ -137,7 +145,13 @@ export async function deleteLandlord(userId: string) {
  */
 export async function createTenant(tenant: Tenant) {
   const docRef = doc(db, "tenants", tenant.userId);
-  await setDoc(docRef, tenant);
+  try {
+    await setDoc(docRef, tenant);
+  }
+  catch(e) {
+    console.error("Error creating tenant profile:", e);
+  }
+  
 }
 
 /**
@@ -156,7 +170,7 @@ export async function getTenant(
     const tenantDoc = querySnapshot.docs[0]; // Assume `userId` is unique among tenants
     return { tenant: tenantDoc.data() as Tenant, tenantUID: tenantDoc.id };
   }
-
+  
   return null;
 }
 
@@ -397,6 +411,7 @@ export async function updateLaundryMachine(
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
+ 
 export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string
@@ -438,9 +453,9 @@ export async function add_new_landlord(
       throw new Error("Use the same email as the one you used to sign up.");
     }
 
-    console.log("Current user id:", auth.currentUser.uid);
     const userObj = await getUser(auth.currentUser.uid);
     if (!userObj) {
+
       throw new Error("User doesn't exist.");
     }
 
@@ -476,20 +491,9 @@ export async function add_new_landlord(
 
 export async function add_new_tenant(
   tenantCodeId: string,
-  name: string,
-  email: string,
-  phone: string,
-  street: string,
-  number: string,
-  city: string,
-  canton: string,
-  zip: string,
-  country: string
+  userUID: string
 ) {
   try {
-    if (email !== auth.currentUser?.email) {
-      throw new Error("Use the same email as the one you used to sign up.");
-    }
 
     const tenantCodesRef = doc(db, "tenantCodes", tenantCodeId);
     const tenantCodeDoc = await getDoc(tenantCodesRef);
@@ -505,34 +509,6 @@ export async function add_new_tenant(
 
     const apartmentId = tenantCodeData.apartmentId;
     const residenceId = tenantCodeData.residenceId;
-
-    const userObj = await getUser(auth.currentUser.uid);
-    if (!userObj) {
-      throw new Error("User not found.");
-    }
-    const { user, userUID } = userObj;
-
-    user.email = email;
-    user.name = name;
-    user.phone = phone;
-    user.street = street;
-    user.number = number;
-    user.city = city;
-    user.canton = canton;
-    user.zip = zip;
-    user.country = country;
-
-    //update user with the new data
-    await updateUser(userUID, user);
-
-    const newTenant: Tenant = {
-      userId: userUID,
-      maintenanceRequests: [],
-      apartmentId: apartmentId,
-      residenceId: residenceId,
-    };
-
-    await createTenant(newTenant);
 
     const residencesRef = collection(db, "residences");
     const residencesSnapshot = await getDocs(residencesRef);
@@ -556,6 +532,14 @@ export async function add_new_tenant(
     }
     const apartmentRef = doc(db, "apartments", matchingApartmentDoc.id);
     await updateDoc(apartmentRef, { tenants: arrayUnion(userUID) });
+
+    const tenantDocRef = doc(db, "tenants", userUID);
+    console.log(apartmentId)
+    await updateDoc(tenantDocRef, {
+      apartmentId: apartmentId,
+      residenceId: residenceId,
+    });
+
   } catch (error) {
     throw error;
   }
@@ -644,6 +628,7 @@ export async function validateTenantCode(
     const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
 
     await updateDoc(tenantCodeRef, { used: true });
+    
     return tenantCodeDoc.id;
   } catch (error) {
     console.error("Error validating tenant code:", error);

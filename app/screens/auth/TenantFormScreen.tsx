@@ -2,34 +2,32 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import { Button } from "react-native-elements";
 import { appStyles, ButtonDimensions, Color } from "@/styles/styles";
-import { add_new_tenant } from "@/firebase/firestore/firestore";
 import {
   useNavigation,
   useRoute,
   NavigationProp,
 } from "@react-navigation/native";
-import { RootStackParamList } from "../../../types/types";
+import { AuthStackParamList, TUser} from "../../../types/types";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 import InputField from "@/app/components/forms/text_input";
-import Spacer from "@/app/components/Spacer";
+import { RouteProp } from '@react-navigation/native';
+import { emailAndPasswordSignIn } from "@/firebase/auth/auth";
+import { createUser, createTenant } from "@/firebase/firestore/firestore";
+import { Tenant } from "@/types/types";
 
 const TenantProfileScreen = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const route = useRoute();
-  const { tenantCodeId } = route.params as { tenantCodeId: string };
+
+  const route = useRoute<RouteProp<AuthStackParamList, 'TenantForm' | 'LandlordForm'>>();
+  const { email, password } = route.params;
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [zip, setZip] = useState("");
@@ -41,19 +39,34 @@ const TenantProfileScreen = () => {
 
   const handleSubmit = async () => {
     try {
-      await add_new_tenant(
-        tenantCodeId,
-        `${firstName} ${lastName}`,
-        email,
-        phone,
-        address,
-        number,
-        city,
-        province,
-        zip,
-        country
-      );
-      navigation.navigate("Home");
+      const user = await emailAndPasswordSignIn(email, password);
+      if (user) {
+        Alert.alert("Success", "Tenant profile created successfully!");
+        const userData: TUser = {
+          uid: user.uid,
+          type: "tenant",
+          name: `${firstName} ${lastName}`,
+          email: email,
+          phone: phone,
+          street: address,
+          number: number,
+          city: city,
+          canton: province,
+          zip: zip,
+          country: country,
+        };
+        await createUser(userData);
+        
+        const tenantData: Tenant = {
+          userId: user.uid,
+          maintenanceRequests: [],
+          apartmentId: "",
+          residenceId: "",
+        };
+        await createTenant(tenantData);
+      }
+
+     
     } catch (error) {
       Alert.alert("Error", "Failed to create tenant profile.");
       console.error(error);
@@ -88,16 +101,7 @@ const TenantProfileScreen = () => {
           />
         </View>
 
-        <View style={styles.row}>
-          <InputField
-            value={email}
-            setValue={setEmail}
-            placeholder="Email"
-            testID="testEmailField"
-            height={40}
-            backgroundColor={Color.TextInputBackground}
-          />
-        </View>
+      
 
         <View style={styles.row}>
           <InputField

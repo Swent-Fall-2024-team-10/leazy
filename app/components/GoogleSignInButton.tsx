@@ -5,23 +5,30 @@ import * as Google from 'expo-auth-session/providers/google'
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth"
 import { auth } from "../../firebase/firebase"
 import { getUser } from '@/firebase/firestore/firestore'
-import { Navigation } from 'react-native-feather'
-import { useNavigation, NavigationProp } from '@react-navigation/native'
+import { useAuth } from '../Navigators/AuthContext'
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/types'
 
 export const GoogleSignInButton = () => {
- const [request, response, promptAsync] = Google.useAuthRequest({
+
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const {user} = useAuth();
+ 
+  const [request, response, promptAsync] = Google.useAuthRequest({
    iosClientId: "667437973264-v9qb9v4h2j4gdkonbrmtobjsrmpod5jo.apps.googleusercontent.com",
    androidClientId: "667437973264-18bgkii41onl7qtfeuk42efhf1660rgq.apps.googleusercontent.com",
  })
-
  useEffect(() => {
    if (response?.type === "success") {
      const { id_token } = response.params
      const credential = GoogleAuthProvider.credential(id_token)
      signInWithCredential(auth, credential)
        .then((userCredential) => {
-          console.log(userCredential)
+          if(user == null) {
+            navigation.navigate("SignUp" as never);
+          }  
        })
        .catch((error) => {
          alert("An error occurred while signing in with Google." + error.message)

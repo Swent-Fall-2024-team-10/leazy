@@ -8,7 +8,7 @@ import CustomPopUp from '@/app/components/CustomPopUp';
 import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
 import SubmitButton from '@/app/components/buttons/SubmitButton';
 import { appStyles, ButtonDimensions } from '@/styles/styles';
-
+import { useAuth } from '@/app/Navigators/AuthContext';
 
 interface FormErrors {
   email?: string;
@@ -41,7 +41,6 @@ export default function SignInScreen() {
     emailAndPasswordLogIn(email, password).then((user) => {
       if (user) {
         Alert.alert('Success', 'You have successfully signed in!');
-        console.log("User signed in:", user);
       }
     }).catch((error) => {
       setPopup(true);
@@ -94,7 +93,6 @@ export default function SignInScreen() {
       />
 
       <Text style={styles.text}>or</Text>
-      <GoogleSignInButton/>
       <View style={styles.horizontalLine} />
       <Text style={styles.text}>Don't have an account yet?</Text>
       

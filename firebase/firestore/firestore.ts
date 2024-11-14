@@ -426,7 +426,6 @@ export async function updateLaundryMachine(
   if (!residenceId || !machineId) {
     throw new Error("Invalid laundry machine data");
   }
-
   if (machine.laundryMachineId !== machineId) {
     throw new Error("Machine ID mismatch");
   }

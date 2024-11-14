@@ -202,7 +202,7 @@ const TenantFormScreen = () => {
         </View>
 
         <SubmitButton
-          testID="submit-tenant-profile"
+          testID="submitButton"
           textStyle={appStyles.submitButtonText}
           style={appStyles.submitButton}
           disabled={

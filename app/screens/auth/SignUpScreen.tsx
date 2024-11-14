@@ -82,7 +82,7 @@ export default function SignUpScreen() {
           </Modal>
         )}
 
-        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack}>
+        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack} testID='backButton'>
           <Ionicons name="arrow-back" size={FontSizes.backArrow} color={Color.ButtonBackground} style={appStyles.backButton} />
         </TouchableOpacity>
 

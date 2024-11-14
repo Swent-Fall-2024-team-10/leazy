@@ -10,18 +10,26 @@ import { NavigationProp, useNavigation } from "@react-navigation/native"; // Imp
 import { ReportStackParamList } from "@/types/types"; // Import or define your navigation types
 import CameraButton from "@/app/components/buttons/CameraButton";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import CloseConfirmation from "@/app/components/buttons/CloseConfirmation";
-import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
-import { MaintenanceRequest } from "@/types/types";
-import { db, auth } from "@/firebase/firebase";
+import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
+import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
+import { MaintenanceRequest } from '@/types/types';
+import { db, auth} from '@/firebase/firebase';
+import Header from '@/app/components/Header';
+import { usePictureContext } from '@/app/context/PictureContext';
+import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
+import { 
+  getFileBlob, 
+  clearFiles,
+  picFileUri 
+} from '../../utils/cache';
 import {
   getTenant,
   updateMaintenanceRequest,
   updateTenant,
   getUser,
 } from "@/firebase/firestore/firestore";
-import Header from "@/app/components/Header";
-import { usePictureContext } from "@/app/context/PictureContext";
+
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -43,10 +51,13 @@ export default function ReportScreen() {
   const { pictureList, resetPictureList } = usePictureContext();
   const { removePicture } = usePictureContext();
 
-  function resetStates() {
-    setRoom("");
-    setIssue("");
-    setDescription("");
+
+  
+  async function resetStates() {
+    setRoom('');
+    setIssue('');
+    setDescription('');
+    clearFiles(pictureList);
     resetPictureList();
   }
   const handleClose = () => {
@@ -64,10 +75,10 @@ export default function ReportScreen() {
     navigation.navigate("CameraScreen");
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => { 
     setLoading(true); // Set loading to true when starting the submission
 
-    // first get user then get tenantId
+ // first get user then get tenantId
     const userObj = await getUser(auth.currentUser?.uid || "");
     if (userObj == null) {
       Alert.alert("Error", "User not found");
@@ -89,47 +100,64 @@ export default function ReportScreen() {
     const {tenant, tenantUID} = tenantDoc;
 
     console.log("url list for the pictures : ", pictureList);
-    try {
-      if (!tenant) {
-        throw new Error("Tenant not found");
+      try {
+        if (!tenantUID) {
+          throw new Error('Tenant not found');
+        }
+
+        // Upload pictures to Firebase Storage
+        let pictureURLs: string[] = [];
+        
+        // Use getpictureblob to upload every picture
+        for (const picture of pictureList) {
+          const blob = await getFileBlob(picture);
+          
+          // Upload resized image as before
+          const filename = picture.substring(picture.lastIndexOf('/') + 1);
+          const storageRef = ref(storage, `uploads/${filename}`);
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
+          pictureURLs.push(downloadURL);
+
+
+          console.log('File uploaded to storage');
+        }
+
+        const newRequest: MaintenanceRequest = {
+          requestID: '', 
+          tenantId: tenant.userId, 
+          residenceId: "apartment.residenceId", 
+          apartmentId: tenant.apartmentId, 
+          openedBy: tenant.userId, 
+          requestTitle: issue,
+          requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
+          requestDescription: description,
+          picture: pictureURLs, 
+          requestStatus: "notStarted",
+        };
+    
+        //this should be changed when the database function are updated
+        //this is not respecting the model view model pattern for now but this is a temporary solution
+        const requestID = await addDoc(collection(db, 'maintenanceRequests'), newRequest);
+        await updateTenant(tenantUID, { maintenanceRequests: [...tenant.maintenanceRequests, requestID.id] });
+        await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+        
+        Alert.alert('Success', 'Your maintenance request has been submitted.');
+
+        resetStates();
+        const nextScreen = tick ? 'Messaging' : 'Issues';
+        setTick(false);
+
+        navigation.navigate(nextScreen);
+
+      } catch (error) {
+        Alert.alert('Error', 'There was an error submitting your request. Please try again.');
+        console.log('Error submitting request:', error);
+      } finally {
+        setLoading(false); // Set loading to false after submission is complete
+        await clearFiles(pictureList);
       }
-      const newRequest: MaintenanceRequest = {
-        requestID: "",
-        tenantId: tenant.userId,
-        residenceId: "apartment.residenceId",
-        apartmentId: tenant.apartmentId,
-        openedBy: tenant.userId,
-        requestTitle: issue,
-        requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
-        requestDescription: description,
-        picture: pictureList,
-        requestStatus: "notStarted",
-      };
-
-      //this should be changed when the database function are updated
-      //this is not respecting the model view model pattern for now but this is a temporary solution
-      const requestID = await addDoc(
-        collection(db, "maintenanceRequests"),
-        newRequest
-      );
-      await updateTenant(tenantUID, {
-        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
-      });
-      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
-
-      Alert.alert("Success", "Your maintenance request has been submitted.");
-      resetStates();
-      setTick(false);
-      navigation.navigate("Issues");
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        "There was an error submitting your request. Please try again."
-      );
-      console.log("Error submitting request:", error);
-    } finally {
-      setLoading(false); // Set loading to false after submission is complete
-    }
+      
   };
 
   return (
@@ -241,17 +269,16 @@ export default function ReportScreen() {
               I would like to start a chat with the manager about this issue
             </Text>
           </View>
-
-          <SubmitButton
-            disabled={room === '' || description === '' || issue === ''}
-            onPress={handleSubmit}
-            width={ButtonDimensions.mediumButtonWidth}
-            height={ButtonDimensions.mediumButtonHeight}
-            label="Submit"
-            testID="testSubmitButton"
-            style={appStyles.submitButton}
-            textStyle={appStyles.submitButtonText}
-          />
+        <SubmitButton
+          disabled={room === '' || description === '' || issue === ''}
+          onPress={handleSubmit}
+          width={ButtonDimensions.mediumButtonWidth}
+          height={ButtonDimensions.mediumButtonHeight}
+          label="Submit"
+          testID="testSubmitButton"
+          style={appStyles.submitButton}
+          textStyle={appStyles.submitButtonText}
+        />
         </View>
       </ScrollView>
     </Header>

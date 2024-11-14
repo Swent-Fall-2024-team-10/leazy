@@ -4,12 +4,14 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
-import { storage } from '@/firebase/firebase'; // Import storage from your Firebase config
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { cacheFile, picFileUri } from '../../utils/cache';
+import { Color, IconDimension } from '../../../styles/styles';
+
 
 // portions of this code were generated with chatGPT as an AI assistant
 

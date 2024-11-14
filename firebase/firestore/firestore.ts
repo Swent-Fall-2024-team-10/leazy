@@ -141,7 +141,6 @@ export async function updateLandlord(
   if (!landlord.userId || !landlord.residenceIds) {
     throw new Error("Invalid landlord data");
   }
-
   const docRef = doc(db, "landlords", userId);
   await updateDoc(docRef, landlord);
 }
@@ -690,6 +689,8 @@ export async function deleteUsedTenantCodes(): Promise<number> {
     console.error("Error deleting used tenant codes:", error);
     throw error;
   }
+}
+/*
  * Returns a Firestore query for washing machines by residenceId.
  * This query can be used with onSnapshot to listen for real-time updates.
  * @param residenceId - The unique identifier of the residence.

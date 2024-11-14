@@ -125,8 +125,8 @@ export default function CameraScreen() {
 const styles = StyleSheet.create({
   goBackButton: {
     position: 'absolute',
-    bottom: 30,
-    left: 20,
+    bottom: '6.5%',
+    left: '12%',
     zIndex: 1,
   },
   container: {

@@ -8,7 +8,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Button } from "react-native-elements";
-import { Color } from "../../../styles/styles";
+import { appStyles, ButtonDimensions, Color } from "../../../styles/styles";
 import { add_new_tenant } from "../../../firebase/firestore/firestore";
 import {
   useNavigation,
@@ -64,9 +64,11 @@ const TenantFormScreen = () => {
 
   return (
     <SafeAreaView style={{ backgroundColor: Color.ScreenBackground }}>
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <Text style={styles.header}>Tenant Profile</Text>
-        <Spacer height={40} />
+      <ScrollView contentContainerStyle={{ padding: '5%', marginTop: '10%' }}
+      automaticallyAdjustKeyboardInsets={true}
+      >
+        
+        <Text style={[styles.header, {marginBottom: '12%'}]}>Tenant Profile</Text>
 
         <View style={styles.row}>
           <InputField
@@ -179,34 +181,24 @@ const TenantFormScreen = () => {
           />
         </View>
 
-        <View style={[{ marginBottom: 20 }]}>
-          <Button
-            title="Upload university proof of attendance"
-            onPress={() => {}}
-            buttonStyle={{
-              flex: 1,
-              padding: 10,
-              borderColor: Color.TextInputBorder,
-              borderWidth: 1,
-              shadowColor: "#171717",
-              shadowOffset: { width: 0, height: 3 },
-              shadowOpacity: 0.4,
-              shadowRadius: 2,
-              borderRadius: 25,
-              paddingHorizontal: 10,
-              marginHorizontal: 5,
-              backgroundColor: Color.ButtonBackground, // Use backgroundColor instead of color
-            }}
+        <View style={[{ marginBottom: "6%" }]}>
+          <SubmitButton
+            testID="proof-attendance"
+            textStyle={appStyles.submitButtonText}
+            style={appStyles.submitButton}
             disabled={false}
-            disabledStyle={{ backgroundColor: Color.ButtonTextDisabled }}
-            titleStyle={{ color: "white" }}
-          />
+            onPress={() => {}}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            height={ButtonDimensions.veryLargeButtonHeight}
+            label="Upload university proof of attendance">
+          </SubmitButton>
+        
         </View>
-
-        <Spacer height={40} />
 
         <SubmitButton
           testID="submitButton"
+          textStyle={appStyles.submitButtonText}
+          style={appStyles.submitButton}
           disabled={
             firstName === "" ||
             lastName === "" ||
@@ -221,8 +213,8 @@ const TenantFormScreen = () => {
             country === ""
           }
           onPress={handleSubmit}
-          width={170}
-          height={44}
+          width={ButtonDimensions.mediumButtonWidth}
+          height={ButtonDimensions.mediumButtonHeight}
           label="NEXT"
         />
       </ScrollView>

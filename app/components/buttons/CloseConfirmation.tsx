@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, StyleSheet, View } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "@/styles/styles";
+import { appStyles, Color, FontSizes } from "@/styles/styles";
 //import DropShadow from "react-native-drop-shadow";
 
 interface CloseConfirmationProps {
@@ -23,12 +23,14 @@ export default function CloseConfirmation( {onPressYes, onPressNo} : CloseConfir
                 <Button title="Yes, cancel" 
                 titleStyle={styles.buttonText}
                 onPress={onPressYes} 
-                buttonStyle={[styles.buttonYes, styles.buttons , styles.shadow]}/>
+                buttonStyle={[styles.buttonYes, styles.buttons , styles.shadow]}
+                />
                 
                 <Button title="No, Go back" 
                 titleStyle={styles.buttonText}
                 onPress={onPressNo} 
                 buttonStyle={[styles.buttonNo, styles.buttons , styles.shadow]}/>
+
             </View>
 
         </View>
@@ -40,7 +42,7 @@ export default function CloseConfirmation( {onPressYes, onPressNo} : CloseConfir
 const styles = StyleSheet.create({
 
     shadow : {
-        shadowColor: '#171717',
+        shadowColor: Color.ShadowColor,
         shadowOffset: {width: 0, height: 3},
         shadowOpacity: 0.4,
         shadowRadius: 2,
@@ -49,13 +51,14 @@ const styles = StyleSheet.create({
     overlay: {
         flex: 1,
         position: 'absolute',
-        top: -200,             
-        left: 0,
-        right: 0,
-        bottom: 0,
+        top: '0%',             
+        left: '0%',
+        right: '0%',
+        bottom: '0%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.25)', 
+        backgroundColor: '#000000',
+        opacity: 0.2,
         zIndex: 1, 
         },
 
@@ -65,7 +68,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         width: '95%',
 
-        shadowColor: '#171717',
+        shadowColor: Color.ShadowColor,
         shadowOffset: {width: 0, height: 3},
         shadowOpacity: 0.4,
         shadowRadius: 2,
@@ -89,18 +92,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'center',
+        padding: '5%',
     },
 
     buttonText: {
-        fontSize: FontSizes.ButtonText,
+        fontSize: FontSizes.confirmText,
         color: Color.ButtonText,
-        fontWeight: '800'
+        fontWeight: '600',
+        textAlign: 'center',
+        alignItems: 'center',
     },
 
     buttonYes : {
-        backgroundColor: "#FF7B70",
+        backgroundColor: Color.CancelColor,
         borderColor: Color.ButtonBorder,
-
+        marginRight: '5%',
     },
 
     buttonNo : {

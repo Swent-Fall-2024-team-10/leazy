@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, View, Alert, Image, Modal } from "react-native";
+import { Text, View, Alert, Image, Modal } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import InputField from "@/app/components/forms/text_input";
 import Spacer from "@/app/components/Spacer";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { Color } from "@/styles/styles";
+import { appStyles, ButtonDimensions, Color, textInputHeight } from "@/styles/styles";
 import Close from "@/app/components/buttons/Close";
 import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
 import { ReportStackParamList } from "@/types/types"; // Import or define your navigation types
 import CameraButton from "@/app/components/buttons/CameraButton";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import CloseConfirmation from "@/app/components/buttons/CloseConfirmation";
-import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
-import { MaintenanceRequest } from "@/types/types";
-import { db, auth } from "@/firebase/firebase";
+import CloseConfirmation from '@/app/components/buttons/CloseConfirmation';
+import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
+import { MaintenanceRequest } from '@/types/types';
+import { db, auth} from '@/firebase/firebase';
+import Header from '@/app/components/Header';
+import { usePictureContext } from '@/app/context/PictureContext';
+import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
+import { 
+  getFileBlob, 
+  clearFiles,
+  picFileUri 
+} from '../../utils/cache';
 import {
   getTenant,
   updateMaintenanceRequest,
   updateTenant,
   getUser,
 } from "@/firebase/firestore/firestore";
-import Header from "@/app/components/Header";
-import { usePictureContext } from "@/app/context/PictureContext";
+
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -43,10 +51,13 @@ export default function ReportScreen() {
   const { pictureList, resetPictureList } = usePictureContext();
   const { removePicture } = usePictureContext();
 
-  function resetStates() {
-    setRoom("");
-    setIssue("");
-    setDescription("");
+
+  
+  async function resetStates() {
+    setRoom('');
+    setIssue('');
+    setDescription('');
+    clearFiles(pictureList);
     resetPictureList();
   }
   const handleClose = () => {
@@ -64,10 +75,10 @@ export default function ReportScreen() {
     navigation.navigate("CameraScreen");
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => { 
     setLoading(true); // Set loading to true when starting the submission
 
-    // first get user then get tenantId
+ // first get user then get tenantId
     const userObj = await getUser(auth.currentUser?.uid || "");
     if (userObj == null) {
       Alert.alert("Error", "User not found");
@@ -89,251 +100,188 @@ export default function ReportScreen() {
     const {tenant, tenantUID} = tenantDoc;
 
     console.log("url list for the pictures : ", pictureList);
-    try {
-      if (!tenant) {
-        throw new Error("Tenant not found");
+      try {
+        if (!tenantUID) {
+          throw new Error('Tenant not found');
+        }
+
+        // Upload pictures to Firebase Storage
+        let pictureURLs: string[] = [];
+        
+        // Use getpictureblob to upload every picture
+        for (const picture of pictureList) {
+          const blob = await getFileBlob(picture);
+          
+          // Upload resized image as before
+          const filename = picture.substring(picture.lastIndexOf('/') + 1);
+          const storageRef = ref(storage, `uploads/${filename}`);
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
+          pictureURLs.push(downloadURL);
+
+
+          console.log('File uploaded to storage');
+        }
+
+        const newRequest: MaintenanceRequest = {
+          requestID: '', 
+          tenantId: tenant.userId, 
+          residenceId: "apartment.residenceId", 
+          apartmentId: tenant.apartmentId, 
+          openedBy: tenant.userId, 
+          requestTitle: issue,
+          requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
+          requestDescription: description,
+          picture: pictureURLs, 
+          requestStatus: "notStarted",
+        };
+    
+        //this should be changed when the database function are updated
+        //this is not respecting the model view model pattern for now but this is a temporary solution
+        const requestID = await addDoc(collection(db, 'maintenanceRequests'), newRequest);
+        await updateTenant(tenantUID, { maintenanceRequests: [...tenant.maintenanceRequests, requestID.id] });
+        await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+        
+        Alert.alert('Success', 'Your maintenance request has been submitted.');
+
+        resetStates();
+        const nextScreen = tick ? 'Messaging' : 'Issues';
+        setTick(false);
+
+        navigation.navigate(nextScreen);
+
+      } catch (error) {
+        Alert.alert('Error', 'There was an error submitting your request. Please try again.');
+        console.log('Error submitting request:', error);
+      } finally {
+        setLoading(false); // Set loading to false after submission is complete
+        await clearFiles(pictureList);
       }
-      const newRequest: MaintenanceRequest = {
-        requestID: "",
-        tenantId: tenant.userId,
-        residenceId: "apartment.residenceId",
-        apartmentId: tenant.apartmentId,
-        openedBy: tenant.userId,
-        requestTitle: issue,
-        requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
-        requestDescription: description,
-        picture: pictureList,
-        requestStatus: "notStarted",
-      };
-
-      //this should be changed when the database function are updated
-      //this is not respecting the model view model pattern for now but this is a temporary solution
-      const requestID = await addDoc(
-        collection(db, "maintenanceRequests"),
-        newRequest
-      );
-      await updateTenant(tenantUID, {
-        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
-      });
-      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
-
-      Alert.alert("Success", "Your maintenance request has been submitted.");
-      resetStates();
-      const nextScreen = tick ? "Messaging" : "Issues";
-      setTick(false);
-      navigation.navigate(nextScreen);
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        "There was an error submitting your request. Please try again."
-      );
-      console.log("Error submitting request:", error);
-    } finally {
-      setLoading(false); // Set loading to false after submission is complete
-    }
+      
   };
 
   return (
     <Header>
-      <ScrollView
-        style={styles.container}
-        automaticallyAdjustKeyboardInsets={true}
+      <ScrollView style={appStyles.screenContainer} 
+      automaticallyAdjustKeyboardInsets={true}
       >
-        <Close onPress={handleClose} />
-        <Text style={styles.header}>Create a new issue</Text>
-        <Text style={styles.date}>
-          Current day: {day}/{month}/{year} at {hours}:{minutes}
-        </Text>
+        <View style={[appStyles.scrollContainer, {paddingBottom : '90%', marginBottom : '10%'}]}>
 
-        <Spacer height={20} />
-
-        {isVisible && (
-          <Modal
-            transparent={true}
-            animationType="fade"
-            visible={isVisible}
-            onRequestClose={() => setIsVisible(false)}
-          >
-            <CloseConfirmation
-              isVisible={isVisible}
-              onPressYes={() => {
-                resetStates();
-                setTick(false);
-                navigation.navigate("Issues");
-                setIsVisible(false);
-              }}
-              onPressNo={() => setIsVisible(false)}
-            />
-          </Modal>
-        )}
-
-        <InputField
-          label="What kind of issue are you experiencing?"
-          value={issue}
-          setValue={setIssue}
-          placeholder="Your issue..."
-          radius={25}
-          height={40}
-          width={300}
-          backgroundColor={Color.TextInputBackground}
-          testID="testIssueNameField"
-        />
-
-        <Spacer height={20} />
-
-        <Text style={styles.label}>
-          Please take a picture of the damage or situation if applicable
-        </Text>
-
-        <CameraButton onPress={handleAddPicture} />
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {pictureList.map((image, index) => (
-            <Image
-              key={index}
-              source={{ uri: image }}
-              style={styles.thumbnailImage}
-            />
-          ))}
-        </ScrollView>
-
-        <Spacer height={20}></Spacer>
-
-        <InputField
-          label="Which room is the issue in?"
-          value={room}
-          setValue={setRoom}
-          placeholder="e.g: Bedroom, Kitchen, Bathroom..."
-          radius={25}
-          height={40}
-          width={300}
-          backgroundColor={Color.TextInputBackground}
-          testID="testRoomNameField"
-        />
-
-        <Spacer height={20} />
-
-        <InputField
-          label="Please provide some description of the issue:"
-          value={description}
-          setValue={setDescription}
-          placeholder="e.g: The bathtub is leaking because of..."
-          height={100}
-          width={300}
-          backgroundColor={Color.TextInputBackground}
-          radius={20}
-          testID="testDescriptionField"
-        />
-
-        <Spacer height={20} />
-
-        <View style={{ flexDirection: "row" }}>
-          <BouncyCheckbox
-            iconImageStyle={styles.tickingBox}
-            iconStyle={styles.tickingBox}
-            innerIconStyle={styles.tickingBox}
-            unFillColor={Color.ReportScreenBackground}
-            fillColor={Color.ButtonBackground}
-            onPress={(isChecked: boolean) => setTick(isChecked)}
-          />
-          <Text style={styles.tickingBoxText}>
-            I would like to start a chat with the manager about this issue
+          <Close onPress={handleClose} />
+          <Text style={appStyles.screenHeader}>Create a new issue</Text>
+          <Text style={appStyles.date}>
+            Current day: {day}/{month}/{year} at {hours}:{minutes}
           </Text>
-        </View>
 
-        <Spacer height={20} />
+          <Spacer height={20} />
 
+          {isVisible && (
+            <Modal
+              transparent={true}
+              animationType="fade"
+              visible={isVisible}
+              onRequestClose={() => setIsVisible(false)}
+            >
+                <CloseConfirmation
+                    isVisible={isVisible}
+                    onPressYes={() => {
+                        resetStates();
+                        setTick(false);
+                        navigation.navigate('Issues');
+                        setIsVisible(false);
+                    }}
+                    onPressNo={() => setIsVisible(false)}
+                />
+            </Modal>
+          )}
+
+          <InputField
+            label="What kind of issue are you experiencing?"
+            value={issue}
+            setValue={setIssue}
+            placeholder="Your issue..."
+            radius={25}
+            height={textInputHeight}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            backgroundColor={Color.TextInputBackground}
+            testID="testIssueNameField"
+            style={{alignContent: 'center'}}
+          />
+
+          <Spacer height={20} />
+
+          <Text style={appStyles.inputFieldLabel}>Please take a picture of the damage or situation if applicable</Text>
+          
+          <CameraButton onPress={handleAddPicture} />
+          
+          <View style={appStyles.carouselImageContainer}>
+            <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {pictureList.map((image, index) => (
+                        <Image key={index} source={{ uri: image }} style={appStyles.smallThumbnailImage} />
+                    ))}
+            </ScrollView>
+          </View>
+
+          
+          <InputField
+            label="Which room is the issue in?"
+            value={room}
+            setValue={setRoom}
+            placeholder="e.g: Bedroom, Kitchen, Bathroom..."
+            radius={25}
+            height={textInputHeight}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            backgroundColor={Color.TextInputBackground}
+            testID="testRoomNameField"
+            style={{alignContent: 'center'}}
+          />
+
+          <Spacer height={20} />
+
+          <InputField
+            label="Please provide a description of your issue:"
+            value={description}
+            setValue={setDescription}
+            placeholder="e.g: The bathtub is leaking because of..."
+            height={100}
+            width={ButtonDimensions.fullWidthButtonWidth}
+            backgroundColor={Color.TextInputBackground}
+            radius={20}
+            testID="testDescriptionField"
+            style={{alignContent: 'center'}}
+          />
+
+          <Spacer height={20} />
+
+          <View style={{ flexDirection: 'row' }}>
+            <BouncyCheckbox
+              iconImageStyle={appStyles.tickingBox}
+              iconStyle={appStyles.tickingBox}
+              innerIconStyle={appStyles.tickingBox}
+              unFillColor={Color.TextInputBackground}
+              fillColor={Color.ButtonBackground}
+              onPress={(isChecked: boolean) => setTick(isChecked)}
+            />
+            <Text style={appStyles.inputFieldLabel}>
+              I would like to start a chat with the manager about this issue
+            </Text>
+          </View>
         <SubmitButton
-          disabled={room === "" || description === "" || issue === ""}
+          disabled={room === '' || description === '' || issue === ''}
           onPress={handleSubmit}
-          width={170}
-          height={44}
+          width={ButtonDimensions.mediumButtonWidth}
+          height={ButtonDimensions.mediumButtonHeight}
           label="Submit"
+          testID="testSubmitButton"
+          style={appStyles.submitButton}
+          textStyle={appStyles.submitButtonText}
         />
+        </View>
       </ScrollView>
     </Header>
   );
 }
 
-const styles = StyleSheet.create({
-  thumbnailImage: {
-    marginHorizontal: 5,
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-
-  thumbnailBox: {
-    width: 100,
-    height: 100,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-
-  tickingBoxText: {
-    color: Color.TextInputLabel,
-    fontSize: 16,
-    width: 300,
-    fontWeight: "500",
-  },
-
-  tickingBox: {
-    borderRadius: 5,
-  },
-
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-
-  subHeader: {
-    textAlign: "center",
-    fontSize: 16,
-    marginBottom: 10,
-  },
-
-  pictureContainer: {
-    marginBottom: 20,
-  },
-
-  thumbnails: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-
-  cameraButton: {
-    height: 150,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Color.CameraButtonBackground,
-    borderWidth: 1,
-    borderColor: Color.CameraButtonBorder,
-    borderRadius: 5,
-    marginBottom: 20,
-  },
-
-  date: {
-    fontSize: 16,
-    marginBottom: 5,
-    textAlign: "center",
-    color: Color.DateText,
-  },
-
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-    color: Color.ScreenHeader,
-  },
-
-  label: {
-    fontSize: 16,
-    marginBottom: 2.5,
-    fontWeight: "500",
-    color: Color.TextInputLabel,
-  },
-});

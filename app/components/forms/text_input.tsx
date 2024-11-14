@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, StyleSheet, StyleProp, ViewStyle } from "react-native";
-import { Color } from "../../../styles/styles";
+import { appStyles, Color } from "../../../styles/styles";
 
 interface InputFieldProps {
   label?: string;
@@ -29,6 +29,7 @@ export default function InputField({
 }: InputFieldProps) {
   const inputFieldStyles = [
     styles.inputField,
+    width !== undefined && { width },
     height !== undefined && { height },
     radius !== undefined && { borderRadius: radius },
     backgroundColor !== undefined && { backgroundColor },
@@ -50,7 +51,7 @@ export default function InputField({
   if (label !== undefined) {
     return (
       <View>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={appStyles.inputFieldLabel}>{label}</Text>
         {textInputComponent}
       </View>
     );
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     borderColor: Color.TextInputBorder,
     borderWidth: 1,
     color: Color.TextInputText,
-    shadowColor: "#171717",
+    shadowColor: Color.ShadowColor,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 2,
@@ -74,10 +75,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginHorizontal: 5,
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 2.5,
-    fontWeight: "500",
-    color: Color.TextInputLabel,
-  },
+
 });

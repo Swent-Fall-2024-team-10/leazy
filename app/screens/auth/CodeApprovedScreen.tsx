@@ -33,12 +33,14 @@ export default function CodeApprovedScreen() {
           {address}!
         </Text>
         <SubmitButton
+          testID="next-button"
+          textStyle={appStyles.submitButtonText}
           onPress={onNext}
           label="Next"
           width={200}
           height={40}
           disabled={false}
-          style={{ marginBottom: 20 }}
+          style={appStyles.submitButton}
         />
       </View>
     </SafeAreaView>

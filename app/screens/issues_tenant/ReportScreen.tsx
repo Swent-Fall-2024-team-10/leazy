@@ -20,10 +20,10 @@ import { usePictureContext } from '@/app/context/PictureContext';
 import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
 import { 
-  getPictureBlob, 
-  clearPictures,
+  getFileBlob, 
+  clearFiles,
   picFileUri 
-} from '../../utils/pictureCache';
+} from '../../utils/cache';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -50,9 +50,8 @@ export default function ReportScreen() {
     setRoom('');
     setIssue('');
     setDescription('');
-    await clearPictures(pictureList);
+    clearFiles(pictureList);
     resetPictureList();
-    // might need to make this less grotesque as it now deletes every picture in the cache
   }
   const handleClose = () => {
     setIsVisible(true);
@@ -85,11 +84,11 @@ export default function ReportScreen() {
         
         // Use getpictureblob to upload every picture
         for (const picture of pictureList) {
-          const blob = await getPictureBlob(picture);
+          const blob = await getFileBlob(picture);
           
           // Upload resized image as before
-          const fileName = `${picture}.jpeg`;
-          const storageRef = ref(storage, `uploads/${fileName}`);
+          const filename = picture.substring(picture.lastIndexOf('/') + 1);
+          const storageRef = ref(storage, `uploads/${filename}`);
           await uploadBytes(storageRef, blob);
           const downloadURL = await getDownloadURL(storageRef);
           pictureURLs.push(downloadURL);
@@ -130,7 +129,7 @@ export default function ReportScreen() {
         console.log('Error submitting request:', error);
       } finally {
         setLoading(false); // Set loading to false after submission is complete
-        clearPictures(pictureList);
+        await clearFiles(pictureList);
       }
   };
 
@@ -190,7 +189,8 @@ export default function ReportScreen() {
                 showsHorizontalScrollIndicator={false}
               >
                 {pictureList.map((image, index) => (
-                    <Image key={index} source={{ uri: picFileUri(image) }} style={styles.thumbnailImage} />
+                  console.log('image : ' , image),
+                    <Image key={index} source={{ uri: image }} style={styles.thumbnailImage} />
                 ))}
               </ScrollView>
 

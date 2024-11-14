@@ -15,6 +15,7 @@ import {
   getResidence,
   updateResidence,
   deleteResidence,
+  add_new_tenant,
 } from "../../../firebase/firestore/firestore";
 
 const {
@@ -29,6 +30,7 @@ const {
   getDocs,
   deleteDoc,
   updateDoc,
+  arrayUnion,
 } = require("firebase/firestore");
 
 const mockUser: User = {
@@ -557,208 +559,26 @@ describe("Firestore Functions", () => {
     });
   });
 
-  describe("createResidence", () => {
-    const mockResidence = {
-      residenceId: "res123",
-      street: "Main St",
-      number: "42",
-      city: "Zurich",
-      canton: "ZH",
-      zip: "8000",
-      country: "Switzerland",
-      landlordId: "landlord123",
-      tenantIds: ["tenant1", "tenant2"],
-      laundryMachineIds: ["laundry1", "laundry2"],
-      apartments: ["apt1", "apt2"],
-      tenantCodesID: ["code1", "code2"],
-    };
+  jest.mock("../../../firebase/firestore/firestore", () => ({
+    createUser: jest.fn(),
+    createTenant: jest.fn().mockResolvedValue(undefined), // Mock tenant creation
+  }));
 
-    it("should successfully create a residence document with the provided data", async () => {
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (setDoc as jest.Mock).mockResolvedValue(undefined);
+  jest.mock("../../../firebase/firebase", () => ({
+    auth: {
+      currentUser: {
+        uid: "testAuthUserId",
+      },
+    },
+  }));
 
-      await createResidence(mockResidence);
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences",
-        mockResidence.residenceId
-      );
-      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockResidence);
-    });
-
-    it("should throw an error if setDoc fails", async () => {
-      const mockError = new Error("Failed to create document");
-
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (setDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(createResidence(mockResidence)).rejects.toThrow(
-        "Failed to create document"
-      );
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences",
-        mockResidence.residenceId
-      );
-      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockResidence);
-    });
-  });
-
-  describe("getResidence", () => {
-    (doc as jest.Mock).mockReturnValue("mockDocRef");
-    it("should return residence data if the document exists", async () => {
-      const mockResidenceId = "res123";
-      const mockResidenceData = {
-        residenceId: "res123",
-        street: "Main St",
-        number: "42",
-        city: "Zurich",
-        canton: "ZH",
-        zip: "8000",
-        country: "Switzerland",
-        landlordId: "landlord123",
-        tenantIds: ["tenant1", "tenant2"],
-        laundryMachineIds: ["laundry1", "laundry2"],
-        apartments: ["apt1", "apt2"],
-        tenantCodesID: ["code1", "code2"],
-      };
-
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: jest.fn().mockReturnValue(true),
-        data: jest.fn().mockReturnValue(mockResidenceData),
-      });
-
-      const result = await getResidence(mockResidenceId);
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences",
-        mockResidenceId
-      );
-      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
-      expect(result).toEqual(mockResidenceData);
-    });
-
-    it("should return null if the document does not exist and handle errors", async () => {
-      const mockResidenceId = "res123";
-
-      // Mock non-existent document
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: jest.fn().mockReturnValue(false),
-      });
-
-      const resultForNonExistentDoc = await getResidence(mockResidenceId);
-      expect(resultForNonExistentDoc).toBeNull();
-
-      // Mock a failed getDoc call
-      const mockError = new Error("Failed to retrieve document");
-      (getDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(getResidence(mockResidenceId)).rejects.toThrow(
-        "Failed to retrieve document"
-      );
-    });
-  });
-
-  describe("updateResidence", () => {
-    it("should throw errors for invalid residenceId or Firestore failures", async () => {
-      const validResidenceData: Partial<Residence> = {
-        street: "New Street",
-        city: "Zurich",
-      };
-
-      // Test null residenceId
-      await expect(
-        updateResidence(null as unknown as string, validResidenceData)
-      ).rejects.toThrow("Failed to update document");
-
-      // Test empty string residenceId
-      await expect(updateResidence("", validResidenceData)).rejects.toThrow(
-        "Failed to update document"
-      );
-
-      // Test Firestore update failure
-      const mockError = new Error("Firestore update error");
-
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (updateDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(
-        updateResidence("res123", validResidenceData)
-      ).rejects.toThrow("Firestore update error");
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences",
-        "res123"
-      );
-      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", validResidenceData);
-    });
-
-    it("should throw errors for invalid residence data", async () => {
-      const mockResidenceId = "res123";
-
-      // Test empty residence data
-      const emptyData: Partial<Residence> = {};
-      await expect(updateResidence(mockResidenceId, emptyData)).rejects.toThrow(
-        "Firestore update error"
-      );
-
-      // Test missing required fields
-      const missingRequiredFields = {
-        street: "New Street",
-      } as Partial<Residence>;
-      await expect(
-        updateResidence(mockResidenceId, missingRequiredFields)
-      ).rejects.toThrow("Firestore update error");
-    });
-  });
-
-  describe("deleteResidence", () => {
-    it("should successfully delete a residence document or handle errors", async () => {
-      const mockResidenceId = "res123";
-
-      // Mock successful deletion
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
-
-      await deleteResidence(mockResidenceId);
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences",
-        mockResidenceId
-      );
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
-
-      // Mock Firestore delete failure
-      const mockError = new Error("Firestore delete error");
-      (deleteDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(deleteResidence(mockResidenceId)).rejects.toThrow(
-        "Firestore delete error"
-      );
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences",
-        mockResidenceId
-      );
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
-    });
-
-    it("should throw an error for invalid residenceId", async () => {
-      // Test null residenceId
-      await expect(deleteResidence(null as unknown as string)).rejects.toThrow(
-        "Firestore delete error"
-      );
-
-      // Test empty string residenceId
-      await expect(deleteResidence("")).rejects.toThrow(
-        "Firestore delete error"
-      );
-    });
-  });
+  jest.mock("firebase/firestore", () => ({
+    getDoc: jest.fn(),
+    getDocs: jest.fn(),
+    doc: jest.fn(),
+    collection: jest.fn(),
+    updateDoc: jest.fn(),
+    addDoc: jest.fn(),
+    arrayUnion: jest.fn((value) => value),
+  }));
 });

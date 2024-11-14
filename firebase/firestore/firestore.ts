@@ -1,5 +1,5 @@
 // Import Firestore database instance and necessary Firestore functions.
-import { db, auth } from "../firebase";
+import { db, auth } from "../../firebase/firebase";
 import {
   setDoc,
   doc,

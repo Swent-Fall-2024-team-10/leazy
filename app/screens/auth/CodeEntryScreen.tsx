@@ -5,17 +5,24 @@ import {
   NavigationProp,
   useRoute,
 } from "@react-navigation/native";
-import { RootStackParamList } from "@/types/types";
+import { RootStackParamList } from "../../../types/types";
 import {
   validateTenantCode,
   add_new_tenant,
-} from "@/firebase/firestore/firestore";
-import { appStyles, ButtonDimensions, Color, stylesForHeaderScreens, stylesForNonHeaderScreens } from "@/styles/styles";
+} from "../../../firebase/firestore/firestore";
+import {
+  appStyles,
+  ButtonDimensions,
+  Color,
+  stylesForHeaderScreens,
+  stylesForNonHeaderScreens,
+} from "../../../styles/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputField from "@/app/components/forms/text_input";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
+import InputField from "../../components/forms/text_input";
+import SubmitButton from "../../components/buttons/SubmitButton";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { useAuth } from "@/app/Navigators/AuthContext";
+import { Alert } from "react-native";
 
 export default function CodeEntryScreen() {
   const [code, setCode] = useState("");
@@ -35,20 +42,23 @@ export default function CodeEntryScreen() {
       }
       
     } catch (error) {
-      console.error("Failed to add new tenant:", error);
-      alert("There was an error adding the tenant. Please try again.");
+      Alert.alert("There was an error adding the tenant. Please try again.");
     }
   };
 
   return (
-    <SafeAreaView style={[appStyles.screenContainer, { flex: 1 }]} >
-
-      <View style={[appStyles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+    <SafeAreaView style={[appStyles.screenContainer, { flex: 1 }]}>
+      <View
+        style={[
+          appStyles.screenContainer,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
         <Text style={stylesForNonHeaderScreens.title}>Welcome to Leazy</Text>
         <Text style={stylesForNonHeaderScreens.text}>
           Do you already have a code?
         </Text>
-        <View style={{ marginBottom: 25, width: '80%' }}>
+        <View style={{ marginBottom: 25, width: "80%" }}>
           <InputField
             backgroundColor={Color.TextInputBackground}
             testID="code-input"
@@ -68,13 +78,13 @@ export default function CodeEntryScreen() {
           width={ButtonDimensions.mediumButtonWidth}
           height={ButtonDimensions.mediumButtonHeight}
           disabled={false}
-          style={[ appStyles.submitButton ,{ marginBottom: 20 }]}
+          style={[appStyles.submitButton, { marginBottom: 20 }]}
         />
         {errors.code && (
           <Text style={stylesForNonHeaderScreens.errorText}>{errors.code}</Text>
         )}
 
-        <Text style={[stylesForNonHeaderScreens.text, {padding : '5%'}]}>
+        <Text style={[stylesForNonHeaderScreens.text, { padding: "5%" }]}>
           If you don't have a code please ask your residence manager to generate
           one for you.
         </Text>

@@ -1,4 +1,3 @@
-import CustomButton from "@/app/components/CustomButton";
 import React from "react";
 import { View, Text } from "react-native";
 import {
@@ -6,10 +5,10 @@ import {
   NavigationProp,
   useRoute,
 } from "@react-navigation/native";
-import { RootStackParamList } from "@/types/types";
-import { appStyles, stylesForNonHeaderScreens } from "@/styles/styles"; // Import globalStyles
+import { RootStackParamList } from "../../../types/types";
+import { appStyles, stylesForNonHeaderScreens } from "../../../styles/styles"; // Import globalStyles
 import { SafeAreaView } from "react-native-safe-area-context";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
+import SubmitButton from "../../../app/components/buttons/SubmitButton";
 
 export default function CodeApprovedScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

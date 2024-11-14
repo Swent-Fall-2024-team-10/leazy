@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import CustomTextField from '../../components/CustomTextField';
-import CustomButton from '../../components/CustomButton';
-import { emailAndPasswordLogIn } from '../../../firebase/auth/auth';
+import CustomTextField from '@/app/components/CustomTextField';
+import { emailAndPasswordLogIn } from '@/firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../../types/types';  // Import or define your navigation types
-import CustomPopUp from '../../components/CustomPopUp';
-import { GoogleSignInButton } from '../../components/GoogleSignInButton';
-import { TextInput } from 'react-native-gesture-handler';
-import SubmitButton from '../../components/buttons/SubmitButton';
+import { RootStackParamList } from '@/types/types';  // Import or define your navigation types
+import CustomPopUp from '@/app/components/CustomPopUp';
+import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
+import SubmitButton from '@/app/components/buttons/SubmitButton';
+import { appStyles, ButtonDimensions } from '@/styles/styles';
 
 
 interface FormErrors {
@@ -62,7 +61,7 @@ export default function SignInScreen() {
         onPress = {() => setPopup(false)}
       />}
 
-      <Text style={styles.title}>Welcome back to Leazy</Text>
+      <Text style={[appStyles.screenHeader, { fontSize: 40 ,flex: 0, paddingBottom: '10%'}]}>Welcome back to Leazy</Text>
       
       <CustomTextField
         testID="emailInput"
@@ -73,6 +72,7 @@ export default function SignInScreen() {
         autoCapitalize="none"
       />
       {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+      
       <CustomTextField
         testID="passwordInput"
         placeholder="Password"
@@ -80,13 +80,34 @@ export default function SignInScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
+      
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-      <CustomButton testID='signInButton' size="small" onPress={handleSignIn} title ="Sign in"/>
+      <SubmitButton 
+        disabled={false} 
+        onPress={handleSignIn} 
+        width={ButtonDimensions.largeButtonWidth} 
+        height={ButtonDimensions.largeButtonHeight} 
+        label="Sign in" 
+        testID='signInButton'
+        style={appStyles.submitButton}
+        textStyle={appStyles.submitButtonText}
+      />
+
       <Text style={styles.text}>or</Text>
       <GoogleSignInButton/>
       <View style={styles.horizontalLine} />
       <Text style={styles.text}>Don't have an account yet?</Text>
-      <CustomButton testID='signUpButton'size="large" onPress={handleSignUpPress} title="Sign up"/>
+      
+      <SubmitButton 
+        disabled={false} 
+        onPress={handleSignUpPress} 
+        width={ButtonDimensions.largeButtonWidth} 
+        height={ButtonDimensions.largeButtonHeight} 
+        label="Sign up" 
+        testID='signU'
+        style={appStyles.submitButton}
+        textStyle={appStyles.submitButtonText}
+      />
     </View>
   );
 }
@@ -98,16 +119,19 @@ const styles = StyleSheet.create({
     marginVertical: 20,    // Adds space above and below the line
     width: '100%',         // Line width (full width of the parent container)
   },
+
   inputError: {
     borderColor: '#FF004',
     borderWidth: 1,
   },
+
   errorText: {
     fontFamily: 'Inter',
     color: '#FF0004',
     fontSize: 12,
     marginBottom: 10,
   },
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -115,10 +139,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
   },
+
   title: {
     color: '#0B3142',
     textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
+    fontFamily: 'Inter Bold',  // Ensure Inter font is properly loaded in your project
     fontSize: 40,
     fontStyle: 'normal',
     fontWeight: '400',
@@ -126,53 +151,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     marginBottom: 24,
   },
-  smallButton: {
-    width: 126,
-    height: 43,
-    flexShrink: 0,  // Prevents shrinking
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#0F5257',
-    justifyContent: 'center', // Center content vertically
-    alignItems: 'center',     // Center content horizontally
-    marginBottom: 23,
-  },
-  largeButton: {
-    flexDirection: 'row',      // Arrange items horizontally
-    alignItems: 'center',      // Align items vertically centered
-    padding: 10,
-    width: 263,
-    height: 43,
-    flexShrink: 0,  // Prevents shrinking in flex containers
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#0F5257',
-    justifyContent: 'center',  // Center content vertically if needed
-    paddingHorizontal: 10,     // Add padding to control text placement
-    marginBottom: 23,
-  },
-  buttonText: {
-    color: '#FFF',
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Make sure Inter font is loaded in your project
-    fontSize: 20,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 20,  // Use a numeric value for lineHeight in React Native
-    letterSpacing: 0.2,
-  },
+  
   text: {
     color: '#0B3142',
     textAlign: 'center',
     fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
     fontSize: 24,
+
     fontStyle: 'normal',
     fontWeight: '400',
     lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
     letterSpacing: 0.24,
-    marginBottom: 23,
   },
   socialIcon: {
     width: 24,

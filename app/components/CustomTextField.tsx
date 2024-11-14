@@ -1,5 +1,7 @@
+import { appStyles } from '@/styles/styles';
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
+import { ViewProps } from 'react-native-svg/lib/typescript/fabric/utils';
 
 export default function CustomTextField({
     value,
@@ -17,9 +19,11 @@ export default function CustomTextField({
     keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad', // specify accepted types
     autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters',       // specify accepted types
     secureTextEntry?: boolean
+    style?: ViewProps,
+
   }) {
     return (
-      <View>
+      <View style={appStyles.InputFieldContainer}>
         <TextInput
           testID={testID}
           style={[styles.input, styles.inputText]}
@@ -50,7 +54,6 @@ const styles = StyleSheet.create({
         elevation: 4,  // Required for Android shadow support
         flexShrink: 0, // Prevents the element from shrinking
         paddingLeft: 16,
-        marginBottom: 23,
         textAlign: 'left',
         alignItems: 'center',
       },

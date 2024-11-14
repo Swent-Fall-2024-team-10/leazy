@@ -1,101 +1,84 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
-import CustomTextField from '@/app/components/CustomTextField';
-import CustomButton from '@/app/components/CustomButton';
-import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '../../../types/types';  // Import or define your navigation types
-
-
-const VALID_CODE = '1234';
-
-interface FormErrors {
-  code?: string;
-}
+import React, { useState } from "react";
+import { View, Text } from "react-native";
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+} from "@react-navigation/native";
+import { RootStackParamList } from "@/types/types";
+import {
+  validateTenantCode,
+  add_new_tenant,
+} from "@/firebase/firestore/firestore";
+import { appStyles, ButtonDimensions, Color, stylesForHeaderScreens, stylesForNonHeaderScreens } from "@/styles/styles";
+import { SafeAreaView } from "react-native-safe-area-context";
+import InputField from "@/app/components/forms/text_input";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 export default function CodeEntryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [code, setCode] = useState('');
-  const [errors, setErrors] = useState<FormErrors>({});
-
-  const validateForm = (): FormErrors => {
-    let newErrors: FormErrors = {};
-    if (code != VALID_CODE) newErrors.code= 'This code does not exist or has expired';
-    return newErrors;
+  const route = useRoute();
+  const { userId, email } = route.params as {
+    userId: string;
+    email: string;
   };
+  const [code, setCode] = useState("");
+  const [errors, setErrors] = useState<{ code?: string }>({});
 
-  const handleSubmit = () => {
-    const formErrors = validateForm();
-    const isValidCode = code === VALID_CODE;
-    console.log(`Code is ${isValidCode ? 'valid' : 'invalid'}`);
-
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
+  const handleSubmit = async () => {
+    try {
+      const tenantCodeId = await validateTenantCode(code);
+      if (tenantCodeId === null) {
+        setErrors({ code: "Invalid code" });
+        throw new Error("Invalid code");
+      }
+      navigation.navigate("CodeApproved", { tenantCodeId }); // Navigate to the next screen and pass the code
+    } catch (error) {
+      console.error("Failed to add new tenant:", error);
+      alert("There was an error adding the tenant. Please try again.");
     }
-    
-    navigation.navigate('CodeApproved' as never);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Leazy</Text>
-      <Text style={styles.text}>Do you already have a code?</Text>
-      <CustomTextField
-        placeholder="Enter code"
-        value={code}
-        onChangeText={setCode}
-      />
-      <CustomButton size="medium" onPress={handleSubmit} title="Submit code"/>
-      {errors.code && <Text style={styles.errorText}>{errors.code}</Text>}
-      <Text style={styles.text}>
-        If you don't have a code please ask your residence manager to generate one for you.
-      </Text>
-    </View>
+    <SafeAreaView style={[appStyles.screenContainer, { flex: 1 }]} >
+
+      <View style={[appStyles.screenContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={stylesForNonHeaderScreens.title}>Welcome to Leazy</Text>
+        <Text style={stylesForNonHeaderScreens.text}>
+          Do you already have a code?
+        </Text>
+        <View style={{ marginBottom: 25, width: '80%' }}>
+          <InputField
+            backgroundColor={Color.TextInputBackground}
+            testID="code-input"
+            placeholder="Enter code"
+            value={code}
+            height={40}
+            setValue={setCode}
+            style={[{ flex: 0 }]}
+          />
+        </View>
+
+        <SubmitButton
+          testID="submit-code-button"
+          textStyle={appStyles.submitButtonText}
+          onPress={handleSubmit}
+          label="Submit code"
+          width={ButtonDimensions.mediumButtonWidth}
+          height={ButtonDimensions.mediumButtonHeight}
+          disabled={false}
+          style={[ appStyles.submitButton ,{ marginBottom: 20 }]}
+        />
+        {errors.code && (
+          <Text style={stylesForNonHeaderScreens.errorText}>{errors.code}</Text>
+        )}
+
+        <Text style={[stylesForNonHeaderScreens.text, {padding : '5%'}]}>
+          If you don't have a code please ask your residence manager to generate
+          one for you.
+        </Text>
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
-  },
-  title: {
-    color: '#0B3142',
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
-    fontSize: 40,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 40,  // Use a numeric value for lineHeight in React Native
-    letterSpacing: 0.4,
-    marginBottom: 24,
-  },
-  text: {
-    color: '#0B3142',
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
-    fontSize: 24,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
-    letterSpacing: 0.24,
-    marginBottom: 23,
-  },
-  errorText: {
-    color: '#FF0004',
-    textAlign: 'center',
-    fontFamily: 'Inter',
-    fontSize: 16,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 16,
-    letterSpacing: 0.16,
-    marginBottom: 20,
-    marginTop: 20,
-    width: 186
-  },
-});

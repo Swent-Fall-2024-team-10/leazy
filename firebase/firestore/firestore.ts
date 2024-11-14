@@ -681,6 +681,8 @@ export async function deleteUsedTenantCodes(): Promise<number> {
   } catch (error) {
     throw error;
   }
+}
+/*
  * Returns a Firestore query for washing machines by residenceId.
  * This query can be used with onSnapshot to listen for real-time updates.
  * @param residenceId - The unique identifier of the residence.

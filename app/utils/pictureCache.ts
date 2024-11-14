@@ -95,6 +95,11 @@ export const getPictureBlob = async (picId: string): Promise<Blob> => {
  * @returns {Promise<void>}
  */
 export const clearPictures = async (picIds: string[]): Promise<void> => {
+  // Do nothing if picIds is empty
+  if (picIds.length === 0) {
+    return;
+  }
+  
   try {
     await Promise.all(
       picIds.map(async (picId) => {

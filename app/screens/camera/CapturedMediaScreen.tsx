@@ -9,8 +9,8 @@ import { storage } from '../../../firebase/firebase'; // Import storage from you
 import { ReportStackParamList } from '@/types/types';
 import { usePictureContext } from '@/app/context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { cacheImage } from '../../utils/pictureCache';
-import { Color, IconDimension } from '@/styles/styles';
+import { cacheFile, picFileUri } from '../../utils/cache';
+import { IconDimension, Color } from '@/styles/styles';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -61,7 +61,10 @@ const handleUpload = useCallback(async () => {
     const blob = await response.blob();
     
     // Store image in cache
-    const fileUri = await cacheImage(blob, Date.now().toString());
+    
+    
+    const fileUri = picFileUri(Date.now().toString());
+    await cacheFile(blob, fileUri);
     console.log(`Image saved to cache: ${fileUri}`);
     addPicture(fileUri);
 

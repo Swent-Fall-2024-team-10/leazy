@@ -6,7 +6,7 @@ enum UserType {
 }
 
 // Mock the entire module
-jest.mock('../../firebase/auth/auth', () => ({
+jest.mock('../../../firebase/auth/auth', () => ({
   emailAndPasswordSignIn: jest.fn(),
   emailAndPasswordLogIn: jest.fn(),
   deleteAccount: jest.fn(),

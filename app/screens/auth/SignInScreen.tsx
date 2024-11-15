@@ -63,8 +63,7 @@ export default function SignInScreen() {
       onRequestClose={() => setPopup(false)}
       >
       < CustomPopUp
-        testIDPopup="signInPopup"
-        testIDButton="signInPopupCloseButton"
+        testID="signInPopup"
         text = "An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct."
         onPress = {() => setPopup(false)}
       />

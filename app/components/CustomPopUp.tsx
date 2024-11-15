@@ -2,9 +2,9 @@ import React from "react";
 import { Text, StyleSheet, View , TouchableOpacity} from "react-native";
 import { Color, FontSizes } from "../../styles/styles";
 
-export default function CustomPopUp({text, onPress, testIDPopup, testIDButton}: {text: string, onPress: () => void, testIDPopup: string, testIDButton: string}) {
+export default function CustomPopUp({text, onPress, testID}: {text: string, onPress: () => void, testID: string}) {
   return (
-    <View testID={testIDPopup} style={styles.overlay}>
+    <View testID={testID} style={styles.overlay}>
         <View style={styles.frame}>
             <Text style={styles.header}>Error</Text>
             
@@ -12,7 +12,7 @@ export default function CustomPopUp({text, onPress, testIDPopup, testIDButton}: 
 
             <View style={styles.buttonsContainer}>
                 
-            <TouchableOpacity onPress={onPress} testID={testIDButton} style={[styles.button, styles.shadow]}>
+            <TouchableOpacity onPress={onPress} testID={`${testID}CloseButton`} style={[styles.button, styles.shadow]}>
           <Text style={styles.buttonText}>Ok</Text>
         </TouchableOpacity>
             </View>

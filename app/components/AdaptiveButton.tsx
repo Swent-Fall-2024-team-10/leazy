@@ -1,4 +1,4 @@
-import { appStyles, defaultButtonRadius, ButtonDimensions, Color } from '@/styles/styles';
+import { appStyles, defaultButtonRadius, ButtonDimensions, Color } from '../../styles/styles';
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
 

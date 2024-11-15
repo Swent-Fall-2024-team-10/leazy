@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '../../components/buttons/SubmitButton';
 import { createTenant, createUser } from '../../../firebase/firestore/firestore';
 import { TUser, Tenant, RootStackParamList, AuthStackParamList} from '../../../types/types';
-import { TenantFormScreen } from '../tenant/';
 import { User } from 'react-native-feather';
 
 interface FormErrors {
@@ -139,14 +138,15 @@ export default function SignUpScreen() {
               onRequestClose={() => setPopup(false)}
           >
             <CustomPopUp
-              testID="signUpPopup"
+              testIDPopup="signUpPopup"
+              testIDButton='signUpPopupCloseButton'
               text= 'An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
               onPress={() => setPopup(false)}
             />
           </Modal>
         )}
 
-        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack}>
+        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack} testID='backButton'>
           <Ionicons name="arrow-back" size={FontSizes.backArrow} color={Color.ButtonBackground} style={appStyles.backButton} />
         </TouchableOpacity>
 

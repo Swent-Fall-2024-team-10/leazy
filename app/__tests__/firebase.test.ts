@@ -1,4 +1,4 @@
-import { User, Landlord, Tenant, Residence } from "../../../types/types";
+import { TUser, Landlord, Tenant, Residence } from "../../types/types";
 import {
   createUser,
   getUser,
@@ -16,7 +16,7 @@ import {
   updateResidence,
   deleteResidence,
   add_new_tenant,
-} from "../../../firebase/firestore/firestore";
+} from "../../firebase/firestore/firestore";
 
 const {
   getFirestore,
@@ -33,7 +33,7 @@ const {
   arrayUnion,
 } = require("firebase/firestore");
 
-const mockUser: User = {
+const mockUser: TUser = {
   uid: "123",
   type: "tenant",
   name: "Test User",
@@ -85,11 +85,11 @@ describe("Firestore Functions", () => {
     });
 
     it("should throw an error if user data is invalid", async () => {
-      const invalidUser: Partial<User> = {
+      const invalidUser: Partial<TUser> = {
         uid: "789",
         email: "invalid@user.com",
       };
-      await expect(createUser(invalidUser as User)).rejects.toThrow(
+      await expect(createUser(invalidUser as TUser)).rejects.toThrow(
         "Cannot read properties of undefined (reading 'id')"
       );
     });
@@ -559,12 +559,12 @@ describe("Firestore Functions", () => {
     });
   });
 
-  jest.mock("../../../firebase/firestore/firestore", () => ({
+  jest.mock("../../firebase/firestore/firestore", () => ({
     createUser: jest.fn(),
     createTenant: jest.fn().mockResolvedValue(undefined), // Mock tenant creation
   }));
 
-  jest.mock("../../../firebase/firebase", () => ({
+  jest.mock("../../firebase/firebase", () => ({
     auth: {
       currentUser: {
         uid: "testAuthUserId",

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '@/app/components/Header';
-import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '@/firebase/firestore/firestore';
-import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '@/types/types';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import Header from '../../components/Header';
+import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
+import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '../../../types/types';
 import { getAuth } from 'firebase/auth';
 
 // portions of this code were generated with chatGPT as an AI assistant

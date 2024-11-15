@@ -15,20 +15,20 @@ import {
   MaintenanceRequest,
   ReportStackParamList,
   RootStackParamList,
-} from "@/types/types";
+} from "../../../types/types";
 import { MessageSquare } from "react-native-feather";
-import StatusDropdown from "@/app/components/StatusDropdown";
-import Header from "@/app/components/Header";
-import StatusBadge from "@/app/components/StatusBadge";
-import AdaptiveButton from "@/app/components/AdaptiveButton";
+import StatusDropdown from "../../components/StatusDropdown";
+import Header from "../../components/Header";
+import StatusBadge from "../../components/StatusBadge";
+import AdaptiveButton from "../../components/AdaptiveButton";
 import {
   getMaintenanceRequest,
   updateMaintenanceRequest,
-} from "@/firebase/firestore/firestore";
-import Spacer from "@/app/components/Spacer";
-import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "@/styles/styles";
+} from "../../../firebase/firestore/firestore";
+import Spacer from "../../components/Spacer";
+import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
+import SubmitButton from "../../components/buttons/SubmitButton";
 
 // portions of this code were generated with chatGPT as an AI assistant
 

@@ -159,6 +159,7 @@ const LandlordFormScreen = () => {
           height={55}
           label="Next"
           style={styles.submitButtonCustom}
+          testID="submitButton"
         />
       </ScrollView>
     </SafeAreaView>

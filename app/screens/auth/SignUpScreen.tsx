@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal } from 'react-native';
-import CustomTextField from '../../../app/components/CustomTextField';
-import CustomPicker from '../../../app/components/CustomPicker';
+import CustomTextField from '../../components/CustomTextField';
+import CustomPicker from '../../components/CustomPicker';
 import { emailAndPasswordSignIn, UserType } from '../../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import CustomPopUp from '../../../app/components/CustomPopUp';
+import CustomPopUp from '../../components/CustomPopUp';
 import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '../../../styles/styles';
 import { Ionicons } from '@expo/vector-icons';
-import SubmitButton from '../../../app/components/buttons/SubmitButton';
+import SubmitButton from '../../components/buttons/SubmitButton';
 import { createTenant, createUser } from '../../../firebase/firestore/firestore';
-import { User, Tenant, RootStackParamList, AuthStackParamList} from '../../../types/types';
-import { TenantFormScreen } from '../tenant/';
+import { TUser, Tenant, RootStackParamList, AuthStackParamList} from '../../../types/types';
 
 interface FormErrors {
   firstName?: string;
@@ -63,7 +62,7 @@ export default function SignUpScreen() {
         if (userType === UserType.LANDLORD) {
 
           if (user.providerData[0].email != null) {
-          const newUser: User = {
+          const newUser: TUser = {
             uid: user.uid,
             type: "landlord",
             name: "",
@@ -86,7 +85,7 @@ export default function SignUpScreen() {
         } else if (userType === UserType.TENANT) {
             console.log("User signed up:", user);
             if (user.providerData[0].email != null) {
-            const newUser: User = {
+            const newUser: TUser = {
               uid: user.uid,
               type: "tenant",
               name: "",
@@ -105,9 +104,8 @@ export default function SignUpScreen() {
             else {
               throw new Error("Email is null");
             }
-            console.log(navigation.getState().routes);
+          
           navigation.navigate("TenantForm", { userId: user.uid, email });
-          console.log(navigation.getState().routes);
 
           
         }
@@ -146,7 +144,7 @@ export default function SignUpScreen() {
           </Modal>
         )}
 
-        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack}>
+        <TouchableOpacity style={appStyles.backButton} onPress={navigation.goBack} testID='backButton'>
           <Ionicons name="arrow-back" size={FontSizes.backArrow} color={Color.ButtonBackground} style={appStyles.backButton} />
         </TouchableOpacity>
 
@@ -214,7 +212,7 @@ export default function SignUpScreen() {
           label="Sign up with Google" 
           style={appStyles.submitButton} 
           textStyle={appStyles.submitButtonText}
-          image={require('@/assets/images/auth/google_logo.png')}
+          image={require('../../../assets/images/auth/google_logo.png')}
          />
 
       </View>

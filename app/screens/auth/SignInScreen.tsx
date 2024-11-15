@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-import CustomTextField from '@/app/components/CustomTextField';
-import { emailAndPasswordLogIn } from '@/firebase/auth/auth';
+import { View, Text, StyleSheet, Alert, Modal } from 'react-native';
+import CustomTextField from '../../components/CustomTextField';
+import { emailAndPasswordLogIn } from '../../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '@/types/types';  // Import or define your navigation types
-import CustomPopUp from '@/app/components/CustomPopUp';
-import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, ButtonDimensions } from '@/styles/styles';
+import { RootStackParamList } from '../../../types/types';  // Import or define your navigation types
+import CustomPopUp from '../../components/CustomPopUp';
+import { GoogleSignInButton } from '../../components/GoogleSignInButton';
+import SubmitButton from '../../components/buttons/SubmitButton';
+import { appStyles, ButtonDimensions } from '../../../styles/styles';
 
 
 interface FormErrors {
@@ -55,11 +55,19 @@ export default function SignInScreen() {
 
   return (
     <View style={styles.container}>
-      {popup && < CustomPopUp
+      <View>{popup && (
+      <Modal
+      transparent={true}
+      animationType="fade"
+      visible={popup}
+      onRequestClose={() => setPopup(false)}
+      >
+      < CustomPopUp
         testID="signInPopup"
         text = "An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct."
         onPress = {() => setPopup(false)}
-      />}
+      />
+      </Modal>)}</View>
 
       <Text style={[appStyles.screenHeader, { fontSize: 40 ,flex: 0, paddingBottom: '10%'}]}>Welcome back to Leazy</Text>
       
@@ -104,7 +112,7 @@ export default function SignInScreen() {
         width={ButtonDimensions.largeButtonWidth} 
         height={ButtonDimensions.largeButtonHeight} 
         label="Sign up" 
-        testID='signU'
+        testID='SignUp'
         style={appStyles.submitButton}
         textStyle={appStyles.submitButtonText}
       />

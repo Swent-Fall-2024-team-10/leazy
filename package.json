@@ -24,7 +24,7 @@
       "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(@react-native|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|@react-native-firebase|react-native-feather|@react-native-async-storage|@expo/vector-icons|expo-av)/)"
+      "node_modules/(?!(@react-native|react-native|expo-font|expo-av|expo-camera|expo-media-library|@react-navigation|expo-application|react-native-reanimated|expo-auth-session|@expo-google-fonts/.*|sentry-expo|react-native-svg|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|@react-native-firebase|@react-native-async-storage)/)"
     ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [
@@ -66,6 +66,7 @@
     "expo-constants": "~16.0.2",
     "expo-crypto": "~13.0.2",
     "expo-dev-client": "~4.0.28",
+    "expo-file-system": "~17.0.1",
     "expo-font": "~12.0.9",
     "expo-image-manipulator": "^12.0.5",
     "expo-linking": "~6.3.1",
@@ -93,8 +94,7 @@
     "react-native-screens": "^3.34.0",
     "react-native-svg": "^15.7.1",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-web": "~0.19.10",
-    "expo-file-system": "~17.0.1"
+    "react-native-web": "~0.19.10"
   },
   "devDependencies": {
     "@babel/core": "^7.25.8",
@@ -106,7 +106,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.1",
     "@testing-library/jest-native": "^5.4.3",
-    "@testing-library/react-native": "^12.7.2",
+    "@testing-library/react-native": "^12.8.1",
     "@types/jest": "^29.5.13",
     "@types/react": "~18.2.45",
     "@types/react-test-renderer": "^18.0.7",

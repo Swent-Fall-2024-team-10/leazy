@@ -485,7 +485,6 @@ export async function add_new_landlord(
     if (email !== auth.currentUser?.email) {
       throw new Error("Use the same email as the one you used to sign up.");
     }
-
     const userObj = await getUser(auth.currentUser.uid);
     if (!userObj) {
 
@@ -514,10 +513,7 @@ export async function add_new_landlord(
     };
 
     await setDoc(landlordDocRef, newLandlord); // Correct Firestore document creation
-
-    console.log("Landlord profile created successfully.");
   } catch (error) {
-    console.error("Error in add_new_landlord:", error);
     throw new Error("Failed to add new landlord.");
   }
 }
@@ -642,7 +638,6 @@ export async function validateTenantCode(
   inputCode: string
 ): Promise<string | null> {
   try {
-    console.log("inputCode:    ", inputCode);
     // fetch the UID of TenantCode who has this unique code: inputCode
     const tenantCodesRef = collection(db, "tenantCodes");
 
@@ -664,7 +659,6 @@ export async function validateTenantCode(
     
     return tenantCodeDoc.id;
   } catch (error) {
-    console.error("Error validating tenant code:", error);
     return null;
   }
 }
@@ -686,7 +680,6 @@ export async function deleteUsedTenantCodes(): Promise<number> {
     await Promise.all(deletePromises);
     return querySnapshot.size;
   } catch (error) {
-    console.error("Error deleting used tenant codes:", error);
     throw error;
   }
 }

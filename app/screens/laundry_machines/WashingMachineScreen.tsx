@@ -73,10 +73,12 @@ const WashingMachineScreen = () => {
       return (
         <View key={machine.laundryMachineId} style={styles.machineCard}>
           <View style={{ flexDirection: "row" }}>
+
             <Image
               source={require("@/assets/images/washing_machine_icon_png.png")}
               style={{ width: 120, height: 120, marginRight: '0.5%', marginLeft: '-1.5%' }}
             />
+
             <View
               style={{
                 flexDirection: "column",

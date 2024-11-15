@@ -1,16 +1,12 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Clipboard,
-  Share,
-  ActivityIndicator,
-} from "react-native";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import InputField from "@/app/components/forms/text_input";
-import Header from "@/app/components/Header";
-import { generate_unique_code } from "@/firebase/firestore/firestore";
-import { stylesForHeaderScreens, appStyles } from "@/styles/styles";
+import { View, Text, Share, ActivityIndicator } from "react-native";
+import SubmitButton from "../../../app/components/buttons/SubmitButton";
+import InputField from "../../../app/components/forms/text_input";
+import Header from "../../..//app/components/Header";
+import { generate_unique_code } from "../../../firebase/firestore/firestore";
+import { stylesForHeaderScreens, appStyles } from "../../../styles/styles";
+import ClipBoard from "@react-native-clipboard/clipboard";
+import { Alert } from "react-native"; 
 
 // This screen is for the landlord to create a new code for a new tenant
 // The code will be used by the tenant to access the app for a specific residence
@@ -22,7 +18,7 @@ export default function CodeCreationScreen() {
 
   const createCode = async () => {
     if (!residenceId || !apartmentId) {
-      alert("Please enter both Residence ID and Apartment ID.");
+      Alert.alert("Please enter both Residence ID and Apartment ID.");
       return;
     }
 
@@ -37,9 +33,9 @@ export default function CodeCreationScreen() {
       setCode(generatedCode); // Set the generated code
     } catch (error: any) {
       if (error instanceof Error) {
-        alert(error.message); // Backend-provided error messages
+        Alert.alert(error.message); // Backend-provided error messages
       } else {
-        alert("An unexpected error occurred. Please try again."); // Fallback for non-Error objects
+        Alert.alert("An unexpected error occurred. Please try again."); // Fallback for non-Error objects
       }
     } finally {
       setLoading(false); // End loading
@@ -47,8 +43,8 @@ export default function CodeCreationScreen() {
   };
 
   const copyToClipboard = () => {
-    Clipboard.setString(code);
-    alert("Code copied to clipboard!");
+    ClipBoard.setString(code);
+    Alert.alert("Code copied to clipboard!");
   };
 
   const shareCode = async () => {
@@ -58,9 +54,9 @@ export default function CodeCreationScreen() {
       });
     } catch (error) {
       if (error instanceof Error) {
-        alert(error.message);
+        Alert.alert(error.message);
       } else {
-        alert("An unknown error occurred");
+        Alert.alert("An unknown error occurred");
       }
     }
   };

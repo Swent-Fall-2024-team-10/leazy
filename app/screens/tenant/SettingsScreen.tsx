@@ -3,7 +3,7 @@ import { View, Text, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';  // Import icons for back arrow
 import { RootStackParamList, AuthStackParamList } from '@/types/types';  // Import or define your navigation types
-import { Color } from '@/styles/styles';  // Import your color styles
+import { Color } from '../../../styles/styles';  // Import your color styles
 import { auth } from '../../../firebase/firebase';  // Import Firebase auth
 import Header from '../../components/Header';
 // portions of this code were generated with chatGPT as an AI assistant
@@ -16,7 +16,7 @@ export default function SettingsScreen() {
       <View style={styles.container}>
         <Text style={styles.text}>Settings Screen</Text>
         
-        <TouchableOpacity onPress={ () => auth.signOut()} style={styles.signOutButton}>
+        <TouchableOpacity testID="touchableOpac" onPress={ () => auth.signOut()} style={styles.signOutButton}>
           <Text>Sign Out</Text>
         </TouchableOpacity>
 

@@ -1,5 +1,5 @@
 // Import Firestore database instance and necessary Firestore functions.
-import { db, auth } from "../firebase";
+import { db, auth } from "../../firebase/firebase";
 import {
   setDoc,
   doc,
@@ -16,7 +16,7 @@ import {
 
 // Import type definitions used throughout the functions.
 import {
-  TUser,
+  User,
   Landlord,
   Tenant,
   Residence,
@@ -33,7 +33,7 @@ import {
  * Creates a new user document in Firestore.
  * @param user - The user object to be added to the 'users' collection.
  */
-export async function createUser(user: TUser): Promise<string> {
+export async function createUser(user: User): Promise<string> {
   const usersCollectionRef = collection(db, "users");
   const docRef = await addDoc(usersCollectionRef, user);
   if (!docRef.id) {
@@ -49,14 +49,14 @@ export async function createUser(user: TUser): Promise<string> {
  */
 export async function getUser(
   uid: string
-): Promise<{ user: TUser; userUID: string } | null> {
+): Promise<{ user: User; userUID: string } | null> {
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("uid", "==", uid));
   const querySnapshot = await getDocs(q);
 
   if (!querySnapshot.empty) {
     const doc = querySnapshot.docs[0]; // Assume `uid` is unique, so take the first result
-    return { user: doc.data() as TUser, userUID: doc.id };
+    return { user: doc.data() as User, userUID: doc.id };
   } else {
     return null;
   }
@@ -67,7 +67,7 @@ export async function getUser(
  * @param uid - The unique identifier of the user to update.
  * @param user - The partial user data to update.
  */
-export async function updateUser(uid: string, user: Partial<TUser>) {
+export async function updateUser(uid: string, user: Partial<User>) {
   const docRef = doc(db, "users", uid);
   await updateDoc(docRef, user);
 }
@@ -248,6 +248,9 @@ export async function deleteResidence(residenceId: string) {
  * @param apartment - The apartment object to be added to the 'apartments' collection.
  */
 export async function createApartment(apartment: Apartment) {
+  if (!apartment.apartmentId || !apartment.residenceId) {
+    throw new Error("Invalid apartment data");
+  }
   const docRef = doc(db, "apartments", apartment.apartmentId);
   await setDoc(docRef, apartment);
 }
@@ -260,6 +263,9 @@ export async function createApartment(apartment: Apartment) {
 export async function getApartment(
   apartmentId: string
 ): Promise<Apartment | null> {
+  if (!apartmentId || typeof apartmentId !== "string") {
+    throw new Error("Invalid apartmentId");
+  }
   const docRef = doc(db, "apartments", apartmentId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Apartment) : null;
@@ -384,6 +390,10 @@ export async function getLaundryMachine(
   residenceId: string,
   machineId: string
 ): Promise<LaundryMachine | null> {
+  if (!residenceId || !machineId) {
+    throw new Error("Invalid laundry machine data");
+  }
+
   const docRef = doc(
     db,
     `residences/${residenceId}/laundryMachines`,
@@ -404,6 +414,14 @@ export async function updateLaundryMachine(
   machineId: string,
   machine: Partial<LaundryMachine>
 ) {
+  if (!residenceId || !machineId) {
+    throw new Error("Invalid laundry machine data");
+  }
+
+  if (machine.laundryMachineId !== machineId) {
+    throw new Error("Machine ID mismatch");
+  }
+
   const docRef = doc(
     db,
     `residences/${residenceId}/laundryMachines`,
@@ -457,8 +475,6 @@ export async function add_new_landlord(
     if (email !== auth.currentUser?.email) {
       throw new Error("Use the same email as the one you used to sign up.");
     }
-
-    console.log("Current user id:", auth.currentUser.uid);
     const userObj = await getUser(auth.currentUser.uid);
     if (!userObj) {
       throw new Error("User doesn't exist.");
@@ -486,10 +502,7 @@ export async function add_new_landlord(
     };
 
     await setDoc(landlordDocRef, newLandlord); // Correct Firestore document creation
-
-    console.log("Landlord profile created successfully.");
   } catch (error) {
-    console.error("Error in add_new_landlord:", error);
     throw new Error("Failed to add new landlord.");
   }
 }
@@ -645,7 +658,6 @@ export async function validateTenantCode(
   inputCode: string
 ): Promise<string | null> {
   try {
-    console.log("inputCode:    ", inputCode);
     // fetch the UID of TenantCode who has this unique code: inputCode
     const tenantCodesRef = collection(db, "tenantCodes");
 
@@ -666,7 +678,6 @@ export async function validateTenantCode(
     await updateDoc(tenantCodeRef, { used: true });
     return tenantCodeDoc.id;
   } catch (error) {
-    console.error("Error validating tenant code:", error);
     return null;
   }
 }
@@ -688,7 +699,6 @@ export async function deleteUsedTenantCodes(): Promise<number> {
     await Promise.all(deletePromises);
     return querySnapshot.size;
   } catch (error) {
-    console.error("Error deleting used tenant codes:", error);
     throw error;
   }
 }
@@ -699,6 +709,10 @@ export async function deleteUsedTenantCodes(): Promise<number> {
  * @returns An array of laundry machine objects.
  */
 export async function getAllLaundryMachines(residenceId: string) {
+  if (!residenceId || typeof residenceId !== "string") {
+    throw new Error("Invalid residence ID");
+  }
+
   const querySnapshot = await getDocs(
     collection(db, `residences/${residenceId}/laundryMachines`)
   );

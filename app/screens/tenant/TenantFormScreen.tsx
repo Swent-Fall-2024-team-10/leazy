@@ -58,17 +58,18 @@ const TenantFormScreen = () => {
       } else {
         Alert.alert("Error", "An unknown error occurred");
       }
-      console.error(error);
     }
   };
 
   return (
     <SafeAreaView style={{ backgroundColor: Color.ScreenBackground }}>
-      <ScrollView contentContainerStyle={{ padding: '5%', marginTop: '10%' }}
-      automaticallyAdjustKeyboardInsets={true}
+      <ScrollView
+        contentContainerStyle={{ padding: "5%", marginTop: "10%" }}
+        automaticallyAdjustKeyboardInsets={true}
       >
-        
-        <Text style={[styles.header, {marginBottom: '12%'}]}>Tenant Profile</Text>
+        <Text style={[styles.header, { marginBottom: "12%" }]}>
+          Tenant Profile
+        </Text>
 
         <View style={styles.row}>
           <InputField
@@ -190,9 +191,8 @@ const TenantFormScreen = () => {
             onPress={() => {}}
             width={ButtonDimensions.fullWidthButtonWidth}
             height={ButtonDimensions.veryLargeButtonHeight}
-            label="Upload university proof of attendance">
-          </SubmitButton>
-        
+            label="Upload university proof of attendance"
+          ></SubmitButton>
         </View>
 
         <SubmitButton

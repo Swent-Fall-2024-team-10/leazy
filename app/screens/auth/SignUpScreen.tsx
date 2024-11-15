@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '../../components/buttons/SubmitButton';
 import { createTenant, createUser } from '../../../firebase/firestore/firestore';
 import { TUser, Tenant, RootStackParamList, AuthStackParamList} from '../../../types/types';
-import { User } from 'react-native-feather';
 
 interface FormErrors {
   firstName?: string;

@@ -28,7 +28,6 @@ import {
   SignUpScreen,
 } from "./screens/auth";
 import { CameraScreen, CapturedMediaScreen } from "./screens/camera";
-import { MessagingScreen } from "./screens/messaging";
 import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
 import CreateNewCode from "./screens/landlord/CreateNewCode";
 import WashingMachineScreen from "./screens/laundry_machines/WashingMachineScreen";
@@ -184,11 +183,6 @@ const IssueStackNavigator = () => {
         name="CapturedMedia"
         component={CapturedMediaScreen}
         options={{ headerShown: true }}
-      />
-      <Stack.Screen
-        name="Messaging"
-        component={MessagingScreen}
-        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

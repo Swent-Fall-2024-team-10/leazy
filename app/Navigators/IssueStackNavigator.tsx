@@ -37,11 +37,6 @@ const IssueStackNavigator = () => {
                 component={CapturedMediaScreen}
                 options={{ headerShown: true }}
             />
-            <Stack.Screen
-                name="Messaging"
-                component={MessagingScreen}
-                options={{ headerShown: false }}
-            />
         </Stack.Navigator>
     );
 };

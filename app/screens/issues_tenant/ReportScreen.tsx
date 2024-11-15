@@ -119,9 +119,8 @@ export default function ReportScreen() {
 
       Alert.alert("Success", "Your maintenance request has been submitted.");
       resetStates();
-      const nextScreen = tick ? "Messaging" : "Issues";
       setTick(false);
-      navigation.navigate(nextScreen);
+      navigation.navigate("Issues");
     } catch (error) {
       Alert.alert(
         "Error",

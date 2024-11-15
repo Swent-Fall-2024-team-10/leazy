@@ -10,6 +10,7 @@ import CapturedMediaScreen from '../screens/CapturedMediaScreen';
 const Stack = createNativeStackNavigator();
 
 export default function CameraStack() {
+  
   // Line added for testing camera
   return (
     <NavigationContainer>

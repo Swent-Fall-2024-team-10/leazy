@@ -16,6 +16,7 @@ import {
   updateLaundryMachine,
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
+import { Timestamp } from "firebase/firestore";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 import { Color } from "@/styles/styles";
 
@@ -53,6 +54,12 @@ const ManageMachinesScreen = () => {
       laundryMachineId: newMachineId,
       isAvailable: true,
       isFunctional: true,
+
+      occupiedBy: "none",
+      startTime: Timestamp.fromMillis(Date.now()),
+      estimatedFinishTime: Timestamp.fromMillis(Date.now()),
+      notificationScheduled: false,
+
     };
 
     await createLaundryMachine(residenceId, newMachine);
@@ -96,7 +103,7 @@ const ManageMachinesScreen = () => {
           {item.isFunctional ? "Functional" : "Under Maintenance"}
         </Text>
       </View>
-      <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+
       <TouchableOpacity
         style={styles.toggleButton}
         onPress={() => toggleMaintenanceStatus(item)}
@@ -114,7 +121,7 @@ const ManageMachinesScreen = () => {
         <Text style={styles.buttonText}>Delete Machine</Text>
       </TouchableOpacity>
     </View>
-    </View>
+
   );
 
   return (
@@ -129,8 +136,7 @@ const ManageMachinesScreen = () => {
           {/* Input for adding a new machine */}
           <View style={styles.inputContainer}>
             <TextInput
-              style={[styles.input , {backgroundColor : Color.TextInputBackground}]}
-              placeholderTextColor={Color.TextInputPlaceholder}
+              style={styles.input}
               placeholder="Enter Machine ID"
               value={newMachineId}
               onChangeText={setNewMachineId}
@@ -224,7 +230,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.23,
     borderRadius: 25,
     marginTop: 10,
-    width: "80%",
   },
   deleteButton: {
     backgroundColor: "#ff4d4d",
@@ -238,7 +243,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.23,
     marginTop: 10,
-    width: "80%",
   },
   buttonText: {
     color: "#fff",

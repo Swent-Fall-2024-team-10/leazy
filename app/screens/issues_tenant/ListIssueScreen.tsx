@@ -54,7 +54,7 @@ const IssueItem: React.FC<IssueItemProps> = ({
       </View>
       
       {issue.requestStatus === 'completed' && !isArchived && (
-        <TouchableOpacity onPress={onArchive} style={styles.archiveButton}>
+        <TouchableOpacity onPress={onArchive} style={styles.archiveButton} testID="archiveButton">
           <Feather name="archive" size={24} color="#2C3E50" />
         </TouchableOpacity>
       )}

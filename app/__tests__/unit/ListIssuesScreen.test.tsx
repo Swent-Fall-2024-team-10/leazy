@@ -73,7 +73,7 @@ describe("MaintenanceIssues", () => {
     // Wait for maintenance issues to load and display
     await waitFor(() => expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith("mockTenantId"));
     expect(screen.getByText("Leaky faucet")).toBeTruthy();
-    expect(screen.getByText("Status: in progress")).toBeTruthy();
+    expect(screen.getByText("in Progress")).toBeTruthy();
   });
 
   test("toggles archived issues switch", async () => {

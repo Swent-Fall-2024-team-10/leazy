@@ -124,7 +124,7 @@ const LandlordListIssuesScreen: React.FC = () => {
             <Text>Archived issues</Text>
             <Switch style={[{ marginLeft: 8 }, {marginRight: 48}, 
                 {marginBottom: 8}, {marginTop: 8}]}
-                value={showArchived} onValueChange={setShowArchived} />
+                value={showArchived} onValueChange={setShowArchived} testID='archivedSwitch' />
             {/* Filter button */}
             <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
                 <Feather name="filter" size={24} color="black" />

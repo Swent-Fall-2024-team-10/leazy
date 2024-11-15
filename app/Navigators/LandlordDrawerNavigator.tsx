@@ -27,7 +27,6 @@ const LandlordDrawerNavigator = () => {
 
       <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
       <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
-      <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
       <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
       <Drawer.Screen name="ManageTenants" component={SettingsScreen} />
     </Drawer.Navigator>

@@ -122,8 +122,8 @@ const WashingMachineScreen = () => {
             </View>
           </View>
         </View>
-      </View>
-    ));
+      );
+    });
   };
 
   return (
@@ -132,6 +132,9 @@ const WashingMachineScreen = () => {
         <View style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
           <ScrollView
+            contentContainerStyle={
+              machines.length === 0 && styles.centeredContent
+            }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -139,7 +142,13 @@ const WashingMachineScreen = () => {
               />
             }
           >
-            {renderMachines()}
+            {machines.length === 0 ? (
+              <Text style={styles.noMachinesText}>
+                No washing machines available
+              </Text>
+            ) : (
+              renderMachines()
+            )}
           </ScrollView>
           <Modal
             visible={isTimerModalVisible}
@@ -165,11 +174,12 @@ const WashingMachineScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0.69,
     padding: 20,
   },
   title: {
     fontSize: 24,
+    fontFamily: "Inter", // Make sure Inter font is loaded in your project
     fontWeight: "bold",
     marginBottom: 20,
   },
@@ -190,53 +200,38 @@ const styles = StyleSheet.create({
     color: "#0F5257",
     fontWeight: "600",
   },
-  available: {
-    color: "green",
-    fontWeight: "bold",
+  statusBubble: {
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    marginTop: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  inUse: {
-    color: "orange",
-    fontWeight: "bold",
-  },
-  functional: {
-    color: "blue",
-    fontWeight: "bold",
-  },
-  underMaintenance: {
-    color: "red",
-    fontWeight: "bold",
-  },
-  timerButton: {
-    padding: 10,
-    width: 200,
-    marginTop: 10,
-  },
-  timerButtonText: {
+  statusText: {
     color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
     textAlign: "center",
   },
-  modalOverlay: {
+  availableBubble: {
+    backgroundColor: "green",
+  },
+  inUseBubble: {
+    backgroundColor: "orange",
+  },
+  underMaintenanceBubble: {
+    backgroundColor: "red",
+  },
+  centeredContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  modalBubble: {
-    width: 250,
-    padding: 20,
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalTitle: {
+  noMachinesText: {
     fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
+    color: "gray",
+    textAlign: "center",
   },
   modalOverlay: {
     flex: 1,

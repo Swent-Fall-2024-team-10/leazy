@@ -94,14 +94,10 @@ export type Apartment = {
 };
 
 export type LaundryMachine = {
-laundryMachineId: string;
-isAvailable: boolean;
-isFunctional: boolean;
-occupiedBy: string; //for a userID
-startTime: Timestamp;
-estimatedFinishTime: Timestamp;
-notificationScheduled: boolean;
-}
+  laundryMachineId: string;
+  isAvailable: boolean;
+  isFunctional: boolean;
+};
 
 export type MaintenanceRequest = {
   requestID: string;

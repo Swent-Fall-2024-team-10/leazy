@@ -4,7 +4,6 @@ import {
   Text,
   Button,
   Modal,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   RefreshControl,
@@ -14,12 +13,11 @@ import Header from "@/app/components/Header";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { LaundryMachine, RootStackParamList } from "@/types/types";
 import { getAllLaundryMachines } from "@/firebase/firestore/firestore";
-import CustomButton from "@/app/components/CustomButton";
-import StatusBadge from "@/app/components/StatusBadge";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { appStyles } from "@/styles/styles";
 
 const WashingMachineScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
@@ -27,7 +25,7 @@ const WashingMachineScreen = () => {
     null
   );
   const [refreshing, setRefreshing] = useState(false);
-  const residenceId = "TEMPLATE_RESIDENCE_ID_FOR_WASHING_MACHINE"; // Replace with the actual residence ID
+  const residenceId = "TestResidence1"; // Replace with the actual residence ID
 
   const fetchMachines = async () => {
     setRefreshing(true);
@@ -37,13 +35,8 @@ const WashingMachineScreen = () => {
   };
 
   useEffect(() => {
-    const initialMachines: LaundryMachine[] = [
-      { laundryMachineId: "123", isAvailable: true, isFunctional: true },
-      { laundryMachineId: "456", isAvailable: true, isFunctional: true },
-      { laundryMachineId: "789", isAvailable: true, isFunctional: false },
-    ];
-    setMachines(initialMachines);
-  }, []);
+    fetchMachines();
+  }, [residenceId]);
 
   const handleSetTimer = () => {
     if (selectedMachineId) {
@@ -61,42 +54,70 @@ const WashingMachineScreen = () => {
     );
   };
 
+  const getStatus = (machine: LaundryMachine) => {
+    if (!machine.isFunctional) {
+      return {
+        statusText: "Under Maintenance",
+        style: styles.underMaintenanceBubble,
+      };
+    }
+    return machine.isAvailable
+      ? { statusText: "Available", style: styles.availableBubble }
+      : { statusText: "In Use", style: styles.inUseBubble };
+  };
+
   const renderMachines = () => {
-    return machines.map((machine) => (
-      <View key={machine.laundryMachineId} style={styles.machineCard}>
-        <View style={{ flexDirection: "row" }}>
-          <Image
-            source={require("@/assets/images/washing_machine_icon_png.png")}
-            style={{ width: 100, height: 100, marginRight: 20 }}
-          />
-          <View style={{ flexDirection: "column", alignItems: "center", position: "relative" }}>
-            <Text style={styles.machineTitle}>
-              Machine ID: {machine.laundryMachineId}
-            </Text>
-            <Text style={machine.isAvailable ? styles.available : styles.inUse}>
-              {machine.isAvailable ? "Available" : "In Use"}
-            </Text>
-            <Text
-              style={
-                machine.isFunctional
-                  ? styles.functional
-                  : styles.underMaintenance
-              }
+    return machines.map((machine) => {
+      const { statusText, style } = getStatus(machine);
+
+      return (
+        <View key={machine.laundryMachineId} style={styles.machineCard}>
+          <View style={{ flexDirection: "row" }}>
+            <Image
+              source={require("@/assets/images/washing_machine_icon_png.png")}
+              style={{ width: 120, height: 120, marginRight: '0.5%', marginLeft: '-1.5%' }}
+            />
+            <View
+              style={{
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              {machine.isFunctional ? "Functional" : "Under Maintenance"}
-            </Text>
-            {machine.isAvailable && machine.isFunctional && (
-              <CustomButton
-                size="large"
-                style={{marginTop: 10, marginBottom: 10, width: 200}}
-                testID="set-timer-button"
-                onPress={() => {
-                  setSelectedMachineId(machine.laundryMachineId);
-                  setIsTimerModalVisible(true);
+              <Text style={styles.machineTitle}>
+                Machine number: {machine.laundryMachineId}
+              </Text>
+              <View style={[styles.statusBubble, style]}>
+                <Text style={styles.statusText}>{statusText}</Text>
+              </View>
+
+              {/* Placeholder View for consistent layout */}
+              <View
+                style={{
+                  height: 40,
+                  width: 200,
+                  marginTop: 10,
+                  marginBottom: 10,
+                  alignItems: "center",
                 }}
-                title="Set Laundry Timer"
-              />
-            )}
+              >
+                {machine.isAvailable && machine.isFunctional && (
+                  <SubmitButton
+                    testID="set-timer-button"
+                    textStyle={appStyles.submitButtonText}
+                    style={appStyles.submitButton}
+                    width={200}
+                    height={40}
+                    disabled={false}
+                    label="Set Laundry Timer"
+                    onPress={() => {
+                      setSelectedMachineId(machine.laundryMachineId);
+                      setIsTimerModalVisible(true);
+                    }}
+                  />
+                )}
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -163,7 +184,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   machineTitle: {
-    fontSize: 18,
+    fontSize: 20,
+    color: "#0F5257",
     fontWeight: "600",
   },
   available: {
@@ -190,6 +212,29 @@ const styles = StyleSheet.create({
   timerButtonText: {
     color: "#fff",
     textAlign: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalBubble: {
+    width: 250,
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
   },
   modalOverlay: {
     flex: 1,

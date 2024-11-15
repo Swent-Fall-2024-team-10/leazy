@@ -1,21 +1,17 @@
 // Import Firestore database instance and necessary Firestore functions.
-
 import { db, auth } from "../../firebase/firebase";
-
 import {
   setDoc,
   doc,
   getDoc,
-  getDocs,
   updateDoc,
   deleteDoc,
-  query,
   collection,
-  where,
-  Timestamp,
   addDoc,
+  query,
+  where,
+  getDocs,
   arrayUnion,
-
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -341,9 +337,7 @@ export async function getMaintenanceRequestsQuery(userID: string) {
 
   return query(
     collection(db, "maintenanceRequests"),
-
     where("tenantId", "==", userDocId)
-
   );
 }
 
@@ -454,7 +448,6 @@ export async function deleteLaundryMachine(
 }
 
 /**
-
  * Adds a new landlord to Firestore, creating a user profile and a landlord profile.
  * @param name - Full name of the landlord.
  * @param email - Email address of the landlord.
@@ -724,11 +717,9 @@ export async function deleteUsedTenantCodes(): Promise<number> {
  * @returns An array of laundry machine objects.
  */
 export async function getAllLaundryMachines(residenceId: string) {
-
   if (!residenceId || typeof residenceId !== "string") {
     throw new Error("Invalid residence ID");
   }
-
 
   const querySnapshot = await getDocs(
     collection(db, `residences/${residenceId}/laundryMachines`)
@@ -739,19 +730,3 @@ export async function getAllLaundryMachines(residenceId: string) {
   });
   return machines;
 }
-
-
-/**
- * Creates a notification document for a specific laundry machine.
- * @param machineId - The unique identifier of the laundry machine.
- * @param userId - The unique identifier of the user to be notified.
- * @returns A promise that resolves when the notification document is created.
- */
-export async function createMachineNotification(userId: string) {
-  const docRef = doc(db, "notifications", userId); // Creates a reference to the document in 'notifications' collection
-  await setDoc(docRef, {
-    userId: userId,
-    scheduledTime: Timestamp.now(), // The scheduled notification time
-  });
-}
-

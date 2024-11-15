@@ -2,8 +2,6 @@ import "react-native-gesture-handler";
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-
-
 import {
   TenantFormScreen,
   SubrentScreen,
@@ -12,7 +10,6 @@ import {
   HomepageScreen,
   MyRentScreen,
 } from "./screens/tenant/";
-
 import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -33,12 +30,10 @@ import {
 import { CameraScreen, CapturedMediaScreen } from "./screens/camera";
 import { MessagingScreen } from "./screens/messaging";
 import CustomDrawerContent from "@/app/components/drawer/CustomDrawer";
-
 import CreateNewCode from "./screens/landlord/CreateNewCode";
 import WashingMachineScreen from "./screens/laundry_machines/WashingMachineScreen";
 import ManageMachinesScreen from "./screens/laundry_machines/ManageMachinesScreen";
 import LandlordFormScreen from "./screens/landlord/LandlordFormScreen";
-
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -66,7 +61,6 @@ export default function App() {
     // You could return a loading spinner here while Firebase checks the auth state
     return null;
   }
-
 
   return (
     <PictureProvider>
@@ -121,7 +115,6 @@ const RootNavigator = () => {
         component={HomeDrawerNavigator}
         options={{ headerShown: false }}
       />
-
       {/* Tenant Onboarding Screens */}
       <Stack.Screen
         name="CodeEntry"
@@ -143,7 +136,6 @@ const RootNavigator = () => {
         component={LandlordFormScreen} // Ensure LandlordFormScreen is imported
         options={{ headerShown: false }}
       />
-
     </Stack.Navigator>
   );
 };

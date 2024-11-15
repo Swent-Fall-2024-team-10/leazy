@@ -1,4 +1,4 @@
-import { appStyles } from '@/styles/styles';
+import { appStyles } from '../../styles/styles';
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { ViewProps } from 'react-native-svg/lib/typescript/fabric/utils';

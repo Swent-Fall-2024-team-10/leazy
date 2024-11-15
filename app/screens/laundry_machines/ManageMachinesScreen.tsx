@@ -17,6 +17,8 @@ import {
   getAllLaundryMachines,
 } from "@/firebase/firestore/firestore";
 import { Timestamp } from "firebase/firestore";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { Color } from "@/styles/styles";
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -52,10 +54,12 @@ const ManageMachinesScreen = () => {
       laundryMachineId: newMachineId,
       isAvailable: true,
       isFunctional: true,
+
       occupiedBy: "none",
       startTime: Timestamp.fromMillis(Date.now()),
       estimatedFinishTime: Timestamp.fromMillis(Date.now()),
       notificationScheduled: false,
+
     };
 
     await createLaundryMachine(residenceId, newMachine);
@@ -99,6 +103,7 @@ const ManageMachinesScreen = () => {
           {item.isFunctional ? "Functional" : "Under Maintenance"}
         </Text>
       </View>
+
       <TouchableOpacity
         style={styles.toggleButton}
         onPress={() => toggleMaintenanceStatus(item)}
@@ -116,6 +121,7 @@ const ManageMachinesScreen = () => {
         <Text style={styles.buttonText}>Delete Machine</Text>
       </TouchableOpacity>
     </View>
+
   );
 
   return (

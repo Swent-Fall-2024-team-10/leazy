@@ -1,40 +1,53 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Image } from "react-native";
 import { Button } from "react-native-elements";
-import { Color, FontSizes } from "@/styles/styles";
-//import DropShadow from "react-native-drop-shadow";
+import { Color, FontSizes} from "../../../styles/styles";
+
 
 interface SubmitButtonProps {
-  disabled : boolean;
+  disabled: boolean;
   onPress: () => void;
   width: number;
   height: number;
   label: string;
+  style?: any; // Add an optional style prop
+  testID?: string;
+  image?: any;
+  textStyle?: any;
 }
 
-export default function SubmitButton({ disabled, onPress, width, height, label } : SubmitButtonProps) {
+export default function SubmitButton({ disabled, onPress, width, height, label, testID, style, textStyle, image} : SubmitButtonProps) {
   return (
     <View style={styles.submitContainer}>
-        <Button
+      <Button
         title={label}
-
         onPress={onPress}
         buttonStyle={[
-          styles.submitButton,
+          style,
           {
             width: width,
             height: height,
           },
         ]}
+        icon={
+          image ? (
+            <Image
+              source={image}
+              style={styles.iconStyle}
+              resizeMode="contain"  
+            />
+          ) : undefined
+        }
+        iconPosition="left"  
+        disabled={disabled}
+        disabledStyle={styles.submitButtonDisabled}
+        testID={testID}
 
         titleStyle={[
-          styles.submitText,
+          textStyle
         ]}
-        disabled={disabled} // Disable button interaction
-        disabledStyle={styles.submitButtonDisabled}
       />
     </View>
-
   );
 }
 
@@ -45,35 +58,23 @@ const styles = StyleSheet.create({
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.25,
         shadowRadius: 2,
-    },
-
-    submitButton : {
-        backgroundColor: Color.ButtonBackground,
-        borderColor: Color.ButtonBorder,
-        borderWidth: 1,
-        marginBottom: 200,
-        width: 170,
-        height: 44,
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
+        padding: '5%',
     },
 
     submitButtonDisabled : {
       backgroundColor: Color.ButtonBackgroundDisabled,
       borderColor: Color.ButtonBorder,
       borderWidth: 1,
-      width: 170,
-      height: 44,
       borderRadius: 100,
       justifyContent: 'center',
       alignItems: 'center',
     },
 
-    submitText : {
-        textAlign: 'center',
-        fontSize: FontSizes.ButtonText,
-        color: Color.ButtonText
+    iconStyle: {
+      position: 'absolute',
+      width: 25,      
+      height: 25,   
+      marginRight: '1%',
+      left: '5%'
     },
-
 });

@@ -1,13 +1,16 @@
+
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
+
   StyleSheet,
   ScrollView,
   RefreshControl,
   Image,
 } from "react-native";
 import Header from "@/app/components/Header";
+
 import { LaundryMachine } from "@/types/types";
 import {
   createMachineNotification,
@@ -24,11 +27,13 @@ import SubmitButton from "@/app/components/buttons/SubmitButton";
 const WashingMachineScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
+
   const [selectedMachineId, setSelectedMachineId] = useState<string | null>(
     null
   );
   const [refreshing, setRefreshing] = useState(false);
   const residenceId = "TestResidence1"; // Replace with the actual residence ID
+
   const [remainingTimes, setRemainingTimes] = useState<{
     [key: string]: string;
   }>({});
@@ -223,10 +228,12 @@ const WashingMachineScreen = () => {
     }
     setIsTimerModalVisible(false);
     setSelectedMachineId(null);
+
   };
 
   const syncTimerWithFirestore = (
     laundryMachineId: string,
+
     isAvailable: boolean,
     startTime: Timestamp,
     estimatedFinishTime: Timestamp
@@ -237,6 +244,7 @@ const WashingMachineScreen = () => {
       startTime: startTime,
       estimatedFinishTime: estimatedFinishTime,
     });
+
   };
 
   const getStatus = (machine: LaundryMachine) => {
@@ -258,11 +266,13 @@ const WashingMachineScreen = () => {
       return (
         <View key={machine.laundryMachineId} style={styles.machineCard}>
           <View style={{ flexDirection: "row" }}>
+
             <Image
             // eslint-disable-next-line @typescript-eslint/no-require-imports
               source={require("@/assets/images/washing_machine_icon_png.png")}
               style={{ width: 120, height: 120, marginRight: 20 }}
             />
+
             <View
               style={{
                 flexDirection: "column",
@@ -271,7 +281,9 @@ const WashingMachineScreen = () => {
               }}
             >
               <Text style={styles.machineTitle}>
+
                 Machine {machine.laundryMachineId}
+
               </Text>
               <View style={[styles.statusBubble, style]}>
                 <Text style={styles.statusText}>{statusText}</Text>
@@ -281,7 +293,9 @@ const WashingMachineScreen = () => {
               <View
                 style={{
                   height: 40,
+
                   width: 160,
+
                   marginTop: 10,
                   marginBottom: 10,
                   alignItems: "center",
@@ -289,16 +303,19 @@ const WashingMachineScreen = () => {
               >
                 {machine.isAvailable && machine.isFunctional && (
                   <SubmitButton
+
                     width={200}
                     height={40}
                     disabled={false}
                     label="Set Timer"
+
                     onPress={() => {
                       setSelectedMachineId(machine.laundryMachineId);
                       setIsTimerModalVisible(true);
                     }}
                   />
                 )}
+
                 {!machine.isAvailable && (
                   <Text style={styles.remainingTime}>
                     {remainingTimes[machine.laundryMachineId] ||
@@ -329,6 +346,7 @@ const WashingMachineScreen = () => {
                     onPress={() => handleResetMachine(machine.laundryMachineId)} 
                     disabled={false}                    />
                   )}
+
               </View>
             </View>
           </View>
@@ -361,6 +379,7 @@ const WashingMachineScreen = () => {
               renderMachines()
             )}
           </ScrollView>
+
           <TimerPickerModal
             visible={isTimerModalVisible}
             setIsVisible={setIsTimerModalVisible}
@@ -384,6 +403,7 @@ const WashingMachineScreen = () => {
               theme: "light",
             }}
           />
+
         </View>
       </Header>
     </>

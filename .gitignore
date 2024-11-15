@@ -1,4 +1,5 @@
 node_modules/
+coverage/
 .expo/
 dist/
 npm-debug.*
@@ -11,6 +12,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+package-lock.json
 
 # macOS
 .DS_Store
@@ -20,6 +22,3 @@ web-build/
 
 expo-env.d.ts
 # @end expo-cli
-
-# Ignore test coverage files
-coverage/

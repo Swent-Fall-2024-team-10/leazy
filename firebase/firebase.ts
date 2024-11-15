@@ -9,7 +9,7 @@ import { setLogLevel } from "firebase/firestore";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Enable logs
-setLogLevel("debug");
+// setLogLevel("debug");
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {

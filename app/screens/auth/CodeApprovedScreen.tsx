@@ -1,54 +1,47 @@
-import CustomButton from '@/app/components/CustomButton';
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-
-
+import React from "react";
+import { View, Text } from "react-native";
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+} from "@react-navigation/native";
+import { RootStackParamList } from "../../../types/types";
+import { appStyles, stylesForNonHeaderScreens } from "../../../styles/styles"; // Import globalStyles
+import { SafeAreaView } from "react-native-safe-area-context";
+import SubmitButton from "../../../app/components/buttons/SubmitButton";
 
 export default function CodeApprovedScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const { email, userId } = route.params as { email: string, userId: string };
+
   const address = "18 Chemin de Renens, 1004 Lausanne";
   const onNext = () => {
     console.log("Next button pressed");
-  }
+    navigation.navigate("TenantForm", { email, userId });
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.approvedText}>Code approved!</Text>
-      <Text style={styles.text}>
-        Welcome to {'\n'}{address}!
-      </Text>
-      <CustomButton size="medium" onPress={onNext} title="Next" testID='testNextButton'/>
-    </View>
+    <SafeAreaView style={appStyles.screenContainer}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={stylesForNonHeaderScreens.approvedText}>
+          Code approved!
+        </Text>
+        <Text style={stylesForNonHeaderScreens.text}>
+          Welcome to {"\n"}
+          {address}!
+        </Text>
+        <SubmitButton
+          testID="next-button"
+          textStyle={appStyles.submitButtonText}
+          onPress={onNext}
+          label="Next"
+          width={200}
+          height={40}
+          disabled={false}
+          style={appStyles.submitButton}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
-  },
-  approvedText: {
-    color: '#3AB700',
-    textAlign: 'center',
-    fontFamily: 'Inter',    // Ensure Inter font is linked to the project
-    fontSize: 40,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 48,         // React Native requires an explicit value, 48 is a suggested value
-    letterSpacing: 0.4,
-    marginBottom: 23,
-  },
-  text: {
-    color: '#0B3142',
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
-    fontSize: 24,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
-    letterSpacing: 0.24,
-    marginBottom: 30,
-  }
-});

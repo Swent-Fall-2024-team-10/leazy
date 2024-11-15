@@ -19,8 +19,7 @@ const LandlordListIssuesScreen: React.FC = () => {
   const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>({}); // Store tenants data by residence
 
   const auth = getAuth();
-  const currentUser = auth.currentUser;
-  const landlordId = currentUser ? currentUser.uid : null; // Fetch the landlord ID
+  const landlordId = auth.currentUser ? auth.currentUser.uid : null; // Fetch the landlord ID
 
   useEffect(() => {
     const fetchIssues = async () => {
@@ -31,7 +30,12 @@ const LandlordListIssuesScreen: React.FC = () => {
           }
   
           // Fetch tenant data and maintenance requests for that tenant
-          const landlord: Landlord | null = await getLandlord(landlordId);
+          const landlordObj = await getLandlord(landlordId);
+          if (!landlordObj) {
+            console.error("Landlord not found");
+            return;
+          }
+          const {landlord, landlordUID} = landlordObj;
 
         if (landlord && landlord.residenceIds.length > 0) {
           const fetchedResidences: Residence[] = [];
@@ -46,7 +50,10 @@ const LandlordListIssuesScreen: React.FC = () => {
 
               // Fetch tenants for each residence
               const tenantsForResidence = await Promise.all(
-                residence.tenantIds.map((tenantId) => getTenant(tenantId))
+                residence.tenantIds.map(async (tenantId) => {
+                  const tenantData = await getTenant(tenantId);
+                  return tenantData ? tenantData.tenant : null; // Extract only the tenant object, return null if no tenant found
+                })
               );
 
               // Filter out any null tenants

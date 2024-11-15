@@ -1,73 +1,79 @@
 import React from "react";
-import { View, Text, TextInput, TextStyle, StyleSheet, KeyboardAvoidingView } from "react-native";
-//import DropShadow from "react-native-drop-shadow";
-import { Color } from "@/styles/styles";
-import { UIManager } from 'react-native';
-
+import { View, Text, TextInput, StyleSheet, StyleProp, ViewStyle } from "react-native";
+import { appStyles, Color } from "../../../styles/styles";
 
 interface InputFieldProps {
-  label: string;
+  label?: string;
   value: string;
   setValue: (value: string) => void;
-  placeholder: string;
-  height: number;
-  radius: number;
-  width: number;
-  backgroundColor: string;
+  placeholder?: string;
+  height?: number;
+  width?: number;
+  radius?: number;
+  backgroundColor?: string;
+  style?: StyleProp<ViewStyle>;
   testID: string;
 }
 
+export default function InputField({
+  label,
+  value,
+  setValue,
+  placeholder,
+  testID,
+  height,
+  width,
+  radius,
+  backgroundColor,
+  style
+}: InputFieldProps) {
+  const inputFieldStyles = [
+    styles.inputField,
+    width !== undefined && { width },
+    height !== undefined && { height },
+    radius !== undefined && { borderRadius: radius },
+    backgroundColor !== undefined && { backgroundColor },
+    style || {}, // Make style optional by providing an empty object as default
+  ];
 
-export default function InputField({ label, value, setValue, placeholder, testID ,height = 40, width = 100, radius = 25} : InputFieldProps) {
-  // console.log(UIManager);
-  
-  return (
-    <View>
-      <Text style={styles.label}> {label} </Text>
-      <View style={styles.shadow}>
-        <TextInput
-          style={[
-            styles.inputField,
-            {
-              height: height,
-              borderRadius: radius || 100,
-            },
-            
-          ]}
-          placeholder= {placeholder}
-          value={value}
-          onChangeText={setValue}
-          multiline={true}
-          placeholderTextColor={Color.TextInputPlaceholder}
-          testID={testID}
-        />
-      </View>
-    </View>
+  const textInputComponent = (
+    <TextInput
+      style={inputFieldStyles}
+      placeholder={placeholder}
+      value={value}
+      onChangeText={setValue}
+      multiline={true}
+      placeholderTextColor={Color.TextInputPlaceholder}
+      testID={testID}
+    />
   );
+
+  if (label !== undefined) {
+    return (
+      <View>
+        <Text style={appStyles.inputFieldLabel}>{label}</Text>
+        {textInputComponent}
+      </View>
+    );
+  } else {
+    return textInputComponent;
+  }
 }
 
 const styles = StyleSheet.create({
-  shadow: {
-    shadowColor: '#171717',
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
-  },
-
-  inputField : {
+  inputField: {
     flex: 1,
-    backgroundColor: Color.TextInputBackground,
     padding: 10,
     borderColor: Color.TextInputBorder,
     borderWidth: 1,
     color: Color.TextInputText,
+    shadowColor: Color.ShadowColor,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    borderRadius: 25,
+    paddingHorizontal: 10,
+    marginHorizontal: 5,
   },
-
-  label : {
-    fontSize: 16,
-    marginBottom: 2.5,
-    fontWeight: "500",
-    color: Color.TextInputLabel,
-  }
 
 });

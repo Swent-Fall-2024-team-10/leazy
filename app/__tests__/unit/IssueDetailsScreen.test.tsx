@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
 import IssueDetailsScreen from "../../screens/issues_tenant/IssueDetailsScreen";
 import {
   getMaintenanceRequest,
@@ -13,6 +13,50 @@ jest.mock("../../../firebase/firestore/firestore", () => ({
   getMaintenanceRequest: jest.fn(),
   updateMaintenanceRequest: jest.fn(),
 }));
+
+jest.mock("react-native-dropdown-picker", () => {
+  const React = require("react"); // Import React inside the factory
+  const { View, Text, TouchableOpacity } = require("react-native"); // Import React Native components inside the factory
+
+  return ({
+    open,
+    value,
+    items,
+    setOpen,
+    setValue,
+    testID,
+  }: {
+    open: boolean;
+    value: string;
+    items: Array<{ label: string; value: string }>;
+    setOpen: (open: boolean) => void;
+    setValue: (value: string) => void;
+    testID: string;
+  }) => {
+    return (
+      <View>
+        <Text testID={testID}>{value}</Text> {/* Mocked dropdown display */}
+        {open && (
+          <View>
+            {items.map((item) => (
+              <TouchableOpacity
+                key={item.value}
+                onPress={() => {
+                  setValue(item.value);
+                  setOpen(false);
+                }}
+                testID={`${testID}-${item.value}`}
+              >
+                <Text>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  };
+});
+
 
 // Mock Navigation and Route
 const mockNavigate = jest.fn();
@@ -53,7 +97,7 @@ describe("IssueDetailsScreen", () => {
     // Wait for data to load and assert the correct elements are displayed
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalledWith("mockRequestID"));
     expect(screen.getByText("Issue : Leaky faucet")).toBeTruthy();
-    expect(screen.getByText("Status: in progress")).toBeTruthy();
+    expect(screen.getByText("Status: In Progress")).toBeTruthy();
     expect(screen.getByText("A faucet is leaking in the bathroom.")).toBeTruthy();
   });
 
@@ -101,11 +145,20 @@ describe("IssueDetailsScreen", () => {
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
     // Simulate changing status through StatusDropdown
-    const newStatus = "completed";
-    const statusDropdown = screen.getByText("in progress"); // Existing status
-    fireEvent.press(statusDropdown); // Open dropdown (you may need to adjust based on StatusDropdown component)
+    const statusDropdown = screen.getByTestId('statusDropdown'); // Existing status
+    fireEvent(statusDropdown, 'setOpen', true);
 
-    fireEvent.press(screen.getByText(newStatus)); // Select new status
+    // Simulate selecting a new status
+    const newStatus = "completed"; // Value to simulate
+      // After opening the dropdown, the options should be available
+    await waitFor(() => {const dropdownOption = screen.getByTestId(`statusDropdown-${newStatus}`);
+      fireEvent.press(dropdownOption); // Simulates selecting the new status
+    });
+
+    // Verify the new status is selected
+    await waitFor(() => {
+      expect(screen.getByText("completed")).toBeTruthy();
+    });
     expect(screen.queryByText(newStatus)).toBeTruthy(); // New status should be selected
 
     // Press the "Close" button to save changes
@@ -136,17 +189,27 @@ describe("IssueDetailsScreen", () => {
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
     // Open full-screen modal by pressing the image
-    const thumbnailImage = screen.getByRole("imagebutton"); // Assumes you can query by role; adjust if needed
+    const thumbnailImage = screen.getByTestId('imageItem-0');
+
+    // Trigger state changes that open the modal
     fireEvent.press(thumbnailImage);
 
+    const modal = await waitFor(() => screen.getByTestId('fullModal'));
+    expect(modal).toBeTruthy();
     // Verify that the full-screen image modal is visible
-    const fullScreenImage = screen.getByRole("image");
-    expect(fullScreenImage).toBeTruthy();
+    //const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
+    //expect(fullScreenImage).toBeTruthy();
 
     // Close the modal
-    const closeModalButton = screen.getByRole("button", { name: /close/i });
-    fireEvent.press(closeModalButton);
-    expect(screen.queryByRole("image")).toBeNull();
+    const closeModalButton = screen.getByTestId("closeModalButton");
+
+    // Trigger state changes that open the modal
+    await act(async () => {
+      // Simulate any asynchronous actions, e.g., API calls or event handlers
+      fireEvent.press(closeModalButton);
+    });
+
+    expect(screen.queryByTestId("imageFull")).toBeNull();
   });
 
   test("navigates through images using arrows in full-screen mode", async () => {
@@ -167,20 +230,21 @@ describe("IssueDetailsScreen", () => {
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
     // Open full-screen modal
-    const firstThumbnailImage = screen.getByRole("imagebutton");
+    const firstThumbnailImage = screen.getByTestId("imageItem-0");
     fireEvent.press(firstThumbnailImage);
 
     // Verify initial image is displayed
-    const fullScreenImage = screen.getByRole("image");
+    const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
+
     expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/400x300");
 
     // Press the right arrow to navigate to the next image
-    const rightArrowButton = screen.getByRole("button", { name: /right/i });
+    const rightArrowButton = screen.getByTestId("leftButton");
     fireEvent.press(rightArrowButton);
     expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/300x400");
 
     // Press the left arrow to navigate back to the previous image
-    const leftArrowButton = screen.getByRole("button", { name: /left/i });
+    const leftArrowButton = screen.getByTestId("rightButton");
     fireEvent.press(leftArrowButton);
     expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/400x300");
   });

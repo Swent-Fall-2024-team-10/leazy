@@ -181,7 +181,7 @@ const IssueDetailsScreen: React.FC = () => {
                 contentContainerStyle={appStyles.carouselScrollViewContainer}
               >
                 {issue.picture.map((image, index) => (
-                  <TouchableOpacity key={index} onPress={() => openFullScreen(index)} testID={`imageItem-${index}`}>
+                  <TouchableOpacity key={index} onPress={() => {console.log(`Image ${index} pressed`);openFullScreen(index); console.log(`Image ${index} pressed`)}} testID={`imageItem-${index}`}>
                     <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
                   </TouchableOpacity>
 
@@ -220,6 +220,7 @@ const IssueDetailsScreen: React.FC = () => {
             visible={fullScreenMode}
             transparent={true}
             onRequestClose={closeFullScreen}
+            testID="fullModal"
           >
             <View style={styles.modalBackground}>
               <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">

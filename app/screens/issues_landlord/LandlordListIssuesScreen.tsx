@@ -154,6 +154,7 @@ const LandlordListIssuesScreen: React.FC = () => {
                 <TouchableOpacity
                   style={styles.residenceItem}
                   onPress={() => toggleResidenceExpansion(residence.residenceId)}
+                  testID='residenceButton'
                 >
                   <Text style={styles.residenceText}>Residence {residence.street}</Text>
                   <Feather

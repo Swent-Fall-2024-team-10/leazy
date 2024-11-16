@@ -1,8 +1,9 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import LandlordListIssuesScreen from "../../screens/issues_landlord/LandlordListIssuesScreen";
-import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from "../../../firebase/firestore/firestore";
+import { getLandlord, getResidence, getTenant, getMaintenanceRequest, getMaintenanceRequestsQuery } from "../../../firebase/firestore/firestore";
 import "@testing-library/jest-native/extend-expect";
+import { onSnapshot } from "firebase/firestore";
 
 // portions of this code were generated using chatGPT as an AI assistant
 
@@ -63,7 +64,7 @@ describe("LandlordListIssuesScreen", () => {
     const maintenanceRequestData = {
       requestID: "request1",
       requestTitle: "Fix leaky faucet",
-      requestStatus: "inProgress",
+      requestStatus: "in Progress",
       residenceId: "residence1",
     };
 
@@ -78,25 +79,74 @@ describe("LandlordListIssuesScreen", () => {
     // Wait for data to load and assert correct rendering
     expect(getLandlord).toHaveBeenCalledWith("landlord1");
     await waitFor(() => expect(getResidence).toHaveBeenCalledWith("residence1"));
+    fireEvent.press(screen.getByTestId('residenceButton'));
     await waitFor(() => expect(getTenant).toHaveBeenCalledWith("tenant1"));
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalledWith("request1"));
 
     expect(screen.getByText("Residence 123 Main St")).toBeTruthy();
     expect(screen.getByText("Fix leaky faucet")).toBeTruthy();
-    expect(screen.getByText("Status: inProgress")).toBeTruthy();
+    expect(screen.getByText("Status: in Progress")).toBeTruthy();
   });
 
-  test("toggles the archived issues switch", () => {
+  test("toggles archived issues switch and displays archived issues when toggled", async () => {
+    // Mock data for residence, tenants, and maintenance requests
+    const landlordData = {
+      landlord: { residenceIds: ["residence1"] },
+      landlordUID: "landlord1",
+    };
+    const residenceData = {
+      residenceId: "residence1",
+      street: "123 Main St",
+      tenantIds: ["tenant1"],
+    };
+    const tenantData = {
+      tenant: { tenantId: "tenant1", maintenanceRequests: ["request1"] },
+    };
+    const maintenanceRequestData = {
+      requestID: "request1",
+      requestTitle: "Fix leaky faucet",
+      requestStatus: "completed",
+      residenceId: "residence1",
+    };
+  
+    // Mock Firestore functions
+    (getLandlord as jest.Mock).mockResolvedValue(landlordData);
+    (getResidence as jest.Mock).mockResolvedValue(residenceData);
+    (getTenant as jest.Mock).mockResolvedValue(tenantData);
+    (getMaintenanceRequest as jest.Mock).mockResolvedValue(maintenanceRequestData);
+  
     const screen = render(<LandlordListIssuesScreen />);
-
-    // Using getByTestId instead of getByA11yLabel for easier identification
+  
+    // Wait for residence and issues to load
+    await waitFor(() => expect(screen.getByText("Residence 123 Main St")).toBeTruthy());
+    // try to display all the residence's issues to ensure nothing is displayed
+    fireEvent.press(screen.getByTestId('residenceButton'));
+  
+    // Ensure the archived issue is not shown initially
+    const issue = screen.queryByText("Fix leaky faucet");
+    expect(issue).toBeNull();
+  
+    // Find the archived switch
     const archivedSwitch = screen.getByTestId("archivedSwitch");
-    fireEvent.press(archivedSwitch);
-    expect(archivedSwitch.props.value).toBe(true);
-
-    fireEvent.press(archivedSwitch);
-    expect(archivedSwitch.props.value).toBe(false);
+  
+    // Toggle the archived switch to `true`
+    fireEvent(archivedSwitch, "valueChange", true);
+    await waitFor(() => expect(archivedSwitch.props.value).toBe(true));
+  
+    // Now the completed issue should be visible
+    await waitFor(() => {
+      expect(screen.getByText("Fix leaky faucet")).toBeTruthy();
+    });
+  
+    // Toggle the archived switch back to `false`
+    fireEvent(archivedSwitch, "valueChange", false);
+    await waitFor(() => expect(archivedSwitch.props.value).toBe(false));
+  
+    // Ensure the completed issue is hidden again
+    const toggledIssue = screen.queryByText("Fix leaky faucet");
+    expect(toggledIssue).toBeNull();
   });
+  
 
   test("toggles filter section visibility", () => {
     const screen = render(<LandlordListIssuesScreen />);
@@ -157,49 +207,6 @@ describe("LandlordListIssuesScreen", () => {
     // Ensure the issue is hidden when collapsed
     await waitFor(() => {
       expect(screen.queryByText("Fix leaky faucet")).toBeNull();
-    });
-  });
-
-  test("filters completed issues when archived switch is off", async () => {
-    const landlordData = {
-      landlord: { residenceIds: ["residence1"] },
-      landlordUID: "landlord1",
-    };
-    const residenceData = {
-      residenceId: "residence1",
-      street: "123 Main St",
-      tenantIds: ["tenant1"],
-    };
-    const tenantData = {
-      tenant: { tenantId: "tenant1", maintenanceRequests: ["request1"] },
-    };
-    const maintenanceRequestData = {
-      requestID: "request1",
-      requestTitle: "Fix leaky faucet",
-      requestStatus: "completed",
-      residenceId: "residence1",
-    };
-
-    (getLandlord as jest.Mock).mockResolvedValue(landlordData);
-    (getResidence as jest.Mock).mockResolvedValue(residenceData);
-    (getTenant as jest.Mock).mockResolvedValue(tenantData);
-    (getMaintenanceRequest as jest.Mock).mockResolvedValue(maintenanceRequestData);
-
-    const screen = render(<LandlordListIssuesScreen />);
-
-    // Wait for residence and issues to load
-    await waitFor(() => expect(screen.getByText("Residence 123 Main St")).toBeTruthy());
-
-    // Since the archived switch is off, completed issues should be hidden
-    expect(screen.queryByText("Fix leaky faucet")).toBeNull();
-
-    // Toggle the archived switch to show completed issues
-    const archivedSwitch = screen.getByTestId("archivedSwitch");
-    fireEvent.press(archivedSwitch);
-
-    // Now, the completed issue should be visible
-    await waitFor(() => {
-      expect(screen.getByText("Fix leaky faucet")).toBeTruthy();
     });
   });
 });

@@ -181,7 +181,7 @@ const IssueDetailsScreen: React.FC = () => {
                 contentContainerStyle={appStyles.carouselScrollViewContainer}
               >
                 {issue.picture.map((image, index) => (
-                  <TouchableOpacity key={index} onPress={() => openFullScreen(index)}>
+                  <TouchableOpacity key={index} onPress={() => openFullScreen(index)} testID={`imageItem-${index}`}>
                     <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
                   </TouchableOpacity>
 
@@ -222,11 +222,11 @@ const IssueDetailsScreen: React.FC = () => {
             onRequestClose={closeFullScreen}
           >
             <View style={styles.modalBackground}>
-              <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
+              <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">
                 <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]}>
+              <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]} testID="leftButton">
                 <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
               </TouchableOpacity>
 
@@ -234,9 +234,10 @@ const IssueDetailsScreen: React.FC = () => {
                 source={{ uri: issue.picture[currentImageIndex] }}
                 style={[styles.fullImage, fullImageDimensions]}
                 resizeMode="contain"
+                testID="imageFull"
               />
 
-              <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]}>
+              <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]} testID="rightButton">
                 <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
               </TouchableOpacity>
             </View>

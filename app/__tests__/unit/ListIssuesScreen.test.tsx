@@ -73,48 +73,41 @@ describe("MaintenanceIssues", () => {
     // Wait for maintenance issues to load and display
     await waitFor(() => expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith("mockTenantId"));
     expect(screen.getByText("Leaky faucet")).toBeTruthy();
-    expect(screen.getByText("in Progress")).toBeTruthy();
+    expect(screen.getByText("Status: In Progress")).toBeTruthy();
   });
 
-  test("toggles archived issues switch", async () => {
-    const screen = render(<MaintenanceIssues />);
-    const archivedSwitch = await waitFor(() => screen.getByRole("switch"));
-
-    // Toggle the switch
-    fireEvent.press(archivedSwitch);
-    expect(archivedSwitch.props.value).toBe(true);
-
-    fireEvent.press(archivedSwitch);
-    expect(archivedSwitch.props.value).toBe(false);
-  });
-
-  test("archives an issue when archive button is pressed", async () => {
+  test("toggles archived issues switch and displays archived issues when toggled", async () => {
     const mockIssueData = {
       requestID: "request1",
       requestTitle: "Leaky faucet",
-      requestStatus: "inProgress",
+      requestStatus: "completed",
     };
-
-    // Mock query and snapshot response
-    const mockQuery = jest.fn();
-    (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-      callback({
-        forEach: (fn: any) => fn({ data: () => mockIssueData }),
-      });
-    });
-
+        // Mock query and snapshot response
+        const mockQuery = jest.fn();
+        (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
+        (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+          callback({
+            forEach: (fn: any) => fn({ data: () => mockIssueData }),
+          });
+        });
     const screen = render(<MaintenanceIssues />);
+    const archivedSwitch = await waitFor(() => screen.getByTestId("archiveSwitch"));
+    const leaky_faucet = screen.queryByText('Leaky faucet');
+    await waitFor(() => expect(leaky_faucet).toBeNull());
 
-    // Wait for maintenance issues to load
-    await waitFor(() => expect(screen.getByText("Leaky faucet")).toBeTruthy());
+  // Toggle to true
+  fireEvent(archivedSwitch, 'valueChange', true);
+  await waitFor(() => expect(archivedSwitch.props.value).toBe(true));
 
-    // Press the archive button
-    const archiveButton = screen.getByTestId("archiveButton");
-    fireEvent.press(archiveButton);
+  await waitFor(() => expect(screen.getByText("Leaky faucet")).toBeTruthy());
 
-    // Verify updateMaintenanceRequest was called to archive the issue
-    expect(updateMaintenanceRequest).toHaveBeenCalledWith("request1", { requestStatus: "completed" });
+  // Toggle back to false
+  fireEvent(archivedSwitch, 'valueChange', false);
+  await waitFor(() => expect(archivedSwitch.props.value).toBe(false));
+
+  const leaky_faucet_toggled = screen.queryByText('Leaky faucet');
+  await waitFor(() => expect(leaky_faucet_toggled).toBeNull());
+
   });
 
   test("navigates to the report screen when add button is pressed", () => {

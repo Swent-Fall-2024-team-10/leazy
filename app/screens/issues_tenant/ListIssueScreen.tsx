@@ -141,6 +141,7 @@ const MaintenanceIssues = () => {
                 style={[{ marginLeft: 8 }, {marginRight: 8}, {marginBottom: 8}, {marginTop: 8}]}
                 value={showArchived}
                 onValueChange={setShowArchived}
+                testID="archiveSwitch"
               />
             </View>
 

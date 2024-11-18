@@ -26,5 +26,3 @@ jest.mock("firebase/app");
 jest.mock("firebase/firestore");
 jest.mock("firebase/auth");
 jest.mock("firebase/storage");
-jest.mock('expo-auth-session');
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');

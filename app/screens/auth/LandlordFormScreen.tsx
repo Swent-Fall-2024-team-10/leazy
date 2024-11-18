@@ -7,20 +7,23 @@ import {
   SafeAreaView,
   StyleSheet,
 } from "react-native";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../../types/types";
-import { add_new_landlord } from "../../../firebase/firestore/firestore";
+import { useNavigation, NavigationProp, useRoute } from "@react-navigation/native";
+import {AuthStackParamList, TUser, Landlord } from "../../../types/types";
+import { createLandlord, createUser } from "../../../firebase/firestore/firestore";
+import { emailAndPasswordSignIn } from "../../../firebase/auth/auth";
 import SubmitButton from "../../components/buttons/SubmitButton";
 import InputField from "../../components/forms/text_input";
 import Spacer from "../../components/Spacer";
 import { Color } from "../../../styles/styles";
+import { RouteProp } from '@react-navigation/native';
 
 const LandlordFormScreen = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
+  const route = useRoute<RouteProp<AuthStackParamList, 'TenantForm' | 'LandlordForm'>>();
+  const { email, password } = route.params;
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [street, setStreet] = useState("");
   const [number, setNumber] = useState("");
@@ -28,22 +31,33 @@ const LandlordFormScreen = () => {
   const [canton, setCanton] = useState("");
   const [zip, setZip] = useState("");
   const [country, setCountry] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     try {
-      await add_new_landlord(
-        `${firstName} ${lastName}`,
-        email,
-        phone,
-        street,
-        number,
-        city,
-        canton,
-        zip,
-        country
-      );
-      Alert.alert("Success", "Landlord profile created successfully!");
-      navigation.navigate("Home");
+      const user = await emailAndPasswordSignIn(email, password);
+      if (user) {
+        const userData: TUser = {
+          uid: user.uid,
+          type: "landlord",
+          name: `${firstName} ${lastName}`,
+          email: email,
+          phone: phone,
+          street: street,
+          number: number,
+          city: city,
+          canton: canton,
+          zip: zip,
+          country: country,
+        };
+        await createUser(userData);
+        const landlordData: Landlord = {
+          userId: user.uid,
+          residenceIds: [],
+        };
+        await createLandlord(landlordData);
+        Alert.alert("Success", "Landlord profile created successfully!");
+      }
     } catch (error) {
       Alert.alert("Error", "Failed to create landlord profile.");
       console.error(error);
@@ -72,14 +86,6 @@ const LandlordFormScreen = () => {
             style={styles.inputField}
           />
         </View>
-
-        <InputField
-          value={email}
-          setValue={setEmail}
-          placeholder="Email"
-          testID="testEmailField"
-          style={styles.inputField}
-        />
 
         <InputField
           value={phone}
@@ -152,13 +158,16 @@ const LandlordFormScreen = () => {
             !city ||
             !canton ||
             !number ||
-            !country
+            !country || 
+            submitting
           }
           onPress={handleSubmit}
           width={200}
           height={55}
           label="Next"
           style={styles.submitButtonCustom}
+          textStyle={{ fontSize: 20 }}
+          testID="testSubmitButtonLandlord"
         />
       </ScrollView>
     </SafeAreaView>

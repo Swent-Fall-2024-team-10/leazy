@@ -1,5 +1,5 @@
 import {
-  User,
+  TUser,
   Landlord,
   Tenant,
   Residence,
@@ -59,7 +59,7 @@ const {
   arrayUnion,
 } = require("firebase/firestore");
 
-const mockUser: User = {
+const mockUser: TUser = {
   uid: "123",
   type: "tenant",
   name: "Test User",
@@ -130,11 +130,11 @@ describe("Firestore Functions", () => {
     });
 
     it("should throw an error if user data is invalid", async () => {
-      const invalidUser: Partial<User> = {
+      const invalidUser: Partial<TUser> = {
         uid: "789",
         email: "invalid@user.com",
       };
-      await expect(createUser(invalidUser as User)).rejects.toThrow(
+      await expect(createUser(invalidUser as TUser)).rejects.toThrow(
         "Cannot read properties of undefined (reading 'id')"
       );
     });
@@ -228,7 +228,7 @@ describe("Firestore Functions", () => {
   describe("updateUser", () => {
     it("should update a user document by UID", async () => {
       const mockUid = "123";
-      const mockUserUpdate: Partial<User> = {
+      const mockUserUpdate: Partial<TUser> = {
         name: "Updated Name",
         email: "updated@email.com",
         phone: "123-456-7890",
@@ -245,7 +245,7 @@ describe("Firestore Functions", () => {
 
     it("should throw an error if updateDoc fails", async () => {
       const mockUid = "123";
-      const mockUserUpdate: Partial<User> = {
+      const mockUserUpdate: Partial<TUser> = {
         name: "Updated Name",
       };
 
@@ -274,7 +274,7 @@ describe("Firestore Functions", () => {
       );
 
       await expect(
-        updateUser(mockUid, invalidUserUpdate as Partial<User>)
+        updateUser(mockUid, invalidUserUpdate as Partial<TUser>)
       ).rejects.toThrow("Invalid user data");
 
       expect(doc).toHaveBeenCalledWith("mockedFirestore", "users", mockUid);

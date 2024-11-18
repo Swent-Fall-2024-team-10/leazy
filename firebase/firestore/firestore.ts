@@ -17,7 +17,7 @@ import {
 
 // Import type definitions used throughout the functions.
 import {
-  User,
+  TUser,
   Landlord,
   Tenant,
   Residence,
@@ -51,14 +51,14 @@ export async function createUser(user: TUser) {
  */
 export async function getUser(
   uid: string
-): Promise<{ user: User; userUID: string } | null> {
+): Promise<{ user: TUser; userUID: string } | null> {
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("uid", "==", uid));
   const querySnapshot = await getDocs(q);
 
   if (!querySnapshot.empty) {
     const doc = querySnapshot.docs[0]; // Assume `uid` is unique, so take the first result
-    return { user: doc.data() as User, userUID: doc.id };
+    return { user: doc.data() as TUser, userUID: doc.id };
   } else {
     return null;
   }
@@ -69,7 +69,7 @@ export async function getUser(
  * @param uid - The unique identifier of the user to update.
  * @param user - The partial user data to update.
  */
-export async function updateUser(uid: string, user: Partial<User>) {
+export async function updateUser(uid: string, user: Partial<TUser>) {
   const docRef = doc(db, "users", uid);
   await updateDoc(docRef, user);
 }

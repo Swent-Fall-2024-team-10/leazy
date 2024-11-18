@@ -5,6 +5,8 @@ import { add_new_landlord } from "../../../firebase/firestore/firestore";
 import { Alert } from "react-native";
 import "@testing-library/jest-native/extend-expect";
 
+// portions of this code were generated using chatGPT as an AI assistant
+
 // Mock the add_new_landlord Firestore function
 jest.mock("../../../firebase/firestore/firestore", () => ({
   add_new_landlord: jest.fn(),

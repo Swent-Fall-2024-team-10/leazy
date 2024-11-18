@@ -9,6 +9,8 @@ import { getAuth } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
 import "@testing-library/jest-native/extend-expect";
 
+// portions of this code were generated using chatGPT as an AI assistant
+
 // Mock Firebase Auth
 jest.mock("firebase/auth", () => ({
   getAuth: () => ({

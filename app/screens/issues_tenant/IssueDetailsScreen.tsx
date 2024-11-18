@@ -8,6 +8,7 @@ import {
   ScrollView,
   Dimensions,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
@@ -29,6 +30,7 @@ import Spacer from "../../components/Spacer";
 import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";
+import CustomModal from "../../components/CustomModal";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -82,37 +84,47 @@ const IssueDetailsScreen: React.FC = () => {
   };
 
   // Open full-screen mode with the clicked image index
-  const openFullScreen = (index: number) => {
-    if (issue) {
-      setCurrentImageIndex(index);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
 
-      Image.getSize(issue.picture[index], (width, height) => {
-        const screenWidth = Dimensions.get("window").width * 0.9;
-        const screenHeight = Dimensions.get("window").height * 0.9;
+const openFullScreen = (index: number) => {
+  if (issue) {
+    setCurrentImageIndex(index);
+    setIsLoadingImage(true); // Start loading
+    console.log(fullScreenMode);
+    setFullScreenMode(true);  // Show the modal
+    console.log(fullScreenMode);
 
-        const aspectRatio = width / height;
+    Image.getSize(issue.picture[index], (width, height) => {
+      const screenWidth = Dimensions.get("window").width * 0.9;
+      const screenHeight = Dimensions.get("window").height * 0.9;
 
-        let finalWidth, finalHeight;
-        if (width > height) {
-          // Landscape image
-          finalWidth = screenWidth;
-          finalHeight = screenWidth / aspectRatio;
-        } else {
-          // Portrait image
-          finalHeight = screenHeight;
-          finalWidth = screenHeight * aspectRatio;
-        }
+      const aspectRatio = width / height;
 
-        setFullImageDimensions({ width: finalWidth, height: finalHeight });
-        setFullScreenMode(true);
-      });
-    }
-  };
+      let finalWidth, finalHeight;
+      if (width > height) {
+        // Landscape image
+        finalWidth = screenWidth;
+        finalHeight = screenWidth / aspectRatio;
+      } else {
+        // Portrait image
+        finalHeight = screenHeight;
+        finalWidth = screenHeight * aspectRatio;
+      }
+
+      setFullImageDimensions({ width: finalWidth, height: finalHeight });
+      setIsLoadingImage(false); // End loading
+    });
+  }
+};
 
   // Close full-screen mode
   const closeFullScreen = () => {
     setFullScreenMode(false);
   };
+
+  useEffect(() => {
+    console.log('Modal visibility changed:', fullScreenMode);
+  }, [fullScreenMode]);
 
   // Récupérer l'issue depuis Firebase
   useEffect(() => {
@@ -179,6 +191,7 @@ const IssueDetailsScreen: React.FC = () => {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={appStyles.carouselScrollViewContainer}
+                testID='scrollview'
               >
                 {issue.picture.map((image, index) => (
                   <TouchableOpacity key={index} onPress={() => {console.log(`Image ${index} pressed`);openFullScreen(index); console.log(`Image ${index} pressed`)}} testID={`imageItem-${index}`}>
@@ -214,35 +227,40 @@ const IssueDetailsScreen: React.FC = () => {
               style = {appStyles.submitButton} 
               textStyle = {appStyles.submitButtonText}>
             </SubmitButton>
-
+          
           {/* Full-Screen Modal */}
-          <Modal
-            visible={fullScreenMode}
-            transparent={true}
-            onRequestClose={closeFullScreen}
-            testID="fullModal"
+          <CustomModal
+          visible={fullScreenMode && !isLoadingImage}
+          transparent={true}
+          onRequestClose={closeFullScreen}
+          testID="fullModal"
           >
-            <View style={styles.modalBackground}>
-              <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">
-                <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
-              </TouchableOpacity>
+            {isLoadingImage ? (
+            <ActivityIndicator size="large" color="white" />
+            ) : (
+              <View style={styles.modalBackground}>
+                <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">
+                  <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]} testID="leftButton">
-                <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]} testID="leftButton">
+                  <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+                </TouchableOpacity>
 
-              <Image
-                source={{ uri: issue.picture[currentImageIndex] }}
-                style={[styles.fullImage, fullImageDimensions]}
-                resizeMode="contain"
-                testID="imageFull"
-              />
+                <Image
+                  source={{ uri: issue.picture[currentImageIndex] }}
+                  style={[styles.fullImage, fullImageDimensions]}
+                  resizeMode="contain"
+                  testID="imageFull"
+                />
 
-              <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]} testID="rightButton">
-                <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
-              </TouchableOpacity>
-            </View>
-          </Modal>
+                <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]} testID="rightButton">
+                  <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </CustomModal>
+
           <Spacer height={20} />
         </ScrollView>
       </View>

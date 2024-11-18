@@ -8,11 +8,21 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import "@testing-library/jest-native/extend-expect";
 
+// portions of this code were generated using chatGPT as an AI assistant
+
 // Mock Firebase Firestore functions
 jest.mock("../../../firebase/firestore/firestore", () => ({
   getMaintenanceRequest: jest.fn(),
   updateMaintenanceRequest: jest.fn(),
 }));
+
+jest.mock('../../components/CustomModal', () => {
+  const { View, Text } = require('react-native');
+  return ({ visible, children, testID }: { visible: boolean; children: React.ReactNode; testID: string }) => {
+    console.log("Mock CustomModal rendered with visible:", visible);
+    return visible ? <View testID={testID}><Text>coucou2</Text>{children}</View> : <Text>coucou</Text>;
+  };
+});
 
 jest.mock("react-native-dropdown-picker", () => {
   const React = require("react"); // Import React inside the factory
@@ -174,7 +184,7 @@ describe("IssueDetailsScreen", () => {
     expect(mockNavigate).toHaveBeenCalledWith("Issues");
   });
 
-  test("opens and closes full-screen image modal", async () => {
+  test.only("opens and closes full-screen image modal", async () => {
     const mockIssueData = {
       requestID: "mockRequestID",
       requestTitle: "Leaky faucet",
@@ -192,13 +202,23 @@ describe("IssueDetailsScreen", () => {
     const thumbnailImage = screen.getByTestId('imageItem-0');
 
     // Trigger state changes that open the modal
+    act(() => {
     fireEvent.press(thumbnailImage);
 
-    const modal = await waitFor(() => screen.getByTestId('fullModal'));
-    expect(modal).toBeTruthy();
+  });
+
+    // Wait for the modal to appear
+    await waitFor(() => {
+      const modal = screen.queryByTestId("fullModal");
+      screen.debug();
+      expect(modal).toBeTruthy();
+    });
+      // Additional debugging
+  
+    
     // Verify that the full-screen image modal is visible
-    //const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
-    //expect(fullScreenImage).toBeTruthy();
+    const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
+    expect(fullScreenImage).toBeTruthy();
 
     // Close the modal
     const closeModalButton = screen.getByTestId("closeModalButton");

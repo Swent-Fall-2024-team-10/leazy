@@ -60,8 +60,7 @@ const styles = StyleSheet.create({
     bottom: "0%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000000",
-    opacity: 0.2,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
     zIndex: 1,
   },
 

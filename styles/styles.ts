@@ -64,7 +64,7 @@ export const FontWeight = {
   TextInputText: "normal",
   TextInputLabel: "bold",
   label: "bold",
-};
+} as const;
 
 export const Color = {
   //ScreenBackground: "#FFFFFF",

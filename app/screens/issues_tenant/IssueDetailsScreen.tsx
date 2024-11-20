@@ -26,7 +26,13 @@ import {
   updateMaintenanceRequest,
 } from "@/firebase/firestore/firestore";
 import Spacer from "@/app/components/Spacer";
-import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "@/styles/styles";
+import {
+  Color,
+  FontSizes,
+  ButtonDimensions,
+  IconDimension,
+  appStyles,
+} from "@/styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 
@@ -139,7 +145,6 @@ const IssueDetailsScreen: React.FC = () => {
 
   // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
   const handleClose = async () => {
-    console.log("Closing issue with status : ", status);
     if (issue) {
       await updateMaintenanceRequest(requestID, {
         requestStatus: status,
@@ -160,60 +165,83 @@ const IssueDetailsScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <Text style={[appStyles.screenHeader, {textAlign : 'left', letterSpacing : 1.5, fontSize : 20, marginBottom : '10%'}]}> 
+            <Text
+              style={[
+                appStyles.screenHeader,
+                {
+                  textAlign: "left",
+                  letterSpacing: 1.5,
+                  fontSize: 20,
+                  marginBottom: "10%",
+                },
+              ]}
+            >
               Issue : {issue.requestTitle}
             </Text>
             <StatusBadge status={status} />
           </View>
 
-            <AdaptiveButton title = 'Open chat about this subject' 
-              onPress = { () => navigation.navigate('Messaging')}
-              icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}
-              iconPosition= {'right'}
-              style = {appStyles.submitButton}
-            ></AdaptiveButton>
-            
-            <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
-            <View style={appStyles.carouselImageContainer}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={appStyles.carouselScrollViewContainer}
-              >
-                {issue.picture.map((image, index) => (
-                  <TouchableOpacity key={index} onPress={() => openFullScreen(index)}>
-                    <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
-                  </TouchableOpacity>
+          <AdaptiveButton
+            title="Open chat about this subject"
+            onPress={() => navigation.navigate("Messaging")}
+            icon={
+              <MessageSquare
+                stroke="white"
+                width={IconDimension.smallIcon}
+                height={IconDimension.smallIcon}
+              />
+            }
+            iconPosition={"right"}
+            style={appStyles.submitButton}
+          ></AdaptiveButton>
 
-                ))}
-              </ScrollView>
-            </View>
+          <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
+          <View style={appStyles.carouselImageContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={appStyles.carouselScrollViewContainer}
+            >
+              {issue.picture.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => openFullScreen(index)}
+                >
+                  <Image
+                    key={index}
+                    source={{ uri: image }}
+                    style={appStyles.mediumThumbnailImage}
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
-            <View style={styles.imagesTextView}>
-              <Text style={appStyles.smallCaptionText}>Click on an image to expand it</Text>
-            </View>
+          <View style={styles.imagesTextView}>
+            <Text style={appStyles.smallCaptionText}>
+              Click on an image to expand it
+            </Text>
+          </View>
 
-            <View style={styles.descriptionContainer}>
-              <Text style={appStyles.inputFieldLabel}>Description</Text>
-              <View style={styles.descriptionBox}>
-                <Text style={styles.descriptionText}>
-                  {description}
-                </Text>
-              </View>
+          <View style={styles.descriptionContainer}>
+            <Text style={appStyles.inputFieldLabel}>Description</Text>
+            <View style={styles.descriptionBox}>
+              <Text style={styles.descriptionText}>{description}</Text>
             </View>
+          </View>
 
           <StatusDropdown value={status} setValue={setStatus}></StatusDropdown>
 
-            <SubmitButton 
-              disabled = {false}
-              label = {'Close'} 
-              onPress = {handleClose} 
-              width = {ButtonDimensions.veryLargeButtonWidth} 
-              height = {ButtonDimensions.veryLargeButtonHeight} 
-              testID = {'saveChangesButton'}
-              style = {appStyles.submitButton} 
-              textStyle = {appStyles.submitButtonText}>
-            </SubmitButton>
+          <SubmitButton
+            disabled={false}
+            label={"Close"}
+            onPress={handleClose}
+            width={ButtonDimensions.veryLargeButtonWidth}
+            height={ButtonDimensions.veryLargeButtonHeight}
+            testID={"saveChangesButton"}
+            style={appStyles.submitButton}
+            textStyle={appStyles.submitButtonText}
+          ></SubmitButton>
 
           {/* Full-Screen Modal */}
           <Modal
@@ -222,12 +250,28 @@ const IssueDetailsScreen: React.FC = () => {
             onRequestClose={closeFullScreen}
           >
             <View style={styles.modalBackground}>
-              <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton}>
-                <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+              <TouchableOpacity
+                onPress={closeFullScreen}
+                style={styles.closeModalButton}
+              >
+                <Icon
+                  name="close"
+                  type="font-awesome"
+                  color="white"
+                  size={IconDimension.smallIcon}
+                />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]}>
-                <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+              <TouchableOpacity
+                onPress={handlePreviousImage}
+                style={[appStyles.expandedImageNextButton, styles.leftArrow]}
+              >
+                <Icon
+                  name="chevron-left"
+                  type="font-awesome"
+                  color="white"
+                  size={IconDimension.smallIcon}
+                />
               </TouchableOpacity>
 
               <Image
@@ -236,8 +280,16 @@ const IssueDetailsScreen: React.FC = () => {
                 resizeMode="contain"
               />
 
-              <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]}>
-                <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
+              <TouchableOpacity
+                onPress={handleNextImage}
+                style={[appStyles.expandedImageNextButton, styles.rightArrow]}
+              >
+                <Icon
+                  name="chevron-right"
+                  type="font-awesome"
+                  color={"white"}
+                  size={IconDimension.smallIcon}
+                />
               </TouchableOpacity>
             </View>
           </Modal>
@@ -249,17 +301,16 @@ const IssueDetailsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-
-  imagesTextView:{
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '10%'
+  imagesTextView: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: "10%",
   },
-  
+
   closeModalButton: {
-    position: 'absolute',
-    top: '5.5%',
-    right: '7%',
+    position: "absolute",
+    top: "5.5%",
+    right: "7%",
     zIndex: 2,
   },
 
@@ -277,18 +328,18 @@ const styles = StyleSheet.create({
   },
 
   leftArrow: {
-    left: '5%',
+    left: "5%",
   },
 
   rightArrow: {
-    right: '5%',
+    right: "5%",
   },
 
   grayBackground: {
-    height: Dimensions.get('window').height * 0.8,
+    height: Dimensions.get("window").height * 0.8,
     backgroundColor: Color.IssueBackground,
-    marginHorizontal: '3%',
-    marginVertical: '3%',
+    marginHorizontal: "3%",
+    marginVertical: "3%",
     borderRadius: 32,
     overflow: "hidden",
     // Add black border

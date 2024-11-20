@@ -1,48 +1,71 @@
 import React, { useState } from "react";
-import { View, Text } from "react-native";
-import {
-  useNavigation,
-  NavigationProp,
-  useRoute,
-} from "@react-navigation/native";
-import { RootStackParamList } from "../../../types/types";
+import { View, Text, Alert } from "react-native";
 import {
   validateTenantCode,
-  add_new_tenant,
+  getTenant,
+  getResidence,
+  getApartment,
+  updateResidence,
+  updateApartment,
+  updateTenant,
 } from "../../../firebase/firestore/firestore";
 import {
   appStyles,
   ButtonDimensions,
   Color,
-  stylesForHeaderScreens,
   stylesForNonHeaderScreens,
 } from "../../../styles/styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "../../components/forms/text_input";
 import SubmitButton from "../../components/buttons/SubmitButton";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { useAuth } from "@/app/Navigators/AuthContext";
-import { Alert } from "react-native";
+import { useAuth } from "../../Navigators/AuthContext";
 
 export default function CodeEntryScreen() {
   const [code, setCode] = useState("");
   const [errors, setErrors] = useState<{ code?: string }>({});
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const handleSubmit = async () => {
-    try {
-      
-      if(user !== null) {
-        const tenantCodeId = await validateTenantCode(code);
-        if (tenantCodeId === null) {
-          setErrors({ code: "Invalid code" });
-          throw new Error("Invalid code");
+    if (user) {
+      try {
+        const { residenceId, apartmentId, tenantCodeUID } =
+          await validateTenantCode(code);
+
+        // Add new tenant to its residence and apartment
+        const tenant = await getTenant(user.uid);
+        const residence = await getResidence(residenceId);
+        const apartment = await getApartment(apartmentId);
+
+        if (!tenant) {
+          throw new Error(`Tenant with ID ${user.uid} not found.`);
         }
-        await add_new_tenant(tenantCodeId, user.uid);
+        if (!residence) {
+          throw new Error(`Residence with ID ${residenceId} not found.`);
+        }
+        if (!apartment) {
+          throw new Error(`Apartment with ID ${apartmentId} not found.`);
+        }
+
+        await updateResidence(residenceId, {
+          tenantIds: [...residence.tenantIds, tenant.userId],
+        });
+
+        await updateApartment(apartmentId, {
+          tenants: [...apartment.tenants, tenant.userId],
+        });
+
+        await updateTenant(tenant.userId, {
+          apartmentId: apartmentId,
+          residenceId: residenceId,
+        });
+
+        Alert.alert(
+          "Welcome to your tenant dashboard!",
+          "You've successfully registered to your residence."
+        );
+      } catch (error: any) {
+        setErrors({ code: error.message });
       }
-      
-    } catch (error) {
-      Alert.alert("There was an error adding the tenant. Please try again.");
     }
   };
 

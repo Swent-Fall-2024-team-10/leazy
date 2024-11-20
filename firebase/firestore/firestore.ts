@@ -12,7 +12,6 @@ import {
   where,
   getDocs,
   Timestamp,
-  arrayUnion,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -38,9 +37,9 @@ export async function createUser(user: TUser) {
   const docRef = doc(db, "users", user.uid);
   try {
     await setDoc(docRef, user);
-  }
-  catch(e) {
+  } catch (e) {
     console.error("Error creating tenant profile:", e);
+    throw e;
   }
 }
 
@@ -49,19 +48,10 @@ export async function createUser(user: TUser) {
  * @param uid - The unique identifier stored in the `uid` field of the user document.
  * @returns An object containing the user data and the document ID, or null if no user is found.
  */
-export async function getUser(
-  uid: string
-): Promise<{ user: TUser; userUID: string } | null> {
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("uid", "==", uid));
-  const querySnapshot = await getDocs(q);
-
-  if (!querySnapshot.empty) {
-    const doc = querySnapshot.docs[0]; // Assume `uid` is unique, so take the first result
-    return { user: doc.data() as TUser, userUID: doc.id };
-  } else {
-    return null;
-  }
+export async function getUser(userUID: string): Promise<TUser | null> {
+  const usersRef = doc(db, "users", userUID);
+  const docSnap = await getDoc(usersRef);
+  return docSnap.exists() ? (docSnap.data() as TUser) : null;
 }
 
 /**
@@ -90,15 +80,9 @@ export async function deleteUser(uid: string) {
  * Creates a new landlord document in Firestore.
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
-export async function createLandlord(landlord: Landlord){
+export async function createLandlord(landlord: Landlord) {
   const docRef = doc(db, "landlords", landlord.userId);
-  try {
-    await setDoc(docRef, landlord);
-    console.log("Landlord profile created successfully.");
-  }
-  catch(e) {
-    console.error("Error creating landlord profile:", e);
-  }
+  await setDoc(docRef, landlord);
 }
 
 /**
@@ -106,22 +90,13 @@ export async function createLandlord(landlord: Landlord){
  * @param userId - The unique identifier of the landlord.
  * @returns The landlord data or null if no landlord is found.
  */
-export async function getLandlord(
-  userId: string
-): Promise<{ landlord: Landlord; landlordUID: string } | null> {
+export async function getLandlord(userId: string): Promise<Landlord | null> {
   if (!userId || typeof userId !== "string") {
     throw new Error("Invalid userId");
   }
-
-  const docRef = collection(db, "landlords");
-  const q = query(docRef, where("userId", "==", userId));
-  const querySnapshot = await getDocs(q);
-  if (!querySnapshot.empty) {
-    const doc = querySnapshot.docs[0]; // Assume `uid` is unique, so take the first result
-    return { landlord: doc.data() as Landlord, landlordUID: doc.id };
-  } else {
-    return null;
-  }
+  const landlordsRef = doc(db, "landlords", userId);
+  const docSnap = await getDoc(landlordsRef);
+  return docSnap.exists() ? (docSnap.data() as Landlord) : null;
 }
 
 /**
@@ -137,7 +112,6 @@ export async function updateLandlord(
     throw new Error("Invalid userId");
   }
 
-  //test that a landlord has a userId and residenceIds
   if (!landlord.userId || !landlord.residenceIds) {
     throw new Error("Invalid landlord data");
   }
@@ -162,11 +136,9 @@ export async function createTenant(tenant: Tenant) {
   const docRef = doc(db, "tenants", tenant.userId);
   try {
     await setDoc(docRef, tenant);
-  }
-  catch(e) {
+  } catch (e) {
     console.error("Error creating tenant profile:", e);
   }
-  
 }
 
 /**
@@ -174,19 +146,10 @@ export async function createTenant(tenant: Tenant) {
  * @param userId - The UID of the user to match in the `userId` field.
  * @returns An object containing the tenant data and its Firestore document ID, or null if no tenant is found.
  */
-export async function getTenant(
-  userId: string
-): Promise<{ tenant: Tenant; tenantUID: string } | null> {
-  const tenantsRef = collection(db, "tenants");
-  const q = query(tenantsRef, where("userId", "==", userId));
-  const querySnapshot = await getDocs(q);
-
-  if (!querySnapshot.empty) {
-    const tenantDoc = querySnapshot.docs[0]; // Assume `userId` is unique among tenants
-    return { tenant: tenantDoc.data() as Tenant, tenantUID: tenantDoc.id };
-  }
-  
-  return null;
+export async function getTenant(userId: string): Promise<Tenant | null> {
+  const tenantsRef = doc(db, "tenants", userId);
+  const docSnap = await getDoc(tenantsRef);
+  return docSnap.exists() ? (docSnap.data() as Tenant) : null;
 }
 
 /**
@@ -211,10 +174,17 @@ export async function deleteTenant(userId: string) {
 /**
  * Creates a new residence document in Firestore.
  * @param residence - The residence object to be added to the 'residences' collection.
+ * @returns The generated document ID of the newly created residence.
  */
-export async function createResidence(residence: Residence) {
-  const docRef = doc(db, "residences", residence.residenceId);
-  await setDoc(docRef, residence);
+export async function createResidence(residence: Residence): Promise<string> {
+  if (!residence.residenceId) {
+    throw new Error("Invalid residence ID.");
+  }
+  const residencesRef = collection(db, "residences");
+  const docRef = await addDoc(residencesRef, residence);
+
+  // Return the auto-generated document ID
+  return docRef.id;
 }
 
 /**
@@ -260,8 +230,9 @@ export async function createApartment(apartment: Apartment) {
   if (!apartment.apartmentId || !apartment.residenceId) {
     throw new Error("Invalid apartment data");
   }
-  const docRef = doc(db, "apartments", apartment.apartmentId);
-  await setDoc(docRef, apartment);
+  const appartmentsRef = collection(db, "apartments");
+  const docRef = await addDoc(appartmentsRef, apartment);
+  return docRef.id;
 }
 
 /**
@@ -332,21 +303,11 @@ export async function getMaintenanceRequest(
  */
 export async function getMaintenanceRequestsQuery(userID: string) {
   // Construct a query based on the tenantId
-  const userRef = collection(db, "users");
-  const userSnapshot = await getDocs(userRef);
-  const matchingUserDoc = userSnapshot.docs.find(
-    (doc) => doc.data().uid === userID
-  );
-
-  if (!matchingUserDoc) {
-    throw new Error(`User with ID ${userID} not found.`);
-  }
-
-  const userDocId = matchingUserDoc.id;
+  const user = await getUser(userID);
 
   return query(
     collection(db, "maintenanceRequests"),
-    where("tenantId", "==", userDocId)
+    where("tenantId", "==", user?.uid)
   );
 }
 
@@ -443,7 +404,7 @@ export async function updateLaundryMachine(
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
- 
+
 export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string
@@ -456,210 +417,87 @@ export async function deleteLaundryMachine(
   await deleteDoc(docRef);
 }
 
-/**
- * Adds a new landlord to Firestore, creating a user profile and a landlord profile.
- * @param name - Full name of the landlord.
- * @param email - Email address of the landlord.
- * @param phone - Phone number of the landlord.
- * @param street - Street address of the landlord.
- * @param number - Building or unit number.
- * @param city - City of residence.
- * @param canton - Province/State.
- * @param zip - Postal/ZIP code.
- * @param country - Country.
- */
-export async function add_new_landlord(
-  name: string,
-  email: string,
-  phone: string,
-  street: string,
-  number: string,
-  city: string,
-  canton: string,
-  zip: string,
-  country: string
-) {
-  try {
-    // Validate the current user email matches
-    if (email !== auth.currentUser?.email) {
-      throw new Error("Use the same email as the one you used to sign up.");
-    }
-    const userObj = await getUser(auth.currentUser.uid);
-    if (!userObj) {
-
-      throw new Error("User doesn't exist.");
-    }
-
-    const { user, userUID } = userObj;
-
-    user.email = email;
-    user.name = name;
-    user.phone = phone;
-    user.street = street;
-    user.number = number;
-    user.city = city;
-    user.canton = canton;
-    user.zip = zip;
-    user.country = country;
-
-    updateUser(userUID, user);
-
-    // Step 2: Create a landlord document with the same userId
-    const landlordDocRef = doc(db, "landlords", userUID);
-    const newLandlord: Landlord = {
-      userId: userUID,
-      residenceIds: [], // Initialize with no residence IDs
-    };
-
-    await setDoc(landlordDocRef, newLandlord); // Correct Firestore document creation
-  } catch (error) {
-    throw new Error("Failed to add new landlord.");
-  }
-}
-
-export async function add_new_tenant(
-  tenantCodeId: string,
-  userUID: string
-) {
-  try {
-
-    const tenantCodesRef = doc(db, "tenantCodes", tenantCodeId);
-    const tenantCodeDoc = await getDoc(tenantCodesRef);
-    const tenantCodeData = tenantCodeDoc.data();
-
-    if (
-      !tenantCodeData ||
-      !tenantCodeData.apartmentId ||
-      !tenantCodeData.residenceId
-    ) {
-      throw new Error("Invalid tenant code data.");
-    }
-
-    const apartmentId = tenantCodeData.apartmentId;
-    const residenceId = tenantCodeData.residenceId;
-
-    const residencesRef = collection(db, "residences");
-    const residencesSnapshot = await getDocs(residencesRef);
-    const matchingResidenceDoc = residencesSnapshot.docs.find(
-      (doc) => doc.data().residenceId === residenceId
-    );
-    if (!matchingResidenceDoc) {
-      throw new Error(`Residence with ID ${residenceId} not found.`);
-    }
-    const residenceRef = doc(db, "residences", matchingResidenceDoc.id);
-    await updateDoc(residenceRef, { tenantIds: arrayUnion(userUID) });
-
-    const apartmentsRef = collection(db, "apartments");
-    const apartmentsSnapshot = await getDocs(apartmentsRef);
-    const matchingApartmentDoc = apartmentsSnapshot.docs.find(
-      (doc) => doc.data().apartmentId === apartmentId
-    );
-
-    if (!matchingApartmentDoc) {
-      throw new Error(`Apartment with ID ${apartmentId} not found.`);
-    }
-    const apartmentRef = doc(db, "apartments", matchingApartmentDoc.id);
-    await updateDoc(apartmentRef, { tenants: arrayUnion(userUID) });
-
-    const tenantDocRef = doc(db, "tenants", userUID);
-    console.log(apartmentId)
-    await updateDoc(tenantDocRef, {
-      apartmentId: apartmentId,
-      residenceId: residenceId,
-    });
-
-  } catch (error) {
-    throw error;
-  }
-}
-
 export async function generate_unique_code(
-  residenceId: string,
-  apartmentId: string
+  residenceUID: string,
+  apartmentUID: string
 ): Promise<string> {
   // Generate a unique 6-digit tenant code
   const tenantCode = Math.floor(100000 + Math.random() * 900000).toString();
 
   const newTenantCode: TenantCode = {
-    tenantCode,
-    apartmentId,
-    residenceId,
+    tenantCode: tenantCode,
+    apartmentId: apartmentUID,
+    residenceId: residenceUID,
     used: false,
   };
-
-  // Check if the residence exists and get its data
-  const residencesRef = collection(db, "residences");
-  const residenceQuery = query(
-    residencesRef,
-    where("residenceId", "==", residenceId)
-  );
-  const residenceSnapshot = await getDocs(residenceQuery);
-
-  if (residenceSnapshot.empty) {
-    throw new Error("No matching residence found for the given residence ID.");
-  }
-
-  const residenceDoc = residenceSnapshot.docs[0];
-  // Check if the apartment exists in the apartments collection and belongs to the residence
-  const apartmentsRef = collection(db, "apartments");
-  const apartmentQuery = query(
-    apartmentsRef,
-    where("apartmentId", "==", apartmentId),
-    where("residenceId", "==", residenceId)
-  );
-  const apartmentSnapshot = await getDocs(apartmentQuery);
-
-  if (apartmentSnapshot.empty) {
-    throw new Error(
-      `Apartment with ID ${apartmentId} does not exist in residence with ID ${residenceId}.`
-    );
-  }
 
   // Add the tenant code to the 'tenantCodes' collection
   const tenantCodesRef = collection(db, "tenantCodes");
   const docRef = await addDoc(tenantCodesRef, newTenantCode);
 
-  // Update the 'tenantCodesID' array in the residence document
-  const residenceRef = doc(db, "residences", residenceDoc.id);
-  await updateDoc(residenceRef, {
-    tenantCodesID: arrayUnion(docRef.id),
-  });
+  const residenceRef = doc(db, "residences", residenceUID);
+  const residenceSnap = await getDoc(residenceRef);
 
+  if (!residenceSnap.exists()) {
+    throw new Error(
+      `Residence with UID: ${residenceUID} not found in the residences collection`
+    );
+  }
+
+  // Add the new tenant code UID to the residence's tenantCodesID list
+  const residenceData = residenceSnap.data() as Residence;
+  residenceData.tenantCodesID.push(docRef.id);
+  updateResidence(residenceUID, residenceData);
   return tenantCode;
 }
 
 /**
  * Validates a tenant code, marking it as used if valid.
  * @param inputCode - The tenant code to validate.
- * @returns The document ID of the tenant code if valid and unused, null otherwise.
+ * @returns An object containing residenceId, apartmentId, and the document ID of the tenant code if valid and unused; null otherwise.
  */
-export async function validateTenantCode(
-  inputCode: string
-): Promise<string | null> {
-  try {
-    // fetch the UID of TenantCode who has this unique code: inputCode
-    const tenantCodesRef = collection(db, "tenantCodes");
+export async function validateTenantCode(inputCode: string): Promise<{
+  residenceId: string;
+  apartmentId: string;
+  tenantCodeUID: string;
+}> {
+  // fetch the UID of TenantCode who has this unique code: inputCode
+  const tenantCodesRef = collection(db, "tenantCodes");
+  const q = query(tenantCodesRef, where("tenantCode", "==", inputCode));
 
-    const q = query(
-      tenantCodesRef,
-      where("tenantCode", "==", inputCode),
-      where("used", "==", false)
-    );
-    const querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      return null;
-    }
-
-    const tenantCodeDoc = querySnapshot.docs[0];
-    const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
-
-    await updateDoc(tenantCodeRef, { used: true });
-    
-    return tenantCodeDoc.id;
-  } catch (error) {
-    return null;
+  if (querySnapshot.empty) {
+    throw new Error("Code not found");
   }
+  const tenantCodeDoc = querySnapshot.docs[0];
+  const data = tenantCodeDoc.data() as TenantCode;
+
+  // Check if the code has already been used
+  if (data.used) {
+    throw new Error("Code already used");
+  }
+
+  if (!data.residenceId) {
+    throw new Error(
+      "This code doesn't reference a residence. Please contact your landlord."
+    );
+  }
+
+  if (!data.apartmentId) {
+    throw new Error(
+      "This code doesn't reference an apartment. Please contact your landlord."
+    );
+  }
+
+  const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
+  await updateDoc(tenantCodeRef, { used: true });
+
+  return {
+    residenceId: data.residenceId,
+    apartmentId: data.apartmentId,
+    tenantCodeUID: tenantCodeDoc.id,
+  };
 }
 
 /**
@@ -689,9 +527,7 @@ export async function deleteUsedTenantCodes(): Promise<number> {
  * @returns A Firestore query for the washing machines collection.
  */
 export function getWashingMachinesQuery(residenceId: string) {
-  return query(
-    collection(db, `residences/${residenceId}/laundryMachines`)
-  );
+  return query(collection(db, `residences/${residenceId}/laundryMachines`));
 }
 /*
  * Returns a Firestore query for washing machines by residenceId.
@@ -700,9 +536,7 @@ export function getWashingMachinesQuery(residenceId: string) {
  * @returns A Firestore query for the washing machines collection.
  */
 export function getLaundryMachinesQuery(residenceId: string) {
-  return query(
-    collection(db, `residences/${residenceId}/laundryMachines`)
-  );
+  return query(collection(db, `residences/${residenceId}/laundryMachines`));
 }
 
 /**

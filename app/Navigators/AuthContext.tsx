@@ -1,15 +1,21 @@
-import { User as FirebaseUser } from 'firebase/auth';
-import { TUser, Tenant, Landlord } from '../../types/types';
-import * as React from 'react';
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onSnapshot, doc } from 'firebase/firestore';
-import { db } from '../../firebase/firebase';
+import { User as FirebaseUser } from "firebase/auth";
+import { TUser, Tenant, Landlord } from "../../types/types";
+import * as React from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { onSnapshot, doc } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
 
 type AuthContextType = {
   firebaseUser: FirebaseUser | null;
   user: TUser | null;
-  tenantData: Tenant | null;
-  landlordData: Landlord | null;
+  tenant: Tenant | null;
+  landlord: Landlord | null;
   isLoading: boolean;
   error?: Error;
 };
@@ -19,9 +25,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 type AuthProviderProps = {
   children: ReactNode;
   firebaseUser: FirebaseUser | null;
-  fetchUser: (uid: string) => Promise<{ user: TUser; userUID: string } | null>;
-  fetchTenant: (uid: string) => Promise<{ tenant: Tenant; tenantUID: string } | null>;
-  fetchLandlord: (uid: string) => Promise<{ landlord: Landlord; landlordUID: string } | null>;
+  fetchUser: (uid: string) => Promise<TUser | null>;
+  fetchTenant: (uid: string) => Promise<Tenant | null>;
+  fetchLandlord: (uid: string) => Promise<Landlord | null>;
 };
 
 export function AuthProvider({
@@ -29,12 +35,14 @@ export function AuthProvider({
   firebaseUser: initialFirebaseUser,
   fetchUser,
   fetchTenant,
-  fetchLandlord
+  fetchLandlord,
 }: AuthProviderProps) {
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(initialFirebaseUser);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(
+    initialFirebaseUser
+  );
   const [user, setUser] = useState<TUser | null>(null);
-  const [tenantData, setTenantData] = useState<Tenant | null>(null);
-  const [landlordData, setLandlordData] = useState<Landlord | null>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [landlord, setLandlord] = useState<Landlord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error>();
 
@@ -43,7 +51,7 @@ export function AuthProvider({
     let tenantUnsubscribe: (() => void) | undefined;
     let landlordUnsubscribe: (() => void) | undefined;
 
-    const loadUserData = async () => {
+    const loadUser = async () => {
       setIsLoading(true);
       try {
         // Clean up existing listeners
@@ -51,50 +59,54 @@ export function AuthProvider({
         if (landlordUnsubscribe) landlordUnsubscribe();
 
         if (firebaseUser) {
-          const userData = await fetchUser(firebaseUser.uid);
-          
-          if (userData) {
-            setUser(userData.user);
+          const user = await fetchUser(firebaseUser.uid);
 
-            if (userData.user.type === 'tenant') {
+          if (user) {
+            setUser(user);
+
+            if (user.type === "tenant") {
               // Initial fetch
-              const tenantData = await fetchTenant(userData.user.uid);
-              if (tenantData) {
-                setTenantData(tenantData.tenant);
-                
+              const tenant = await fetchTenant(user.uid);
+              if (tenant) {
+                setTenant(tenant);
+
                 // Set up tenant snapshot listener
                 tenantUnsubscribe = onSnapshot(
-                  doc(db, 'tenants', tenantData.tenantUID),
+                  doc(db, "tenants", tenant.userId),
                   (snapshot) => {
                     if (snapshot.exists()) {
-                      setTenantData(snapshot.data() as Tenant);
+                      setTenant(snapshot.data() as Tenant);
                     } else {
-                      setTenantData(null);
+                      setTenant(null);
                     }
                   },
                   (error) => {
-                    setError(new Error(`Tenant listener error: ${error.message}`));
+                    setError(
+                      new Error(`Tenant listener error: ${error.message}`)
+                    );
                   }
                 );
               }
-            } else if (userData.user.type === 'landlord') {
+            } else if (user.type === "landlord") {
               // Initial fetch
-              const landlordData = await fetchLandlord(firebaseUser.uid);
-              if (landlordData) {
-                setLandlordData(landlordData.landlord);
-                
+              const landlord = await fetchLandlord(firebaseUser.uid);
+              if (landlord) {
+                setLandlord(landlord);
+
                 // Set up landlord snapshot listener
                 landlordUnsubscribe = onSnapshot(
-                  doc(db, 'landlords', landlordData.landlordUID),
+                  doc(db, "landlords", landlord.userId),
                   (snapshot) => {
                     if (snapshot.exists()) {
-                      setLandlordData(snapshot.data() as Landlord);
+                      setLandlord(snapshot.data() as Landlord);
                     } else {
-                      setLandlordData(null);
+                      setLandlord(null);
                     }
                   },
                   (error) => {
-                    setError(new Error(`Landlord listener error: ${error.message}`));
+                    setError(
+                      new Error(`Landlord listener error: ${error.message}`)
+                    );
                   }
                 );
               }
@@ -102,17 +114,17 @@ export function AuthProvider({
           }
         } else {
           setUser(null);
-          setTenantData(null);
-          setLandlordData(null);
+          setTenant(null);
+          setLandlord(null);
         }
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('An error occurred'));
+        setError(err instanceof Error ? err : new Error("An error occurred"));
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadUserData();
+    loadUser();
 
     // Cleanup function
     return () => {
@@ -128,23 +140,19 @@ export function AuthProvider({
   const value = {
     firebaseUser,
     user,
-    tenantData,
-    landlordData,
+    tenant,
+    landlord,
     isLoading,
-    error
+    error,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

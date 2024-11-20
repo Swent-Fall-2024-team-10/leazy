@@ -1,15 +1,14 @@
 import { Timestamp } from "@firebase/firestore-types";
 // portions of this code were generated with chatGPT as an AI assistant
 
-
 // Define the navigation stack types
 export type RootStackParamList = {
-    Home: undefined;         // No parameters for Home screen
-    Settings: undefined;     // No parameters for Settings screen
-    ListIssues: undefined;   // No parameters for ListIssues screen
-    WashingMachine: undefined; // No parameters for WashingMachine screen
-    ManageWashingMachine: undefined; // No parameters for CreateWashingMachine screen
-  };
+  Home: undefined; // No parameters for Home screen
+  Settings: undefined; // No parameters for Settings screen
+  ListIssues: undefined; // No parameters for ListIssues screen
+  WashingMachine: undefined; // No parameters for WashingMachine screen
+  ManageWashingMachine: undefined; // No parameters for CreateWashingMachine screen
+};
 
 export type AuthStackParamList = {
   SignIn: undefined;
@@ -63,7 +62,6 @@ export type Tenant = {
   residenceId: string;
 };
 
-// I don't know if we'll use residenceId, but if it's used it should be the same as the UID of the document
 export type Residence = {
   residenceId: string;
   street: string;

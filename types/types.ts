@@ -9,6 +9,7 @@ export type RootStackParamList = {
     ListIssues: undefined;   // No parameters for ListIssues screen
     WashingMachine: undefined; // No parameters for WashingMachine screen
     ManageWashingMachine: undefined; // No parameters for CreateWashingMachine screen
+    SituationReport: undefined; // No parameters for SituationReport screen
   };
 
 export type AuthStackParamList = {

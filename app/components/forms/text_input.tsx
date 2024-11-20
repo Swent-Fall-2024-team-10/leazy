@@ -38,7 +38,6 @@ export default function InputField({
 
   const textInputComponent = (
     <TextInput
-      style={inputFieldStyles}
       placeholder={placeholder}
       value={value}
       onChangeText={setValue}

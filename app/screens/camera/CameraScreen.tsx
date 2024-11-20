@@ -100,6 +100,7 @@ export default function CameraScreen() {
       >
         <View style={styles.goBackButton}>
           <TouchableOpacity
+            testID="go-back-button"
             style={styles.goBackButton}
             onPress={navigation.goBack}
           >
@@ -109,12 +110,13 @@ export default function CameraScreen() {
 
         <View style={styles.topButtonContainer}>
           <TouchableOpacity
+            testID="camera-reverse-button"
             style={styles.iconButton}
             onPress={toggleCameraType}
           >
             <Ionicons name="camera-reverse" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
+          <TouchableOpacity testID="flash-button" style={styles.iconButton} onPress={toggleFlash}>
             <Ionicons
               name={flash === "on" ? "flash" : "flash-off"}
               size={24}
@@ -124,12 +126,14 @@ export default function CameraScreen() {
         </View>
         <View style={styles.zoomContainer}>
           <TouchableOpacity
+            testID="zoom-in-button"
             style={styles.zoomButton}
             onPress={() => handleZoom("in")}
           >
             <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
+            testID="zoom-out-button"
             style={styles.zoomButton}
             onPress={() => handleZoom("out")}
           >
@@ -137,7 +141,7 @@ export default function CameraScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
+          <TouchableOpacity testID="capture-button" style={styles.captureButton} onPress={takePicture}>
             <View style={styles.captureButtonInner} />
           </TouchableOpacity>
         </View>

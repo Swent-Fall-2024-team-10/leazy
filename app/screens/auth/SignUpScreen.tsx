@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal } from 'react-native';
-import CustomTextField from '../../../app/components/CustomTextField';
-import CustomPicker from '../../../app/components/CustomPicker';
+import CustomTextField from '../../components/CustomTextField';
+import CustomPicker from '../../components/CustomPicker';
 import { emailAndPasswordSignIn, UserType } from '../../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import CustomPopUp from '../../../app/components/CustomPopUp';
+import CustomPopUp from '../../components/CustomPopUp';
 import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '../../../styles/styles';
 import { Ionicons } from '@expo/vector-icons';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { createTenant, createUser } from '@/firebase/firestore/firestore';
-import {AuthStackParamList} from '@/types/types';
+import SubmitButton from '../../components/buttons/SubmitButton';
+import { createTenant, createUser } from '../../../firebase/firestore/firestore';
+import {AuthStackParamList} from '../../../types/types';
 
 interface FormErrors {
   firstName?: string;

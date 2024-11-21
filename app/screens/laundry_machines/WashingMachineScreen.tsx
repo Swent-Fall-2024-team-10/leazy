@@ -20,6 +20,7 @@ import { onSnapshot, Timestamp } from "firebase/firestore";
 import { TimerPickerModal } from "react-native-timer-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
+import { appStyles } from "@/styles/styles";
 
 const WashingMachineScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -288,11 +289,10 @@ const WashingMachineScreen = () => {
               {/* Placeholder View for consistent layout */}
               <View
                 style={{
-                  height: 40,
-                  width: 160,
                   marginTop: 10,
                   marginBottom: 10,
                   alignItems: "center",
+                  gap: 10,
                 }}
               >
                 {machine.isAvailable && machine.isFunctional && (
@@ -301,7 +301,7 @@ const WashingMachineScreen = () => {
                     height={40}
                     disabled={false}
                     textStyle={{ fontSize: 16 }}
-                    style={{ borderRadius: 25 }}
+                    style={appStyles.submitButton}
                     testID="setTimerButton"
                     label="Set Timer"
                     onPress={() => {
@@ -326,7 +326,7 @@ const WashingMachineScreen = () => {
                       width={200}
                       height={40}
                       textStyle={{ fontStyle: 16 }}
-                      style={{ borderRadius: 25 }}
+                      style={appStyles.submitButton}
                       testID="unlockButton"
                       label="Unlock"
                       onPress={() =>
@@ -345,7 +345,7 @@ const WashingMachineScreen = () => {
                       width={200}
                       height={40}
                       textStyle={{ fontStyle: 16 }}
-                      style={{ borderRadius: 25 }}
+                      style={appStyles.submitButton}
                       testID="cancelTimerButton"
                       label="Cancel Timer"
                       onPress={() =>

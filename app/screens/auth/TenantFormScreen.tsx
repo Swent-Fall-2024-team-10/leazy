@@ -7,15 +7,15 @@ import {
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import { appStyles, ButtonDimensions, Color } from "@/styles/styles";
+import { appStyles, ButtonDimensions, Color } from "../../../styles/styles";
 import { useRoute } from "@react-navigation/native";
 import { AuthStackParamList, TUser } from "../../../types/types";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import InputField from "@/app/components/forms/text_input";
+import SubmitButton from "../../../app/components/buttons/SubmitButton";
+import InputField from "../../../app/components/forms/text_input";
 import { RouteProp } from "@react-navigation/native";
-import { emailAndPasswordSignIn } from "@/firebase/auth/auth";
-import { createUser, createTenant } from "@/firebase/firestore/firestore";
-import { Tenant } from "@/types/types";
+import { emailAndPasswordSignIn } from "../../../firebase/auth/auth";
+import { createUser, createTenant } from "../../../firebase/firestore/firestore";
+import { Tenant } from "../../../types/types";
 
 const TenantFormScreen = () => {
   const route =

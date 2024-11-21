@@ -1,12 +1,18 @@
 import React from "react";
 import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
-import TenantFormScreen from "../screens/tenant/TenantFormScreen";
-import { add_new_tenant } from "../../firebase/firestore/firestore";
+import TenantFormScreen from "../screens/auth/TenantFormScreen";
+import { createUser, createTenant } from "../../firebase/firestore/firestore";
+import { emailAndPasswordSignIn } from "../../firebase/auth/auth";
 import { Alert } from "react-native";
 import "@testing-library/jest-native/extend-expect";
 
 jest.mock("../../firebase/firestore/firestore", () => ({
-  add_new_tenant: jest.fn(),
+  createUser: jest.fn(),
+  createTenant: jest.fn(),
+}));
+
+jest.mock("../../firebase/auth/auth", () => ({
+  emailAndPasswordSignIn: jest.fn(),
 }));
 
 jest.spyOn(Alert, "alert");
@@ -20,19 +26,14 @@ jest.mock("@react-navigation/native", () => ({
   }),
   useRoute: () => ({
     params: {
-      tenantCodeId: "testTenantCodeId",
+      email: "johnny.hallyday@gmail.com",
+      password: "password123",
     },
   }),
 }));
 
 describe("TenantFormScreen", () => {
   beforeEach(() => {
-    // Clear all instances and calls to constructor and all methods:
-    (add_new_tenant as jest.Mock).mockClear();
-    (Alert.alert as jest.Mock).mockClear();
-  });
-
-  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -64,7 +65,6 @@ describe("TenantFormScreen", () => {
     const requiredFields = [
       { testId: "testFirstNameField", value: "Johnny" },
       { testId: "testLastNameField", value: "Hallyday" },
-      { testId: "testEmailField", value: "johnny.hallyday@gmail.com" },
       { testId: "testPhoneField", value: "1234567890" },
       { testId: "testAddressField", value: "123 Main St" },
       { testId: "testZipField", value: "12345" },
@@ -86,13 +86,19 @@ describe("TenantFormScreen", () => {
     expect(submitButton).toBeEnabled();
   });
 
-  test("pressing submit button calls add_new_tenant and navigates to Home", async () => {
+  test("pressing submit button calls emailAndPasswordSignIn, createUser, and createTenant", async () => {
     const { getByTestId } = render(<TenantFormScreen />);
+
+    // Mock implementations
+    (emailAndPasswordSignIn as jest.Mock).mockResolvedValue({
+      uid: "testUserId",
+    });
+    (createUser as jest.Mock).mockResolvedValue(undefined);
+    (createTenant as jest.Mock).mockResolvedValue(undefined);
 
     const requiredFields = [
       { testId: "testFirstNameField", value: "Johnny" },
       { testId: "testLastNameField", value: "Hallyday" },
-      { testId: "testEmailField", value: "johnny.hallyday@gmail.com" },
       { testId: "testPhoneField", value: "1234567890" },
       { testId: "testAddressField", value: "123 Main St" },
       { testId: "testZipField", value: "12345" },
@@ -112,30 +118,40 @@ describe("TenantFormScreen", () => {
     fireEvent.press(submitButton);
 
     await waitFor(() => {
-      expect(add_new_tenant).toHaveBeenCalledWith(
-        "testTenantCodeId",
-        "Johnny Hallyday",
+      expect(emailAndPasswordSignIn).toHaveBeenCalledWith(
         "johnny.hallyday@gmail.com",
-        "1234567890",
-        "123 Main St",
-        "42",
-        "Anytown",
-        "Anystate",
-        "12345",
-        "USA"
+        "password123"
       );
-      expect(mockNavigate).toHaveBeenCalledWith("Home");
+      expect(createUser).toHaveBeenCalledWith({
+        uid: "testUserId",
+        type: "tenant",
+        name: "Johnny Hallyday",
+        email: "johnny.hallyday@gmail.com",
+        phone: "1234567890",
+        street: "123 Main St",
+        number: "42",
+        city: "Anytown",
+        canton: "Anystate",
+        zip: "12345",
+        country: "USA",
+      });
+      expect(createTenant).toHaveBeenCalledWith({
+        userId: "testUserId",
+        maintenanceRequests: [],
+        apartmentId: "",
+        residenceId: "",
+      });
+      // Since there's no navigation in the component, we check that navigation does not happen
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
 
-  test("shows error alert when add_new_tenant fails", async () => {
-    // There could be 5 different errors from add_new_tenant:
-    // Error in add_new_tenant: Invalid tenant code data.
-    // Error in add_new_tenant: Failed to create tenant profile.
-    // Error in add_new_tenant: User not authenticated.
-    // Error in add_new_tenant: Residence with ID ${residenceId} not found.
-    // Error in add_new_tenant: Apartment with ID ${apartmentId} not found.
-    (add_new_tenant as jest.Mock).mockRejectedValue(new Error("Test error"));
+  test("shows error alert when createTenant fails", async () => {
+    (emailAndPasswordSignIn as jest.Mock).mockResolvedValue({
+      uid: "testUserId",
+    });
+    (createUser as jest.Mock).mockResolvedValue(undefined);
+    (createTenant as jest.Mock).mockRejectedValue(new Error("Test error"));
 
     jest.spyOn(console, "error").mockImplementation(() => {}); // Suppress console.error
 
@@ -144,7 +160,6 @@ describe("TenantFormScreen", () => {
     const requiredFields = [
       { testId: "testFirstNameField", value: "Johnny" },
       { testId: "testLastNameField", value: "Hallyday" },
-      { testId: "testEmailField", value: "johnny.hallyday@gmail.com" },
       { testId: "testPhoneField", value: "1234567890" },
       { testId: "testAddressField", value: "123 Main St" },
       { testId: "testZipField", value: "12345" },
@@ -166,26 +181,28 @@ describe("TenantFormScreen", () => {
     fireEvent.press(submitButton);
 
     await waitFor(() => {
-      expect(add_new_tenant).toHaveBeenCalled();
+      expect(createTenant).toHaveBeenCalled();
       expect(Alert.alert).toHaveBeenCalledWith("Error", "Test error");
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     (console.error as jest.Mock).mockRestore(); // Restore console.error
   });
 
-  test('should show "An unknown error occurred" when add_new_tenant throws a non-Error', async () => {
-    (add_new_tenant as jest.Mock).mockImplementation(() => {
+  test('should show "An unknown error occurred" when createTenant throws a non-Error', async () => {
+    (emailAndPasswordSignIn as jest.Mock).mockResolvedValue({
+      uid: "testUserId",
+    });
+    (createUser as jest.Mock).mockResolvedValue(undefined);
+    (createTenant as jest.Mock).mockImplementation(() => {
       throw "Non-Error exception";
     });
-
-    const navigation = { navigate: jest.fn() };
 
     const { getByTestId } = render(<TenantFormScreen />);
 
     const requiredFields = [
       { testId: "testFirstNameField", value: "Johnny" },
       { testId: "testLastNameField", value: "Hallyday" },
-      { testId: "testEmailField", value: "johnny.hallyday@gmail.com" },
       { testId: "testPhoneField", value: "1234567890" },
       { testId: "testAddressField", value: "123 Main St" },
       { testId: "testZipField", value: "12345" },
@@ -202,6 +219,7 @@ describe("TenantFormScreen", () => {
         fireEvent.changeText(field, value);
       });
     });
+
     const submitButton = getByTestId("submitButton");
     fireEvent.press(submitButton);
 
@@ -210,25 +228,21 @@ describe("TenantFormScreen", () => {
         "Error",
         "An unknown error occurred"
       );
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
-
-    // ensure that the navigation did not happen
-    expect(navigation.navigate).not.toHaveBeenCalled();
   });
 
   test("should do nothing when uploading university proof", async () => {
-    const navigation = { navigate: jest.fn() };
-
     const { getByText } = render(<TenantFormScreen />);
-    
+
     // Find the button by its title
-    const uploadButton = getByText('Upload university proof of attendance');
+    const uploadButton = getByText("Upload university proof of attendance");
     fireEvent.press(uploadButton);
 
     // Wait to ensure no side-effects occur
     await waitFor(() => {
       expect(Alert.alert).not.toHaveBeenCalled();
-      expect(navigation.navigate).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
 });

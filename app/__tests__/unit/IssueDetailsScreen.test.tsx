@@ -5,8 +5,9 @@ import {
   getMaintenanceRequest,
   updateMaintenanceRequest,
 } from "../../../firebase/firestore/firestore";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import "@testing-library/jest-native/extend-expect";
+import { Image } from 'react-native';
+
 
 // portions of this code were generated using chatGPT as an AI assistant
 
@@ -15,14 +16,6 @@ jest.mock("../../../firebase/firestore/firestore", () => ({
   getMaintenanceRequest: jest.fn(),
   updateMaintenanceRequest: jest.fn(),
 }));
-
-jest.mock('../../components/CustomModal', () => {
-  const { View, Text } = require('react-native');
-  return ({ visible, children, testID }: { visible: boolean; children: React.ReactNode; testID: string }) => {
-    console.log("Mock CustomModal rendered with visible:", visible);
-    return visible ? <View testID={testID}><Text>coucou2</Text>{children}</View> : <Text>coucou</Text>;
-  };
-});
 
 jest.mock("react-native-dropdown-picker", () => {
   const React = require("react"); // Import React inside the factory
@@ -81,8 +74,25 @@ jest.mock("@react-navigation/native", () => ({
 }));
 
 describe("IssueDetailsScreen", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeAll(() => {
+    Image.getSize = jest.fn(
+      (
+        uri: string,
+        successCallback: (width: number, height: number) => void,
+        failureCallback?: (error: any) => void
+      ): void => {
+        if (uri === 'bad-uri') {
+          failureCallback?.(new Error('Failed to fetch image size'));
+        } else {
+          successCallback(300, 200);
+        }
+      }
+    );
+  });
+  
+
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
 
   test("renders loading text initially", () => {
@@ -135,7 +145,9 @@ describe("IssueDetailsScreen", () => {
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
     const chatButton = screen.getByText("Open chat about this subject");
-    fireEvent.press(chatButton);
+    act(() => {
+      fireEvent.press(chatButton);
+      });
 
     expect(mockNavigate).toHaveBeenCalledWith("Messaging");
   });
@@ -156,13 +168,17 @@ describe("IssueDetailsScreen", () => {
 
     // Simulate changing status through StatusDropdown
     const statusDropdown = screen.getByTestId('statusDropdown'); // Existing status
-    fireEvent(statusDropdown, 'setOpen', true);
+    act(() => {
+      fireEvent(statusDropdown, 'setOpen', true);
+    });
 
     // Simulate selecting a new status
     const newStatus = "completed"; // Value to simulate
       // After opening the dropdown, the options should be available
     await waitFor(() => {const dropdownOption = screen.getByTestId(`statusDropdown-${newStatus}`);
+    act(() => {
       fireEvent.press(dropdownOption); // Simulates selecting the new status
+      });
     });
 
     // Verify the new status is selected
@@ -173,7 +189,9 @@ describe("IssueDetailsScreen", () => {
 
     // Press the "Close" button to save changes
     const closeButton = screen.getByTestId("saveChangesButton");
-    fireEvent.press(closeButton);
+    act(() => {
+      fireEvent.press(closeButton);
+      });
 
     await waitFor(() => {
       expect(updateMaintenanceRequest).toHaveBeenCalledWith("mockRequestID", {
@@ -184,7 +202,7 @@ describe("IssueDetailsScreen", () => {
     expect(mockNavigate).toHaveBeenCalledWith("Issues");
   });
 
-  test.only("opens and closes full-screen image modal", async () => {
+  test("opens and closes full-screen image modal", async () => {
     const mockIssueData = {
       requestID: "mockRequestID",
       requestTitle: "Leaky faucet",
@@ -194,7 +212,6 @@ describe("IssueDetailsScreen", () => {
     };
 
     (getMaintenanceRequest as jest.Mock).mockResolvedValueOnce(mockIssueData);
-
     const screen = render(<IssueDetailsScreen />);
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
@@ -204,18 +221,14 @@ describe("IssueDetailsScreen", () => {
     // Trigger state changes that open the modal
     act(() => {
     fireEvent.press(thumbnailImage);
-
-  });
+    });
 
     // Wait for the modal to appear
     await waitFor(() => {
       const modal = screen.queryByTestId("fullModal");
-      screen.debug();
       expect(modal).toBeTruthy();
     });
-      // Additional debugging
-  
-    
+
     // Verify that the full-screen image modal is visible
     const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
     expect(fullScreenImage).toBeTruthy();
@@ -251,7 +264,9 @@ describe("IssueDetailsScreen", () => {
 
     // Open full-screen modal
     const firstThumbnailImage = screen.getByTestId("imageItem-0");
-    fireEvent.press(firstThumbnailImage);
+    act(() => {
+      fireEvent.press(firstThumbnailImage);
+      });
 
     // Verify initial image is displayed
     const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
@@ -259,13 +274,17 @@ describe("IssueDetailsScreen", () => {
     expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/400x300");
 
     // Press the right arrow to navigate to the next image
-    const rightArrowButton = screen.getByTestId("leftButton");
-    fireEvent.press(rightArrowButton);
+    const rightArrowButton = screen.getByTestId("rightButton");
+    act(() => {
+      fireEvent.press(rightArrowButton);
+      });
     expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/300x400");
 
     // Press the left arrow to navigate back to the previous image
-    const leftArrowButton = screen.getByTestId("rightButton");
-    fireEvent.press(leftArrowButton);
+    const leftArrowButton = screen.getByTestId("leftButton");
+    act(() => {
+      fireEvent.press(leftArrowButton);
+      });
     expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/400x300");
   });
 });

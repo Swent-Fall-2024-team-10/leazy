@@ -8,14 +8,12 @@ import {
   ScrollView,
   Dimensions,
   Modal,
-  ActivityIndicator,
 } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import {
   MaintenanceRequest,
   ReportStackParamList,
-  RootStackParamList,
 } from "../../../types/types";
 import { MessageSquare } from "react-native-feather";
 import StatusDropdown from "../../components/StatusDropdown";
@@ -30,7 +28,6 @@ import Spacer from "../../components/Spacer";
 import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";
-import CustomModal from "../../components/CustomModal";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -83,16 +80,9 @@ const IssueDetailsScreen: React.FC = () => {
     }
   };
 
-  // Open full-screen mode with the clicked image index
-  const [isLoadingImage, setIsLoadingImage] = useState(false);
-
 const openFullScreen = (index: number) => {
   if (issue) {
     setCurrentImageIndex(index);
-    setIsLoadingImage(true); // Start loading
-    console.log(fullScreenMode);
-    setFullScreenMode(true);  // Show the modal
-    console.log(fullScreenMode);
 
     Image.getSize(issue.picture[index], (width, height) => {
       const screenWidth = Dimensions.get("window").width * 0.9;
@@ -112,7 +102,7 @@ const openFullScreen = (index: number) => {
       }
 
       setFullImageDimensions({ width: finalWidth, height: finalHeight });
-      setIsLoadingImage(false); // End loading
+      setFullScreenMode(true);  // Show the modal
     });
   }
 };
@@ -121,10 +111,6 @@ const openFullScreen = (index: number) => {
   const closeFullScreen = () => {
     setFullScreenMode(false);
   };
-
-  useEffect(() => {
-    console.log('Modal visibility changed:', fullScreenMode);
-  }, [fullScreenMode]);
 
   // Récupérer l'issue depuis Firebase
   useEffect(() => {
@@ -151,7 +137,6 @@ const openFullScreen = (index: number) => {
 
   // Fonction pour mettre à jour le statut et la description dans Firebase lors de la fermeture
   const handleClose = async () => {
-    console.log("Closing issue with status : ", status);
     if (issue) {
       await updateMaintenanceRequest(requestID, {
         requestStatus: status,
@@ -194,7 +179,7 @@ const openFullScreen = (index: number) => {
                 testID='scrollview'
               >
                 {issue.picture.map((image, index) => (
-                  <TouchableOpacity key={index} onPress={() => {console.log(`Image ${index} pressed`);openFullScreen(index); console.log(`Image ${index} pressed`)}} testID={`imageItem-${index}`}>
+                  <TouchableOpacity key={index} onPress={() => {openFullScreen(index)}} testID={`imageItem-${index}`}>
                     <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
                   </TouchableOpacity>
 
@@ -229,15 +214,12 @@ const openFullScreen = (index: number) => {
             </SubmitButton>
           
           {/* Full-Screen Modal */}
-          <CustomModal
-          visible={fullScreenMode && !isLoadingImage}
+          <Modal
+          visible={fullScreenMode}
           transparent={true}
           onRequestClose={closeFullScreen}
           testID="fullModal"
           >
-            {isLoadingImage ? (
-            <ActivityIndicator size="large" color="white" />
-            ) : (
               <View style={styles.modalBackground}>
                 <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">
                   <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
@@ -258,8 +240,7 @@ const openFullScreen = (index: number) => {
                   <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
                 </TouchableOpacity>
               </View>
-            )}
-          </CustomModal>
+          </Modal>
 
           <Spacer height={20} />
         </ScrollView>

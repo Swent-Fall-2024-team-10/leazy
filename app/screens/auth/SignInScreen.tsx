@@ -110,7 +110,7 @@ export default function SignInScreen() {
         width={ButtonDimensions.largeButtonWidth} 
         height={ButtonDimensions.largeButtonHeight} 
         label="Sign up" 
-        testID='SignUp'
+        testID='signUpButton'
         style={appStyles.submitButton}
         textStyle={appStyles.submitButtonText}
       />

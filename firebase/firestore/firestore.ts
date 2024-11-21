@@ -1,5 +1,5 @@
 // Import Firestore database instance and necessary Firestore functions.
-import { db, auth } from "../../firebase/firebase";
+import { db } from "../../firebase/firebase";
 import {
   setDoc,
   doc,
@@ -447,7 +447,7 @@ export async function generate_unique_code(
   // Add the new tenant code UID to the residence's tenantCodesID list
   const residenceData = residenceSnap.data() as Residence;
   residenceData.tenantCodesID.push(docRef.id);
-  updateResidence(residenceUID, residenceData);
+  await updateResidence(residenceUID, residenceData);
   return tenantCode;
 }
 

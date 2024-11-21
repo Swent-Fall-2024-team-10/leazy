@@ -27,7 +27,6 @@ export default function CapturedMediaScreen() {
 
 const handleUpload = useCallback(async () => {
   try {
-    Alert.alert('Debug', 'Uploading media started'); // Debug Alert
     console.log('Uploading media...');
     // Define a type for the dimensions object
     type ImageDimensions = { width: number; height: number };
@@ -80,6 +79,7 @@ const handleUpload = useCallback(async () => {
 
   } catch (error) {
     console.error('Error uploading media:', error);
+    console.log('Caught error:', error); // Add this for debugging
     Alert.alert('Error', 'Failed to upload media to Firebase');
   }
 }, [addPicture]);

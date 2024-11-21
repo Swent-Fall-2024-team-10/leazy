@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import CapturedMediaScreen from '../screens/camera/CapturedMediaScreen'; // Adjust the path as needed
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { usePictureContext } from '../context/PictureContext';
@@ -65,6 +65,7 @@ describe('CapturedMediaScreen', () => {
   let headerRight: React.ReactNode;
   const mockImageGetSize = jest.fn();
 
+
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks();
@@ -99,6 +100,12 @@ describe('CapturedMediaScreen', () => {
     // Mock cache utilities
     (picFileUri as jest.Mock).mockReturnValue('mock-cached-file-path');
     (cacheFile as jest.Mock).mockResolvedValue(true);
+
+    (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue({
+      uri: 'file://mock-resized-image.jpg' // Valid file URI format
+    });
+
+
   });
 
   it('renders correctly for photo type', () => {
@@ -288,6 +295,37 @@ describe('CapturedMediaScreen', () => {
       );
     });
   });
+
+  it('handles image upload process correctly with actual URIs and caching', async () => {
+    const mockResizedUri = 'file://mock-resized-image.jpg';
+    const mockBlob = new Blob(['mock data']);
   
+    // Mock successful image dimension retrieval
+    mockImageGetSize.mockImplementationOnce((uri, successCallback) => {
+      successCallback(800, 600);
+    });
   
+    // Mock image manipulation
+    (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue({
+      uri: mockResizedUri
+    });
+  
+    // Mock fetch
+    global.fetch = jest.fn().mockResolvedValue({
+      blob: jest.fn().mockResolvedValue(mockBlob)
+    } as unknown as Response);
+  
+    const { getByTestId } = render(<CapturedMediaScreen />);
+    const uploadButton = render(headerRight as React.ReactElement).getByTestId('upload-button');
+    
+    await act(async () => {
+      fireEvent.press(uploadButton);
+    });
+  
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(mockResizedUri);
+    }, { timeout: 3000 });
+  });
+
 });
+  

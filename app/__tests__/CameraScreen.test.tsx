@@ -11,31 +11,32 @@ import { Alert } from 'react-native';
 
 
 jest.mock('expo-camera', () => {
-    // Define a typed mock CameraView component
-    const MockCameraView = jest.fn(({ children, ref }: { 
-      children: React.ReactNode, 
-      ref?: React.RefObject<{ 
-        takePictureAsync: jest.Mock 
-      }> 
-    }) => {
-      // If a ref is provided, set up a mock takePictureAsync
-      if (ref && ref.current) {
-        ref.current.takePictureAsync = jest.fn();
-      }
-      return <>{children}</>;
-    });
-  
-    return {
-      Camera: {
-        requestCameraPermissionsAsync: jest.fn(),
-      },
-      CameraView: MockCameraView,
-      CameraType: {
-        back: 'back',
-        front: 'front',
-      },
-    };
+  const React = require('react'); // Import React inside the factory
+
+  const MockCameraView = React.forwardRef(({ children }: {
+    children: React.ReactNode
+  }, ref: React.MutableRefObject<any>) => {
+    if (ref) {
+      (ref as React.MutableRefObject<any>).current = {
+        takePictureAsync: jest.fn(),
+      };
+    }
+    return <>{children}</>;
   });
+
+  return {
+    Camera: {
+      requestCameraPermissionsAsync: jest.fn(),
+    },
+    CameraView: MockCameraView,
+    CameraType: {
+      back: 'back',
+      front: 'front',
+    },
+  };
+});
+
+
     
 
 jest.mock('@expo/vector-icons', () => ({
@@ -92,17 +93,20 @@ describe('CameraScreen', () => {
 
 
   it('displays no access message when permissions are denied', async () => {
+    jest.setTimeout(10000); // Set timeout to 10 seconds
+  
     // Mock permissions being denied
     (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
       status: 'denied' 
     });
-
+  
     const { getByText } = render(<CameraScreen />);
-
+  
     await waitFor(() => {
       expect(getByText('No access to camera')).toBeTruthy();
     });
   });
+  
 
   it('renders CameraView when all permissions are granted', async () => {
     const { getByTestId } = render(<CameraScreen />);

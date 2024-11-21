@@ -33,4 +33,5 @@ describe("CameraButton Component", () => {
 
     expect(mockOnPress).toHaveBeenCalled();
   });
+  
 });

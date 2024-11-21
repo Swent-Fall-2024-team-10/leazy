@@ -6,9 +6,19 @@ import { appStyles, ButtonDimensions, Color, FontSizes, FontWeight } from "@/sty
 import InputField from "@/app/components/forms/text_input";
 import StraightLine from "../../components/SeparationLine";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from 'react-native-picker-select';
 
-const SituationReportLayout = [1, "floor", 0, 1, "wall", 0, 1, "ceiling", 0, 1, "window", 0];
+type PickerItem = {
+    label: string;
+    value: string | number;
+  };
+
+
+// ============== Temporary constant to be able to display and test the screen without the backend being completed ================
+const SituationReportLayout = [1, "floor", 0, 1, "wall", 0, 1, "ceiling", 0, 1, "window", 0, 3, "Bed", "Faces", 0, "Materas", 0, "Strucutre", 0];
+
+const SituationReportItemsWithoutGroups = [["floor", 0], ["wall", 0], ["ceiling", 0], ["window", 0]];
+
 const residences = [
   { label: "Vortex", value: "Vortex" },
   { label: "Triaude", value: "Triaude" },
@@ -16,19 +26,74 @@ const residences = [
 ];
 
 const apartments = [
-  { label: "1", value: "1" },
-  { label: "2", value: "2" },
-  { label: "3", value: "3" },
-  { label: "4", value: "4" },
-  { label: "5", value: "5" },
-  { label: "6", value: "6" },
-  { label: "7", value: "7" },
-  { label: "8", value: "8" },
-  { label: "9", value: "9" },
-  { label: "10", value: "10" }
-];
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
+    { label: "10", value: "10" },
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
+    { label: "10", value: "10" },
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
+    { label: "10", value: "10" },
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
+    { label: "10", value: "10" },
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
+    { label: "10", value: "10" },
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
+    { label: "10", value: "10" },
+  ];
+// ============================================ END OF TEMPORARY TEST CONSTANTS ================================================
+
 
 export default function SituationReport() {
+    const [selectedResidence, setSelectedResidence] = useState("");
+    const [selectedApartment, setSelectedApartment] = useState("");    
+
   // Component representing a single situation report item
   function SituationReportItem({ label, n }: { label: string; n: number }) {
     const [checked1, setChecked1] = useState(false);
@@ -38,37 +103,36 @@ export default function SituationReport() {
     return (
       <View style={styles.item}>
         <View style={styles.itemRow}>
-          <Text style={styles.text}>
+          <Text style={[styles.text, styles.label]}>
             {n} : {label}
           </Text>
-          <TickingBox checked={checked1} onChange={setChecked1} />
-          <TickingBox checked={checked2} onChange={setChecked2} />
-          <TickingBox checked={checked3} onChange={setChecked3} />
+            <TickingBox checked={checked1} onChange={setChecked1} />
+            <TickingBox checked={checked2} onChange={setChecked2} />
+            <TickingBox checked={checked3} onChange={setChecked3} />
         </View>
       </View>
     );
   }
 
   // Picker group to select residence and apartment
-  function PickerGroup() {
-    const [selectedResidence, setSelectedResidence] = useState("");
-    const [selectedApartment, setSelectedApartment] = useState("");
-  
-    const residences = ["Vortex", "Triaude", "Estudiantine"];
-    const apartments = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-  
+  function PickerGroup({label, data, chosed, setValue}: {label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
     return (
-      <Picker
-        selectedValue={selectedApartment}
-        style={{ height: 50, width: 100 }}
-        onValueChange={(itemValue, itemIndex) =>
-          setSelectedApartment(itemValue)
-        }>
-        <Picker.Item label="Java" value="java" />
-        <Picker.Item label="JavaScript" value="js" />
-      </Picker>
+        <View style={[styles.greyGroupBackground, styles.pickerContainer]}>
+            <Text style={styles.label}>{label}</Text>
+
+            <View style={styles.pickerWrapper}>
+                <RNPickerSelect
+                    onValueChange={(value) => setValue(value)}
+                    items={data}
+                    value={chosed}
+                    placeholder={{label}}
+                    style={pickerSelectStyles}
+                />
+            </View>
+      </View>
     );
-  }
+  };
+
 
   // Component representing a group of input fields for the tenant's name (either arriving or leaving)
   function TenantNameGroup({ label }: { label: string }) {
@@ -76,7 +140,7 @@ export default function SituationReport() {
     return (
       <View style={styles.greyGroupBackground}>
         <View style={styles.tenantRow}>
-          <Text style={styles.tenantLabel}>{label}</Text>
+          <Text style={[styles.tenantLabel, {marginRight : "9.85%"}]}>{label}</Text>
           <InputField
             value={""}
             setValue={() => {}}
@@ -113,7 +177,11 @@ export default function SituationReport() {
           <Text style={appStyles.screenHeader}>Situation Report Form</Text>
 
           {/* Picker for Residence and Apartment */}
-          <PickerGroup />
+          <PickerGroup label={"Residence"} data={residences} chosed={selectedResidence} setValue={setSelectedResidence} />
+
+
+          <PickerGroup label={"Apartment"} data={apartments} chosed={selectedApartment} setValue={setSelectedApartment} />
+
 
           {/* Tenant Information */}
           <TenantNameGroup label={"Arriving Tenant"} />
@@ -121,6 +189,7 @@ export default function SituationReport() {
 
           <View style={styles.lineContainer}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
+
               <View style={{ marginBottom: "2%" }}>
                 <Text>OC = Original Condition </Text>
                 <Text>NW = Natural Wear</Text>
@@ -137,7 +206,9 @@ export default function SituationReport() {
             <StraightLine />
           </View>
 
-          <SituationReportItem label="test" n={1} />
+            {SituationReportItemsWithoutGroups.map((item, index) =>(
+                <SituationReportItem label={String(item[0])} n={index + 1}/>
+            ))}
 
           <View style={styles.lineContainer}>
             <Text style={styles.remark}> Remark :</Text>
@@ -173,12 +244,18 @@ export default function SituationReport() {
 }
 
 const styles = StyleSheet.create({
+    groupSituationReport: {
+        margin : "2%",
+    },
+
+
   lineContainer: {
     marginBottom: "5%",
     marginTop: "5%",
   },
 
   labels: {
+    fontSize: FontSizes.label,
     flexDirection: "row",
     alignSelf: "flex-end",
     position: "absolute",
@@ -191,21 +268,24 @@ const styles = StyleSheet.create({
     fontWeight: "600", // Use a valid fontWeight value
     marginRight: "15%",
   },
+
   remark: {
     color: Color.ButtonBackground, /* Purple border */
     marginBottom: "2%",
     fontSize: FontSizes.label,
     fontWeight: "600", // Use a valid fontWeight value
   },
+
   item: {
     backgroundColor: "#f2f2f2", /* Light gray background */
     borderWidth: 0.5,
     borderColor: "#A3A3A3CC", /* Purple border */
     borderRadius: 15, /* Rounded corners */
-    height: 100,
+    height: 80,
     width: "100%",
     justifyContent: "center",
     padding: "2%",
+    marginBottom : "2%",
   },
   itemRow: {
     flexDirection: "row", /* Align items horizontally */
@@ -229,18 +309,19 @@ const styles = StyleSheet.create({
     marginBottom: "3%",
   },
   tenantLabel: {
-    fontSize: 20,
+    fontSize: 16,
     color: "#0f5257",
-    fontWeight: "600",
-    marginTop: "2%",
+    fontWeight: "700",
     marginRight: "2%",
     marginLeft: "2%",
   },
+  
   tenantRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: "2%",
   },
+
   tenantRow2: {
     width: "51%",
     flexDirection: "row",
@@ -249,49 +330,51 @@ const styles = StyleSheet.create({
     marginBottom: "2%",
   },
 
-  pickerContainer: {
+  container: {
     marginBottom: 20,
-  },
-  pickerWrapper: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    marginBottom: 10,
-    backgroundColor: "#f2f2f2",
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-  },
-  pickerLabel: {
-    marginBottom: 5,
-    fontSize: FontSizes.label,
-    color: Color.ButtonBackground,
-    fontWeight: "600", // Use a valid fontWeight value
-  },
-
-  
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 4,
-    color: 'black',
-    paddingRight: 30, // to ensure the text is never behind the icon
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 0.5,
-    borderColor: 'purple',
+    padding: 10,
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
-    color: 'black',
-    paddingRight: 30, // to ensure the text is never behind the icon
+  },
+
+  pickerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding : '2%',
+  },
+
+  pickerWrapper: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 25,
+    backgroundColor: Color.TextInputBackground,
+    borderColor: Color.TextInputBorder,
+  },
+
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    marginLeft: '2%',
+    marginRight: '10%',
+    color: Color.ButtonBackground,
+  },
+
+  selectedValues: {
+    marginTop: 10,
+  },
+  selectedText: {
+    fontSize: 14,
+    color: "#555",
   },
 });
+
+const pickerSelectStyles = {
+    inputIOS: {
+        color: "black",
+    },
+    inputAndroid: {
+        color : "black",
+    },
+  };
+  

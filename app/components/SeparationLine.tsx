@@ -9,6 +9,7 @@ const StraightLine: React.FC = () => {
   return (
     <View style={styles.container}>
         <View
+            testID="container"
             style={[
             styles.line,
             {

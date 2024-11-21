@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { Dimensions } from "react-native";
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -10,7 +11,7 @@ export const defaultButtonRadius = 100;
 export const textInputHeight = 40;
 export const ButtonDimensions = {
 
-  fullWidthButtonWidth : 325,
+  fullWidthButtonWidth : Dimensions.get('window').width * 0.85,
 
   veryLargeButtonWidth : 300,
   veryLargeButtonHeight : 44,
@@ -64,10 +65,12 @@ export const FontWeight = {
   TextInputText: "normal",
   TextInputLabel: "bold",
   label: "bold",
-};
+} as const;
 
 export const Color = {
   //ScreenBackground: "#FFFFFF",
+  GrayGroupMargin: "#A3A3A3CC",
+  GrayGroupBackground: "#f2f2f2",
 
   IssueTextBackground: "#FFFFFF",
   CancelColor : '#E74C3C',
@@ -95,7 +98,7 @@ export const Color = {
   TextInputBackground : "#D6D3F0",
   TextInputBorder : "#7F7F7F",
   TextInputText : "#0B3142",
-  TextInputLabel : "#0B3142",
+  TextInputLabel : "#0F5257",
 
   CameraButtonBackground: "#0F5257",
   CameraButtonBorder: "#7F7F7F",
@@ -108,6 +111,16 @@ export const Color = {
 };
 
 export const appStyles = StyleSheet.create({
+
+  grayGroupBackground: {
+    backgroundColor: Color.GrayGroupBackground,
+    borderWidth: 0.5,
+    borderColor: Color.GrayGroupMargin, /* Purple border */
+    borderRadius: 15, /* Rounded corners */
+    justifyContent: "center",
+    padding: "2%",
+    marginBottom: "3%",
+  },
 
   tickingBox : {
     borderRadius: 5,

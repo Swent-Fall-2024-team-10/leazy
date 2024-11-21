@@ -1,3 +1,4 @@
+import { Color } from '../../../styles/styles';
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-elements';
@@ -15,10 +16,25 @@ const TickingBox: React.FC<TickingBoxProps> = ({ checked, onChange }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.checkboxContainer} onPress={handleToggle}>
-        <View style={[styles.checkbox, checked && styles.checked]}>
-          {checked && <Icon name="x" type="feather" color="#fff" size={20} />}
+    <View style={styles.container} testID="ticking-box-container">
+      <TouchableOpacity
+        style={styles.checkboxContainer}
+        onPress={handleToggle}
+        testID="ticking-box-button"
+      >
+        <View
+          style={[styles.checkbox, checked && styles.checked]}
+          testID="ticking-box"
+        >
+          {checked && (
+            <Icon
+              name="x"
+              type="feather"
+              color="white"
+              size={20}
+              testID="ticking-box-icon"
+            />
+          )}
         </View>
       </TouchableOpacity>
     </View>
@@ -30,6 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -38,18 +55,14 @@ const styles = StyleSheet.create({
     width: box_size,
     height: box_size,
     borderWidth: 2,
-    borderColor: '#0f5257',
+    borderColor: Color.ButtonBackground,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: "2%",
+    marginRight: '2%',
   },
   checked: {
-    backgroundColor: '#0f5257',
-  },
-  label: {
-    fontSize: 18,
-    color: '#333',
+    backgroundColor: Color.ButtonBackground,
   },
 });
 

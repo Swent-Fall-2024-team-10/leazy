@@ -12,7 +12,6 @@ jest.mock('../../firebase/auth/auth', () => ({
     },
     emailAndPasswordSignIn: jest.fn(),
   }));
-import '@testing-library/jest-native/extend-expect';
 
 // Mock the navigation
 const mockNavigate = jest.fn();

@@ -300,7 +300,9 @@ const WashingMachineScreen = () => {
                     width={200}
                     height={40}
                     disabled={false}
+                    textStyle={{ fontSize: 16 }}
                     style={{ borderRadius: 25 }}
+                    testID="setTimerButton"
                     label="Set Timer"
                     onPress={() => {
                       setSelectedMachineId(machine.laundryMachineId);
@@ -323,7 +325,9 @@ const WashingMachineScreen = () => {
                     <SubmitButton
                       width={200}
                       height={40}
+                      textStyle={{ fontStyle: 16 }}
                       style={{ borderRadius: 25 }}
+                      testID="unlockButton"
                       label="Unlock"
                       onPress={() =>
                         handleResetMachine(machine.laundryMachineId)
@@ -340,7 +344,9 @@ const WashingMachineScreen = () => {
                     <SubmitButton
                       width={200}
                       height={40}
+                      textStyle={{ fontStyle: 16 }}
                       style={{ borderRadius: 25 }}
+                      testID="cancelTimerButton"
                       label="Cancel Timer"
                       onPress={() =>
                         handleResetMachine(machine.laundryMachineId)

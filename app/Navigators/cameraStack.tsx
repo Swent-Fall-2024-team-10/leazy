@@ -2,8 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import CameraScreen from '../screens/CameraScreen';
-import CapturedMediaScreen from '../screens/CapturedMediaScreen';
+import CameraScreen from '../screens/camera/CameraScreen';
+import CapturedMediaScreen from '../screens/camera/CapturedMediaScreen';
 
 // portions of this code were generated with chatGPT as an AI assistant
 

@@ -13,9 +13,6 @@ import {
     connectAuthEmulator
 } from "firebase/auth";
 
-const provider = new GoogleAuthProvider();
-
-
 export enum UserType {
     TENANT = "Tenant",
     LANDLORD = "Landlord",
@@ -23,15 +20,10 @@ export enum UserType {
 }
 
 // TODO add user data to firestore
-export async function emailAndPasswordSignIn(email: string, password: string, userType: UserType): Promise<User|null>{
+export async function emailAndPasswordSignIn(email: string, password: string): Promise<User|null>{
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        if(userType === UserType.TENANT){
-            console.log("Creating tenant user in firestore");
-        } else if(userType === UserType.LANDLORD){
-            console.log("Creating landlord user in firestore");
-        }
         return user;
     } catch (error) {
         console.log("Error while signing in to firebase : " , error);

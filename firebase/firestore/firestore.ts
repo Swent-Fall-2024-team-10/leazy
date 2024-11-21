@@ -11,12 +11,13 @@ import {
   query,
   where,
   getDocs,
+  Timestamp,
   arrayUnion,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
 import {
-  User,
+  TUser,
   Landlord,
   Tenant,
   Residence,
@@ -33,13 +34,14 @@ import {
  * Creates a new user document in Firestore.
  * @param user - The user object to be added to the 'users' collection.
  */
-export async function createUser(user: User): Promise<string> {
-  const usersCollectionRef = collection(db, "users");
-  const docRef = await addDoc(usersCollectionRef, user);
-  if (!docRef.id) {
-    throw new Error("Failed to add document.");
+export async function createUser(user: TUser) {
+  const docRef = doc(db, "users", user.uid);
+  try {
+    await setDoc(docRef, user);
   }
-  return docRef.id;
+  catch(e) {
+    console.error("Error creating tenant profile:", e);
+  }
 }
 
 /**
@@ -49,14 +51,14 @@ export async function createUser(user: User): Promise<string> {
  */
 export async function getUser(
   uid: string
-): Promise<{ user: User; userUID: string } | null> {
+): Promise<{ user: TUser; userUID: string } | null> {
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("uid", "==", uid));
   const querySnapshot = await getDocs(q);
 
   if (!querySnapshot.empty) {
     const doc = querySnapshot.docs[0]; // Assume `uid` is unique, so take the first result
-    return { user: doc.data() as User, userUID: doc.id };
+    return { user: doc.data() as TUser, userUID: doc.id };
   } else {
     return null;
   }
@@ -67,7 +69,7 @@ export async function getUser(
  * @param uid - The unique identifier of the user to update.
  * @param user - The partial user data to update.
  */
-export async function updateUser(uid: string, user: Partial<User>) {
+export async function updateUser(uid: string, user: Partial<TUser>) {
   const docRef = doc(db, "users", uid);
   await updateDoc(docRef, user);
 }
@@ -88,13 +90,15 @@ export async function deleteUser(uid: string) {
  * Creates a new landlord document in Firestore.
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
-export async function createLandlord(landlord: Landlord): Promise<string> {
-  if (!landlord.userId) {
-    throw new Error("Invalid landlord data");
-  }
+export async function createLandlord(landlord: Landlord){
   const docRef = doc(db, "landlords", landlord.userId);
-  await setDoc(docRef, landlord);
-  return landlord.userId;
+  try {
+    await setDoc(docRef, landlord);
+    console.log("Landlord profile created successfully.");
+  }
+  catch(e) {
+    console.error("Error creating landlord profile:", e);
+  }
 }
 
 /**
@@ -137,7 +141,6 @@ export async function updateLandlord(
   if (!landlord.userId || !landlord.residenceIds) {
     throw new Error("Invalid landlord data");
   }
-
   const docRef = doc(db, "landlords", userId);
   await updateDoc(docRef, landlord);
 }
@@ -157,7 +160,13 @@ export async function deleteLandlord(userId: string) {
  */
 export async function createTenant(tenant: Tenant) {
   const docRef = doc(db, "tenants", tenant.userId);
-  await setDoc(docRef, tenant);
+  try {
+    await setDoc(docRef, tenant);
+  }
+  catch(e) {
+    console.error("Error creating tenant profile:", e);
+  }
+  
 }
 
 /**
@@ -176,7 +185,7 @@ export async function getTenant(
     const tenantDoc = querySnapshot.docs[0]; // Assume `userId` is unique among tenants
     return { tenant: tenantDoc.data() as Tenant, tenantUID: tenantDoc.id };
   }
-
+  
   return null;
 }
 
@@ -417,7 +426,6 @@ export async function updateLaundryMachine(
   if (!residenceId || !machineId) {
     throw new Error("Invalid laundry machine data");
   }
-
   if (machine.laundryMachineId !== machineId) {
     throw new Error("Machine ID mismatch");
   }
@@ -435,6 +443,7 @@ export async function updateLaundryMachine(
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
+ 
 export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string
@@ -475,10 +484,9 @@ export async function add_new_landlord(
     if (email !== auth.currentUser?.email) {
       throw new Error("Use the same email as the one you used to sign up.");
     }
-
-    console.log("Current user id:", auth.currentUser.uid);
     const userObj = await getUser(auth.currentUser.uid);
     if (!userObj) {
+
       throw new Error("User doesn't exist.");
     }
 
@@ -504,30 +512,16 @@ export async function add_new_landlord(
     };
 
     await setDoc(landlordDocRef, newLandlord); // Correct Firestore document creation
-
-    console.log("Landlord profile created successfully.");
   } catch (error) {
-    console.error("Error in add_new_landlord:", error);
     throw new Error("Failed to add new landlord.");
   }
 }
 
 export async function add_new_tenant(
   tenantCodeId: string,
-  name: string,
-  email: string,
-  phone: string,
-  street: string,
-  number: string,
-  city: string,
-  canton: string,
-  zip: string,
-  country: string
+  userUID: string
 ) {
   try {
-    if (email !== auth.currentUser?.email) {
-      throw new Error("Use the same email as the one you used to sign up.");
-    }
 
     const tenantCodesRef = doc(db, "tenantCodes", tenantCodeId);
     const tenantCodeDoc = await getDoc(tenantCodesRef);
@@ -543,34 +537,6 @@ export async function add_new_tenant(
 
     const apartmentId = tenantCodeData.apartmentId;
     const residenceId = tenantCodeData.residenceId;
-
-    const userObj = await getUser(auth.currentUser.uid);
-    if (!userObj) {
-      throw new Error("User not found.");
-    }
-    const { user, userUID } = userObj;
-
-    user.email = email;
-    user.name = name;
-    user.phone = phone;
-    user.street = street;
-    user.number = number;
-    user.city = city;
-    user.canton = canton;
-    user.zip = zip;
-    user.country = country;
-
-    //update user with the new data
-    await updateUser(userUID, user);
-
-    const newTenant: Tenant = {
-      userId: userUID,
-      maintenanceRequests: [],
-      apartmentId: apartmentId,
-      residenceId: residenceId,
-    };
-
-    await createTenant(newTenant);
 
     const residencesRef = collection(db, "residences");
     const residencesSnapshot = await getDocs(residencesRef);
@@ -594,6 +560,14 @@ export async function add_new_tenant(
     }
     const apartmentRef = doc(db, "apartments", matchingApartmentDoc.id);
     await updateDoc(apartmentRef, { tenants: arrayUnion(userUID) });
+
+    const tenantDocRef = doc(db, "tenants", userUID);
+    console.log(apartmentId)
+    await updateDoc(tenantDocRef, {
+      apartmentId: apartmentId,
+      residenceId: residenceId,
+    });
+
   } catch (error) {
     throw error;
   }
@@ -663,7 +637,6 @@ export async function validateTenantCode(
   inputCode: string
 ): Promise<string | null> {
   try {
-    console.log("inputCode:    ", inputCode);
     // fetch the UID of TenantCode who has this unique code: inputCode
     const tenantCodesRef = collection(db, "tenantCodes");
 
@@ -682,9 +655,9 @@ export async function validateTenantCode(
     const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
 
     await updateDoc(tenantCodeRef, { used: true });
+    
     return tenantCodeDoc.id;
   } catch (error) {
-    console.error("Error validating tenant code:", error);
     return null;
   }
 }
@@ -706,9 +679,30 @@ export async function deleteUsedTenantCodes(): Promise<number> {
     await Promise.all(deletePromises);
     return querySnapshot.size;
   } catch (error) {
-    console.error("Error deleting used tenant codes:", error);
     throw error;
   }
+}
+/*
+ * Returns a Firestore query for washing machines by residenceId.
+ * This query can be used with onSnapshot to listen for real-time updates.
+ * @param residenceId - The unique identifier of the residence.
+ * @returns A Firestore query for the washing machines collection.
+ */
+export function getWashingMachinesQuery(residenceId: string) {
+  return query(
+    collection(db, `residences/${residenceId}/laundryMachines`)
+  );
+}
+/*
+ * Returns a Firestore query for washing machines by residenceId.
+ * This query can be used with onSnapshot to listen for real-time updates.
+ * @param residenceId - The unique identifier of the residence.
+ * @returns A Firestore query for the washing machines collection.
+ */
+export function getLaundryMachinesQuery(residenceId: string) {
+  return query(
+    collection(db, `residences/${residenceId}/laundryMachines`)
+  );
 }
 
 /**
@@ -729,4 +723,18 @@ export async function getAllLaundryMachines(residenceId: string) {
     machines.push(doc.data() as LaundryMachine);
   });
   return machines;
+}
+
+/**
+ * Creates a notification document for a specific laundry machine.
+ * @param machineId - The unique identifier of the laundry machine.
+ * @param userId - The unique identifier of the user to be notified.
+ * @returns A promise that resolves when the notification document is created.
+ */
+export async function createMachineNotification(userId: string) {
+  const docRef = doc(db, "notifications", userId); // Creates a reference to the document in 'notifications' collection
+  await setDoc(docRef, {
+    userId: userId,
+    scheduledTime: Timestamp.now(), // The scheduled notification time
+  });
 }

@@ -1,7 +1,7 @@
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 
 // Consolidated mock for the storage module
-jest.mock("../../firebase/storage/storage", () => ({
+jest.mock("../../../firebase/storage/storage", () => ({
   uploadImage: jest.fn(),
   uploadVideo: jest.fn(),
   deleteImage: jest.fn(),

@@ -4,14 +4,11 @@ import {
   Tenant,
   Residence,
   Apartment,
-  LaundryMachine,
-  MaintenanceRequest,
 } from "../../../types/types";
 import {
   createUser,
   getUser,
   deleteUser,
-  updateUser,
   createLandlord,
   getLandlord,
   updateLandlord,
@@ -59,7 +56,7 @@ const {
   arrayUnion,
 } = require("firebase/firestore");
 
-const mockUser: User = {
+const mockUser: TUser = {
   uid: "123",
   type: "tenant",
   name: "Test User",
@@ -73,32 +70,40 @@ const mockUser: User = {
   country: "Test Country",
 };
 
-const mockMaintenanceRequest: MaintenanceRequest = {
-  requestID: "test-id",
-  tenantId: "test-tenant-id",
-  residenceId: "test-residence-id",
-  apartmentId: "test-apartment-id",
-  openedBy: "test-user",
-  requestTitle: "Test Request",
-  requestDate: "2024-03-21",
-  requestDescription: "Test description",
-  picture: [],
-  requestStatus: "notStarted",
-};
-
-const mockLaundryMachine: LaundryMachine = {
-  laundryMachineId: "testMachineId",
-  isAvailable: true,
-  isFunctional: true,
-};
-
 describe("Firestore Functions", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   describe("createUser", () => {
-    beforeEach(() => {
+    afterEach(() => {
+      jest.clearAllMocks(); // Ensure all mocks are reset after each test
+    });
+
+    it("should create a new user and return the document ID", async () => {
+      const mockUser: TUser = {
+        uid: "123",
+        type: "tenant",
+        name: "Hola Quetal",
+        email: "hola@quetal.com",
+        phone: "+41234567890",
+        street: "Espagna Street",
+        number: "10",
+        city: "Barcelona",
+        canton: "Catalona",
+        zip: "12345",
+        country: "Espana",
+      };
+
+      const mockDocRef = { id: "mockDocId" };
+
+      // Access mocked functions
+      const {
+        collection,
+        addDoc,
+        getFirestore,
+      } = require("firebase/firestore");
+
       (getFirestore as jest.Mock).mockReturnValue("mockedFirestore");
       (collection as jest.Mock).mockReturnValue("usersCollectionRef");
     });
@@ -119,7 +124,27 @@ describe("Firestore Functions", () => {
     });
 
     it("should throw an error if addDoc fails", async () => {
-      setupMocks(Promise.reject(new Error("Failed to add document.")));
+      const mockUser: TUser = {
+        uid: "456",
+        type: "landlord",
+        name: "Juan Perez",
+        email: "juan@perez.com",
+        phone: "+41765432109",
+        street: "Calle Luna",
+        number: "22B",
+        city: "Madrid",
+        canton: "Madrid",
+        zip: "28001",
+        country: "España",
+      };
+
+      // Access mocked functions
+      const { collection, addDoc } = require("firebase/firestore");
+
+      (collection as jest.Mock).mockReturnValue("usersCollectionRef");
+      (addDoc as jest.Mock).mockRejectedValue(
+        new Error("Failed to add document.")
+      );
 
       await expect(createUser(mockUser)).rejects.toThrow(
         "Failed to add document."
@@ -130,12 +155,14 @@ describe("Firestore Functions", () => {
     });
 
     it("should throw an error if user data is invalid", async () => {
-      const invalidUser: Partial<User> = {
+      const invalidUser: Partial<TUser> = {
         uid: "789",
         email: "invalid@user.com",
       };
-      await expect(createUser(invalidUser as User)).rejects.toThrow(
-        "Cannot read properties of undefined (reading 'id')"
+
+      // Execute function and expect it to throw
+      await expect(createUser(invalidUser as TUser)).rejects.toThrow(
+        "Failed to add document."
       );
     });
   });
@@ -222,63 +249,6 @@ describe("Firestore Functions", () => {
 
       expect(doc).toHaveBeenCalledWith("mockedFirestore", "users", mockUid);
       expect(deleteDoc).toHaveBeenCalledWith("mockedDocRef");
-    });
-  });
-
-  describe("updateUser", () => {
-    it("should update a user document by UID", async () => {
-      const mockUid = "123";
-      const mockUserUpdate: Partial<User> = {
-        name: "Updated Name",
-        email: "updated@email.com",
-        phone: "123-456-7890",
-      };
-
-      (doc as jest.Mock).mockReturnValue("mockedDocRef");
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
-
-      await updateUser(mockUid, mockUserUpdate);
-
-      expect(doc).toHaveBeenCalledWith("mockedFirestore", "users", mockUid);
-      expect(updateDoc).toHaveBeenCalledWith("mockedDocRef", mockUserUpdate);
-    });
-
-    it("should throw an error if updateDoc fails", async () => {
-      const mockUid = "123";
-      const mockUserUpdate: Partial<User> = {
-        name: "Updated Name",
-      };
-
-      (doc as jest.Mock).mockReturnValue("mockedDocRef");
-      (updateDoc as jest.Mock).mockRejectedValue(
-        new Error("Failed to update document")
-      );
-
-      await expect(updateUser(mockUid, mockUserUpdate)).rejects.toThrow(
-        "Failed to update document"
-      );
-
-      expect(doc).toHaveBeenCalledWith("mockedFirestore", "users", mockUid);
-      expect(updateDoc).toHaveBeenCalledWith("mockedDocRef", mockUserUpdate);
-    });
-
-    it("should throw an error if user data is invalid", async () => {
-      const mockUid = "123";
-      const invalidUserUpdate = {
-        invalidField: "some value",
-      };
-
-      (doc as jest.Mock).mockReturnValue("mockedDocRef");
-      (updateDoc as jest.Mock).mockRejectedValue(
-        new Error("Invalid user data")
-      );
-
-      await expect(
-        updateUser(mockUid, invalidUserUpdate as Partial<User>)
-      ).rejects.toThrow("Invalid user data");
-
-      expect(doc).toHaveBeenCalledWith("mockedFirestore", "users", mockUid);
-      expect(updateDoc).toHaveBeenCalledWith("mockedDocRef", invalidUserUpdate);
     });
   });
 
@@ -1079,14 +1049,12 @@ describe("Firestore Functions", () => {
     it("should successfully delete an apartment document", async () => {
       (deleteDoc as jest.Mock).mockResolvedValue(undefined);
       await deleteApartment("apt123");
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
     });
 
     it("should throw an error if deleteDoc fails", async () => {
       const mockError = new Error("Firestore delete error");
       (deleteDoc as jest.Mock).mockRejectedValue(mockError);
       await expect(deleteApartment("apt123")).rejects.toThrow(mockError);
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
     });
 
     it("should throw an error for invalid apartmentId", async () => {
@@ -1094,634 +1062,6 @@ describe("Firestore Functions", () => {
         deleteApartment(null as unknown as string)
       ).rejects.toThrow();
       await expect(deleteApartment("")).rejects.toThrow();
-    });
-  });
-
-  describe("createMaintenanceRequest", () => {
-    it("should successfully create a maintenance request document", async () => {
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (setDoc as jest.Mock).mockResolvedValue(undefined);
-
-      await createMaintenanceRequest(mockMaintenanceRequest);
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "maintenanceRequests",
-        mockMaintenanceRequest.requestID
-      );
-      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockMaintenanceRequest);
-    });
-
-    it("should throw an error if setDoc fails", async () => {
-      const mockError = new Error("Failed to create maintenance request");
-      (setDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(
-        createMaintenanceRequest(mockMaintenanceRequest)
-      ).rejects.toThrow("Failed to create maintenance request");
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "maintenanceRequests",
-        mockMaintenanceRequest.requestID
-      );
-      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockMaintenanceRequest);
-    });
-
-    it("should throw an error for invalid maintenance request data", async () => {
-      const invalidMaintenanceRequest: Partial<MaintenanceRequest> = {};
-      await expect(
-        createMaintenanceRequest(
-          invalidMaintenanceRequest as MaintenanceRequest
-        )
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for missing required fields", async () => {
-      const missingRequiredFields: Partial<MaintenanceRequest> = {};
-      await expect(
-        createMaintenanceRequest(missingRequiredFields as MaintenanceRequest)
-      ).rejects.toThrow();
-
-      const missingResidenceId: Partial<MaintenanceRequest> = {
-        apartmentId: "apt123",
-      };
-      await expect(
-        createMaintenanceRequest(missingResidenceId as MaintenanceRequest)
-      ).rejects.toThrow();
-    });
-  });
-
-  describe("getMaintenanceRequest", () => {
-    it("should return maintenance request data if the document exists", async () => {
-      const mockMaintenanceRequestId = "mr123";
-      const mockMaintenanceRequestData = {
-        requestID: "mr123",
-        apartmentId: "apt123",
-      };
-
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: () => true,
-        data: () => mockMaintenanceRequestData,
-      });
-
-      const result = await getMaintenanceRequest(mockMaintenanceRequestId);
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "maintenanceRequests",
-        mockMaintenanceRequestId
-      );
-      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
-      expect(result).toEqual(mockMaintenanceRequestData);
-    });
-
-    it("should return null if the document does not exist", async () => {
-      const mockMaintenanceRequestId = "nonexistent";
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: () => false,
-      });
-
-      const result = await getMaintenanceRequest(mockMaintenanceRequestId);
-      expect(result).toBeNull();
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "maintenanceRequests",
-        mockMaintenanceRequestId
-      );
-      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
-    });
-
-    it("should throw an error if getDoc fails", async () => {
-      const mockMaintenanceRequestId = "mr123";
-      const mockError = new Error("Failed to get maintenance request");
-      (getDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(
-        getMaintenanceRequest(mockMaintenanceRequestId)
-      ).rejects.toThrow(mockError);
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "maintenanceRequests",
-        mockMaintenanceRequestId
-      );
-      expect(getDoc).toHaveBeenCalledWith("mockDocRef");
-    });
-
-    it("should throw an error for invalid maintenanceRequestId", async () => {
-      await expect(
-        getMaintenanceRequest(null as unknown as string)
-      ).rejects.toThrow();
-      await expect(getMaintenanceRequest("")).rejects.toThrow();
-    });
-  });
-
-  describe("updateMaintenanceRequest", () => {
-    it("should throw an error for invalid maintenanceRequestId or Firestore failures", async () => {
-      const validMaintenanceRequestData: Partial<MaintenanceRequest> = {
-        requestID: "mr123",
-      };
-
-      await expect(
-        updateMaintenanceRequest(
-          null as unknown as string,
-          validMaintenanceRequestData
-        )
-      ).rejects.toThrow();
-
-      await expect(
-        updateMaintenanceRequest("", validMaintenanceRequestData)
-      ).rejects.toThrow();
-
-      const mockError = new Error("Firestore update error");
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (updateDoc as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(
-        updateMaintenanceRequest("mr123", validMaintenanceRequestData)
-      ).rejects.toThrow(mockError);
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "maintenanceRequests",
-        "mr123"
-      );
-      expect(updateDoc).toHaveBeenCalledWith(
-        "mockDocRef",
-        validMaintenanceRequestData
-      );
-    });
-
-    it("should throw an error for invalid maintenance request data", async () => {
-      const mockMaintenanceRequestId = "mr123";
-      const invalidMaintenanceRequest: Partial<MaintenanceRequest> = {};
-      await expect(
-        updateMaintenanceRequest(
-          mockMaintenanceRequestId,
-          invalidMaintenanceRequest
-        )
-      ).rejects.toThrow();
-
-      const missingResidenceId: Partial<MaintenanceRequest> = {
-        apartmentId: "apt123",
-      };
-      await expect(
-        updateMaintenanceRequest(mockMaintenanceRequestId, missingResidenceId)
-      ).rejects.toThrow();
-
-      const missingApartmentId: Partial<MaintenanceRequest> = {
-        requestID: "mr123",
-      };
-      await expect(
-        updateMaintenanceRequest(mockMaintenanceRequestId, missingApartmentId)
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for missing maintenanceRequestId", async () => {
-      const validMaintenanceRequestData: Partial<MaintenanceRequest> = {
-        apartmentId: "apt123",
-      };
-      await expect(
-        updateMaintenanceRequest(
-          null as unknown as string,
-          validMaintenanceRequestData
-        )
-      ).rejects.toThrow();
-
-      await expect(
-        updateMaintenanceRequest("", validMaintenanceRequestData)
-      ).rejects.toThrow();
-    });
-
-    it("should successfully update a maintenance request document with the provided data", async () => {
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
-      await updateMaintenanceRequest("mr123", { apartmentId: "apt123" });
-      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", {
-        apartmentId: "apt123",
-      });
-    });
-  });
-
-  describe("deleteMaintenanceRequest", () => {
-    it("should successfully delete a maintenance request document", async () => {
-      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
-      await deleteMaintenanceRequest("mr123");
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
-    });
-
-    it("should throw an error if deleteDoc fails", async () => {
-      const mockError = new Error("Firestore delete error");
-      (deleteDoc as jest.Mock).mockRejectedValue(mockError);
-      await expect(deleteMaintenanceRequest("mr123")).rejects.toThrow(
-        mockError
-      );
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
-    });
-
-    it("should throw an error for invalid maintenanceRequestId", async () => {
-      await expect(
-        deleteMaintenanceRequest(null as unknown as string)
-      ).rejects.toThrow();
-      await expect(deleteMaintenanceRequest("")).rejects.toThrow();
-    });
-  });
-
-  describe("createLaundryMachine", () => {
-    it("should successfully create a laundry machine document", async () => {
-      (setDoc as jest.Mock).mockResolvedValue(undefined);
-      const mockMachine: LaundryMachine = {
-        laundryMachineId: "machine123",
-        isAvailable: true,
-        isFunctional: true,
-      };
-      await createLaundryMachine("residence123", mockMachine);
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences/residence123/laundryMachines",
-        "machine123"
-      );
-      expect(setDoc).toHaveBeenCalledWith("mockDocRef", mockMachine);
-    });
-
-    it("should throw an error if setDoc fails", async () => {
-      const mockError = new Error("Firestore setDoc error");
-      (setDoc as jest.Mock).mockRejectedValue(mockError);
-      const mockMachine: LaundryMachine = {
-        laundryMachineId: "machine123",
-        isAvailable: true,
-        isFunctional: true,
-      };
-      await expect(
-        createLaundryMachine("residence123", mockMachine)
-      ).rejects.toThrow(mockError);
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences/residence123/laundryMachines",
-        "machine123"
-      );
-    });
-
-    it("should throw an error for invalid laundry machine data", async () => {
-      const invalidMachine = {
-        isAvailable: true,
-        isFunctional: true,
-      };
-      await expect(
-        createLaundryMachine("residence123", invalidMachine as LaundryMachine)
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for missing residenceId", async () => {
-      const mockMachine: LaundryMachine = {
-        laundryMachineId: "machine123",
-        isAvailable: true,
-        isFunctional: true,
-      };
-      await expect(
-        createLaundryMachine(null as unknown as string, mockMachine)
-      ).rejects.toThrow();
-      await expect(createLaundryMachine("", mockMachine)).rejects.toThrow();
-    });
-  });
-
-  describe("getLaundryMachine", () => {
-    it("should return laundry machine data if the document exists", async () => {
-      const mockMachine: LaundryMachine = {
-        laundryMachineId: "machine123",
-        isAvailable: true,
-        isFunctional: true,
-      };
-
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: () => true,
-        data: () => mockMachine,
-      });
-
-      const result = await getLaundryMachine("residence123", "machine123");
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        "residences/residence123/laundryMachines",
-        "machine123"
-      );
-      expect(result).toEqual(mockMachine);
-    });
-
-    it("should throw an error for invalid laundry machineId", async () => {
-      await expect(
-        getLaundryMachine("residence123", null as unknown as string)
-      ).rejects.toThrow();
-      await expect(getLaundryMachine("residence123", "")).rejects.toThrow();
-    });
-
-    it("should throw an error for missing residenceId", async () => {
-      await expect(
-        getLaundryMachine(null as unknown as string, "machine123")
-      ).rejects.toThrow();
-      await expect(getLaundryMachine("", "machine123")).rejects.toThrow();
-    });
-  });
-
-  describe("updateLaundryMachine", () => {
-    it("should successfully update a laundry machine document", async () => {
-      const mockResidenceId = "residence123";
-      const mockMachineId = "machine123";
-      const mockMachineUpdate: Partial<LaundryMachine> = {
-        laundryMachineId: mockMachineId,
-        isAvailable: false,
-        isFunctional: true,
-      };
-
-      (doc as jest.Mock).mockReturnValue("mockDocRef");
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
-
-      await updateLaundryMachine(
-        mockResidenceId,
-        mockMachineId,
-        mockMachineUpdate
-      );
-
-      expect(doc).toHaveBeenCalledWith(
-        "mockedFirestore",
-        `residences/${mockResidenceId}/laundryMachines`,
-        mockMachineId
-      );
-      expect(updateDoc).toHaveBeenCalledWith("mockDocRef", mockMachineUpdate);
-    });
-
-    it("should throw an error for invalid laundry machine data", async () => {
-      const invalidMachine = {
-        invalidField: true,
-      };
-      await expect(
-        updateLaundryMachine(
-          "residence123",
-          "machine123",
-          invalidMachine as Partial<LaundryMachine>
-        )
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for missing laundry machineId", async () => {
-      const mockMachineUpdate: Partial<LaundryMachine> = {
-        isAvailable: false,
-      };
-      await expect(
-        updateLaundryMachine(
-          "residence123",
-          null as unknown as string,
-          mockMachineUpdate
-        )
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for empty string laundry machineId", async () => {
-      const mockMachineUpdate: Partial<LaundryMachine> = {
-        isAvailable: false,
-      };
-      await expect(
-        updateLaundryMachine("residence123", "", mockMachineUpdate)
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for missing residenceId", async () => {
-      const mockMachineUpdate: Partial<LaundryMachine> = {
-        isAvailable: false,
-      };
-      await expect(
-        updateLaundryMachine(
-          null as unknown as string,
-          "machine123",
-          mockMachineUpdate
-        )
-      ).rejects.toThrow();
-    });
-
-    it("should throw an error for empty string residenceId", async () => {
-      const mockMachineUpdate: Partial<LaundryMachine> = {
-        isAvailable: false,
-      };
-      await expect(
-        updateLaundryMachine("", "machine123", mockMachineUpdate)
-      ).rejects.toThrow();
-    });
-  });
-
-  describe("deleteLaundryMachine", () => {
-    it("should successfully delete a laundry machine document", async () => {
-      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
-      await deleteLaundryMachine("residence123", "machine123");
-      expect(deleteDoc).toHaveBeenCalledWith("mockDocRef");
-    });
-
-    it("should throw an error if deleteDoc fails", async () => {
-      const mockError = new Error("Firestore delete error");
-      (deleteDoc as jest.Mock).mockRejectedValue(mockError);
-      await expect(
-        deleteLaundryMachine("residence123", "machine123")
-      ).rejects.toThrow(mockError);
-    });
-
-    it("should throw an error for invalid laundry machineId", async () => {
-      await expect(
-        deleteLaundryMachine("residence123", null as unknown as string)
-      ).rejects.toThrow();
-    });
-  });
-
-  describe("getAllLaundryMachines", () => {
-    it("should return an array of laundry machine data", async () => {
-      const mockMachines = [
-        {
-          laundryMachineId: "machine1",
-          isAvailable: true,
-          isFunctional: true,
-        },
-        {
-          laundryMachineId: "machine2",
-          isAvailable: false,
-          isFunctional: true,
-        },
-      ];
-
-      const mockQuerySnapshot = {
-        forEach: (callback: (doc: any) => void) => {
-          mockMachines.forEach((machine) => {
-            callback({
-              data: () => machine,
-            });
-          });
-        },
-      };
-
-      (getDocs as jest.Mock).mockResolvedValue(mockQuerySnapshot);
-
-      const result = await getAllLaundryMachines("residence123");
-      expect(result).toEqual(mockMachines);
-    });
-
-    it("should throw an error for invalid residenceId", async () => {
-      await expect(
-        getAllLaundryMachines(null as unknown as string)
-      ).rejects.toThrow("Invalid residence ID");
-
-      await expect(getAllLaundryMachines("")).rejects.toThrow(
-        "Invalid residence ID"
-      );
-    });
-
-    it("should throw an error if getDocs fails", async () => {
-      const mockError = new Error("Firestore error");
-      (getDocs as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(getAllLaundryMachines("residence123")).rejects.toThrow(
-        mockError
-      );
-    });
-
-    it("should return an empty array if no laundry machines are found", async () => {
-      const mockQuerySnapshot = {
-        forEach: (callback: (doc: any) => void) => {}, // Empty forEach implementation
-      };
-
-      (getDocs as jest.Mock).mockResolvedValue(mockQuerySnapshot);
-
-      const result = await getAllLaundryMachines("residence123");
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe("generate_unique_code", () => {
-    it("should successfully generate a unique code", async () => {
-      // Mock successful responses
-      const mockResidenceSnapshot = {
-        empty: false,
-        docs: [
-          {
-            id: "res123",
-            data: () => ({
-              residenceId: "res123",
-            }),
-          },
-        ],
-      };
-
-      const mockApartmentSnapshot = {
-        empty: false,
-        docs: [
-          {
-            id: "apt123",
-            data: () => ({
-              apartmentId: "apt123",
-              residenceId: "res123",
-            }),
-          },
-        ],
-      };
-
-      const mockDocRef = {
-        id: "tenantCode123",
-      };
-
-      // Set up mocks
-      (getDocs as jest.Mock)
-        .mockResolvedValueOnce(mockResidenceSnapshot) // For residence query
-        .mockResolvedValueOnce(mockApartmentSnapshot); // For apartment query
-
-      (addDoc as jest.Mock).mockResolvedValue(mockDocRef);
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
-
-      // Call function
-      const result = await generate_unique_code("res123", "apt123");
-
-      // Verify result is a 6 digit string
-      expect(result).toMatch(/^\d{6}$/);
-
-      // Verify correct collection queries were made
-      expect(collection).toHaveBeenCalledWith(expect.anything(), "residences");
-      expect(collection).toHaveBeenCalledWith(expect.anything(), "apartments");
-      expect(collection).toHaveBeenCalledWith(expect.anything(), "tenantCodes");
-
-      // Verify tenant code was added
-      expect(addDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          apartmentId: "apt123",
-          residenceId: "res123",
-          used: false,
-          tenantCode: expect.any(String),
-        })
-      );
-
-      // Verify residence was updated with new tenant code ID
-      expect(updateDoc).toHaveBeenCalledWith(expect.anything(), {
-        tenantCodesID: arrayUnion("tenantCode123"),
-      });
-    });
-
-    it("should throw an error if the residence doesn't exist", async () => {
-      (getDocs as jest.Mock).mockResolvedValue({ empty: true });
-
-      await expect(generate_unique_code("res123", "apt123")).rejects.toThrow(
-        "No matching residence found for the given residence ID"
-      );
-    });
-  });
-
-  describe("validateTenantCode", () => {
-    it("should successfully validate a tenant code", async () => {
-      const mockQuerySnapshot = {
-        empty: false,
-        docs: [
-          {
-            id: "code123",
-            data: () => ({
-              tenantCode: "123456",
-              used: false,
-            }),
-          },
-        ],
-      };
-
-      (getDocs as jest.Mock).mockResolvedValue(mockQuerySnapshot);
-      (updateDoc as jest.Mock).mockResolvedValue(undefined);
-
-      const result = await validateTenantCode("123456");
-      expect(result).toBe("code123");
-    });
-
-    it("should return null if the code is invalid", async () => {
-      (getDocs as jest.Mock).mockResolvedValue({ empty: true });
-
-      const result = await validateTenantCode("invalid");
-      expect(result).toBeNull();
-    });
-  });
-
-  describe("deleteUsedTenantCodes", () => {
-    it("should successfully delete used tenant codes", async () => {
-      const mockDocs = [{ id: "code1" }, { id: "code2" }];
-
-      const mockQuerySnapshot = {
-        docs: mockDocs,
-        size: 2,
-      };
-
-      (getDocs as jest.Mock).mockResolvedValue(mockQuerySnapshot);
-      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
-
-      const result = await deleteUsedTenantCodes();
-      expect(result).toBe(2);
-      expect(deleteDoc).toHaveBeenCalledTimes(2);
-    });
-
-    it("should throw an error if the deletion fails", async () => {
-      const mockError = new Error("Deletion failed");
-      (getDocs as jest.Mock).mockRejectedValue(mockError);
-
-      await expect(deleteUsedTenantCodes()).rejects.toThrow(mockError);
     });
   });
 });

@@ -1,18 +1,22 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation, NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
-import { Camera, CameraType, FlashMode, CameraView } from 'expo-camera';
-import { Audio } from 'expo-av';
-import { Ionicons } from '@expo/vector-icons';
-import * as MediaLibrary from 'expo-media-library';
-import { ReportStackParamList } from '@/types/types';
+import React, { useCallback, useEffect, useState, useRef } from "react";
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from "react-native";
+import {
+  useNavigation,
+  NavigationProp,
+  RouteProp,
+  useRoute,
+} from "@react-navigation/native";
+import { Camera, CameraType, FlashMode, CameraView } from "expo-camera";
+import { Audio } from "expo-av";
+import { Ionicons } from "@expo/vector-icons";
+import * as MediaLibrary from "expo-media-library";
+import { ReportStackParamList } from "../../../types/types";
 
 export type CameraStackParamList = {
   setURL: (url: string) => void;
-}
+};
 
-type CameraRouteProp = RouteProp<ReportStackParamList, 'CameraScreen'>;
-
+type CameraRouteProp = RouteProp<ReportStackParamList, "CameraScreen">;
 
 export default function CameraScreen() {
   const route = useRoute<CameraRouteProp>();
@@ -25,13 +29,15 @@ export default function CameraScreen() {
 
   useEffect(() => {
     (async () => {
-      const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
+      const { status: cameraStatus } =
+        await Camera.requestCameraPermissionsAsync();
       const { status: audioStatus } = await Audio.requestPermissionsAsync();
-      const { status: mediaLibraryStatus } = await MediaLibrary.requestPermissionsAsync();
+      const { status: mediaLibraryStatus } =
+        await MediaLibrary.requestPermissionsAsync();
       setHasPermission(
-        cameraStatus === 'granted' && 
-        audioStatus === 'granted' && 
-        mediaLibraryStatus === 'granted'
+        cameraStatus === "granted" &&
+          audioStatus === "granted" &&
+          mediaLibraryStatus === "granted"
       );
     })();
   }, []);
@@ -43,30 +49,35 @@ export default function CameraScreen() {
           quality: 1,
           base64: true,
         });
-        if (photo){
-          {await MediaLibrary.saveToLibraryAsync(photo.uri);
- 
-            navigation.navigate('CapturedMedia', { uri: photo.uri, type: 'photo' })
-          ;}
+        if (photo) {
+          {
+            await MediaLibrary.saveToLibraryAsync(photo.uri);
+
+            navigation.navigate("CapturedMedia", {
+              uri: photo.uri,
+              type: "photo",
+            });
+          }
         }
       } catch (error) {
-        Alert.alert('Error', 'Failed to take picture');
+        Alert.alert("Error", "Failed to take picture");
         console.error(error);
       }
     }
   }, [navigation]);
 
   const toggleCameraType = useCallback(() => {
-    setType(current => (current === "back" ? "front" : "back"));
+    setType((current) => (current === "back" ? "front" : "back"));
   }, []);
 
   const toggleFlash = useCallback(() => {
-    setFlash(current => (current === "off" ? "on" : "off"));
+    setFlash((current) => (current === "off" ? "on" : "off"));
   }, []);
 
-  const handleZoom = useCallback((direction: 'in' | 'out') => {
-    setZoom(currentZoom => {
-      const newZoom = direction === 'in' ? currentZoom + 0.1 : currentZoom - 0.1;
+  const handleZoom = useCallback((direction: "in" | "out") => {
+    setZoom((currentZoom) => {
+      const newZoom =
+        direction === "in" ? currentZoom + 0.1 : currentZoom - 0.1;
       return Math.max(0, Math.min(1, newZoom));
     });
   }, []);
@@ -80,40 +91,53 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView 
-        style={styles.camera} 
-        facing={type} 
-        flash={flash} 
+      <CameraView
+        style={styles.camera}
+        facing={type}
+        flash={flash}
         ref={cameraRef}
         zoom={zoom}
       >
         <View style={styles.goBackButton}>
-          <TouchableOpacity style={styles.goBackButton} onPress={navigation.goBack}>
+          <TouchableOpacity
+            style={styles.goBackButton}
+            onPress={navigation.goBack}
+          >
             <Ionicons name="arrow-back" size={42} color="white" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.topButtonContainer}>
-          <TouchableOpacity style={styles.iconButton} onPress={toggleCameraType}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={toggleCameraType}
+          >
             <Ionicons name="camera-reverse" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
-            <Ionicons name={flash === "on" ? "flash" : "flash-off"} size={24} color="white" />
+            <Ionicons
+              name={flash === "on" ? "flash" : "flash-off"}
+              size={24}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.zoomContainer}>
-          <TouchableOpacity style={styles.zoomButton} onPress={() => handleZoom('in')}>
+          <TouchableOpacity
+            style={styles.zoomButton}
+            onPress={() => handleZoom("in")}
+          >
             <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.zoomButton} onPress={() => handleZoom('out')}>
+          <TouchableOpacity
+            style={styles.zoomButton}
+            onPress={() => handleZoom("out")}
+          >
             <Ionicons name="remove" size={24} color="white" />
           </TouchableOpacity>
         </View>
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity
-            style={styles.captureButton}
-            onPress={takePicture}
-          >
+          <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
             <View style={styles.captureButtonInner} />
           </TouchableOpacity>
         </View>
@@ -124,9 +148,9 @@ export default function CameraScreen() {
 
 const styles = StyleSheet.create({
   goBackButton: {
-    position: 'absolute',
-    bottom: '6.5%',
-    left: '12%',
+    position: "absolute",
+    bottom: "6.5%",
+    left: "12%",
     zIndex: 1,
   },
   container: {
@@ -136,31 +160,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 20,
     paddingTop: 50,
   },
   bottomButtonContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: "center",
   },
   iconButton: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 50,
     padding: 10,
   },
   zoomContainer: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
-    top: '50%',
+    top: "50%",
     transform: [{ translateY: -50 }],
   },
   zoomButton: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 50,
     padding: 10,
     marginVertical: 5,
@@ -169,14 +193,14 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
   },
   captureButtonInner: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
 });

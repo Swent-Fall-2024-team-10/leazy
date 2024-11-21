@@ -1,30 +1,27 @@
+import { Timestamp } from "@firebase/firestore-types";
 // portions of this code were generated with chatGPT as an AI assistant
+
 
 // Define the navigation stack types
 export type RootStackParamList = {
-  Home: undefined; // No parameters for Home screen
-  Settings: undefined; // No parameters for Settings screen
-  ListIssues: undefined; // No parameters for ListIssues screen
-  CodeEntry: {
-    userId: string;
-    email: string;
+    Home: undefined;         // No parameters for Home screen
+    Settings: undefined;     // No parameters for Settings screen
+    ListIssues: undefined;   // No parameters for ListIssues screen
+    WashingMachine: undefined; // No parameters for WashingMachine screen
+    ManageWashingMachine: undefined; // No parameters for CreateWashingMachine screen
   };
-  CodeApproved: {
-    userId: string;
-    email: string;
-  };
-  TenantForm: {
-    userId: string;
-    email: string;
-  };
-  SignIn: undefined;
-  LandlordForm: { userId: string; email: string };
-
-};
 
 export type AuthStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
+  TenantForm: {
+    email: string;
+    password: string;
+  };
+  LandlordForm: {
+    email: string;
+    password: string;
+  };
 };
 
 export type ReportStackParamList = {
@@ -40,7 +37,7 @@ export type ReportStackParamList = {
 };
 
 // Define types for firestore
-export type User = {
+export type TUser = {
   uid: string; // uid of the user for authentication
   type: "tenant" | "landlord";
   name: string;

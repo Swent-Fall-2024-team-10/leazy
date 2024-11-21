@@ -21,26 +21,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "../../components/forms/text_input";
 import SubmitButton from "../../components/buttons/SubmitButton";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { Alert } from "react-native"; 
+import { useAuth } from "@/app/Navigators/AuthContext";
+import { Alert } from "react-native";
 
 export default function CodeEntryScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const route = useRoute();
-  const { userId, email } = route.params as {
-    userId: string;
-    email: string;
-  };
   const [code, setCode] = useState("");
   const [errors, setErrors] = useState<{ code?: string }>({});
+  const {user} = useAuth();
 
   const handleSubmit = async () => {
     try {
-      const tenantCodeId = await validateTenantCode(code);
-      if (tenantCodeId === null) {
-        setErrors({ code: "Invalid code" });
-        throw new Error("Invalid code");
+      
+      if(user !== null) {
+        const tenantCodeId = await validateTenantCode(code);
+        if (tenantCodeId === null) {
+          setErrors({ code: "Invalid code" });
+          throw new Error("Invalid code");
+        }
+        await add_new_tenant(tenantCodeId, user.uid);
       }
-      navigation.navigate("CodeApproved", { email, userId }); // Navigate to the next screen and pass the code
+      
     } catch (error) {
       Alert.alert("There was an error adding the tenant. Please try again.");
     }

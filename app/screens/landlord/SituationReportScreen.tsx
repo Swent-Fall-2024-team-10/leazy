@@ -30,43 +30,8 @@ const apartments = Array.from({ length: 10 }, (_, i) => ({ label: `${i + 1}`, va
 
 // ============================================ END OF TEMPORARY TEST CONSTANTS ================================================
 
-
-export default function SituationReport() {
-    const navigation = useNavigation<NavigationProp<any>>();
-    const [selectedApartment, setSelectedApartment] = useState("");
-    const [selectedResidence, setSelectedResidence] = useState("");
-    const [remark, setRemark] = useState("");
-    
-    const [arrivingTenantName, setArrivingTenantName] = useState("");
-    const [arrivingTenantSurname, setArrivingTenantSurname] = useState("");
-
-    const [leavingTenantName, setLeavingTenantName] = useState("");
-    const [leavingTenantSurname, setLeavingTenantSurname] = useState("");
-
-
-
-  // Component representing a single situation report item
-    function SituationReportItem({ label, n }: { label: string; n: number }) {
-        const [checked1, setChecked1] = useState(false);
-        const [checked2, setChecked2] = useState(false);
-        const [checked3, setChecked3] = useState(false);
-
-    return (
-        <View style={styles.item}>
-            <View style={styles.itemRow}>
-            <Text style={[styles.text, styles.label]}>
-                {n} : {label}
-            </Text>
-                <TickingBox checked={checked1} onChange={setChecked1} />
-                <TickingBox checked={checked2} onChange={setChecked2} />
-                <TickingBox checked={checked3} onChange={setChecked3} />
-            </View>
-        </View>
-        );
-    }
-
   // Picker group to select residence and apartment
-  function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
+function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
     return (
         <View style={[appStyles.grayGroupBackground, styles.pickerContainer]}>
             <Text style={styles.label}>{label}</Text>
@@ -83,6 +48,25 @@ export default function SituationReport() {
       </View>
     );
   };
+
+function SituationReportItem({ label, n }: { label: string; n: number }) {
+    const [checked1, setChecked1] = useState(false);
+    const [checked2, setChecked2] = useState(false);
+    const [checked3, setChecked3] = useState(false);
+
+return (
+    <View style={styles.item}>
+        <View style={styles.itemRow}>
+        <Text style={[styles.text, styles.label]}>
+            {n} : {label}
+        </Text>
+            <TickingBox checked={checked1} onChange={setChecked1} />
+            <TickingBox checked={checked2} onChange={setChecked2} />
+            <TickingBox checked={checked3} onChange={setChecked3} />
+        </View>
+    </View>
+    );
+}
 
 
   // Component representing a group of input fields for the tenant's name (either arriving or leaving)
@@ -131,6 +115,20 @@ export default function SituationReport() {
       </View>
     );
   }
+
+
+export default function SituationReport() {
+    const navigation = useNavigation<NavigationProp<any>>();
+    const [selectedApartment, setSelectedApartment] = useState("");
+    const [selectedResidence, setSelectedResidence] = useState("");
+    const [remark, setRemark] = useState("");
+    
+    const [arrivingTenantName, setArrivingTenantName] = useState("");
+    const [arrivingTenantSurname, setArrivingTenantSurname] = useState("");
+
+    const [leavingTenantName, setLeavingTenantName] = useState("");
+    const [leavingTenantSurname, setLeavingTenantSurname] = useState("");
+
 
   return (
     <Header>

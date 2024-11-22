@@ -15,6 +15,8 @@ jest.mock("../../firebase/auth/auth", () => ({
   emailAndPasswordSignIn: jest.fn(),
 }));
 
+jest.spyOn(console, "error").mockImplementation(() => {});
+
 jest.spyOn(Alert, "alert");
 
 const mockNavigate = jest.fn();
@@ -42,14 +44,19 @@ describe("TenantFormScreen", () => {
     expect(getByText("Tenant Profile")).toBeTruthy();
   });
 
-  test("input fields can be filled", () => {
+  test("input fields can be filled", async () => {
     const { getByTestId } = render(<TenantFormScreen />);
     const firstNameField = getByTestId("testFirstNameField");
-    fireEvent.changeText(firstNameField, "Johnny");
+    await act(async () => {
+      fireEvent.changeText(firstNameField, "Johnny");
+    });
+
     expect(firstNameField.props.value).toBe("Johnny");
 
     const lastNameField = getByTestId("testLastNameField");
-    fireEvent.changeText(lastNameField, "Hallyday");
+    await act(async () => {
+      fireEvent.changeText(lastNameField, "Hallyday");
+    });
     expect(lastNameField.props.value).toBe("Hallyday");
   });
 
@@ -109,13 +116,17 @@ describe("TenantFormScreen", () => {
       { testId: "testCountryField", value: "USA" },
     ];
 
-    requiredFields.forEach(({ testId, value }) => {
+    requiredFields.forEach(async ({ testId, value }) => {
       const field = getByTestId(testId);
-      fireEvent.changeText(field, value);
+      await act(async () => {
+        fireEvent.changeText(field, value);
+      });
     });
 
     const submitButton = getByTestId("submitButton");
-    fireEvent.press(submitButton);
+    await act(async () => {
+      fireEvent.press(submitButton);
+    });
 
     await waitFor(() => {
       expect(emailAndPasswordSignIn).toHaveBeenCalledWith(
@@ -178,7 +189,10 @@ describe("TenantFormScreen", () => {
     });
 
     const submitButton = getByTestId("submitButton");
-    fireEvent.press(submitButton);
+
+    await act(async () => {
+      fireEvent.press(submitButton);
+    });
 
     await waitFor(() => {
       expect(createTenant).toHaveBeenCalled();
@@ -221,7 +235,9 @@ describe("TenantFormScreen", () => {
     });
 
     const submitButton = getByTestId("submitButton");
-    fireEvent.press(submitButton);
+    await act(async () => {
+      fireEvent.press(submitButton);
+    });
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -237,7 +253,9 @@ describe("TenantFormScreen", () => {
 
     // Find the button by its title
     const uploadButton = getByText("Upload university proof of attendance");
-    fireEvent.press(uploadButton);
+    await act(async () => {
+      fireEvent.press(uploadButton);
+    });
 
     // Wait to ensure no side-effects occur
     await waitFor(() => {

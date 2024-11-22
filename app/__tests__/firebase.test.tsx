@@ -86,6 +86,8 @@ const mockApartment: Apartment = {
   maintenanceRequests: [],
 };
 
+jest.spyOn(console, "error").mockImplementation(() => {});
+
 describe("Firestore Functions", () => {
   afterEach(() => {
     jest.clearAllMocks();

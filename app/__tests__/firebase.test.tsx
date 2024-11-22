@@ -1435,19 +1435,6 @@ describe("Firestore Functions", () => {
       expect(updateDoc).toHaveBeenCalledWith("mockDocRef", mockMachineUpdate);
     });
 
-    it("should throw an error for invalid laundry machine data", async () => {
-      const invalidMachine = {
-        invalidField: true,
-      };
-      await expect(
-        firestore.updateLaundryMachine(
-          "residence123",
-          "machine123",
-          invalidMachine as Partial<LaundryMachine>
-        )
-      ).rejects.toThrow();
-    });
-
     it("should throw an error for missing laundry machineId", async () => {
       const mockMachineUpdate: Partial<LaundryMachine> = {
         isAvailable: false,

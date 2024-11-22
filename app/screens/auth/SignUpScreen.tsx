@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
-import CustomTextField from "../../../app/components/CustomTextField";
-import CustomPicker from "../../../app/components/CustomPicker";
-import { UserType } from "../../../firebase/auth/auth";
+import CustomTextField from "../../components/CustomTextField";
+import CustomPicker from "../../components/CustomPicker";
+import { emailAndPasswordSignIn, UserType } from "../../../firebase/auth/auth";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import CustomPopUp from "../../../app/components/CustomPopUp";
+import CustomPopUp from "../../components/CustomPopUp";
 import {
   Color,
   FontSizes,
@@ -21,8 +21,20 @@ import {
   ButtonDimensions,
 } from "../../../styles/styles";
 import { Ionicons } from "@expo/vector-icons";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { AuthStackParamList } from "@/types/types";
+import SubmitButton from "../../components/buttons/SubmitButton";
+import {
+  createTenant,
+  createUser,
+} from "../../../firebase/firestore/firestore";
+import { AuthStackParamList } from "../../../types/types";
+
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
 
 export default function SignUpScreen() {
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
@@ -32,6 +44,8 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   interface Errors {
+    firstName?: string;
+    lastName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;

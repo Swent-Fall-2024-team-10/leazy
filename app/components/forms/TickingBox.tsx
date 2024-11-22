@@ -8,23 +8,33 @@ const box_size = 30;
 interface TickingBoxProps {
   checked: boolean;
   onChange: (newChecked: boolean) => void;
+  testID?: string;
+  accessibilityLabel?: string;
 }
 
-const TickingBox: React.FC<TickingBoxProps> = ({ checked, onChange }) => {
+const TickingBox: React.FC<TickingBoxProps> = ({
+  checked,
+  onChange,
+  testID = 'ticking-box',
+  accessibilityLabel = 'Checkbox',
+}) => {
   const handleToggle = () => {
     onChange(!checked); // Toggle the checked state and pass it to the parent
   };
 
   return (
-    <View style={styles.container} testID="ticking-box-container">
+    <View style={styles.container} testID={`${testID}-container`}>
       <TouchableOpacity
         style={styles.checkboxContainer}
         onPress={handleToggle}
-        testID="ticking-box-button"
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked }}
+        accessibilityLabel={accessibilityLabel}
+        testID={`${testID}-button`}
       >
         <View
           style={[styles.checkbox, checked && styles.checked]}
-          testID="ticking-box"
+          testID={testID}
         >
           {checked && (
             <Icon
@@ -32,7 +42,7 @@ const TickingBox: React.FC<TickingBoxProps> = ({ checked, onChange }) => {
               type="feather"
               color="white"
               size={20}
-              testID="ticking-box-icon"
+              testID={`${testID}-icon`}
             />
           )}
         </View>
@@ -46,7 +56,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',

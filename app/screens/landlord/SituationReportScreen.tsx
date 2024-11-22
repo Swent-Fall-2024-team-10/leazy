@@ -54,15 +54,31 @@ function SituationReportItem({ label, n }: { label: string; n: number }) {
     const [checked2, setChecked2] = useState(false);
     const [checked3, setChecked3] = useState(false);
 
+    function canBeChecked({checked1, checked2, checked3} : {checked1: boolean, checked2: boolean, checked3: boolean}) {
+      if (checked1 || checked2 || checked3) {
+        return false;
+      }
+      return true;
+    }
+
+    function handleCheck(setCheck : (value: boolean) => void) {
+      if (canBeChecked({checked1, checked2, checked3})) {
+        setCheck(true);
+      } else {
+        setCheck(false);
+      }
+    }
+
+
 return (
     <View style={styles.item}>
         <View style={styles.itemRow}>
         <Text style={[styles.text, styles.label]}>
             {n} : {label}
         </Text>
-            <TickingBox checked={checked1} onChange={setChecked1} />
-            <TickingBox checked={checked2} onChange={setChecked2} />
-            <TickingBox checked={checked3} onChange={setChecked3} />
+            <TickingBox checked={checked1} onChange={(value) => handleCheck(setChecked1)} />
+            <TickingBox checked={checked2} onChange={(value) => handleCheck(setChecked2)} />
+            <TickingBox checked={checked3} onChange={(value) => handleCheck(setChecked3)} />
         </View>
     </View>
     );

@@ -54,5 +54,39 @@ describe('SituationReport', () => {
     fireEvent.press(submitButton);
     expect(navigateMock).toHaveBeenCalledWith('List Issues');
   });
+  it('prevents checking multiple checkboxes in a SituationReportItem', () => {
+    const { getByText, getAllByRole } = render(<SituationReport />);
+  
+    // Find the first SituationReportItem by its label
+    const firstItemLabel = '1 : floor'; // Update the label if it differs
+    const firstItem = getByText(firstItemLabel);
+  
+    // Get all checkboxes in the rendered component
+    const allCheckboxes = getAllByRole('checkbox');
+  
+    // Narrow down to checkboxes belonging to the first item
+    const itemIndex = firstItem && firstItem.parent ? Array.from(firstItem.parent.children).indexOf(firstItem) : -1;
+    const relatedCheckboxes = allCheckboxes.slice(itemIndex, itemIndex + 3); // Assuming 3 checkboxes per item
+  
+    // Ensure initial states are unchecked
+    relatedCheckboxes.forEach((checkbox) => {
+      expect(checkbox.props.accessibilityState.checked).toBe(false);
+    });
+  
+    // Attempt to check multiple checkboxes
+    fireEvent.press(relatedCheckboxes[0]);
+    expect(relatedCheckboxes[0].props.accessibilityState.checked).toBe(true);
+  
+    fireEvent.press(relatedCheckboxes[1]);
+    expect(relatedCheckboxes[1].props.accessibilityState.checked).toBe(false); // Ensure others remain unchecked
+  
+    fireEvent.press(relatedCheckboxes[2]);
+    expect(relatedCheckboxes[2].props.accessibilityState.checked).toBe(false); // Ensure others remain unchecked
+  
+    // Confirm the first checkbox is still checked
+    expect(relatedCheckboxes[0].props.accessibilityState.checked).toBe(true);
+  });
+  
+
 
 });

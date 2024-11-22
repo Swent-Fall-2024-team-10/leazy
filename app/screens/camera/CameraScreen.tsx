@@ -4,7 +4,6 @@ import {
   useNavigation,
   NavigationProp,
   RouteProp,
-  useRoute,
 } from "@react-navigation/native";
 import { Camera, CameraType, FlashMode, CameraView } from "expo-camera";
 import { Audio } from "expo-av";
@@ -16,10 +15,7 @@ export type CameraStackParamList = {
   setURL: (url: string) => void;
 };
 
-type CameraRouteProp = RouteProp<ReportStackParamList, "CameraScreen">;
-
 export default function CameraScreen() {
-  const route = useRoute<CameraRouteProp>();
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [type, setType] = useState<CameraType>("back");
@@ -50,14 +46,12 @@ export default function CameraScreen() {
           base64: true,
         });
         if (photo) {
-          {
             await MediaLibrary.saveToLibraryAsync(photo.uri);
 
             navigation.navigate("CapturedMedia", {
               uri: photo.uri,
               type: "photo",
             });
-          }
         }
       } catch (error) {
         Alert.alert("Error", "Failed to take picture");

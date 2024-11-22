@@ -171,31 +171,6 @@ describe('CapturedMediaScreen', () => {
 
     const { getByTestId } = render(<CapturedMediaScreen />);
 
-    // Since play/pause is an internal state change, we'd typically 
-    // need to add a testID to the play/pause button in the actual component
-    // This is a placeholder for how you might test the play/pause functionality
-  });
-
-  it('retrieves image dimensions correctly', async () => {
-    mockImageGetSize.mockImplementationOnce((uri, successCallback) => {
-      successCallback(800, 600); // Mock width and height
-    });
-
-    const { getByTestId } = render(<CapturedMediaScreen />);
-
-    // Find and press upload button
-    const uploadButton = render(headerRight as React.ReactElement).getByTestId('upload-button');
-    fireEvent.press(uploadButton);
-
-    // Wait for assertions
-    await waitFor(() => {
-      expect(mockImageGetSize).toHaveBeenCalledWith(
-        'mock-uri',
-        expect.any(Function),
-        expect.any(Function)
-      );
-      expect(Alert.alert).toHaveBeenCalledWith('Debug', 'Image dimensions retrieved: 800x600');
-    });
   });
 
 
@@ -325,6 +300,28 @@ describe('CapturedMediaScreen', () => {
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(mockResizedUri);
     }, { timeout: 3000 });
+  });
+
+  it('processes image upload correctly', async () => {
+    mockImageGetSize.mockImplementationOnce((uri, successCallback) => {
+      successCallback(800, 600);
+    });
+  
+    const { getByTestId } = render(<CapturedMediaScreen />);
+    const uploadButton = render(headerRight as React.ReactElement).getByTestId('upload-button');
+    
+    await act(async () => {
+      fireEvent.press(uploadButton);
+    });
+  
+    await waitFor(() => {
+      // Verify image dimensions were used correctly
+      expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+        'mock-uri',
+        [{ resize: { width: 400, height: 300 } }], // 50% of 800x600
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+    });
   });
 
 });

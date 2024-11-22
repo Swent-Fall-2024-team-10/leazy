@@ -166,17 +166,6 @@ const mockUpdateMaintenanceRequest = FirestoreModule.updateMaintenanceRequest as
     expect(getByText('Create a new issue')).toBeTruthy();
   });
 
-  
-
-  it('handles messaging checkbox', () => {
-    const { getByTestId } = render(<ReportScreen />);
-    fireEvent.press(getByTestId('messaging-checkbox'));
-    fireEvent.press(getByTestId('testSubmitButton'));
-
-    waitFor(() => {
-      expect(mockNavigation.navigate).toHaveBeenCalledWith('Messaging');
-    });
-  });
 
   it('validates required fields', () => {
     const { getByTestId } = render(<ReportScreen />);

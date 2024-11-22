@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
-import { ReportStackParamList } from '@/types/types';
+import { ReportStackParamList } from '../../../types/types';
 import { usePictureContext } from '../../context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { cacheFile, picFileUri } from '../../utils/cache';

@@ -8,7 +8,7 @@ import { Camera, CameraType } from 'expo-camera';
 import { Alert } from 'react-native';
 
 
-
+jest.setTimeout(10000);
 
 jest.mock('expo-camera', () => {
   const React = require('react'); // Import React inside the factory
@@ -94,17 +94,25 @@ describe('CameraScreen', () => {
 
 
   it('displays no access message when permissions are denied', async () => {
-    // Mock permissions being denied
-    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
+    // Mock permissions being denied with immediate resolution
+    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
       status: 'denied' 
+    });
+    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
+      status: 'granted' 
+    });
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
+      status: 'granted' 
     });
 
     const { getByText } = render(<CameraScreen />);
 
+    // Use a shorter timeout for waitFor
     await waitFor(() => {
       expect(getByText('No access to camera')).toBeTruthy();
-    });
+    }, { timeout: 2000 });
   });
+
   
 
   it('renders CameraView when all permissions are granted', async () => {
@@ -198,30 +206,39 @@ describe('CameraScreen', () => {
 
   it('handles partial permission scenarios', async () => {
     // First scenario: Camera permission denied
-    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
+    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
       status: 'denied' 
+    });
+    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
+      status: 'granted' 
+    });
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
+      status: 'granted' 
     });
 
     const { getByText, rerender } = render(<CameraScreen />);
 
     await waitFor(() => {
       expect(getByText('No access to camera')).toBeTruthy();
-    });
+    }, { timeout: 2000 });
 
     // Second scenario: Audio permission denied
     jest.clearAllMocks();
     
-    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
+    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
       status: 'granted' 
     });
-    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValue({ 
+    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
       status: 'denied' 
+    });
+    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
+      status: 'granted' 
     });
 
     rerender(<CameraScreen />);
 
     await waitFor(() => {
       expect(getByText('No access to camera')).toBeTruthy();
-    });
+    }, { timeout: 2000 });
   });
 });

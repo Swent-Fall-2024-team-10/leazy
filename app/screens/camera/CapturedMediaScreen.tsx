@@ -12,7 +12,6 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { cacheFile, picFileUri } from '../../utils/cache';
 import { Color, IconDimension } from '../../../styles/styles';
 
-
 // portions of this code were generated with chatGPT as an AI assistant
 
 type CapturedMediaScreenRouteProp = RouteProp<ReportStackParamList, 'CapturedMedia'>;

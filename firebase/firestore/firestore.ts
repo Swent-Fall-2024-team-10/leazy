@@ -89,6 +89,7 @@ export async function deleteUser(uid: string) {
  * Creates a new landlord document in Firestore.
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
+
 export async function createLandlord(landlord: Landlord) {
   const docRef = doc(db, "landlords", landlord.userId);
   try {
@@ -181,7 +182,7 @@ export async function getTenant(
     const tenantDoc = querySnapshot.docs[0]; // Assume `userId` is unique among tenants
     return { tenant: tenantDoc.data() as Tenant, tenantUID: tenantDoc.id };
   }
-
+  
   return null;
 }
 
@@ -436,7 +437,6 @@ export async function updateLaundryMachine(
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
-
 export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string
@@ -479,6 +479,7 @@ export async function add_new_landlord(
     }
     const userObj = await getUser(auth.currentUser.uid);
     if (!userObj) {
+
       throw new Error("User doesn't exist.");
     }
 
@@ -550,7 +551,9 @@ export async function add_new_tenant(tenantCodeId: string, userUID: string) {
     await updateDoc(apartmentRef, { tenants: arrayUnion(userUID) });
 
     const tenantDocRef = doc(db, "tenants", userUID);
+
     console.log(apartmentId);
+
     await updateDoc(tenantDocRef, {
       apartmentId: apartmentId,
       residenceId: residenceId,

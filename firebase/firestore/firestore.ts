@@ -387,9 +387,6 @@ export async function updateLaundryMachine(
   if (!residenceId || !machineId) {
     throw new Error("Invalid laundry machine data");
   }
-  if (machine.laundryMachineId !== machineId) {
-    throw new Error("Machine ID mismatch");
-  }
 
   const docRef = doc(
     db,
@@ -404,7 +401,6 @@ export async function updateLaundryMachine(
  * @param residenceId - The unique identifier of the residence.
  * @param machineId - The unique identifier of the laundry machine to delete.
  */
-
 export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string

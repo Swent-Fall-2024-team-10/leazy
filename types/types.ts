@@ -1,5 +1,6 @@
 import { Timestamp } from "@firebase/firestore-types";
 // portions of this code were generated with chatGPT as an AI assistant
+import { Timestamp } from "firebase/firestore";
 
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -95,6 +96,10 @@ export type LaundryMachine = {
   laundryMachineId: string;
   isAvailable: boolean;
   isFunctional: boolean;
+  occupiedBy: string; //for a userID
+  startTime: Timestamp;
+  estimatedFinishTime: Timestamp;
+  notificationScheduled: boolean;
 };
 
 export type MaintenanceRequest = {

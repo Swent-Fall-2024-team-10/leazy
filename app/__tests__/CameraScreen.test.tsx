@@ -93,7 +93,7 @@ describe('CameraScreen', () => {
 
 
   it('displays no access message when permissions are denied', async () => {
-    jest.setTimeout(10000); // Set timeout to 10 seconds
+    jest.setTimeout(10); // Set timeout to 10 seconds
   
     // Mock permissions being denied
     (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 

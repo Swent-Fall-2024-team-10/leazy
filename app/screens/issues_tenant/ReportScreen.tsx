@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Text, View, Alert, Image, Modal } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import InputField from "@/app/components/forms/text_input";
-import Spacer from "@/app/components/Spacer";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
+import InputField from "../../components/forms/text_input";
+import Spacer from "../../components/Spacer";
+import SubmitButton from "../../components/buttons/SubmitButton";
 import {
   appStyles,
   ButtonDimensions,
   Color,
   textInputHeight,
-} from "@/styles/styles";
-import Close from "@/app/components/buttons/Close";
+} from "../../../styles/styles";
+import Close from "../..//components/buttons/Close";
 import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
-import { ReportStackParamList } from "@/types/types"; // Import or define your navigation types
-import CameraButton from "@/app/components/buttons/CameraButton";
+import { ReportStackParamList } from "../../../types/types"; // Import or define your navigation types
+import CameraButton from "../../components/buttons/CameraButton";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import CloseConfirmation from "@/app/components/buttons/CloseConfirmation";
+import CloseConfirmation from "../../components/buttons/CloseConfirmation";
 import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
-import { MaintenanceRequest } from "@/types/types";
-import { db } from "@/firebase/firebase";
-import Header from "@/app/components/Header";
-import { usePictureContext } from "@/app/context/PictureContext";
+import { MaintenanceRequest } from "../../../types/types";
+import { db } from "../../../firebase/firebase";
+import Header from "../../components/Header";
+import { usePictureContext } from "../../context/PictureContext";
 import { storage } from "../../../firebase/firebase"; // Import storage from your Firebase config
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase imports
 import { useAuth } from "../../Navigators/AuthContext";
@@ -29,7 +29,7 @@ import {
   getTenant,
   updateMaintenanceRequest,
   updateTenant,
-} from "@/firebase/firestore/firestore";
+} from "../../../firebase/firestore/firestore";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -170,7 +170,7 @@ export default function ReportScreen() {
             { paddingBottom: "90%", marginBottom: "10%" },
           ]}
         >
-          <Close onPress={handleClose} />
+          <Close  onPress={handleClose} />
           <Text style={appStyles.screenHeader}>Create a new issue</Text>
           <Text style={appStyles.date}>
             Current day: {day}/{month}/{year} at {hours}:{minutes}
@@ -180,6 +180,7 @@ export default function ReportScreen() {
 
           {isVisible && (
             <Modal
+              testID="close-confirmation-modal"
               transparent={true}
               animationType="fade"
               visible={isVisible}
@@ -263,6 +264,7 @@ export default function ReportScreen() {
 
           <View style={{ flexDirection: "row" }}>
             <BouncyCheckbox
+              testID="messaging-checkbox"
               iconImageStyle={appStyles.tickingBox}
               iconStyle={appStyles.tickingBox}
               innerIconStyle={appStyles.tickingBox}

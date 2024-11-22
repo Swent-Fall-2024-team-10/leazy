@@ -25,6 +25,7 @@ export default function CloseConfirmation({
 
         <View style={styles.buttonsContainer}>
           <Button
+            testID="yes-close-button"
             title="Yes, cancel"
             titleStyle={styles.buttonText}
             onPress={onPressYes}
@@ -32,6 +33,7 @@ export default function CloseConfirmation({
           />
 
           <Button
+            testID="no-close-button"
             title="No, Go back"
             titleStyle={styles.buttonText}
             onPress={onPressNo}

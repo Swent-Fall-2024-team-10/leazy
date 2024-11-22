@@ -1,3 +1,4 @@
+// portions of this code were generated with chatGPT as an AI assistant
 import { Timestamp } from "firebase/firestore";
 
 // Define the navigation stack types

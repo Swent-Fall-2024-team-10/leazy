@@ -6,8 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';  // Firebase imports
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
-import { ReportStackParamList } from '@/types/types';
-import { usePictureContext } from '@/app/context/PictureContext';
+import { ReportStackParamList } from '../../../types/types';
+import { usePictureContext } from '../../context/PictureContext';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { cacheFile, picFileUri } from '../../utils/cache';
 import { Color, IconDimension } from '../../../styles/styles';
@@ -27,7 +27,7 @@ export default function CapturedMediaScreen() {
 
 const handleUpload = useCallback(async () => {
   try {
-
+    console.log('Uploading media...');
     // Define a type for the dimensions object
     type ImageDimensions = { width: number; height: number };
 
@@ -44,35 +44,42 @@ const handleUpload = useCallback(async () => {
 
     // Retrieve dimensions with the correct type
     const { width, height } = await getImageDimensions(uri);
-
+    Alert.alert('Debug', `Image dimensions retrieved: ${width}x${height}`); // Debug Alert
     // Step 2: Calculate target dimensions (e.g., 50% of original)
     const targetWidth = width * 0.5; // Adjust 0.5 to the desired percentage
     const targetHeight = height * 0.5; // Adjust 0.5 to the desired percentage
 
     // Step 3: Resize the image using ImageManipulator
+    Alert.alert('Debug', 'Resizing image'); // Debug Alert
     const resizedImage = await ImageManipulator.manipulateAsync(
       uri,
       [{ resize: { width: targetWidth, height: targetHeight } }],
       { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
     );
+    Alert.alert('Debug', `Image resized: ${resizedImage.uri}`); // Debug Alert
 
     // Get resized image size in MB
+    Alert.alert('Debug', 'Fetching resized image'); // Debug Alert
     const response = await fetch(resizedImage.uri);
     const blob = await response.blob();
+    Alert.alert('Debug', 'Blob created'); // Debug Alert
     
     // Store image in cache
     
     
     const fileUri = picFileUri(Date.now().toString());
+    Alert.alert('Debug', `Caching file at: ${fileUri}`); // Debug Alert
     await cacheFile(blob, fileUri);
     console.log(`Image saved to cache: ${fileUri}`);
     addPicture(fileUri);
+    Alert.alert('Upload', 'Photo added to maintenance request!'); // Success Alert
 
     navigation.goBack();
     
-    Alert.alert('Upload', 'Photo added to maintenance request!');
+
   } catch (error) {
     console.error('Error uploading media:', error);
+    console.log('Caught error:', error); // Add this for debugging
     Alert.alert('Error', 'Failed to upload media to Firebase');
   }
 }, [addPicture]);
@@ -80,12 +87,12 @@ const handleUpload = useCallback(async () => {
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+        <TouchableOpacity testID='close-button' onPress={() => navigation.goBack()} style={styles.headerButton}>
           <Ionicons name="close" size={IconDimension.mediumIcon} color={Color.ButtonBackground}/>
         </TouchableOpacity>
       ),
       headerRight: () => (
-        <TouchableOpacity onPress={handleUpload} style={styles.headerButton}>
+        <TouchableOpacity testID= "upload-button" onPress={handleUpload} style={styles.headerButton}>
           <Ionicons name="cloud-upload-outline" size={IconDimension.mediumIcon} color={Color.ButtonBackground} />
         </TouchableOpacity>
       ),
@@ -99,33 +106,41 @@ const handleUpload = useCallback(async () => {
   return (
     <View style={styles.container}>
       {type === 'photo' ? (
-        <Image source={{ uri }} style={styles.media} accessibilityLabel="Captured photo" />
-      ) : (
-        <View style={styles.videoContainer}>
-          <Video
-            source={{ uri }}
-            style={styles.media}
-            useNativeControls
-            isLooping
-            shouldPlay={isPlaying}
-          />
-          <TouchableOpacity style={styles.playPauseButton} onPress={togglePlayPause}>
-            <Ionicons
-              name={isPlaying ? 'pause' : 'play'}
-              size={50}
-              color="white"
+        <>
+          <Image source={{ uri }} style={styles.media} accessibilityLabel="Captured photo" />
+          <Text style={styles.infoText}>Photo captured</Text> {/* Added Text for photos */}
+        </>
+      ) : type === 'video' ? (
+        <>
+          <View style={styles.videoContainer}>
+            <Video
+              source={{ uri }}
+              style={styles.media}
+              useNativeControls
+              isLooping
+              shouldPlay={isPlaying}
             />
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity testID="play-pause-button" style={styles.playPauseButton} onPress={togglePlayPause}>
+              <Ionicons
+                testID={isPlaying ? 'pause-icon' : 'play-icon'}
+                name={isPlaying ? 'pause' : 'play'}
+                size={50}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.infoText}>Video recorded</Text> {/* Added Text for videos */}
+        </>
+      ) : (
+        <Text style={styles.infoText}>Invalid media type</Text>
       )}
       <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>
-          {type === 'photo' ? 'Photo captured' : 'Video recorded'}
-        </Text>
         <Text style={styles.infoText}>Tap upload to save to the server</Text>
       </View>
     </View>
   );
+  
+  
 }
 
 const styles = StyleSheet.create({

@@ -4,8 +4,7 @@ import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import * as MediaLibrary from 'expo-media-library';
 import CameraScreen from '../screens/camera/CameraScreen';
-import { Camera, CameraType } from 'expo-camera';
-import { Alert } from 'react-native';
+import { Camera } from 'expo-camera';
 
 
 jest.setTimeout(60000);

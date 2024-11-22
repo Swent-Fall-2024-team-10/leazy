@@ -92,16 +92,15 @@ describe('CameraScreen', () => {
   });
 
 
+
   it('displays no access message when permissions are denied', async () => {
-    jest.setTimeout(10); // Set timeout to 10 seconds
-  
     // Mock permissions being denied
     (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
       status: 'denied' 
     });
-  
+
     const { getByText } = render(<CameraScreen />);
-  
+
     await waitFor(() => {
       expect(getByText('No access to camera')).toBeTruthy();
     });
@@ -198,36 +197,27 @@ describe('CameraScreen', () => {
 
 
   it('handles partial permission scenarios', async () => {
-    // Scenario: Camera permission denied
+    // First scenario: Camera permission denied
     (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
       status: 'denied' 
     });
-    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValue({ 
-      status: 'granted' 
-    });
-    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ 
-      status: 'granted' 
-    });
 
-    const { getByText } = render(<CameraScreen />);
+    const { getByText, rerender } = render(<CameraScreen />);
 
     await waitFor(() => {
       expect(getByText('No access to camera')).toBeTruthy();
     });
 
-    // Scenario: Audio permission denied
+    // Second scenario: Audio permission denied
     jest.clearAllMocks();
+    
     (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ 
       status: 'granted' 
     });
     (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValue({ 
       status: 'denied' 
     });
-    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValue({ 
-      status: 'granted' 
-    });
 
-    const { rerender } = render(<CameraScreen />);
     rerender(<CameraScreen />);
 
     await waitFor(() => {

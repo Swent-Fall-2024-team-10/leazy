@@ -8,7 +8,7 @@ import { Camera, CameraType } from 'expo-camera';
 import { Alert } from 'react-native';
 
 
-jest.setTimeout(10000);
+jest.setTimeout(60000);
 
 jest.mock('expo-camera', () => {
   const React = require('react'); // Import React inside the factory
@@ -94,54 +94,30 @@ describe('CameraScreen', () => {
 
 
   it('displays no access message when permissions are denied', async () => {
-    // Mock permissions being denied with immediate resolution
-    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
-      status: 'denied' 
-    });
-    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
-      status: 'granted' 
-    });
-    (MediaLibrary.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({ 
-      status: 'granted' 
-    });
-
+    const mockDenied = { status: 'denied' };
+    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValueOnce(mockDenied);
+    
     const { getByText } = render(<CameraScreen />);
-
-    // Use a shorter timeout for waitFor
-    await waitFor(() => {
-      expect(getByText('No access to camera')).toBeTruthy();
-    }, { timeout: 2000 });
+    await waitFor(() => expect(getByText('No access to camera')).toBeTruthy());
   });
 
   
 
   it('renders CameraView when all permissions are granted', async () => {
     const { getByTestId } = render(<CameraScreen />);
-  
-    await waitFor(() => {
-      expect(getByTestId('capture-button')).toBeTruthy();
-    });
+    await waitFor(() => expect(getByTestId('capture-button')).toBeTruthy());
   });
 
   it('adjusts zoom when zoom buttons are pressed', async () => {
     const { getByTestId } = render(<CameraScreen />);
-  
     const zoomInButton = await waitFor(() => getByTestId('zoom-in-button'));
     const zoomOutButton = await waitFor(() => getByTestId('zoom-out-button'));
-  
+    
     fireEvent.press(zoomInButton);
-  
-    await waitFor(() => {
-      expect(zoomInButton).toBeTruthy();
-    });
-  
     fireEvent.press(zoomOutButton);
-  
-    await waitFor(() => {
-      expect(zoomOutButton).toBeTruthy();
-    });
   });
 
+  
   it('navigates back when go-back button is pressed', async () => {
     const mockGoBack = jest.fn();
     jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({

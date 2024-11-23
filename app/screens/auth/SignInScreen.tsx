@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, Modal } from 'react-native';
 import CustomTextField from '../../components/CustomTextField';
 import { emailAndPasswordLogIn } from '../../../firebase/auth/auth';
-import { useNavigation, NavigationProp } from '@react-navigation/native'; // Import NavigationProp
-import { RootStackParamList } from '@/types/types';  // Import or define your navigation types
-import CustomPopUp from '@/app/components/CustomPopUp';
-import { GoogleSignInButton } from '@/app/components/GoogleSignInButton';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import { appStyles, ButtonDimensions } from '@/styles/styles';
-import { useAuth } from '@/app/Navigators/AuthContext';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../../../types/types';
+import CustomPopUp from '../../components/CustomPopUp';
+import SubmitButton from '../../components/buttons/SubmitButton';
+import { appStyles, stylesForNonHeaderScreens, ButtonDimensions } from '../../../styles/styles';
 
 interface FormErrors {
   email?: string;
@@ -44,7 +42,6 @@ export default function SignInScreen() {
       }
     }).catch((error) => {
       setPopup(true);
-      //Alert.alert('Error', 'An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.');
     });
   };
 
@@ -78,7 +75,7 @@ export default function SignInScreen() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+      {errors.email && <Text style={stylesForNonHeaderScreens.errorText}>{errors.email}</Text>}
       
       <CustomTextField
         testID="passwordInput"
@@ -88,7 +85,7 @@ export default function SignInScreen() {
         secureTextEntry
       />
       
-      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+      {errors.password && <Text style={stylesForNonHeaderScreens.errorText}>{errors.password}</Text>}
       <SubmitButton 
         disabled={false} 
         onPress={handleSignIn} 
@@ -100,9 +97,9 @@ export default function SignInScreen() {
         textStyle={appStyles.submitButtonText}
       />
 
-      <Text style={styles.text}>or</Text>
+      <Text style={stylesForNonHeaderScreens.text}>or</Text>
       <View style={styles.horizontalLine} />
-      <Text style={styles.text}>Don't have an account yet?</Text>
+      <Text style={stylesForNonHeaderScreens.text}>Don't have an account yet?</Text>
       
       <SubmitButton 
         disabled={false} 
@@ -110,7 +107,7 @@ export default function SignInScreen() {
         width={ButtonDimensions.largeButtonWidth} 
         height={ButtonDimensions.largeButtonHeight} 
         label="Sign up" 
-        testID='SignUp'
+        testID='signUpButton'
         style={appStyles.submitButton}
         textStyle={appStyles.submitButtonText}
       />
@@ -120,54 +117,21 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   horizontalLine: {
-    height: 1,            // Thickness of the line
-    backgroundColor: '#0B3142',  // Line color (you can adjust this)
-    marginVertical: 20,    // Adds space above and below the line
-    width: '100%',         // Line width (full width of the parent container)
+    height: 1,
+    backgroundColor: '#0B3142',
+    marginVertical: 20,
+    width: '100%',
   },
-
   inputError: {
     borderColor: '#FF004',
     borderWidth: 1,
   },
-
-  errorText: {
-    fontFamily: 'Inter',
-    color: '#FF0004',
-    fontSize: 12,
-    marginBottom: 10,
-  },
-
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
     backgroundColor: 'white',
-  },
-
-  title: {
-    color: '#0B3142',
-    textAlign: 'center',
-    fontFamily: 'Inter Bold',  // Ensure Inter font is properly loaded in your project
-    fontSize: 40,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 40,  // Use a numeric value for lineHeight in React Native
-    letterSpacing: 0.4,
-    marginBottom: 24,
-  },
-  
-  text: {
-    color: '#0B3142',
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
-    fontSize: 24,
-
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
-    letterSpacing: 0.24,
   },
   socialIcon: {
     width: 24,

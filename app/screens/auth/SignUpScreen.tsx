@@ -1,23 +1,14 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import CustomTextField from '../../components/CustomTextField';
 import CustomPicker from '../../components/CustomPicker';
-import { emailAndPasswordSignIn, UserType } from '../../../firebase/auth/auth';
+import { UserType } from '../../../firebase/auth/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import CustomPopUp from '../../components/CustomPopUp';
-import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions } from '../../../styles/styles';
+import { Color, FontSizes, LayoutPadding, appStyles, ButtonDimensions, stylesForNonHeaderScreens } from '../../../styles/styles';
 import { Ionicons } from '@expo/vector-icons';
 import SubmitButton from '../../components/buttons/SubmitButton';
-import { createTenant, createUser } from '../../../firebase/firestore/firestore';
 import {AuthStackParamList} from '../../../types/types';
-
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-}
 
 export default function SignUpScreen() {
   const navigation= useNavigation<NavigationProp<AuthStackParamList>>();
@@ -105,7 +96,7 @@ export default function SignUpScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+        {errors.email && <Text style={stylesForNonHeaderScreens.errorText}>{errors.email}</Text>}
 
         <CustomTextField
           testID="passwordInput"
@@ -115,7 +106,7 @@ export default function SignUpScreen() {
           secureTextEntry
         />
         {errors.password && (
-          <Text style={styles.errorText}>{errors.password}</Text>
+          <Text style={stylesForNonHeaderScreens.errorText}>{errors.password}</Text>
         )}
 
         <CustomTextField
@@ -126,7 +117,7 @@ export default function SignUpScreen() {
           secureTextEntry
         />
         {errors.confirmPassword && (
-          <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+          <Text style={stylesForNonHeaderScreens.errorText}>{errors.confirmPassword}</Text>
         )}
 
         <SubmitButton 
@@ -150,13 +141,6 @@ const styles = StyleSheet.create({
     borderColor: "#FF004",
     borderWidth: 1,
   },
-  
-  errorText: {
-    fontFamily: "Inter",
-    color: "#FF0004",
-    fontSize: 12,
-    marginBottom: 10,
-  },
 
   scrollContainer: {
     flexGrow: 1,
@@ -171,17 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
 
-  title: {
-    color: Color.ScreenHeader,
-    textAlign: 'center',
-    fontFamily: 'Inter',  // Ensure Inter font is properly loaded in your project
-    fontSize: FontSizes.ScreenHeader,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 40,  // Use a numeric value for lineHeight in React Native
-    letterSpacing: 0.4,
-    marginBottom: 24,
-  },
   label: {
     color: Color.TextInputLabel,
     textAlign: 'center',
@@ -193,17 +166,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.24,
     paddingTop : LayoutPadding.LabelTop,
     paddingBottom : LayoutPadding.LabelBottom,
-  },
-
-  text: {
-    color: Color.TextInputLabel,
-    textAlign: 'center',
-    fontFamily: 'Inter SemiBold', 
-    fontSize: 24,
-    fontStyle: 'normal',
-    fontWeight: '400',
-    lineHeight: 24,  // Adjust if necessary, using numeric value for lineHeight
-    letterSpacing: 0.24,
-    padding : '1.5%',
   },
 });

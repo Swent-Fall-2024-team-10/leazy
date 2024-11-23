@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import SignInScreen from '../screens//auth/SignInScreen';
+import SignInScreen from '../screens/auth/SignInScreen';
 import { emailAndPasswordLogIn } from '../../firebase/auth/auth';
 import { NavigationContainer } from '@react-navigation/native';
 import '@testing-library/jest-native/extend-expect';

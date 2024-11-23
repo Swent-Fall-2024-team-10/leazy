@@ -12,10 +12,10 @@ export default function CustomPicker({ selectedValue, onValueChange, style, test
                 selectedValue={selectedValue}
                 onValueChange={onValueChange}
                 style={styles.picker}
-                dropdownIconColor="#fff"  // Set arrow color to white
+                dropdownIconColor={Color.TextInputBorder}
             >
                 {Object.values(UserType).map((item, index) => (
-                    <Picker.Item key={index} label={item} value={item} color='white'/>
+                    <Picker.Item key={index} label={item} value={item} color={Color.TextInputBorder}/>
                 ))}
             </Picker>
         </View>
@@ -28,8 +28,8 @@ const styles = StyleSheet.create({
         height: 43,
         borderRadius: 25,
         borderWidth: 1,
-        borderColor: Color.ButtonBorder,
-        backgroundColor: Color.ButtonBackground,
+        borderColor: Color.TextInputBorder,
+        backgroundColor: Color.TextInputBackground,
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: Color.ShadowColor,

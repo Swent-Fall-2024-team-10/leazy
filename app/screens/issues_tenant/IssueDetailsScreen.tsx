@@ -14,27 +14,20 @@ import { DrawerNavigationProp } from "@react-navigation/drawer";
 import {
   MaintenanceRequest,
   ReportStackParamList,
-  RootStackParamList,
-} from "@/types/types";
+} from "../../../types/types";
 import { MessageSquare } from "react-native-feather";
-import StatusDropdown from "@/app/components/StatusDropdown";
-import Header from "@/app/components/Header";
-import StatusBadge from "@/app/components/StatusBadge";
-import AdaptiveButton from "@/app/components/AdaptiveButton";
+import StatusDropdown from "../../components/StatusDropdown";
+import Header from "../../components/Header";
+import StatusBadge from "../../components/StatusBadge";
+import AdaptiveButton from "../../components/AdaptiveButton";
 import {
   getMaintenanceRequest,
   updateMaintenanceRequest,
-} from "@/firebase/firestore/firestore";
-import Spacer from "@/app/components/Spacer";
-import {
-  Color,
-  FontSizes,
-  ButtonDimensions,
-  IconDimension,
-  appStyles,
-} from "@/styles/styles";
+} from "../../../firebase/firestore/firestore";
+import Spacer from "../../components/Spacer";
+import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
+import SubmitButton from "../../components/buttons/SubmitButton";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -87,33 +80,32 @@ const IssueDetailsScreen: React.FC = () => {
     }
   };
 
-  // Open full-screen mode with the clicked image index
-  const openFullScreen = (index: number) => {
-    if (issue) {
-      setCurrentImageIndex(index);
+const openFullScreen = (index: number) => {
+  if (issue) {
+    setCurrentImageIndex(index);
 
-      Image.getSize(issue.picture[index], (width, height) => {
-        const screenWidth = Dimensions.get("window").width * 0.9;
-        const screenHeight = Dimensions.get("window").height * 0.9;
+    Image.getSize(issue.picture[index], (width, height) => {
+      const screenWidth = Dimensions.get("window").width * 0.9;
+      const screenHeight = Dimensions.get("window").height * 0.9;
 
-        const aspectRatio = width / height;
+      const aspectRatio = width / height;
 
-        let finalWidth, finalHeight;
-        if (width > height) {
-          // Landscape image
-          finalWidth = screenWidth;
-          finalHeight = screenWidth / aspectRatio;
-        } else {
-          // Portrait image
-          finalHeight = screenHeight;
-          finalWidth = screenHeight * aspectRatio;
-        }
+      let finalWidth, finalHeight;
+      if (width > height) {
+        // Landscape image
+        finalWidth = screenWidth;
+        finalHeight = screenWidth / aspectRatio;
+      } else {
+        // Portrait image
+        finalHeight = screenHeight;
+        finalWidth = screenHeight * aspectRatio;
+      }
 
-        setFullImageDimensions({ width: finalWidth, height: finalHeight });
-        setFullScreenMode(true);
-      });
-    }
-  };
+      setFullImageDimensions({ width: finalWidth, height: finalHeight });
+      setFullScreenMode(true);  // Show the modal
+    });
+  }
+};
 
   // Close full-screen mode
   const closeFullScreen = () => {
@@ -180,43 +172,29 @@ const IssueDetailsScreen: React.FC = () => {
             </Text>
             <StatusBadge status={status} />
           </View>
+            <AdaptiveButton title = 'Open chat about this subject' 
+              onPress = { () => navigation.navigate('Messaging')}
+              icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}
+              iconPosition= {'right'}
+              style = {appStyles.submitButton}
+            ></AdaptiveButton>
+            
+            <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
+            <View style={appStyles.carouselImageContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={appStyles.carouselScrollViewContainer}
+                testID='scrollview'
+              >
+                {issue.picture.map((image, index) => (
+                  <TouchableOpacity key={index} onPress={() => {openFullScreen(index)}} testID={`imageItem-${index}`}>
+                    <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
+                  </TouchableOpacity>
 
-          <AdaptiveButton
-            title="Open chat about this subject"
-            onPress={() => navigation.navigate("Messaging")}
-            icon={
-              <MessageSquare
-                stroke="white"
-                width={IconDimension.smallIcon}
-                height={IconDimension.smallIcon}
-              />
-            }
-            iconPosition={"right"}
-            style={appStyles.submitButton}
-          ></AdaptiveButton>
-
-          <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
-          <View style={appStyles.carouselImageContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={appStyles.carouselScrollViewContainer}
-            >
-              {issue.picture.map((image, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => openFullScreen(index)}
-                >
-                  <Image
-                    key={index}
-                    source={{ uri: image }}
-                    style={appStyles.mediumThumbnailImage}
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
+                ))}
+              </ScrollView>
+            </View>
           <View style={styles.imagesTextView}>
             <Text style={appStyles.smallCaptionText}>
               Click on an image to expand it
@@ -231,68 +209,45 @@ const IssueDetailsScreen: React.FC = () => {
           </View>
 
           <StatusDropdown value={status} setValue={setStatus}></StatusDropdown>
-
-          <SubmitButton
-            disabled={false}
-            label={"Close"}
-            onPress={handleClose}
-            width={ButtonDimensions.veryLargeButtonWidth}
-            height={ButtonDimensions.veryLargeButtonHeight}
-            testID={"saveChangesButton"}
-            style={appStyles.submitButton}
-            textStyle={appStyles.submitButtonText}
-          ></SubmitButton>
-
+            <SubmitButton 
+              disabled = {false}
+              label = {'Close'} 
+              onPress = {handleClose} 
+              width = {ButtonDimensions.veryLargeButtonWidth} 
+              height = {ButtonDimensions.veryLargeButtonHeight} 
+              testID = {'saveChangesButton'}
+              style = {appStyles.submitButton} 
+              textStyle = {appStyles.submitButtonText}>
+            </SubmitButton>
           {/* Full-Screen Modal */}
           <Modal
-            visible={fullScreenMode}
-            transparent={true}
-            onRequestClose={closeFullScreen}
+          visible={fullScreenMode}
+          transparent={true}
+          onRequestClose={closeFullScreen}
+          testID="fullModal"
           >
-            <View style={styles.modalBackground}>
-              <TouchableOpacity
-                onPress={closeFullScreen}
-                style={styles.closeModalButton}
-              >
-                <Icon
-                  name="close"
-                  type="font-awesome"
-                  color="white"
-                  size={IconDimension.smallIcon}
-                />
-              </TouchableOpacity>
+              <View style={styles.modalBackground}>
+                <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">
+                  <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={handlePreviousImage}
-                style={[appStyles.expandedImageNextButton, styles.leftArrow]}
-              >
-                <Icon
-                  name="chevron-left"
-                  type="font-awesome"
-                  color="white"
-                  size={IconDimension.smallIcon}
-                />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]} testID="leftButton">
+                  <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+                </TouchableOpacity>
 
-              <Image
-                source={{ uri: issue.picture[currentImageIndex] }}
-                style={[styles.fullImage, fullImageDimensions]}
-                resizeMode="contain"
-              />
-
-              <TouchableOpacity
-                onPress={handleNextImage}
-                style={[appStyles.expandedImageNextButton, styles.rightArrow]}
-              >
-                <Icon
-                  name="chevron-right"
-                  type="font-awesome"
-                  color={"white"}
-                  size={IconDimension.smallIcon}
+                <Image
+                  source={{ uri: issue.picture[currentImageIndex] }}
+                  style={[styles.fullImage, fullImageDimensions]}
+                  resizeMode="contain"
+                  testID="imageFull"
                 />
-              </TouchableOpacity>
-            </View>
+
+                <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]} testID="rightButton">
+                  <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
+                </TouchableOpacity>
+              </View>
           </Modal>
+
           <Spacer height={20} />
         </ScrollView>
       </View>

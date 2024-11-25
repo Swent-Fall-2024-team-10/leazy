@@ -13,9 +13,6 @@ import {
     connectAuthEmulator
 } from "firebase/auth";
 
-const provider = new GoogleAuthProvider();
-
-
 export enum UserType {
     TENANT = "Tenant",
     LANDLORD = "Landlord",

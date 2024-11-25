@@ -1,22 +1,10 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
-import { Feather } from "@expo/vector-icons";
-import Header from "@/app/components/Header";
-import {
-  getLandlord,
-  getResidence,
-  getTenant,
-  getMaintenanceRequest,
-} from "@/firebase/firestore/firestore";
-import { MaintenanceRequest, Residence, Tenant } from "@/types/types";
-import { useAuth } from "../../Navigators/AuthContext";
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import Header from '../../components/Header';
+import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
+import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '../../../types/types';
+import { getAuth } from 'firebase/auth';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -158,16 +146,9 @@ const LandlordListIssuesScreen: React.FC = () => {
           {/* Archived switch */}
           <View style={styles.switchContainer}>
             <Text>Archived issues</Text>
-            <Switch
-              style={[
-                { marginLeft: 8 },
-                { marginRight: 48 },
-                { marginBottom: 8 },
-                { marginTop: 8 },
-              ]}
-              value={showArchived}
-              onValueChange={setShowArchived}
-            />
+            <Switch style={[{ marginLeft: 8 }, {marginRight: 48}, 
+                {marginBottom: 8}, {marginTop: 8}]}
+                value={showArchived} onValueChange={setShowArchived} testID='archivedSwitch' />
             {/* Filter button */}
             <TouchableOpacity
               onPress={toggleFilter}
@@ -197,9 +178,8 @@ const LandlordListIssuesScreen: React.FC = () => {
               <View key={residence.residenceId}>
                 <TouchableOpacity
                   style={styles.residenceItem}
-                  onPress={() =>
-                    toggleResidenceExpansion(residence.residenceId)
-                  }
+                  onPress={() => toggleResidenceExpansion(residence.residenceId)}
+                  testID='residenceButton'
                 >
                   <Text style={styles.residenceText}>
                     Residence {residence.street}

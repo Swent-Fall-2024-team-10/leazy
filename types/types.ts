@@ -124,4 +124,5 @@ export type SituationReport = {
   leavingTenant: string;
   apartmentId: string;
   reportForm: string[];
+  remarks: string;
 }

@@ -758,13 +758,26 @@ export async function addSituationReportLayout(situationReportLayout: string[], 
   updateResidence(residenceId, { situationReportLayout: situationReportLayout});
 }
 
+export async function getSituationReport(apartmentId: string) {
+  const apartment = await getApartment(apartmentId);
+  const situationReportId = apartment?.situationReportId;
+
+  if (!situationReportId) {
+    return null;
+  }
+  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportSnap = await getDoc(situationReportRef);
+
+  return situationReportSnap.data() as SituationReport;
+}
+
 /**
  * Get the situation report layout of a residence or an empty array if it doesn't exist
  * 
  * @param residenceId 
  * @returns 
  */
-export async function getSituationReport(residenceId: string) {
+export async function getSituationReportLayout(residenceId: string) {
   const residence = await getResidence(residenceId);
   const situationReportLayout = residence?.situationReportLayout;
   return situationReportLayout ? situationReportLayout : [];

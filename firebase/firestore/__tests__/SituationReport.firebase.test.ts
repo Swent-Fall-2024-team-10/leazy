@@ -1,6 +1,6 @@
 import { collection, addDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
-import { addSituationReport, deleteSituationReport, addSituationReportLayout, getSituationReport } from "../firestore"; // Import your functions
-import { Residence, SituationReport } from "../../../types/types";
+import { addSituationReport, deleteSituationReport, getSituationReport ,addSituationReportLayout, getSituationReportLayout } from "../firestore"; // Import your functions
+import { Apartment, Residence, SituationReport } from "../../../types/types";
 
 // Mocking the Firestore functions
 jest.mock("firebase/firestore", () => {
@@ -43,12 +43,21 @@ describe("Firestore functions", () => {
     situationReportLayout: ["field1", "field2"],
   };
 
+  const apartmentMock: Apartment = {
+    apartmentId: "apt123",
+    residenceId: "res123",
+    tenants: ["tenant123"],
+    maintenanceRequests: ["request123"],
+    situationReportId: "report123",
+  };
+
   const situationReportMock: SituationReport = {
     reportDate: "2024-11-25",
     arrivingTenant: "tenant123",
     leavingTenant: "tenant456",
     apartmentId: "apt123",
     reportForm: ["field1", "field2"],
+    remarks: "Test remarks",
   };
 
   beforeEach(() => {
@@ -57,6 +66,7 @@ describe("Firestore functions", () => {
       exists: () => true,
       data: () => residenceMock,
     });
+
 
     (updateDoc as jest.Mock).mockResolvedValue(undefined);
     (addDoc as jest.Mock).mockResolvedValue({
@@ -111,10 +121,33 @@ describe("Firestore functions", () => {
 
     await addSituationReportLayout(situationReportLayout, residenceId);
 
-    const result = await getSituationReport("res123");
+    const result = await getSituationReportLayout("res123");
 
     expect(result).toEqual(["field1", "field2"]);
   });
+
+  it("getSituationReport should return the situation report if it exists", async () => {
+    const apartmentId = "apt123";
+    const situationReport = {
+      ...situationReportMock,
+    };
+
+    (getDoc as jest.Mock).mockResolvedValueOnce({
+      exists: () => true,
+      data: () => apartmentMock,
+    });
+
+    (getDoc as jest.Mock).mockResolvedValueOnce({
+      exists: () => true,
+      data: () => situationReport,
+    });
+
+    const result = await getSituationReport(apartmentId);
+
+    expect(result).toEqual(situationReport);
+
+  });
+
 
   it("should return an empty array if the situation report layout doesn't exist", async () => {
     // Mock getResidence to return null layout
@@ -126,7 +159,7 @@ describe("Firestore functions", () => {
       }),
     });
 
-    const result = await getSituationReport("res123");
+    const result = await getSituationReportLayout("res123");
 
     expect(result).toEqual([]);
   });

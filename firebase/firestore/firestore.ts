@@ -735,8 +735,17 @@ export async function addSituationReport(situationReport: SituationReport, apart
 }
 
 export async function deleteSituationReport(situationReportId: string) {
+  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportSnap = await getDoc(situationReportRef);
+
+  //this should never happen
+  if (!situationReportSnap.exists()) {
+    throw new Error("Situation report not found.");
+  }
+  const apartmentId = situationReportSnap.data().apartmentId;
+
   await deleteDoc(doc(db, "situationReports", situationReportId));
-  await updateApartment(situationReportId, { situationReportId: "" });
+  await updateApartment(apartmentId, { situationReportId: "" });
 }
 
 /**

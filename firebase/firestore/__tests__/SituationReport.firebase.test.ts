@@ -1,5 +1,5 @@
 import { collection, addDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
-import { createSituationReport, removeSituationReport, addSituationReportLayout, getSituationReport } from "../firestore"; // Import your functions
+import { addSituationReport, deleteSituationReport, addSituationReportLayout, getSituationReport } from "../firestore"; // Import your functions
 import { Residence, SituationReport } from "../../../types/types";
 
 // Mocking the Firestore functions
@@ -82,7 +82,7 @@ describe("Firestore functions", () => {
   });
 
   it("should create a situation report when residence exists", async () => {
-    await createSituationReport(situationReportMock);
+    await addSituationReport(situationReportMock);
 
     // Check if the correct Firestore functions were called
     expect(addDoc).toHaveBeenCalledWith(expect.anything(), situationReportMock);
@@ -94,14 +94,15 @@ describe("Firestore functions", () => {
       exists: () => false,
     });
 
-    await expect(createSituationReport(situationReportMock)).rejects.toThrow("Residence not found.");
+    await expect(addSituationReport(situationReportMock)).rejects.toThrow("Residence not found.");
   });
 
   it("should remove a situation report", async () => {
     const situationReportId = "report123";
-    await removeSituationReport(situationReportId);
+    await deleteSituationReport(situationReportId);
 
     expect(deleteDoc).toHaveBeenCalledWith(expect.anything());
+    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: "" });
   });
 
   it("should add situation report layout to residence", async () => {

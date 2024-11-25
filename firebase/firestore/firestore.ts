@@ -727,7 +727,7 @@ export async function createMachineNotification(userId: string) {
 }
 
 
-export async function createSituationReport(situationReport: SituationReport) {
+export async function addSituationReport(situationReport: SituationReport) {
   const residence = await getResidence(situationReport.residenceId);
   const residenceId = residence?.residenceId;
 
@@ -740,8 +740,9 @@ export async function createSituationReport(situationReport: SituationReport) {
   updateApartment(residenceId, { situationReportId: docRef.id });
 }
 
-export async function removeSituationReport(situationReportId: string) {
+export async function deleteSituationReport(situationReportId: string) {
   await deleteDoc(doc(db, "situationReports", situationReportId));
+  await updateApartment(situationReportId, { situationReportId: "" });
 }
 
 /**

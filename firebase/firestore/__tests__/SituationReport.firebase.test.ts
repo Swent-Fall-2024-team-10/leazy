@@ -1,4 +1,4 @@
-import { getFirestore, connectFirestoreEmulator, collection, addDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
 import { createSituationReport, removeSituationReport, addSituationReportLayout, getSituationReport } from "../firestore"; // Import your functions
 import { Residence, SituationReport } from "../../../types/types";
 

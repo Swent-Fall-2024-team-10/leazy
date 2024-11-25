@@ -33,7 +33,7 @@ export function toFrontendFormat(situationReportLayout: string[]){
  * in order to save it in the database
  * 
  * @param filledSituationReport
- * @returns 
+ * @returns returns a list of groups of items in the format [Item, Status] for the database to save
  */
 export function toDatabaseFormat(filledSituationReport: (string | number)[][]){
     const database = filledSituationReport.reduce<string[]>((acc, group) => {

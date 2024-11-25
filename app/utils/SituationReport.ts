@@ -92,7 +92,6 @@ export function changeStatus(layout: (string | number)[][], groupIndex: number, 
         case "AW":
             nextStatus = 3;
             break;
-        default: -1;
     }
 
     if (layout.length <= groupIndex || layout[groupIndex].length <= itemIndex * 2 + 1 || nextStatus === -1){

@@ -77,6 +77,7 @@ export type Residence = {
   laundryMachineIds: string[];
   apartments: string[]; // list of apartment ids
   tenantCodesID: string[]; // list of IDs of tenant unique codes
+  situationReportLayout: string[];
 };
 
 export type TenantCode = {
@@ -91,6 +92,7 @@ export type Apartment = {
   residenceId: string;
   tenants: string[]; // list of tenant uids
   maintenanceRequests: string[]; // list of maintenance request ids
+  situationReportId: string; 
 };
 
 export type LaundryMachine = {
@@ -115,3 +117,12 @@ export type MaintenanceRequest = {
   picture: string[]; // list of picture urls referenced in the database
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 };
+
+export type SituationReport = {
+  reportDate: string;
+  arrivingTenant: string;
+  leavingTenant: string;
+  residenceId: string;
+  apartmentId: string;
+  reportForm: string[];
+}

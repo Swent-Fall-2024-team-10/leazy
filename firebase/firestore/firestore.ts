@@ -25,6 +25,7 @@ import {
   LaundryMachine,
   MaintenanceRequest,
   TenantCode,
+  SituationReport,
 } from "../../types/types";
 
 // Set the log level to 'silent' to disable logging
@@ -723,4 +724,44 @@ export async function createMachineNotification(userId: string) {
     userId: userId,
     scheduledTime: Timestamp.now(), // The scheduled notification time
   });
+}
+
+
+export async function createSituationReport(situationReport: SituationReport) {
+  const residence = await getResidence(situationReport.residenceId);
+  const residenceId = residence?.residenceId;
+
+  if (!residenceId) {
+    throw new Error("Residence not found.");
+  }
+  const collectionRef = collection(db, "situationReports");
+  
+  const docRef = await addDoc(collectionRef, situationReport);
+  updateApartment(residenceId, { situationReportId: docRef.id });
+}
+
+export async function removeSituationReport(situationReportId: string) {
+  await deleteDoc(doc(db, "situationReports", situationReportId));
+}
+
+/**
+ * Add the situation report layout to a residence
+ * 
+ * @param situationReportLayout 
+ * @param residenceId 
+ */
+export async function addSituationReportLayout(situationReportLayout: string[], residenceId: string) {
+  updateResidence(residenceId, { situationReportLayout: situationReportLayout});
+}
+
+/**
+ * Get the situation report layout of a residence or an empty array if it doesn't exist
+ * 
+ * @param residenceId 
+ * @returns 
+ */
+export async function getSituationReport(residenceId: string) {
+  const residence = await getResidence(residenceId);
+  const situationReportLayout = residence?.situationReportLayout;
+  return situationReportLayout ? situationReportLayout : [];
 }

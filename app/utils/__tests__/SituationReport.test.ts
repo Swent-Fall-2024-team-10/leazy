@@ -439,7 +439,4 @@ describe('changing the status of an item', () => {
         const newLayout = SituationReport.changeStatus(layout, groupIndex, itemIndex, newStatus);
         expect(newLayout).toEqual(expected);
     });
-
-    
-
 });

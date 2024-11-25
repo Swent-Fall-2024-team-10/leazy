@@ -727,17 +727,11 @@ export async function createMachineNotification(userId: string) {
 }
 
 
-export async function addSituationReport(situationReport: SituationReport) {
-  const residence = await getResidence(situationReport.residenceId);
-  const residenceId = residence?.residenceId;
-
-  if (!residenceId) {
-    throw new Error("Residence not found.");
-  }
+export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
   const collectionRef = collection(db, "situationReports");
   
   const docRef = await addDoc(collectionRef, situationReport);
-  updateApartment(residenceId, { situationReportId: docRef.id });
+  updateApartment(apartmentId, { situationReportId: docRef.id });
 }
 
 export async function deleteSituationReport(situationReportId: string) {

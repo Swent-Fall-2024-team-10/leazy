@@ -122,7 +122,6 @@ export type SituationReport = {
   reportDate: string;
   arrivingTenant: string;
   leavingTenant: string;
-  residenceId: string;
   apartmentId: string;
   reportForm: string[];
 }

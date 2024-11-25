@@ -47,7 +47,6 @@ describe("Firestore functions", () => {
     reportDate: "2024-11-25",
     arrivingTenant: "tenant123",
     leavingTenant: "tenant456",
-    residenceId: "res123",
     apartmentId: "apt123",
     reportForm: ["field1", "field2"],
   };
@@ -82,19 +81,11 @@ describe("Firestore functions", () => {
   });
 
   it("should create a situation report when residence exists", async () => {
-    await addSituationReport(situationReportMock);
+    await addSituationReport(situationReportMock, "apt123");
 
     // Check if the correct Firestore functions were called
     expect(addDoc).toHaveBeenCalledWith(expect.anything(), situationReportMock);
     expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: "report123" });
-  });
-
-  it("should throw error when residence is not found", async () => {
-    (getDoc as jest.Mock).mockResolvedValueOnce({
-      exists: () => false,
-    });
-
-    await expect(addSituationReport(situationReportMock)).rejects.toThrow("Residence not found.");
   });
 
   it("should remove a situation report", async () => {
@@ -115,6 +106,11 @@ describe("Firestore functions", () => {
   });
 
   it("should return the situation report layout if it exists", async () => {
+    const situationReportLayout = ["newField1", "newField2"];
+    const residenceId = "res123";
+
+    await addSituationReportLayout(situationReportLayout, residenceId);
+
     const result = await getSituationReport("res123");
 
     expect(result).toEqual(["field1", "field2"]);

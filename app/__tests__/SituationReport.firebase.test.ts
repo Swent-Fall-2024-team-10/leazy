@@ -1,6 +1,6 @@
 import { collection, addDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
-import { addSituationReport, deleteSituationReport, getSituationReport ,addSituationReportLayout, getSituationReportLayout } from "../firestore"; // Import your functions
-import { Apartment, Residence, SituationReport } from "../../../types/types";
+import { addSituationReport, deleteSituationReport, getSituationReport ,addSituationReportLayout, getSituationReportLayout } from "../../firebase/firestore/firestore"; // Import your functions
+import { Apartment, Residence, SituationReport } from "../../types/types";
 
 // Mocking the Firestore functions
 jest.mock("firebase/firestore", () => {

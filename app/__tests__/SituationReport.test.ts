@@ -1,4 +1,4 @@
-import * as SituationReport from '../SituationReport';
+import * as SituationReport from '../utils/SituationReport';
 describe('parsing situation report', () => {
     it('Parsing a small list should return the correct format 01', () => {
         const toParse = "Item:groupe11,Status:0";

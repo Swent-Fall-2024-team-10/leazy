@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.storage = exports.auth = exports.db = void 0;

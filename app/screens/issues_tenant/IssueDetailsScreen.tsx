@@ -157,12 +157,21 @@ const openFullScreen = (index: number) => {
           showsVerticalScrollIndicator={false}
         >
           <View>
-            <Text style={[appStyles.screenHeader, {textAlign : 'left', letterSpacing : 1.5, fontSize : 20, marginBottom : '10%'}]}> 
+            <Text
+              style={[
+                appStyles.screenHeader,
+                {
+                  textAlign: "left",
+                  letterSpacing: 1.5,
+                  fontSize: 20,
+                  marginBottom: "10%",
+                },
+              ]}
+            >
               Issue : {issue.requestTitle}
             </Text>
             <StatusBadge status={status} />
           </View>
-
             <AdaptiveButton title = 'Open chat about this subject' 
               onPress = { () => navigation.navigate('Messaging')}
               icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}
@@ -186,22 +195,20 @@ const openFullScreen = (index: number) => {
                 ))}
               </ScrollView>
             </View>
+          <View style={styles.imagesTextView}>
+            <Text style={appStyles.smallCaptionText}>
+              Click on an image to expand it
+            </Text>
+          </View>
 
-            <View style={styles.imagesTextView}>
-              <Text style={appStyles.smallCaptionText}>Click on an image to expand it</Text>
+          <View style={styles.descriptionContainer}>
+            <Text style={appStyles.inputFieldLabel}>Description</Text>
+            <View style={styles.descriptionBox}>
+              <Text style={styles.descriptionText}>{description}</Text>
             </View>
-
-            <View style={styles.descriptionContainer}>
-              <Text style={appStyles.inputFieldLabel}>Description</Text>
-              <View style={styles.descriptionBox}>
-                <Text style={styles.descriptionText}>
-                  {description}
-                </Text>
-              </View>
-            </View>
+          </View>
 
           <StatusDropdown value={status} setValue={setStatus}></StatusDropdown>
-
             <SubmitButton 
               disabled = {false}
               label = {'Close'} 
@@ -212,7 +219,6 @@ const openFullScreen = (index: number) => {
               style = {appStyles.submitButton} 
               textStyle = {appStyles.submitButtonText}>
             </SubmitButton>
-          
           {/* Full-Screen Modal */}
           <Modal
           visible={fullScreenMode}
@@ -250,17 +256,16 @@ const openFullScreen = (index: number) => {
 };
 
 const styles = StyleSheet.create({
-
-  imagesTextView:{
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '10%'
+  imagesTextView: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: "10%",
   },
-  
+
   closeModalButton: {
-    position: 'absolute',
-    top: '5.5%',
-    right: '7%',
+    position: "absolute",
+    top: "5.5%",
+    right: "7%",
     zIndex: 2,
   },
 
@@ -278,18 +283,18 @@ const styles = StyleSheet.create({
   },
 
   leftArrow: {
-    left: '5%',
+    left: "5%",
   },
 
   rightArrow: {
-    right: '5%',
+    right: "5%",
   },
 
   grayBackground: {
-    height: Dimensions.get('window').height * 0.8,
+    height: Dimensions.get("window").height * 0.8,
     backgroundColor: Color.IssueBackground,
-    marginHorizontal: '3%',
-    marginVertical: '3%',
+    marginHorizontal: "3%",
+    marginVertical: "3%",
     borderRadius: 32,
     overflow: "hidden",
     // Add black border

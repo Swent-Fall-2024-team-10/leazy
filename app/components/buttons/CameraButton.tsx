@@ -13,6 +13,7 @@ export default function CameraButton({ onPress }: CloseProps) {
       <Text style={styles.text}>Take Picture</Text>
       <View style={styles.shadow}>
         <TouchableOpacity
+          testID="camera-button"
           style={styles.cameraButton}
           onPress={onPress}
           accessibilityRole="button"

@@ -1,254 +1,232 @@
-import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import CodeCreationScreen from "../screens/landlord/CreateNewCode";
-import { Alert, Share } from "react-native";
-import Clipboard from "@react-native-clipboard/clipboard";
-import { generate_unique_code } from "../../firebase/firestore/firestore";
-import "@testing-library/jest-native/extend-expect";
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Alert, Share } from 'react-native';
+import CodeCreationScreen from '../screens/landlord/CreateNewCode';
+import { getDocs } from 'firebase/firestore';
+import { generate_unique_code } from '../../firebase/firestore/firestore';
+import ClipBoard from '@react-native-clipboard/clipboard';
+import { NavigationContainer } from '@react-navigation/native';
 
-// Mock the necessary modules and functions
-jest.mock("../../firebase/firestore/firestore", () => ({
+// Mock the dependencies
+jest.mock('../../firebase/firebase', () => ({
+  db: {},
+}));
+
+jest.mock('firebase/firestore', () => ({
+  collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  getDocs: jest.fn(),
+}));
+
+jest.mock('../../firebase/firestore/firestore', () => ({
   generate_unique_code: jest.fn(),
 }));
 
-jest.mock("@react-native-clipboard/clipboard", () => ({
+jest.mock('@react-native-clipboard/clipboard', () => ({
   setString: jest.fn(),
 }));
 
-// Mock the navigation
-const mockNavigate = jest.fn();
-const mockNavigation = {
-  navigate: mockNavigate,
-  // Add other navigation methods if needed
-};
+jest.mock('react-native/Libraries/Share/Share', () => ({
+  share: jest.fn(),
+}));
 
+// Mock navigation
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
   return {
     ...actualNav,
-    useNavigation: () => mockNavigation,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      toggleDrawer: jest.fn(),
+    }),
   };
 });
 
+jest.spyOn(Alert, 'alert');
 
-// Inside your test cases or before them
-jest.spyOn(Clipboard, "setString").mockImplementation();
-jest.spyOn(Share, "share").mockImplementation();
-jest.spyOn(Alert, "alert").mockImplementation();
+// Wrapper component to provide navigation context
+const renderWithNavigation = (component: React.ReactElement) => {
+  return render(
+    <NavigationContainer>
+      {component}
+    </NavigationContainer>
+  );
+};
 
-describe("CodeCreationScreen", () => {
+describe('CodeCreationScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders correctly", () => {
-    const { getByText, getByTestId } = render(<CodeCreationScreen />);
+  const mockResidenceData = {
+    data: () => ({
+      residenceId: 'res123',
+      apartments: ['apt789'],
+    }),
+    id: 'res789',
+  };
 
-    // Check if main components are rendered
-    expect(getByText("Create a new code for a new tenant")).toBeTruthy();
-    expect(getByText("Enter the Residence ID")).toBeTruthy();
-    expect(getByTestId("Residence ID")).toBeTruthy();
-    expect(getByText("Enter the Apartment ID")).toBeTruthy();
-    expect(getByTestId("Apartment ID")).toBeTruthy();
-    expect(getByTestId("create-code-button")).toBeTruthy();
-    // Initially, the code should not be displayed
-    expect(getByText("******")).toBeTruthy();
+  const mockApartmentData = {
+    data: () => ({
+      apartmentId: 'apt123',
+      residenceId: 'res789',
+    }),
+    id: 'apt789',
+  };
+
+  test('renders correctly with initial state', () => {
+    const { getByText, getByTestId } = renderWithNavigation(<CodeCreationScreen />);
+    
+    expect(getByText('Create a new code for a new tenant')).toBeTruthy();
+    expect(getByTestId('Residence ID')).toBeTruthy();
+    expect(getByTestId('Apartment ID')).toBeTruthy();
+    expect(getByTestId('create-code-button')).toBeTruthy();
   });
 
-  it("handles input correctly", () => {
-    const { getByTestId } = render(<CodeCreationScreen />);
-
-    const residenceInput = getByTestId("Residence ID");
-    const apartmentInput = getByTestId("Apartment ID");
-
-    fireEvent.changeText(residenceInput, "RES123");
-    fireEvent.changeText(apartmentInput, "APT456");
-
-    expect(residenceInput.props.value).toBe("RES123");
-    expect(apartmentInput.props.value).toBe("APT456");
-  });
-
-  it("shows alert when inputs are missing", () => {
-    const alertMock = jest.spyOn(Alert, "alert").mockImplementation();
-
-    const { getByTestId } = render(<CodeCreationScreen />);
-
-    const createCodeButton = getByTestId("create-code-button");
-
-    // Press create code without entering any inputs
-    fireEvent.press(createCodeButton);
-
-    expect(alertMock).toHaveBeenCalledWith(
-      "Please enter both Residence ID and Apartment ID."
+  test('shows alert when fields are empty', async () => {
+    const { getByTestId } = renderWithNavigation(<CodeCreationScreen />);
+    
+    fireEvent.press(getByTestId('create-code-button'));
+    
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Please enter both residence number and apartment number.'
     );
-
-    alertMock.mockRestore();
   });
 
-  it("successfully creates code", async () => {
-    // Mock generate_unique_code to return a code
-    (generate_unique_code as jest.Mock).mockResolvedValue("CODE123");
+  test('successfully creates and displays a code', async () => {
+    const mockGeneratedCode = 'ABC123';
+    (getDocs as jest.Mock)
+      .mockResolvedValueOnce({ empty: false, docs: [mockResidenceData] })
+      .mockResolvedValueOnce({ empty: false, docs: [mockApartmentData] });
+    (generate_unique_code as jest.Mock).mockResolvedValueOnce(mockGeneratedCode);
 
-    const { getByTestId, getByText } = render(<CodeCreationScreen />);
+    const { getByTestId, getByText } = renderWithNavigation(<CodeCreationScreen />);
 
-    const residenceInput = getByTestId("Residence ID");
-    const apartmentInput = getByTestId("Apartment ID");
-    const createCodeButton = getByTestId("create-code-button");
+    // Fill in the form
+    fireEvent.changeText(getByTestId('Residence ID'), 'res123');
+    fireEvent.changeText(getByTestId('Apartment ID'), 'apt123');
 
-    // Enter valid inputs
-    fireEvent.changeText(residenceInput, "RES123");
-    fireEvent.changeText(apartmentInput, "APT456");
-
-    fireEvent.press(createCodeButton);
+    // Create code
+    fireEvent.press(getByTestId('create-code-button'));
 
     // Wait for the code to be generated and displayed
     await waitFor(() => {
-      expect(generate_unique_code).toHaveBeenCalledWith("RES123", "APT456");
-      expect(getByText("Share the following code with a tenant:")).toBeTruthy();
-      expect(getByText("CODE123")).toBeTruthy();
-      expect(getByTestId("share-code-button")).toBeTruthy();
+      expect(getByText(mockGeneratedCode)).toBeTruthy();
+      expect(getByTestId('share-code-button')).toBeTruthy();
     });
   });
 
-  it("handles error during code generation", async () => {
-    const alertMock = jest.spyOn(Alert, "alert").mockImplementation();
+  test('handles clipboard copy', async () => {
+    const mockGeneratedCode = 'ABC123';
+    (getDocs as jest.Mock)
+      .mockResolvedValueOnce({ empty: false, docs: [mockResidenceData] })
+      .mockResolvedValueOnce({ empty: false, docs: [mockApartmentData] });
+    (generate_unique_code as jest.Mock).mockResolvedValueOnce(mockGeneratedCode);
 
-    (generate_unique_code as jest.Mock).mockRejectedValue(
-      new Error("Error generating code")
-    );
+    const { getByTestId, getByText } = renderWithNavigation(<CodeCreationScreen />);
 
-    const { getByTestId } = render(<CodeCreationScreen />);
+    // Fill in the form
+    fireEvent.changeText(getByTestId('Residence ID'), 'res123');
+    fireEvent.changeText(getByTestId('Apartment ID'), 'apt123');
 
-    const residenceInput = getByTestId("Residence ID");
-    const apartmentInput = getByTestId("Apartment ID");
-    const createCodeButton = getByTestId("create-code-button");
-
-    // Enter valid inputs
-    fireEvent.changeText(residenceInput, "RES123");
-    fireEvent.changeText(apartmentInput, "APT456");
-
-    fireEvent.press(createCodeButton);
-
-    await waitFor(() => {
-      expect(generate_unique_code).toHaveBeenCalledWith("RES123", "APT456");
-      expect(Alert.alert).toHaveBeenCalledWith("Error generating code");
-    });
-
-    alertMock.mockRestore();
-  });
-
-  it("copies code to clipboard when code is pressed", async () => {
-    // Mock generate_unique_code to return a code
-    (generate_unique_code as jest.Mock).mockResolvedValue("CODE123");
-
-    const alertMock = jest.spyOn(Alert, "alert").mockImplementation();
-    const clipboardSetStringMock = jest
-      .spyOn(Clipboard, "setString")
-      .mockImplementation();
-
-    const { getByTestId, getByText } = render(<CodeCreationScreen />);
-
-    const residenceInput = getByTestId("Residence ID");
-    const apartmentInput = getByTestId("Apartment ID");
-    const createCodeButton = getByTestId("create-code-button");
-
-    // Enter valid inputs
-    fireEvent.changeText(residenceInput, "RES123");
-    fireEvent.changeText(apartmentInput, "APT456");
-
-    fireEvent.press(createCodeButton);
+    // Create code
+    fireEvent.press(getByTestId('create-code-button'));
 
     // Wait for the code to be displayed
     await waitFor(() => {
-      expect(getByText("CODE123")).toBeTruthy();
+      expect(getByText(mockGeneratedCode)).toBeTruthy();
     });
 
-    const codeText = getByText("CODE123");
+    // Copy code
+    fireEvent.press(getByText(mockGeneratedCode));
 
-    fireEvent.press(codeText);
-
-    expect(Clipboard.setString).toHaveBeenCalledWith("CODE123");
-    expect(Alert.alert).toHaveBeenCalledWith("Code copied to clipboard!");
-
-    alertMock.mockRestore();
-    clipboardSetStringMock.mockRestore();
+    expect(ClipBoard.setString).toHaveBeenCalledWith(mockGeneratedCode);
+    expect(Alert.alert).toHaveBeenCalledWith('Code copied to clipboard!');
   });
 
-  it("shares code when Share Code button is pressed", async () => {
-    // Mock generate_unique_code to return a code
-    (generate_unique_code as jest.Mock).mockResolvedValue("CODE123");
+  test('handles sharing code', async () => {
+    const mockGeneratedCode = 'ABC123';
+    (getDocs as jest.Mock)
+      .mockResolvedValueOnce({ empty: false, docs: [mockResidenceData] })
+      .mockResolvedValueOnce({ empty: false, docs: [mockApartmentData] });
+    (generate_unique_code as jest.Mock).mockResolvedValueOnce(mockGeneratedCode);
 
-    const shareMock = jest
-      .spyOn(Share, "share")
-      .mockResolvedValue({ action: "sharedAction" });
+    const { getByTestId, getByText } = renderWithNavigation(<CodeCreationScreen />);
 
-    const { getByTestId, getByText } = render(<CodeCreationScreen />);
+    // Fill in the form
+    fireEvent.changeText(getByTestId('Residence ID'), 'res123');
+    fireEvent.changeText(getByTestId('Apartment ID'), 'apt123');
 
-    const residenceInput = getByTestId("Residence ID");
-    const apartmentInput = getByTestId("Apartment ID");
-    const createCodeButton = getByTestId("create-code-button");
+    // Create code
+    fireEvent.press(getByTestId('create-code-button'));
 
-    // Enter valid inputs
-    fireEvent.changeText(residenceInput, "RES123");
-    fireEvent.changeText(apartmentInput, "APT456");
-
-    fireEvent.press(createCodeButton);
-
-    // Wait for the code to be displayed
+    // Wait for the share button to appear
     await waitFor(() => {
-      expect(getByText("CODE123")).toBeTruthy();
+      expect(getByTestId('share-code-button')).toBeTruthy();
     });
 
-    const shareCodeButton = getByTestId("share-code-button");
-
-    fireEvent.press(shareCodeButton);
+    // Share code
+    fireEvent.press(getByTestId('share-code-button'));
 
     expect(Share.share).toHaveBeenCalledWith({
-      message: "Here is your code: CODE123",
+      message: `Here is your code: ${mockGeneratedCode}`,
     });
-
-    shareMock.mockRestore();
   });
 
-  it("handles error during share code", async () => {
-    // Mock generate_unique_code to return a code
-    (generate_unique_code as jest.Mock).mockResolvedValue("CODE123");
+  test('handles share error', async () => {
+    const mockError = new Error('Share failed');
+    (Share.share as jest.Mock).mockRejectedValueOnce(mockError);
+    
+    const mockGeneratedCode = 'ABC123';
+    (getDocs as jest.Mock)
+      .mockResolvedValueOnce({ empty: false, docs: [mockResidenceData] })
+      .mockResolvedValueOnce({ empty: false, docs: [mockApartmentData] });
+    (generate_unique_code as jest.Mock).mockResolvedValueOnce(mockGeneratedCode);
 
-    const shareMock = jest
-      .spyOn(Share, "share")
-      .mockRejectedValue(new Error("Some share error"));
-    const alertMock = jest.spyOn(Alert, "alert").mockImplementation();
+    const { getByTestId } = renderWithNavigation(<CodeCreationScreen />);
 
-    const { getByTestId, getByText } = render(<CodeCreationScreen />);
+    // Fill in the form
+    fireEvent.changeText(getByTestId('Residence ID'), 'res123');
+    fireEvent.changeText(getByTestId('Apartment ID'), 'apt123');
 
-    const residenceInput = getByTestId("Residence ID");
-    const apartmentInput = getByTestId("Apartment ID");
-    const createCodeButton = getByTestId("create-code-button");
+    // Create code
+    fireEvent.press(getByTestId('create-code-button'));
 
-    // Enter valid inputs
-    fireEvent.changeText(residenceInput, "RES123");
-    fireEvent.changeText(apartmentInput, "APT456");
-
-    fireEvent.press(createCodeButton);
-
-    // Wait for the code to be displayed
+    // Wait for share button and press it
     await waitFor(() => {
-      expect(getByText("CODE123")).toBeTruthy();
+      fireEvent.press(getByTestId('share-code-button'));
     });
 
-    const shareCodeButton = getByTestId("share-code-button");
-
-    fireEvent.press(shareCodeButton);
-
     await waitFor(() => {
-      expect(Share.share).toHaveBeenCalledWith({
-        message: "Here is your code: CODE123",
-      });
-
-      expect(Alert.alert).toHaveBeenCalledWith("Some share error");
+      expect(Alert.alert).toHaveBeenCalledWith('Share failed');
     });
-
-    shareMock.mockRestore();
-    alertMock.mockRestore();
   });
+
+  test('handles unexpected error during code generation', async () => {
+    const { getByTestId } = renderWithNavigation(<CodeCreationScreen />);
+    
+    (getDocs as jest.Mock)
+      .mockResolvedValueOnce({ empty: false, docs: [mockResidenceData] })
+      .mockResolvedValueOnce({ empty: false, docs: [mockApartmentData] });
+    
+    // Mock code generation to throw a non-Error object
+    (generate_unique_code as jest.Mock).mockRejectedValueOnce('Unexpected error');
+
+    // Fill in the form
+    fireEvent.changeText(getByTestId('Residence ID'), 'res123');
+    fireEvent.changeText(getByTestId('Apartment ID'), 'apt123');
+
+    // Create code
+    fireEvent.press(getByTestId('create-code-button'));
+
+    // Wait for error alert
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'An unexpected error occurred. Please try again.'
+      );
+    });
+  });
+
 });

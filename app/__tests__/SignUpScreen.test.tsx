@@ -57,7 +57,6 @@ describe('SignUpScreen', () => {
         <SignUpScreen />
       </NavigationContainer>
     );
-
     fireEvent.press(getByTestId('signUpButton'));
 
     expect(getByText('Email is required')).toBeTruthy();
@@ -98,7 +97,6 @@ describe('SignUpScreen', () => {
         <SignUpScreen />
       </NavigationContainer>
     );
-
     fireEvent.changeText(getByTestId('emailInput'), 'test@tenant.com');
     fireEvent.changeText(getByTestId('passwordInput'), 'password123');
     fireEvent.changeText(getByTestId('confirmPasswordInput'), 'password123');
@@ -118,7 +116,6 @@ describe('SignUpScreen', () => {
         <SignUpScreen />
       </NavigationContainer>
     );
-
     fireEvent.changeText(getByTestId('emailInput'), 'test@landlord.com');
     fireEvent.changeText(getByTestId('passwordInput'), 'password123');
     fireEvent.changeText(getByTestId('confirmPasswordInput'), 'password123');

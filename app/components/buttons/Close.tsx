@@ -10,7 +10,7 @@ interface CloseProps {
 export default function Close({ onPress }: CloseProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={onPress}>
+      <TouchableOpacity testID="close-button" style={styles.closeButton} onPress={onPress}>
         <Text style={styles.text}>Close</Text>
         <AntDesign name="down" style={styles.arrowDown} />
       </TouchableOpacity>

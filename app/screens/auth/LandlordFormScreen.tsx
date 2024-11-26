@@ -7,19 +7,26 @@ import {
   SafeAreaView,
   StyleSheet,
 } from "react-native";
-import { useNavigation, NavigationProp, useRoute } from "@react-navigation/native";
-import {AuthStackParamList, TUser, Landlord } from "../../../types/types";
-import { createLandlord, createUser } from "../../../firebase/firestore/firestore";
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+} from "@react-navigation/native";
+import { AuthStackParamList, TUser, Landlord } from "../../../types/types";
+import {
+  createLandlord,
+  createUser,
+} from "../../../firebase/firestore/firestore";
 import { emailAndPasswordSignIn } from "../../../firebase/auth/auth";
 import SubmitButton from "../../components/buttons/SubmitButton";
 import InputField from "../../components/forms/text_input";
 import Spacer from "../../components/Spacer";
 import { Color } from "../../../styles/styles";
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp } from "@react-navigation/native";
 
 const LandlordFormScreen = () => {
-  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
-  const route = useRoute<RouteProp<AuthStackParamList, 'TenantForm' | 'LandlordForm'>>();
+  const route =
+    useRoute<RouteProp<AuthStackParamList, "TenantForm" | "LandlordForm">>();
   const { email, password } = route.params;
 
   const [firstName, setFirstName] = useState("");
@@ -51,11 +58,11 @@ const LandlordFormScreen = () => {
           country: country,
         };
         await createUser(userData);
-        const landlordData: Landlord = {
+        const landlord: Landlord = {
           userId: user.uid,
           residenceIds: [],
         };
-        await createLandlord(landlordData);
+        await createLandlord(landlord);
         Alert.alert("Success", "Landlord profile created successfully!");
       }
     } catch (error) {
@@ -158,7 +165,7 @@ const LandlordFormScreen = () => {
             !city ||
             !canton ||
             !number ||
-            !country || 
+            !country ||
             submitting
           }
           onPress={handleSubmit}

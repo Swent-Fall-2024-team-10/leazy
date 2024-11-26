@@ -7,23 +7,19 @@ import {
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import { appStyles, ButtonDimensions, Color } from "@/styles/styles";
-import {
-  useNavigation,
-  useRoute,
-  NavigationProp,
-} from "@react-navigation/native";
-import { AuthStackParamList, TUser} from "../../../types/types";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import InputField from "@/app/components/forms/text_input";
-import { RouteProp } from '@react-navigation/native';
-import { emailAndPasswordSignIn } from "@/firebase/auth/auth";
-import { createUser, createTenant } from "@/firebase/firestore/firestore";
-import { Tenant } from "@/types/types";
+import { appStyles, ButtonDimensions, Color } from "../../../styles/styles";
+import { useRoute } from "@react-navigation/native";
+import { AuthStackParamList, TUser } from "../../../types/types";
+import SubmitButton from "../../../app/components/buttons/SubmitButton";
+import InputField from "../../../app/components/forms/text_input";
+import { RouteProp } from "@react-navigation/native";
+import { emailAndPasswordSignIn } from "../../../firebase/auth/auth";
+import { createUser, createTenant } from "../../../firebase/firestore/firestore";
+import { Tenant } from "../../../types/types";
 
 const TenantFormScreen = () => {
-
-  const route = useRoute<RouteProp<AuthStackParamList, 'TenantForm' | 'LandlordForm'>>();
+  const route =
+    useRoute<RouteProp<AuthStackParamList, "TenantForm" | "LandlordForm">>();
   const { email, password } = route.params;
 
   const [firstName, setFirstName] = useState("");
@@ -41,7 +37,6 @@ const TenantFormScreen = () => {
     try {
       const user = await emailAndPasswordSignIn(email, password);
       if (user) {
-        Alert.alert("Success", "Tenant profile created successfully!");
         const userData: TUser = {
           uid: user.uid,
           type: "tenant",
@@ -56,17 +51,15 @@ const TenantFormScreen = () => {
           country: country,
         };
         await createUser(userData);
-        
-        const tenantData: Tenant = {
+
+        const tenant: Tenant = {
           userId: user.uid,
           maintenanceRequests: [],
           apartmentId: "",
           residenceId: "",
         };
-        await createTenant(tenantData);
+        await createTenant(tenant);
       }
-
-     
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Error", error.message);
@@ -105,8 +98,6 @@ const TenantFormScreen = () => {
             backgroundColor={Color.TextInputBackground}
           />
         </View>
-
-      
 
         <View style={styles.row}>
           <InputField

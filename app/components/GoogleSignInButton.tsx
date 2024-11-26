@@ -4,7 +4,6 @@ import React, { useEffect } from 'react'
 import * as Google from 'expo-auth-session/providers/google'
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth"
 import { auth } from "../../firebase/firebase"
-import { getUser } from '@/firebase/firestore/firestore'
 import { useAuth } from '../Navigators/AuthContext'
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

@@ -7,6 +7,7 @@ import '@testing-library/jest-native/extend-expect';
 
 // Mock dependencies
 jest.mock('../../firebase/auth/auth', () => ({
+
   emailAndPasswordLogIn: jest.fn(),
 }));
 
@@ -15,6 +16,7 @@ const mockNavigate = jest.fn();
 
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
+  
   return {
     ...actualNav,
     useNavigation: () => ({
@@ -32,7 +34,6 @@ describe('SignInScreen', () => {
         <SignInScreen />
       </NavigationContainer>
     );
-
     expect(getByTestId('emailInput')).toBeTruthy();
     expect(getByTestId('passwordInput')).toBeTruthy();
     expect(getByTestId('signInButton')).toBeTruthy();
@@ -91,6 +92,7 @@ describe('SignInScreen', () => {
         <SignInScreen />
       </NavigationContainer>
     );
+
 
     fireEvent.changeText(getByTestId('emailInput'), 'test@example.com');
     fireEvent.changeText(getByTestId('passwordInput'), 'password123');

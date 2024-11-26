@@ -6,29 +6,85 @@ import Header from "../../..//app/components/Header";
 import { generate_unique_code } from "../../../firebase/firestore/firestore";
 import { stylesForHeaderScreens, appStyles } from "../../../styles/styles";
 import ClipBoard from "@react-native-clipboard/clipboard";
-import { Alert } from "react-native"; 
+import { Alert } from "react-native";
+import { db } from "../../../firebase/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { Residence, Apartment } from "../../../types/types";
 
 // This screen is for the landlord to create a new code for a new tenant
 // The code will be used by the tenant to access the app for a specific residence
 export default function CodeCreationScreen() {
   const [code, setCode] = useState("");
-  const [residenceId, setResidenceId] = useState("");
-  const [apartmentId, setApartmentId] = useState("");
+  const [residenceNumber, setResidenceNumber] = useState("");
+  const [apartmentNumber, setApartmentNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
   const createCode = async () => {
-    if (!residenceId || !apartmentId) {
-      Alert.alert("Please enter both Residence ID and Apartment ID.");
+    if (!residenceNumber || !apartmentNumber) {
+      Alert.alert("Please enter both residence number and apartment number.");
       return;
     }
 
     setLoading(true); // Start loading
 
+    // Check if the residence exists and retrieve its UID
+    const residencesRef = collection(db, "residences");
+    const residenceQuery = query(
+      residencesRef,
+      where("residenceId", "==", residenceNumber)
+    );
+    const residenceSnapshot = await getDocs(residenceQuery);
+    // I am not sure about this line
+    if (residenceSnapshot.empty) {
+      throw new Error(
+        "No matching residence found for the given residence ID."
+      );
+    }
+    const residenceDoc = residenceSnapshot.docs[0];
+    const residenceUID = residenceDoc.id;
+    const residenceData = residenceDoc.data() as Residence;
+
+    // Check if the apartment exists, belongs to the residence and retrieve its UID
+    const apartmentsRef = collection(db, "apartments");
+    const apartmentQuery = query(
+      apartmentsRef,
+      where("apartmentId", "==", apartmentNumber)
+    );
+    const apartmentSnapshot = await getDocs(apartmentQuery);
+    if (apartmentSnapshot.empty) {
+      throw new Error(
+        "No matching apartment found for the given apartment ID."
+      );
+    }
+
+    const apartmentDoc = apartmentSnapshot.docs[0];
+    const apartmentUID = apartmentDoc.id;
+    const apartmentData = apartmentDoc.data() as Apartment;
+
+    if (!residenceData.apartments.includes(apartmentUID)) {
+      console.log(
+        `Apartment ID ${apartmentUID} is not associated with residence ID ${residenceUID}.`
+      );
+      throw new Error(
+        `Apartment ID ${apartmentNumber} is not associated with residence ID ${residenceNumber}.`
+      );
+    }
+
+    if (apartmentData.residenceId !== residenceUID) {
+      console.log(
+        `Apartment's residence ID ${apartmentData.residenceId} does not match the residence UID ${residenceUID}.`
+      );
+      throw new Error(
+        `The residence linked to the apartment ${apartmentNumber} is different.`
+      );
+    }
+
+    // Generate the new code
     try {
-      // Assuming generateCode is an asynchronous function that takes residenceId and apartmentId as parameters
+      // Assuming generateCode is an asynchronous function that takes residenceNumber and apartmentNumber as parameters
       const generatedCode = await generate_unique_code(
-        residenceId,
-        apartmentId
+        residenceUID,
+        apartmentUID
       );
       setCode(generatedCode); // Set the generated code
     } catch (error: any) {
@@ -81,8 +137,8 @@ export default function CodeCreationScreen() {
 
             <InputField
               testID="Residence ID"
-              value={residenceId}
-              setValue={setResidenceId}
+              value={residenceNumber}
+              setValue={setResidenceNumber}
               placeholder="Enter residence ID"
               height={40}
               style={{ flex: 0 }}
@@ -95,8 +151,8 @@ export default function CodeCreationScreen() {
 
             <InputField
               testID="Apartment ID"
-              value={apartmentId}
-              setValue={setApartmentId}
+              value={apartmentNumber}
+              setValue={setApartmentNumber}
               placeholder="Enter apartment ID"
               height={40}
               style={{ flex: 0 }}

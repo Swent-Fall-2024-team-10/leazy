@@ -3,14 +3,12 @@ import {
 } from "../firebase";
 import { 
     signInWithEmailAndPassword, 
-    GoogleAuthProvider, 
     User, 
     signOut, 
     deleteUser, 
     createUserWithEmailAndPassword,
     updateEmail,
     updatePassword,
-    connectAuthEmulator
 } from "firebase/auth";
 
 export enum UserType {

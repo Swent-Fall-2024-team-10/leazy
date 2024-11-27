@@ -62,20 +62,24 @@ import {
       });
   
       it('should return null on error', async () => {
+        const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {}); // Mock console.log
         (createUserWithEmailAndPassword as jest.Mock).mockRejectedValueOnce(
           new Error('Firebase error')
         );
-  
+      
         const result = await emailAndPasswordSignIn('test@example.com', 'password123');
-        
+      
         expect(result).toBeNull();
         expect(createUserWithEmailAndPassword).toHaveBeenCalledWith(
           auth,
           'test@example.com',
           'password123'
         );
+      
+        mockConsoleLog.mockRestore(); // Restore the original console.log
       });
-    });
+    });      
+      
   
     describe('emailAndPasswordLogIn', () => {
       it('should successfully log in user', async () => {

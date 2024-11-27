@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 import CameraStack from '../Navigators/cameraStack';
 
 declare global {
@@ -42,4 +42,10 @@ describe('CameraStack', () => {
     expect(toJSON()).toBeTruthy();
   });
 
+  it('checks root navigation container exists', () => {
+    const tree = render(<CameraStack />).toJSON();
+    if (!tree) throw new Error('Tree is null');
+    if (Array.isArray(tree)) throw new Error('Tree is an array');
+    expect(tree.type).toBe('mock-nav-container');
+   });
 });

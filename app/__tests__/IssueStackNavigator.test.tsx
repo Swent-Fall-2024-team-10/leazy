@@ -34,49 +34,45 @@ jest.mock('../screens/issues_tenant/ReportScreen', () => 'MockReportScreen');
 jest.mock('../screens/camera/CameraScreen', () => 'MockCameraScreen');
 jest.mock('../screens/camera/CapturedMediaScreen', () => 'MockCapturedMediaScreen');
 
-describe('IssueStackNavigator', () => {
+describe('IssueStack Tests', () => {
   it('renders without crashing', () => {
     const { toJSON } = render(<IssueStackNavigator />);
     expect(toJSON()).toBeTruthy();
   });
 
-  describe('Navigation options', () => {
-    it('has correct headerShown options for all screens', () => {
-      const { queryAllByTestId } = render(<IssueStackNavigator />);
-      const screens = queryAllByTestId(/^screen-/);
-      
-      const headerShownMap = {
-        Issues: false,
-        IssueDetails: false,
-        Report: false,
-        CameraScreen: false,
-        CapturedMedia: true,
-      };
+  it('has correct headerShown options for all screens', () => {
+    const { queryAllByTestId } = render(<IssueStackNavigator />);
+    const screens = queryAllByTestId(/^screen-/);
+    
+    const headerShownMap = {
+      Issues: false,
+      IssueDetails: false,
+      Report: false,
+      CameraScreen: false,
+      CapturedMedia: true,
+    };
 
-      screens.forEach(screen => {
-        const screenName = screen.props.name;
-        expect(screen.props.options.headerShown).toBe(headerShownMap[screenName as keyof typeof headerShownMap]);
-      });
+    screens.forEach(screen => {
+      const screenName = screen.props.name;
+      expect(screen.props.options.headerShown).toBe(headerShownMap[screenName as keyof typeof headerShownMap]);
     });
   });
 
-  describe('Component references', () => {
-    it('uses correct component references', () => {
-      const { queryAllByTestId } = render(<IssueStackNavigator />);
-      const screens = queryAllByTestId(/^screen-/);
-      
-      const componentMap = {
-        Issues: 'MockListIssueScreen',
-        IssueDetails: 'MockIssueDetailsScreen',
-        Report: 'MockReportScreen',
-        CameraScreen: 'MockCameraScreen',
-        CapturedMedia: 'MockCapturedMediaScreen'
-      };
+  it('uses correct component references', () => {
+    const { queryAllByTestId } = render(<IssueStackNavigator />);
+    const screens = queryAllByTestId(/^screen-/);
+    
+    const componentMap = {
+      Issues: 'MockListIssueScreen',
+      IssueDetails: 'MockIssueDetailsScreen',
+      Report: 'MockReportScreen',
+      CameraScreen: 'MockCameraScreen',
+      CapturedMedia: 'MockCapturedMediaScreen'
+    };
 
-      screens.forEach(screen => {
-        const expectedComponent = componentMap[screen.props.name as keyof typeof componentMap];
-        expect(screen.props.component).toBe(expectedComponent);
-      });
+    screens.forEach(screen => {
+      const expectedComponent = componentMap[screen.props.name as keyof typeof componentMap];
+      expect(screen.props.component).toBe(expectedComponent);
     });
   });
 });

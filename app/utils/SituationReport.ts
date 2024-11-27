@@ -1,4 +1,18 @@
-// Convert backend format to front-end format
+enum SituationReportStatus {
+    OC = 1,
+    NW = 2,
+    AW = 3,
+    NONE = 0,
+}
+
+/**
+ * Convert a situation report from the backend format to the frontend format 
+ * converting from JSON to a tuple containing in a tuple : 1 ) the name of the report
+ * 2) a list of groups representing the layout of the report
+ *  
+ * @param backendJsonString the situation report in JSON format (backend format)
+ * @returns A tuple containing the name of the report and the layout of the report
+ */
 export function toFrontendFormat(backendJsonString: string): [string, [string, [string, number][]][]] {
     const backendData = JSON.parse(backendJsonString);
     const name = backendData.name;
@@ -13,7 +27,13 @@ export function toFrontendFormat(backendJsonString: string): [string, [string, [
 }
 
 
-// Convert front-end format to backend format
+/**
+ * Convert a situation report from the frontend format to a JSON string (backend format)
+ * 
+ * @param frontendFormat list of groups representing the layout of the report (frontend format)
+ * @param reportName name of the report (because there might be multiple layouts)
+ * @returns a JSON string representing the situation report to be stored in the database
+ */
 export function toDatabaseFormat(frontendFormat: [string, [string, number][]][], reportName: string): string {
     const groups = frontendFormat.map(([groupName, items]) => {
         const itemsString = items.map(([item, status]) => `Item:${item},Status:${status}`).join(',');
@@ -57,23 +77,23 @@ export function removeGroupFromLayout(
  * @returns The layout with the new status of the item
  */
 export function changeStatus(layout: [string, [string, number][]][], groupIndex: number, itemIndex: number, newStatus: string){
-    let nextStatus = 0;
+    let nextStatus = SituationReportStatus.NONE;
     let nextLayout = layout;
 
     switch(newStatus){
         case "OC": 
-            nextStatus = 1;
+            nextStatus = SituationReportStatus.OC;
             break;
         case "NW": 
-            nextStatus = 2;
+            nextStatus = SituationReportStatus.NW;
             break;
         case "AW":
-            nextStatus = 3;
+            nextStatus = SituationReportStatus.AW;
             break;
     }
     
-    if (layout.length <= groupIndex || layout[groupIndex][1].length <= itemIndex || nextStatus === 0){
-        return layout;
+    if (layout.length <= groupIndex || layout[groupIndex][1].length <= itemIndex || nextStatus === SituationReportStatus.NONE){
+        throw new Error("Invalid groupIndex, itemIndex or newStatus");
     }
     nextLayout[groupIndex][1][itemIndex][1] = nextStatus;
 

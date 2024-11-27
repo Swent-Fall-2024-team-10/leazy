@@ -280,8 +280,9 @@ describe('changing the status of an item', () => {
 
         const newStatus = "INVALID";
 
-        const newLayout = SituationReport.changeStatus(layout, groupIndex, itemIndex, newStatus);
-        expect(newLayout).toEqual(expected);
+        expect(() => {
+            SituationReport.changeStatus(layout, groupIndex, itemIndex, newStatus);
+        }).toThrow("Invalid groupIndex, itemIndex or newStatus");
     });
 
     it('Try to change the status of an item at an invalid group index should result in the same layout', () => {
@@ -300,8 +301,8 @@ describe('changing the status of an item', () => {
 
         const newStatus = "OC";
 
-
-        const newLayout = SituationReport.changeStatus(layout, groupIndex, itemIndex, newStatus);
-        expect(newLayout).toEqual(expected);
+        expect(() => {
+            SituationReport.changeStatus(layout, groupIndex, itemIndex, newStatus);
+        }).toThrow("Invalid groupIndex, itemIndex or newStatus");
     });
 });

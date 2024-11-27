@@ -4,6 +4,7 @@ import { addGroupToLayout } from '../utils/SituationReport';
 describe('converting backend format to front-end format', () => {
     it('Converting to front-end format should return correct structure for multiple groups', () => {
         const backendJsonString = JSON.stringify({
+            name: "report1",
             groups: [
                 { groupName: "group1", items: ["group11", 0, "group12", 0] },
                 { groupName: "group2", items: ["group21", 0, "group22", 0] }
@@ -30,13 +31,14 @@ describe('converting front-end format to backend format', () => {
         ];
 
         const expected = JSON.stringify({
+            name: "report1",
             groups: [
                 { groupName: "group1", items: "Item:group11,Status:0,Item:group12,Status:0" },
                 { groupName: "group2", items: "Item:group21,Status:0,Item:group22,Status:0" }
             ]
         });
 
-        const converted = SituationReport.toDatabaseFormat(toConvert);
+        const converted = SituationReport.toDatabaseFormat(toConvert, "report1");
 
         expect(converted).toEqual(expected);
     });

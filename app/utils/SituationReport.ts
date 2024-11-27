@@ -1,5 +1,6 @@
 // Convert backend format to front-end format
 export function toFrontendFormat(backendJsonString: string): [string, [string, number][]][] {
+    console.log(backendJsonString);
     const backendData = JSON.parse(backendJsonString);
     return backendData.groups.map((group: { groupName: string; items: (string | number)[] }) => {
         const formattedItems: [string, number][] = [];
@@ -11,12 +12,12 @@ export function toFrontendFormat(backendJsonString: string): [string, [string, n
 }
 
 // Convert front-end format to backend format
-export function toDatabaseFormat(frontendFormat: [string, [string, number][]][]): string {
+export function toDatabaseFormat(frontendFormat: [string, [string, number][]][], reportName: string): string {
     const groups = frontendFormat.map(([groupName, items]) => {
         const itemsString = items.map(([item, status]) => `Item:${item},Status:${status}`).join(',');
         return { groupName, items: itemsString };
     });
-    return JSON.stringify({ groups });
+    return JSON.stringify({ name : reportName,  groups });
 }
 
 export function addGroupToLayout(

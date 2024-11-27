@@ -6,7 +6,7 @@ import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PictureProvider } from "./context/PictureContext";
 import { AuthProvider } from "./Navigators/AuthContext";
-import { getUser, getTenant, getLandlord } from "@/firebase/firestore/firestore";
+import { getUser, getTenant, getLandlord } from "../firebase/firestore/firestore";
 import { User } from "firebase/auth";
 import  RootNavigator from "./Navigators/RootNavigator";
 

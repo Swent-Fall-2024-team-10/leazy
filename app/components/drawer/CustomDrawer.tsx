@@ -2,17 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons'; // Ensure you have this library installed
-import { appStyles } from '@/styles/styles';
+import { appStyles } from '../../../styles/styles';
 
 // Part of this code was generated with chatGPT as an AI assistant
 
 export default function CustomDrawerContent(props: any){
   return (
     <DrawerContentScrollView {...props}>
-      <View style={styles.headerContainer}>
+      <View style={styles.headerContainer} testID='header-container'>
 
         <TouchableOpacity style={styles.settingsIcon} 
-        onPress={() => props.navigation.navigate('Settings')}>
+        onPress={() => props.navigation.navigate('Settings')}
+        testID='settings-button'>
           <Ionicons name="settings-outline" size={24} color="#000" />
         </TouchableOpacity>
 

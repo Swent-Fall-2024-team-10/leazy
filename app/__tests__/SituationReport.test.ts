@@ -18,7 +18,11 @@ describe('converting backend format to front-end format', () => {
 
         const converted = SituationReport.toFrontendFormat(backendJsonString);
 
-        expect(converted).toEqual(expected);
+        const frontendFormat = converted[1]
+        const situationReportName = converted[0]
+
+        expect(frontendFormat).toEqual(expected);
+        expect(situationReportName).toEqual("report1");
     });
 });
 

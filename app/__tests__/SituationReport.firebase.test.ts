@@ -56,7 +56,7 @@ describe("Firestore functions", () => {
     arrivingTenant: "tenant123",
     leavingTenant: "tenant456",
     apartmentId: "apt123",
-    reportForm: ["field1", "field2"],
+    reportForm: ["field1"],
     remarks: "Test remarks",
   };
 

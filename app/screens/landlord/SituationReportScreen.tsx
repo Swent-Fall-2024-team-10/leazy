@@ -16,8 +16,6 @@ type PickerItem = {
 
 
 // ============== Temporary constant to be able to display and test the screen without the backend being completed ================
-const SituationReportLayout = [1, "floor", 0, 1, "wall", 0, 1, "ceiling", 0, 1, "window", 0, 3, "Bed", "Faces", 0, "Materas", 0, "Strucutre", 0];
-
 const SituationReportItemsWithoutGroups = [["floor", 0], ["wall", 0], ["ceiling", 0], ["window", 0]];
 
 const residences = [

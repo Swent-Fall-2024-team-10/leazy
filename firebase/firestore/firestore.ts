@@ -24,6 +24,7 @@ import {
   LaundryMachine,
   MaintenanceRequest,
   TenantCode,
+  SituationReport,
 } from "../../types/types";
 
 // Set the log level to 'silent' to disable logging
@@ -567,4 +568,61 @@ export async function createMachineNotification(userId: string) {
     userId: userId,
     scheduledTime: Timestamp.now(), // The scheduled notification time
   });
+}
+
+
+export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
+  const collectionRef = collection(db, "situationReports");
+  
+  const docRef = await addDoc(collectionRef, situationReport);
+  updateApartment(apartmentId, { situationReportId: docRef.id });
+}
+
+export async function deleteSituationReport(situationReportId: string) {
+  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportSnap = await getDoc(situationReportRef);
+
+  //this should never happen
+  if (!situationReportSnap.exists()) {
+    throw new Error("Situation report not found.");
+  }
+  const apartmentId = situationReportSnap.data().apartmentId;
+
+  await deleteDoc(doc(db, "situationReports", situationReportId));
+  await updateApartment(apartmentId, { situationReportId: "" });
+}
+
+/**
+ * Add the situation report layout to a residence
+ * 
+ * @param situationReportLayout 
+ * @param residenceId 
+ */
+export async function addSituationReportLayout(situationReportLayout: string[], residenceId: string) {
+  updateResidence(residenceId, { situationReportLayout: situationReportLayout});
+}
+
+export async function getSituationReport(apartmentId: string) {
+  const apartment = await getApartment(apartmentId);
+  const situationReportId = apartment?.situationReportId;
+
+  if (!situationReportId) {
+    return null;
+  }
+  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportSnap = await getDoc(situationReportRef);
+
+  return situationReportSnap.data() as SituationReport;
+}
+
+/**
+ * Get the situation report layout of a residence or an empty array if it doesn't exist
+ * 
+ * @param residenceId 
+ * @returns 
+ */
+export async function getSituationReportLayout(residenceId: string) {
+  const residence = await getResidence(residenceId);
+  const situationReportLayout = residence?.situationReportLayout;
+  return situationReportLayout ? situationReportLayout : [];
 }

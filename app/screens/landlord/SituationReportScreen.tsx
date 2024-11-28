@@ -280,12 +280,23 @@ export default function SituationReportScreen() {
         setResetState((prev) => !prev);
     }
 
+    const scrollViewRef = useRef<ScrollView>(null);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+      }
+    }, [])
+  );
+
 
   return (
     <Header>
       <ScrollView style={[appStyles.screenContainer]} 
       automaticallyAdjustKeyboardInsets={true}
       removeClippedSubviews={true}
+      ref={scrollViewRef}
       >
         <View style={{ marginBottom: "90%", paddingBottom: "30%" }}>
           <Text style={appStyles.screenHeader}>Situation Report Form</Text>

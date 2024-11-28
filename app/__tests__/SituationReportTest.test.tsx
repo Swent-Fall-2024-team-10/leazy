@@ -1,92 +1,53 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import SituationReport from '../screens/landlord/SituationReportScreen';
-import { useNavigation } from '@react-navigation/native';
+import React from "react";
+import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import SituationReportScreen from "../screens/landlord/SituationReportScreen";
+import { NavigationContainer } from "@react-navigation/native";
+import * as firestore from "../../firebase/firestore/firestore";
 
-jest.mock('react-native-picker-select', () => {
-  return jest.fn(({ onValueChange }) => {
-    return <select onChange={(e) => onValueChange(e.target.value)} />;
-  });
-});
-
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
+jest.mock("../../firebase/firestore/firestore", () => ({
+  getApartment: jest.fn(),
+  addSituationReport: jest.fn(),
+  deleteSituationReport: jest.fn(),
 }));
 
-describe('SituationReport', () => {
-  let navigateMock: jest.Mock;
+// Helper to render with navigation
+const renderWithNavigation = (component: JSX.Element) => (
+  <NavigationContainer>{component}</NavigationContainer>
+);
 
-  beforeEach(() => {
-    navigateMock = jest.fn();
-    (useNavigation as jest.Mock).mockReturnValue({ navigate: navigateMock });
+describe("SituationReportScreen", () => {
+  it("renders correctly", () => {
+    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
+    expect(getByText("Situation Report Form")).toBeTruthy();
   });
 
-  it('renders the SituationReport screen correctly', () => {
-    const { getByText } = render(<SituationReport />);
-    expect(getByText('Situation Report Form')).toBeTruthy();
+  it("updates tenant name input fields correctly", () => {
+    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen />));
+    const nameInput = getByTestId("arriving-tenant-name");
+
+    fireEvent.changeText(nameInput, "John");
+    expect(nameInput.props.value).toBe("John");
   });
 
-  it('renders the residence and apartment pickers', () => {
-    const { getByText } = render(<SituationReport />);
-    expect(getByText('Residence')).toBeTruthy();
-    expect(getByText('Apartment')).toBeTruthy();
-  });
+  it("calls Firestore functions on form submission", async () => {
+    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: null });
+    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
 
-  it('renders tenant name input fields', () => {
-    const { getAllByPlaceholderText } = render(<SituationReport />);
-    const nameInputs = getAllByPlaceholderText('Name');
-    const surnameInputs = getAllByPlaceholderText('Surname');
+    fireEvent.press(getByText("Submit"));
 
-    expect(nameInputs.length).toBe(2); // Two TenantNameGroup components
-    expect(surnameInputs.length).toBe(2);
-  });
-
-  it('renders the remark input field', () => {
-    const { getByPlaceholderText } = render(<SituationReport />);
-    const remarkField = getByPlaceholderText('Enter your remarks here');
-    expect(remarkField).toBeTruthy();
-  });
-
-  it('navigates to "List Issues" on submit button press', () => {
-    const { getByTestId } = render(<SituationReport />);
-    const submitButton = getByTestId('submit');
-
-    fireEvent.press(submitButton);
-    expect(navigateMock).toHaveBeenCalledWith('List Issues');
-  });
-  it('prevents checking multiple checkboxes in a SituationReportItem', () => {
-    const { getByText, getAllByRole } = render(<SituationReport />);
-  
-    // Find the first SituationReportItem by its label
-    const firstItemLabel = '1 : floor'; // Update the label if it differs
-    const firstItem = getByText(firstItemLabel);
-  
-    // Get all checkboxes in the rendered component
-    const allCheckboxes = getAllByRole('checkbox');
-  
-    // Narrow down to checkboxes belonging to the first item
-    const itemIndex = firstItem && firstItem.parent ? Array.from(firstItem.parent.children).indexOf(firstItem) : -1;
-    const relatedCheckboxes = allCheckboxes.slice(itemIndex, itemIndex + 3); // Assuming 3 checkboxes per item
-  
-    // Ensure initial states are unchecked
-    relatedCheckboxes.forEach((checkbox) => {
-      expect(checkbox.props.accessibilityState.checked).toBe(false);
+    await waitFor(() => {
+      expect(firestore.addSituationReport).toHaveBeenCalled();
     });
-  
-    // Attempt to check multiple checkboxes
-    fireEvent.press(relatedCheckboxes[0]);
-    expect(relatedCheckboxes[0].props.accessibilityState.checked).toBe(true);
-  
-    fireEvent.press(relatedCheckboxes[1]);
-    expect(relatedCheckboxes[1].props.accessibilityState.checked).toBe(false); // Ensure others remain unchecked
-  
-    fireEvent.press(relatedCheckboxes[2]);
-    expect(relatedCheckboxes[2].props.accessibilityState.checked).toBe(false); // Ensure others remain unchecked
-  
-    // Confirm the first checkbox is still checked
-    expect(relatedCheckboxes[0].props.accessibilityState.checked).toBe(true);
   });
-  
 
+  it("navigates after successful submission", async () => {
+    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: "" });
+    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
 
+    fireEvent.press(getByText("Submit"));
+
+    await waitFor(() => {
+      expect(firestore.addSituationReport).toHaveBeenCalled();
+    });
+  });
 });

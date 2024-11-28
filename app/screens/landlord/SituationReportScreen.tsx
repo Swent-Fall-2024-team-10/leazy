@@ -208,11 +208,13 @@ function SituationReportItem({
 }
 
   function TenantNameGroup(
-    { label, testID, name, surname, onNameChange, onSurnameChange }:
+    { label, testID, name, surname, onNameChange, onSurnameChange, testIDName, testIDSurname }:
      {  name: string, 
         surname: string,
         label: string,
         testID: string, 
+        testIDName: string,
+        testIDSurname: string,
         onSurnameChange: (value: string) => void,
         onNameChange: (value: string) => void }) {
     const width = 140;
@@ -232,7 +234,7 @@ function SituationReportItem({
                         width={width}
                         backgroundColor={Color.TextInputBackground}
                         radius={20}
-                        testID="testNameField"
+                        testID={testIDName}
                         style={{ marginBottom: "5%" }}
                     />
 
@@ -244,7 +246,7 @@ function SituationReportItem({
                         width={width}
                         backgroundColor={Color.TextInputBackground}
                         radius={20}
-                        testID="testSurnameField"
+                        testID={testIDSurname}
                         style={{ justifyContent: "flex-end" }}
                         />
                 </View>
@@ -311,6 +313,8 @@ export default function SituationReportScreen() {
             onSurnameChange={setArrivingTenantSurname}
             testID={"arriving-tenant-label"} 
             label={"Arriving Tenant"} 
+            testIDName="arriving-tenant-name"
+            testIDSurname="arriving-tenant-surname"
             />
 
           <TenantNameGroup
@@ -320,6 +324,8 @@ export default function SituationReportScreen() {
             onSurnameChange={(value) => {setLeavingTenantSurname(value)}}
             testID={"leavning-tenant-label"} 
             label={"Leaving Tenant"}
+            testIDName="leaving-tenant-name"
+            testIDSurname="leaving-tenant-surname"
             />
 
           <View style={styles.lineContainer}>

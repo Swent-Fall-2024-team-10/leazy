@@ -8,7 +8,7 @@ import { onSnapshot } from 'firebase/firestore';
 
 // Mock expo-linear-gradient
 jest.mock('expo-linear-gradient', () => ({
-  LinearGradient: ({ children }) => children,
+  LinearGradient: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 jest.mock('../../firebase/firestore/firestore', () => ({
@@ -91,7 +91,7 @@ describe('WashingMachineScreen', () => {
     };
     
     const mockQuerySnapshot = {
-      forEach: (callback) => callback(mockDoc),
+      forEach: (callback: (arg0: { id: string; data: () => { laundryMachineId: string; isAvailable: boolean; isFunctional: boolean; occupiedBy: string; }; }) => any) => callback(mockDoc),
       docs: [mockDoc],
       empty: false,
       size: 1
@@ -120,7 +120,7 @@ describe('WashingMachineScreen', () => {
     };
     
     const mockQuerySnapshot = {
-      forEach: (callback) => callback({
+      forEach: (callback: (arg0: { data: () => { laundryMachineId: string; isAvailable: boolean; isFunctional: boolean; occupiedBy: string; }; }) => any) => callback({
         data: () => mockMachine
       })
     };
@@ -154,7 +154,7 @@ describe('WashingMachineScreen', () => {
     };
     
     const mockQuerySnapshot = {
-      forEach: (callback) => callback(mockDoc),
+      forEach: (callback: (arg0: { id: string; data: () => { laundryMachineId: string; isAvailable: boolean; isFunctional: boolean; occupiedBy: string; estimatedFinishTime: { toMillis: () => number; }; }; }) => any) => callback(mockDoc),
       docs: [mockDoc],
       empty: false,
       size: 1
@@ -234,11 +234,10 @@ describe('WashingMachineScreen', () => {
   
     (getLaundryMachinesQuery as jest.Mock).mockReturnValue({});
   
-    onSnapshot.mockImplementation((query, callback) => {
+    (onSnapshot as jest.Mock).mockImplementation((query: any, callback: (arg0: { forEach: jest.Mock<void, [callback: any], any>; empty: boolean; size: number; }) => void) => {
       callback(mockQuerySnapshot);
       return () => {};
     });
-  
     const { getByText } = render(
       <NavigationContainer>
         <WashingMachineScreen />
@@ -285,7 +284,13 @@ describe('WashingMachineScreen', () => {
     };
     
     const mockQuerySnapshot = {
-      forEach: (callback) => callback(mockDoc),
+      forEach: (callback: (arg0: {
+              id: string; data: () => {
+                  laundryMachineId: string; isAvailable: boolean; isFunctional: boolean; occupiedBy: string; estimatedFinishTime: {
+                      toMillis: () => number; // Some time in the future
+                  };
+              };
+          }) => any) => callback(mockDoc),
       docs: [mockDoc],
       empty: false,
       size: 1
@@ -327,7 +332,7 @@ describe('WashingMachineScreen', () => {
     };
     
     const mockQuerySnapshot = {
-      forEach: (callback) => callback(mockDoc),
+      forEach: (callback: (arg0: { id: string; data: () => { laundryMachineId: string; isAvailable: boolean; isFunctional: boolean; occupiedBy: string; }; }) => any) => callback(mockDoc),
       docs: [mockDoc],
       empty: false,
       size: 1
@@ -376,7 +381,7 @@ describe('WashingMachineScreen', () => {
     };
     
     const mockQuerySnapshot = {
-      forEach: (callback) => callback(mockDoc),
+      forEach: (callback: (arg0: { id: string; data: () => { laundryMachineId: string; isAvailable: boolean; isFunctional: boolean; occupiedBy: string; estimatedFinishTime: { toMillis: () => number; }; startTime: { toMillis: () => number; }; notificationScheduled: boolean; }; }) => any) => callback(mockDoc),
       docs: [mockDoc],
       empty: false,
       size: 1

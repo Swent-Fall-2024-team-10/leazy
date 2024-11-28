@@ -33,7 +33,7 @@ const originalLayout : [string, [string, number][]][] = [
   ["Ceiling", [["ceiling", 0]]],
   ["Window", [["window", 0]]],
   ["Bed", [["Bedframe", 0], ["Mattress", 0], ["Pillow", 0], ["Bedding", 0]]],
-  ["Kictchen", [["Fridge", 0], ["Stove", 0], ["Microwave", 0], ["Sink", 0], ["Countertop", 0]]],
+  ["Kitchen", [["Fridge", 0], ["Stove", 0], ["Microwave", 0], ["Sink", 0], ["Countertop", 0]]],
 ];
 
 

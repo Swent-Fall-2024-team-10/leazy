@@ -3,7 +3,7 @@ import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation
 import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
 import TickingBox from "../../components/forms/TickingBox";
 import Header from "../../components/Header";
-import { appStyles, ButtonDimensions, Color, FontSizes, FontWeight } from "../../../styles/styles";
+import { appStyles, borderWidth, ButtonDimensions, Color, FontSizes, FontWeight } from "../../../styles/styles";
 import InputField from "../../components/forms/text_input";
 import StraightLine from "../../components/SeparationLine";
 import SubmitButton from "../../components/buttons/SubmitButton";
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
 
   item: {
     backgroundColor: Color.GrayGroupBackground, /* Light gray background */
-    borderWidth: 0.5,
+    borderWidth: borderWidth.thin,
     borderColor: Color.GrayGroupMargin, /* Purple border */
     borderRadius: 15, /* Rounded corners */
     height: 80,
@@ -504,19 +504,18 @@ const styles = StyleSheet.create({
 
   pickerWrapper: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderRadius: 25,
     backgroundColor: Color.TextInputBackground,
     borderColor: Color.TextInputBorder,
   },
 
   label: {
-    fontSize: 16,
+    fontSize: FontSizes.TextInputLabel,
     fontWeight: "bold",
-    marginBottom: 5,
     marginLeft: '2%',
     marginRight: '10%',
-    color: Color.ButtonBackground,
+    color: Color.TextInputLabel,
   },
 
   groupContainer: {
@@ -524,23 +523,22 @@ const styles = StyleSheet.create({
     padding : "4%",
     paddingRight: "1%",
     borderRadius: 15,
-    marginBottom: 8,
+    marginBottom: '2%',
   },
   groupLabel: {
     fontSize: FontSizes.TextInputText,
     color: Color.TextInputLabel,
     fontWeight: FontWeight.TextInputLabel,
-    marginBottom: 8,
+    marginBottom: '2%',
 
   },
   groupItemContainer: {
     borderColor: 'transparent',
-    borderWidth: 0,
   },
+
   singleItemContainer: {
     borderColor: 'transparent',
-    borderWidth: 0,
-    paddingLeft: 8,
+    paddingLeft: "2%",
   },
 });
 

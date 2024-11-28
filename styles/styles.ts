@@ -9,6 +9,13 @@ export type RootStackParamList = {
 
 export const defaultButtonRadius = 100;
 export const textInputHeight = 40;
+
+
+export const borderWidth = {
+  thin: 0.5,
+  thick: 1,
+};
+
 export const ButtonDimensions = {
 
   fullWidthButtonWidth : Dimensions.get('window').width * 0.85,

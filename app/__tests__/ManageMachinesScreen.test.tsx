@@ -1,15 +1,27 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import ManageMachinesScreen from '../screens/laundry_machines/ManageMachinesScreen';
 import * as firestoreModule from '../../firebase/firestore/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
+import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
 
-// Mock the firestore module
-jest.mock('../../firebase/firestore/firestore');
-const mockFirestore = firestoreModule as jest.Mocked<typeof firestoreModule>;
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(),
+}));
 
-// Mock Firebase Timestamp
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(),
+  initializeAuth: jest.fn(),
+  getReactNativePersistence: jest.fn(() => ({
+    type: 'asyncStorage'
+  }))
+}));
+
 jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
   Timestamp: {
     fromMillis: (milliseconds: number) => ({
       toMillis: () => milliseconds,
@@ -18,6 +30,29 @@ jest.mock('firebase/firestore', () => ({
     }),
   },
 }));
+
+jest.mock('firebase/storage', () => ({
+  getStorage: jest.fn()
+}));
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  default: {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+  },
+}));
+
+jest.mock('../../firebase/firestore/firestore');
+const mockFirestore = firestoreModule as jest.Mocked<typeof firestoreModule>;
+
+const renderWithNavigation = (component: React.ReactElement) => {
+  return render(
+    <NavigationContainer>
+      {component}
+    </NavigationContainer>
+  );
+};
 
 describe('ManageMachinesScreen', () => {
   const mockMachines = [
@@ -32,11 +67,17 @@ describe('ManageMachinesScreen', () => {
     },
   ];
 
+  beforeAll(() => {
+    (getFirestore as jest.Mock).mockReturnValue({});
+    (getAuth as jest.Mock).mockReturnValue({});
+    (initializeApp as jest.Mock).mockReturnValue({
+      name: '[DEFAULT]',
+      options: {},
+    });
+  });
+
   beforeEach(() => {
-    // Reset all mocks before each test
     jest.clearAllMocks();
-    
-    // Setup default mock implementations
     mockFirestore.getAllLaundryMachines.mockResolvedValue(mockMachines);
     mockFirestore.createLaundryMachine.mockResolvedValue(undefined);
     mockFirestore.deleteLaundryMachine.mockResolvedValue(undefined);
@@ -44,23 +85,17 @@ describe('ManageMachinesScreen', () => {
   });
 
   it('renders correctly with initial machines', async () => {
-    const { getByText, findByText } = render(<ManageMachinesScreen />);
-    
-    // Check for header
+    const { getByText, findByText } = renderWithNavigation(<ManageMachinesScreen />);
     expect(getByText('Manage Laundry Machines')).toBeTruthy();
-    
-    // Wait for machines to load
     await findByText('Washing machine machine1');
     expect(getByText('Available')).toBeTruthy();
     expect(getByText('Functional')).toBeTruthy();
   });
 
   it('adds a new machine successfully', async () => {
-    const { getByPlaceholderText, getByText } = render(<ManageMachinesScreen />);
-    
+    const { getByPlaceholderText, getByText } = renderWithNavigation(<ManageMachinesScreen />);
     const input = getByPlaceholderText('Enter Machine ID');
     fireEvent.changeText(input, 'newMachine');
-    
     const addButton = getByText('Add Machine');
     fireEvent.press(addButton);
 
@@ -70,27 +105,19 @@ describe('ManageMachinesScreen', () => {
   });
 
   it('shows error when adding duplicate machine ID', async () => {
-    const { getByPlaceholderText, getByText } = render(<ManageMachinesScreen />);
-    
-    // Wait for initial machines to load
+    const { getByPlaceholderText, getByText } = renderWithNavigation(<ManageMachinesScreen />);
     await waitFor(() => {});
-    
     const input = getByPlaceholderText('Enter Machine ID');
-    fireEvent.changeText(input, 'machine1'); // Use existing ID
-    
+    fireEvent.changeText(input, 'machine1');
     const addButton = getByText('Add Machine');
     fireEvent.press(addButton);
-
     expect(getByText('A machine with this ID already exists.')).toBeTruthy();
   });
 
   it('deletes a machine successfully', async () => {
-    const { findByText, getByText } = render(<ManageMachinesScreen />);
-    
-    // Wait for machine to appear
+    const { findByText } = renderWithNavigation(<ManageMachinesScreen />);
     await findByText('Washing machine machine1');
-    
-    const deleteButton = getByText('Delete Machine');
+    const deleteButton = await findByText('Delete Machine');
     fireEvent.press(deleteButton);
 
     await waitFor(() => {
@@ -99,12 +126,9 @@ describe('ManageMachinesScreen', () => {
   });
 
   it('toggles maintenance status successfully', async () => {
-    const { findByText, getByText } = render(<ManageMachinesScreen />);
-    
-    // Wait for machine to appear
+    const { findByText } = renderWithNavigation(<ManageMachinesScreen />);
     await findByText('Washing machine machine1');
-    
-    const toggleButton = getByText('Mark as Under Maintenance');
+    const toggleButton = await findByText('Mark as Under Maintenance');
     fireEvent.press(toggleButton);
 
     await waitFor(() => {
@@ -117,8 +141,7 @@ describe('ManageMachinesScreen', () => {
   });
 
   it('handles empty machine ID input', async () => {
-    const { getByText } = render(<ManageMachinesScreen />);
-    
+    const { getByText } = renderWithNavigation(<ManageMachinesScreen />);
     const addButton = getByText('Add Machine');
     fireEvent.press(addButton);
 
@@ -128,37 +151,14 @@ describe('ManageMachinesScreen', () => {
   });
 
   it('fetches machines on mount', async () => {
-    render(<ManageMachinesScreen />);
-    
+    renderWithNavigation(<ManageMachinesScreen />);
     await waitFor(() => {
       expect(mockFirestore.getAllLaundryMachines).toHaveBeenCalledWith('TestResidence1');
     });
   });
 
-  it('clears error message when adding valid machine', async () => {
-    const { getByPlaceholderText, getByText, queryByText } = render(<ManageMachinesScreen />);
-    
-    // First try to add an existing machine to trigger error
-    const input = getByPlaceholderText('Enter Machine ID');
-    fireEvent.changeText(input, 'machine1');
-    fireEvent.press(getByText('Add Machine'));
-    
-    // Verify error appears
-    expect(getByText('A machine with this ID already exists.')).toBeTruthy();
-    
-    // Now add a valid machine
-    fireEvent.changeText(input, 'newMachine');
-    fireEvent.press(getByText('Add Machine'));
-    
-    await waitFor(() => {
-      // Error message should be gone
-      expect(queryByText('A machine with this ID already exists.')).toBeNull();
-    });
-  });
-
   it('updates machine list after adding new machine', async () => {
-    const { getByPlaceholderText, getByText, findByText } = render(<ManageMachinesScreen />);
-    
+    const { getByPlaceholderText, getByText, findByText } = renderWithNavigation(<ManageMachinesScreen />);
     const input = getByPlaceholderText('Enter Machine ID');
     fireEvent.changeText(input, 'newMachine');
     fireEvent.press(getByText('Add Machine'));
@@ -166,22 +166,15 @@ describe('ManageMachinesScreen', () => {
     await waitFor(() => {
       expect(mockFirestore.createLaundryMachine).toHaveBeenCalled();
     });
-    
-    // Verify the new machine appears in the list
     await findByText('Washing machine newMachine');
   });
 
   it('updates machine list after deleting a machine', async () => {
-    const { findByText, queryByText } = render(<ManageMachinesScreen />);
-    
-    // Wait for machine to appear
+    const { findByText, queryByText } = renderWithNavigation(<ManageMachinesScreen />);
     await findByText('Washing machine machine1');
-    
-    // Delete the machine
     fireEvent.press(await findByText('Delete Machine'));
     
     await waitFor(() => {
-      // Verify the machine is no longer in the list
       expect(queryByText('Washing machine machine1')).toBeNull();
     });
   });

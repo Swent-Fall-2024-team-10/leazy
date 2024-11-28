@@ -50,4 +50,6 @@ describe("SituationReportScreen", () => {
       expect(firestore.addSituationReport).toHaveBeenCalled();
     });
   });
+
+  
 });

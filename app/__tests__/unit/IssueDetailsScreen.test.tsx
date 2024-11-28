@@ -89,7 +89,7 @@ describe("IssueDetailsScreen", () => {
       }
     );
   });
-  
+
 
   afterAll(() => {
     jest.restoreAllMocks();

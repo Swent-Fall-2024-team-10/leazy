@@ -7,20 +7,20 @@ import {
   RefreshControl,
   Image,
 } from "react-native";
-import Header from "@/app/components/Header";
-import { LaundryMachine } from "@/types/types";
+import Header from "../../../app/components/Header";
+import { LaundryMachine } from "../../../types/types";
 import {
   createMachineNotification,
   getLaundryMachine,
   getLaundryMachinesQuery,
   updateLaundryMachine,
-} from "@/firebase/firestore/firestore";
+} from "../../../firebase/firestore/firestore";
 import { getAuth } from "firebase/auth";
 import { onSnapshot, Timestamp } from "firebase/firestore";
 import { TimerPickerModal } from "react-native-timer-picker";
 import { LinearGradient } from "expo-linear-gradient";
-import SubmitButton from "@/app/components/buttons/SubmitButton";
-import { appStyles } from "@/styles/styles";
+import SubmitButton from "../../../app/components/buttons/SubmitButton";
+import { appStyles } from "../../../styles/styles";
 
 const WashingMachineScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -65,29 +65,54 @@ const WashingMachineScreen = () => {
       if (timerIntervals[laundryMachineId]) {
         return;
       }
-      // Clean up existing timer if any
-      cleanupTimer(laundryMachineId);
+      
+      const now = Date.now();
+      const remainingTimeMs = estimatedFinishTime.toMillis() - now;
+
+      // If already completed, set the status immediately
+      if (remainingTimeMs <= 0) {
+        setRemainingTimes((prev) => ({
+          ...prev,
+          [laundryMachineId]: "Cycle completed",
+        }));
+        return;
+      }
+
+      // Calculate and set initial time immediately
+      const hours = Math.floor((remainingTimeMs / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((remainingTimeMs / (1000 * 60)) % 60);
+      const seconds = Math.floor((remainingTimeMs / 1000) % 60);
+      const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
+      
+      setRemainingTimes((prev) => ({
+        ...prev,
+        [laundryMachineId]: formattedTime,
+      }));
 
       // Set up the interval to update the remaining time
       const intervalId = setInterval(async () => {
-        const now = Date.now();
-        const remainingTimeMs = estimatedFinishTime.toMillis() - now;
+        const currentTime = Date.now();
+        const currentRemainingTimeMs = estimatedFinishTime.toMillis() - currentTime;
 
-        if (remainingTimeMs <= 0) {
+        if (currentRemainingTimeMs <= 0) {
           clearInterval(intervalId);
           setRemainingTimes((prev) => ({
             ...prev,
             [laundryMachineId]: "Cycle completed",
           }));
-          delete timerIntervals[laundryMachineId];
+          setTimerIntervals((prev) => {
+            const updated = { ...prev };
+            delete updated[laundryMachineId];
+            return updated;
+          });
           return;
         }
 
         // Check if remaining time is under 3 minutes and notification hasn't been sent
         //no entry for a specific machine in notificationStatus acts as a false
         if (
-          remainingTimeMs <= 3 * 60 * 1000 &&
-          remainingTimeMs >= 2 * 60 * 1000 + 59 * 1000 &&
+          currentRemainingTimeMs <= 3 * 60 * 1000 &&
+          currentRemainingTimeMs >= 2 * 60 * 1000 + 59 * 1000 &&
           userId
         ) {
           const initialData = await getLaundryMachine(
@@ -103,9 +128,9 @@ const WashingMachineScreen = () => {
         }
 
         // Calculate hours, minutes, and seconds
-        const hours = Math.floor((remainingTimeMs / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((remainingTimeMs / (1000 * 60)) % 60);
-        const seconds = Math.floor((remainingTimeMs / 1000) % 60);
+        const hours = Math.floor((currentRemainingTimeMs / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((currentRemainingTimeMs / (1000 * 60)) % 60);
+        const seconds = Math.floor((currentRemainingTimeMs / 1000) % 60);
 
         // Format the remaining time
         const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
@@ -122,78 +147,55 @@ const WashingMachineScreen = () => {
         [laundryMachineId]: intervalId,
       }));
     },
-    [cleanupTimer]
+    [cleanupTimer, timerIntervals]
   );
 
   const fetchMachines = useCallback(async () => {
     setRefreshing(true);
     try {
-      // Get the Firestore query from the ViewModel
       const query = getLaundryMachinesQuery(residenceId);
-
-      //runs every time the query changes
-      //no need to call every time fetchWashingMachines
-      // Set up the Firestore real-time listener using the query from the ViewModel
-      const unsubscribe = onSnapshot(query, (querySnapshot) => {
+      
+      return onSnapshot(query, (querySnapshot) => {
         const updatedMachines: LaundryMachine[] = [];
+        
         querySnapshot.forEach((doc) => {
           const machineData = doc.data() as LaundryMachine;
-          updatedMachines.push(machineData);
-          // Start or update timer for machines in use
-          if (machineData.estimatedFinishTime && !machineData.isAvailable) {
-            calculateTimer(
-              machineData.laundryMachineId,
-              machineData.estimatedFinishTime
-            );
-          } else if (machineData.isAvailable) {
-            // Clear timer for available machines
-            cleanupTimer(machineData.laundryMachineId);
-
-            setRemainingTimes((prev) => {
-              const updated = { ...prev };
-              delete updated[machineData.laundryMachineId];
-              return updated;
-            });
+          updatedMachines.push({
+            ...machineData,
+            laundryMachineId: doc.id
+          });
+        });
+        
+        setMachines(updatedMachines);
+        
+        updatedMachines.forEach((machine) => {
+          if (machine.estimatedFinishTime && !machine.isAvailable) {
+            calculateTimer(machine.laundryMachineId, machine.estimatedFinishTime);
           }
         });
-        setMachines(updatedMachines); // Update state with real-time data
       });
-
-      // Cleanup on unmount
-      return () => {
-        unsubscribe();
-      };
     } catch (error) {
       console.error("Error fetching washing machines:", error);
+      return () => {};
     } finally {
       setRefreshing(false);
     }
-  }, [residenceId]);
+  }, [residenceId, calculateTimer]);
 
   useEffect(() => {
-    fetchMachines();
-    // Clean up intervals on component unmount
+    let unsubscribe: (() => void) | undefined;
+    
+    const setup = async () => {
+      unsubscribe = await fetchMachines();
+    };
+    
+    setup();
+
     return () => {
-      // Clear all intervals
+      unsubscribe?.();
       Object.keys(timerIntervals).forEach(cleanupTimer);
     };
-  }, [residenceId]);
-
-  // Separate effect for managing timers when machines change
-  useEffect(() => {
-    machines.forEach((machine) => {
-      if (machine.estimatedFinishTime && !machine.isAvailable) {
-        calculateTimer(machine.laundryMachineId, machine.estimatedFinishTime);
-      } else {
-        cleanupTimer(machine.laundryMachineId);
-        setRemainingTimes((prev) => {
-          const updated = { ...prev };
-          delete updated[machine.laundryMachineId];
-          return updated;
-        });
-      }
-    });
-  }, [machines]); // Only run when machines changes
+  }, [residenceId, fetchMachines, cleanupTimer]);
 
   // Function to reset the machine's status to "Available" in Firestore
   const handleResetMachine = async (laundryMachineId: string) => {
@@ -269,7 +271,7 @@ const WashingMachineScreen = () => {
           <View style={{ flexDirection: "row" }}>
             <Image
               // eslint-disable-next-line @typescript-eslint/no-require-imports
-              source={require("@/assets/images/washing_machine_icon_png.png")}
+              source={require("../../../assets/images/washing_machine_icon_png.png")}
               style={{ width: 120, height: 120, marginRight: 20 }}
             />
             <View
@@ -365,12 +367,11 @@ const WashingMachineScreen = () => {
   return (
     <>
       <Header>
-        <View style={styles.container}>
+        <View testID="washing-machine-screen" style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
           <ScrollView
-            contentContainerStyle={
-              machines.length === 0 && styles.centeredContent
-            }
+            testID="scroll-view"
+            contentContainerStyle={machines.length === 0 && styles.centeredContent}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -401,7 +402,7 @@ const WashingMachineScreen = () => {
               handleSetTimer(timestamp_duration);
               setIsTimerModalVisible(false);
             }}
-            modalTitle="Set Timer"
+            modalTitle="Choose Washing Duration"
             onCancel={() => setIsTimerModalVisible(false)}
             closeOnOverlayPress
             LinearGradient={LinearGradient}

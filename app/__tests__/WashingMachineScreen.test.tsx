@@ -267,4 +267,153 @@ describe('WashingMachineScreen', () => {
   
     jest.useRealTimers();
   });
+
+  it('handles timer cancellation', async () => {
+    const mockMachine = {
+      laundryMachineId: 'machine1',
+      isAvailable: false,
+      isFunctional: true,
+      occupiedBy: 'test-user-id',
+      estimatedFinishTime: {
+        toMillis: () => Date.now() + 1000000 // Some time in the future
+      }
+    };
+    
+    const mockDoc = {
+      id: 'machine1',
+      data: () => mockMachine
+    };
+    
+    const mockQuerySnapshot = {
+      forEach: (callback) => callback(mockDoc),
+      docs: [mockDoc],
+      empty: false,
+      size: 1
+    };
+    
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      setTimeout(() => callback(mockQuerySnapshot), 0);
+      return () => {};
+    });
+
+    const { getByTestId } = renderWithNavigation(<WashingMachineScreen />);
+    
+    await waitFor(() => {
+      const cancelButton = getByTestId('cancelTimerButton');
+      fireEvent.press(cancelButton);
+    });
+
+    expect(updateLaundryMachine).toHaveBeenCalledWith(
+      'TestResidence1',
+      'machine1',
+      expect.objectContaining({
+        isAvailable: true,
+        occupiedBy: 'none'
+      })
+    );
+  });
+
+  it('handles timer setting', async () => {
+    const mockMachine = {
+      laundryMachineId: 'machine1',
+      isAvailable: true,
+      isFunctional: true,
+      occupiedBy: 'none'
+    };
+    
+    const mockDoc = {
+      id: 'machine1',
+      data: () => mockMachine
+    };
+    
+    const mockQuerySnapshot = {
+      forEach: (callback) => callback(mockDoc),
+      docs: [mockDoc],
+      empty: false,
+      size: 1
+    };
+    
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      setTimeout(() => callback(mockQuerySnapshot), 0);
+      return () => {};
+    });
+
+    const { getByTestId } = renderWithNavigation(<WashingMachineScreen />);
+    
+    await waitFor(() => {
+      const setTimerButton = getByTestId('setTimerButton');
+      fireEvent.press(setTimerButton);
+    });
+
+    // Verify timer modal becomes visible
+    expect(screen.getByText('Choose Washing Duration')).toBeTruthy();
+  });
+
+  it('creates notification when time remaining is under 3 minutes', async () => {
+    jest.useFakeTimers();
+    const startTime = Date.now();
+    const duration = 180000; // 3 minutes
+    
+    const mockMachine = {
+      laundryMachineId: 'machine1',
+      isAvailable: false,
+      isFunctional: true,
+      occupiedBy: 'test-user-id',
+      estimatedFinishTime: {
+        toMillis: () => startTime + duration
+      },
+      startTime: {
+        toMillis: () => startTime
+      },
+      notificationScheduled: false
+    };
+    
+    (getLaundryMachine as jest.Mock).mockResolvedValue(mockMachine);
+    
+    const mockDoc = {
+      id: 'machine1',
+      data: () => mockMachine
+    };
+    
+    const mockQuerySnapshot = {
+      forEach: (callback) => callback(mockDoc),
+      docs: [mockDoc],
+      empty: false,
+      size: 1
+    };
+    
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      setTimeout(() => callback(mockQuerySnapshot), 0);
+      return () => {};
+    });
+
+    renderWithNavigation(<WashingMachineScreen />);
+    
+    // Advance time to just before notification threshold
+    act(() => {
+      jest.advanceTimersByTime(duration - 179000); // Should trigger notification
+    });
+
+    await waitFor(() => {
+      expect(createMachineNotification).toHaveBeenCalledWith('test-user-id');
+    });
+
+    jest.useRealTimers();
+  });
+
+  it('handles refresh control pull-to-refresh', async () => {
+    const { getByTestId } = renderWithNavigation(<WashingMachineScreen />);
+    const scrollView = getByTestId('scroll-view');
+    
+    fireEvent.scroll(scrollView, {
+      nativeEvent: {
+        contentOffset: { y: -100 }, // Pulling down
+        contentSize: { height: 600, width: 400 },
+        layoutMeasurement: { height: 400, width: 400 }
+      }
+    });
+
+    // Verify that fetchMachines was called
+    expect(getLaundryMachinesQuery).toHaveBeenCalledWith('TestResidence1');
+  });
 });

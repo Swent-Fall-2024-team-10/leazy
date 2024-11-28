@@ -367,7 +367,7 @@ const WashingMachineScreen = () => {
   return (
     <>
       <Header>
-        <View style={styles.container}>
+        <View testID="washing-machine-screen" style={styles.container}>
           <Text style={styles.title}>Laundry Machines</Text>
           <ScrollView
             testID="scroll-view"
@@ -402,7 +402,7 @@ const WashingMachineScreen = () => {
               handleSetTimer(timestamp_duration);
               setIsTimerModalVisible(false);
             }}
-            modalTitle="Set Timer"
+            modalTitle="Choose Washing Duration"
             onCancel={() => setIsTimerModalVisible(false)}
             closeOnOverlayPress
             LinearGradient={LinearGradient}

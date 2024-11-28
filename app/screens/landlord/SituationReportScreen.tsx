@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
 import TickingBox from "../../components/forms/TickingBox";
 import Header from "../../components/Header";
@@ -8,6 +8,16 @@ import InputField from "../../components/forms/text_input";
 import StraightLine from "../../components/SeparationLine";
 import SubmitButton from "../../components/buttons/SubmitButton";
 import RNPickerSelect from 'react-native-picker-select';
+import { changeStatus, toDatabaseFormat} from "../../utils/SituationReport";
+import { addSituationReport, getApartment, deleteSituationReport } from "../../../firebase/firestore/firestore";
+import { SituationReport } from "../../../types/types";
+
+enum enumStatus {
+    OC = 1,
+    NW = 2,
+    AW = 3,
+    NONE = 0,
+}
 
 type PickerItem = {
     label: string;
@@ -16,7 +26,19 @@ type PickerItem = {
 
 
 // ============== Temporary constant to be able to display and test the screen without the backend being completed ================
-const SituationReportItemsWithoutGroups = [["floor", 0], ["wall", 0], ["ceiling", 0], ["window", 0]];
+
+const originalLayout : [string, [string, number][]][] = [
+  ["Floor", [["floor", 0]]],
+  ["Wall", [["wall", 0]]],
+  ["Ceiling", [["ceiling", 0]]],
+  ["Window", [["window", 0]]],
+  ["Bed", [["Bedframe", 0], ["Mattress", 0], ["Pillow", 0], ["Bedding", 0]]],
+  ["Kictchen", [["Fridge", 0], ["Stove", 0], ["Microwave", 0], ["Sink", 0], ["Countertop", 0]]],
+];
+
+
+let newLayout = originalLayout;
+
 
 const residences = [
   { label: "Vortex", value: "Vortex" },
@@ -27,6 +49,82 @@ const residences = [
 const apartments = Array.from({ length: 10 }, (_, i) => ({ label: `${i + 1}`, value: `${i + 1}` }));
 
 // ============================================ END OF TEMPORARY TEST CONSTANTS ================================================
+
+type GroupedSituationReportProps = {
+  layout: [string, [string, number][]][]; // Layout containing groups and items
+  changeStatus: (
+    layout: [string, [string, number][]][],
+    groupIndex: number,
+    itemIndex: number,
+    newStatus: string,
+  ) => void;
+  resetState: boolean;
+  setReset: (value: boolean) => void;
+};
+
+export function GroupedSituationReport({
+  layout,
+  changeStatus,
+  resetState,
+  setReset,
+}: GroupedSituationReportProps) {
+  // Flatten the layout to calculate the total number of items
+  const totalItems = layout.reduce((sum, group) => sum + group[1].length, 0);
+
+  // Counter for numbering items across the layout
+  let itemCounter = 1;
+
+  return (
+    <View>
+      {layout.map((group, groupIndex) => {
+        const groupName = group[0];
+        const items = group[1];
+
+        if (items.length > 1) {
+          // Render group with more than one item inside a purple container
+          return (
+            <View key={groupIndex} style={styles.groupContainer}>
+              <Text style={styles.groupLabel}>{groupName} :</Text>
+              {items.map((item, itemIndex) => {
+                const itemNumber = itemCounter++;
+                return (
+                  <View key={itemIndex} style={styles.groupItemContainer}>
+                    <SituationReportItem
+                      label={`${itemNumber}: ${item[0]}`} // Label with item number
+                      groupIndex={groupIndex}
+                      itemIndex={itemIndex}
+                      currentStatus={item[1]} // Current status value
+                      changeStatus={changeStatus}
+                      resetState={resetState}
+                      setReset={setReset}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          );
+        } else {
+          // Render single item outside of any group
+          const itemNumber = itemCounter++;
+          return (
+            <View key={groupIndex} style={styles.singleItemContainer}>
+              <SituationReportItem
+                label={`${itemNumber}: ${items[0][0]}`} // Label with item number
+                groupIndex={groupIndex}
+                itemIndex={0}
+                currentStatus={items[0][1]} // Current status value
+                changeStatus={changeStatus}
+                resetState={resetState}
+                setReset={setReset}
+              />
+            </View>
+          );
+        }
+      })}
+    </View>
+  );
+}
+
 
   // Picker group to select residence and apartment
 function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
@@ -47,43 +145,68 @@ function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, 
     );
   };
 
-function SituationReportItem({ label, n }: { label: string; n: number }) {
-    const [checked1, setChecked1] = useState(false);
-    const [checked2, setChecked2] = useState(false);
-    const [checked3, setChecked3] = useState(false);
+type SituationReportItemProps = {
+  label: string;
+  groupIndex: number;  // Index of the group in the layout
+  itemIndex: number;   // Index of the item within the group
+  currentStatus: number; // Current status (0 = OC, 1 = NW, 2 = AW)
+  resetState: boolean;
+  setReset: (value: boolean) => void;
+  changeStatus: (layout: [string, [string, number][]][], groupIndex: number, itemIndex: number, newStatus: string) => void;
+};
 
-    function canBeChecked({checked1, checked2, checked3} : {checked1: boolean, checked2: boolean, checked3: boolean}) {
-      if (checked1 || checked2 || checked3) {
-        return false;
-      }
-      return true;
+const STATUS_MAPPING = ["NONE","OC", "NW", "AW"];
+
+function SituationReportItem({
+  label,
+  groupIndex,
+  itemIndex,
+  currentStatus,
+  changeStatus,
+  resetState,
+  setReset,
+}: SituationReportItemProps) {
+  const [checked, setChecked] = useState<number>(currentStatus);
+
+  useEffect(() => {
+    if (resetState) {
+      setChecked(0);
+      setReset(false);
     }
+  }, [resetState]);
+  
 
-    function handleCheck(setCheck : (value: boolean) => void) {
-      if (canBeChecked({checked1, checked2, checked3})) {
-        setCheck(true);
-      } else {
-        setCheck(false);
-      }
+  function handleCheck(newStatus: number) {
+    if (checked === newStatus) {
+      setChecked(0);
+      changeStatus(newLayout, groupIndex, itemIndex, STATUS_MAPPING[enumStatus.NONE]);
+    } else {
+      setChecked(newStatus);
+      changeStatus(newLayout, groupIndex, itemIndex, STATUS_MAPPING[newStatus]);
     }
+  }
 
-
-return (
+  return (
     <View style={styles.item}>
-        <View style={styles.itemRow}>
-        <Text style={[styles.text, styles.label]}>
-            {n} : {label}
-        </Text>
-            <TickingBox checked={checked1} onChange={(value) => handleCheck(setChecked1)} />
-            <TickingBox checked={checked2} onChange={(value) => handleCheck(setChecked2)} />
-            <TickingBox checked={checked3} onChange={(value) => handleCheck(setChecked3)} />
-        </View>
+      <View style={styles.itemRow}>
+        <Text style={[styles.text, styles.label]}>{label}</Text>
+        <TickingBox
+          checked={checked === enumStatus.OC}
+          onChange={() => handleCheck(enumStatus.OC)}
+        />
+        <TickingBox
+          checked={checked === enumStatus.NW}
+          onChange={() => handleCheck(enumStatus.NW)}
+        />
+        <TickingBox
+          checked={checked === enumStatus.AW}
+          onChange={() => handleCheck(enumStatus.AW)}
+        />
+      </View>
     </View>
-    );
+  );
 }
 
-
-  // Component representing a group of input fields for the tenant's name (either arriving or leaving)
   function TenantNameGroup(
     { label, testID, name, surname, onNameChange, onSurnameChange }:
      {  name: string, 
@@ -131,8 +254,9 @@ return (
   }
 
 
-export default function SituationReport() {
+export default function SituationReportScreen() {
     const navigation = useNavigation<NavigationProp<any>>();
+
     const [selectedApartment, setSelectedApartment] = useState("");
     const [selectedResidence, setSelectedResidence] = useState("");
     const [remark, setRemark] = useState("");
@@ -142,6 +266,19 @@ export default function SituationReport() {
 
     const [leavingTenantName, setLeavingTenantName] = useState("");
     const [leavingTenantSurname, setLeavingTenantSurname] = useState("");
+
+    const [resetState, setResetState] = useState(false);
+
+    function reset() {
+        setSelectedApartment("");
+        setSelectedResidence("");
+        setRemark("");
+        setArrivingTenantName("");
+        setArrivingTenantSurname("");
+        setLeavingTenantName("");
+        setLeavingTenantSurname("");
+        setResetState((prev) => !prev);
+    }
 
 
   return (
@@ -193,9 +330,8 @@ export default function SituationReport() {
             <StraightLine />
           </View>
 
-            {SituationReportItemsWithoutGroups.map((item, index) =>(
-                <SituationReportItem key={index} label={String(item[0])} n={index + 1}/>
-            ))}
+          <GroupedSituationReport layout={newLayout} changeStatus={changeStatus} resetState={resetState} setReset={() => setResetState(false)}/>
+
 
           <View style={styles.lineContainer}>
             <Text style={styles.remark}> Remark :</Text>
@@ -220,7 +356,41 @@ export default function SituationReport() {
             width={ButtonDimensions.smallButtonWidth}
             height={ButtonDimensions.smallButtonHeight}
             disabled={false}
-            onPress={() => {navigation.navigate("List Issues" as never)}}
+            onPress={async () => {
+
+              // Hardcoded value for the apartmentId since residence and apartment
+              const report : SituationReport = {
+                reportDate: new Date().toISOString(),
+                residenceId: selectedResidence,
+                apartmentId: "damH2jH7NRxIVZa0cZgL",
+                arrivingTenant: JSON.stringify({
+                  name: arrivingTenantName,
+                  surname: arrivingTenantSurname,
+                }),
+                leavingTenant: JSON.stringify({
+                  name: leavingTenantName,
+                  surname: leavingTenantSurname,
+                }),
+                remarks: remark,
+                reportForm: toDatabaseFormat(newLayout, arrivingTenantName + " Situation Report"),
+              }
+
+              console.log(report);
+              reset();
+
+
+              const apartment = await getApartment("damH2jH7NRxIVZa0cZgL");
+              if (!apartment) {
+                console.log("Apartment not found");
+              }
+              
+              if (apartment?.situationReportId) {
+                await deleteSituationReport(apartment.situationReportId);
+              }
+
+              addSituationReport(report,"damH2jH7NRxIVZa0cZgL");
+              navigation.navigate("List Issues" as never)
+            }}
             style={appStyles.submitButton}
           />
         </View>
@@ -279,16 +449,17 @@ const styles = StyleSheet.create({
   },
   
   itemRow: {
-    flexDirection: "row", /* Align items horizontally */
-    alignItems: "flex-start", /* Align items to the start */
-    flexWrap: "wrap", /* Allow text to wrap to the next line */
+    flexDirection: "row", 
+    alignItems: "center",
+    flexWrap: "wrap", 
+    verticalAlign: "middle",
   },
 
   text: {
     fontSize: FontSizes.TextInputLabel,
     color: Color.ButtonBackground,
     fontWeight: FontWeight.TextInputLabel, 
-    marginRight: '2%', 
+    marginRight: '2%',
     flex: 1,
   },
 
@@ -330,6 +501,30 @@ const styles = StyleSheet.create({
     marginRight: '10%',
     color: Color.ButtonBackground,
   },
+
+  groupContainer: {
+    backgroundColor: Color.TextInputBackground, // Light purple background
+    padding : "4%",
+    paddingRight: "1%",
+    borderRadius: 15,
+    marginBottom: 8,
+  },
+  groupLabel: {
+    fontSize: FontSizes.TextInputText,
+    color: Color.TextInputLabel,
+    fontWeight: FontWeight.TextInputLabel,
+    marginBottom: 8,
+
+  },
+  groupItemContainer: {
+    borderColor: 'transparent',
+    borderWidth: 0,
+  },
+  singleItemContainer: {
+    borderColor: 'transparent',
+    borderWidth: 0,
+    paddingLeft: 8,
+  },
 });
 
 const pickerSelectStyles = {
@@ -341,3 +536,4 @@ const pickerSelectStyles = {
     },
   };
   
+

@@ -5,7 +5,7 @@ import Header from '../../components/Header';
 import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
 import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '../../../types/types';
 import { getAuth } from 'firebase/auth';
-import { useAuth } from '../../Navigators/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 

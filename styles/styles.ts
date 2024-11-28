@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Dimensions } from "react-native";
+import { Platform } from "react-native";
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -178,17 +179,6 @@ export const appStyles = StyleSheet.create({
     padding: "2%",
     marginBottom: "3%",
   },
-
-  grayGroupBackground: {
-    backgroundColor: Color.GrayGroupBackground,
-    borderWidth: 0.5,
-    borderColor: Color.GrayGroupMargin, /* Purple border */
-    borderRadius: 15, /* Rounded corners */
-    justifyContent: "center",
-    padding: "2%",
-    marginBottom: "3%",
-  },
-
   tickingBox : {
     borderRadius: 5,
   },

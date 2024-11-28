@@ -20,7 +20,7 @@ type PropertyProviderProps = {
 };
 
 export function LandlordProvider({ children }: PropertyProviderProps) {
-  const { landlordData, isLoading: isAuthLoading } = useAuth();
+  const { landlord, isLoading: isAuthLoading } = useAuth();
   const [residences, setResidences] = useState<Residence[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [residenceMap, setResidenceMap] = useState<Map<Residence, Apartment[]>>(new Map());
@@ -38,7 +38,7 @@ export function LandlordProvider({ children }: PropertyProviderProps) {
     const setupListeners = async () => {
       cleanup();
       
-      if (!landlordData || isAuthLoading) {
+      if (!landlord || isAuthLoading) {
         setResidences([]);
         setApartments([]);
         setResidenceMap(new Map());
@@ -53,7 +53,7 @@ export function LandlordProvider({ children }: PropertyProviderProps) {
         const residenceUnsubscribe = onSnapshot(
           query(
             collection(db, 'residences'),
-            where('landlordId', '==', landlordData.userId)
+            where('landlordId', '==', landlord.userId)
           ),
           async (residenceSnapshot) => {
             const residencesData: Residence[] = [];
@@ -107,7 +107,7 @@ export function LandlordProvider({ children }: PropertyProviderProps) {
     setupListeners();
 
     return cleanup;
-  }, [landlordData, isAuthLoading]);
+  }, [landlord, isAuthLoading]);
 
   const value = {
     residences,

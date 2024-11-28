@@ -5,14 +5,10 @@ import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PictureProvider } from "./context/PictureContext";
-import { AuthProvider } from "./Navigators/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { getUser, getTenant, getLandlord } from "../firebase/firestore/firestore";
 import { User } from "firebase/auth";
 import  RootNavigator from "./Navigators/RootNavigator";
-import ResidencesList from "./screens/landlord/ResidenceListScreen";
-import ResidenceStack from "./Navigators/ResidenceStack";
-import SignUpScreen from "./screens/auth/SignUpScreen";
-import SignInScreen from "./screens/auth/SignInScreen";
 
 // portions of this code were generated with chatGPT as an AI assistant
 

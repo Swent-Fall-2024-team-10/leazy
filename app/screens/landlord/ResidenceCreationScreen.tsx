@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Text } from 'react-native';
-import CustomTextField from '../../components/CustomTextField';
-import CustomButton from '../../components/CustomButton';
+import { View, ScrollView, TouchableOpacity, Text, Alert } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
+import * as XLSX from 'xlsx';
+import { Buffer } from 'buffer';
 import { appStyles, ButtonDimensions } from '@/styles/styles';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ResidenceStackParamList } from '@/types/types';
+import CustomTextField from '../../components/CustomTextField';
+import CustomButton from '../../components/CustomButton';
 import Header from '@/app/components/Header';
 
 interface ResidenceFormData {
@@ -15,10 +19,12 @@ interface ResidenceFormData {
   city: string;
   provinceState: string;
   country: string;
-  numberOfApartments: string;
   description: string;
   website: string;
   email: string;
+  tenantsFile?: string;
+  ownershipProof?: string;
+  pictures: string[];
 }
 
 interface FormErrors {
@@ -26,9 +32,14 @@ interface FormErrors {
   email?: string;
 }
 
+const ALLOWED_EXTENSIONS = {
+  excel: ['.xlsx', '.xls'],
+  pdf: ['.pdf'],
+  images: ['.jpg', '.jpeg', '.png']
+};
+
 function CreateResidenceForm() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
-
   const [formData, setFormData] = useState<ResidenceFormData>({
     name: '',
     address: '',
@@ -36,13 +47,88 @@ function CreateResidenceForm() {
     city: '',
     provinceState: '',
     country: '',
-    numberOfApartments: '',
     description: '',
     website: '',
     email: '',
+    pictures: []
   });
-
+  const [apartments, setApartments] = useState<string[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const parseExcelFile = async (fileUri: string) => {
+    try {
+      const fileContent = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64
+      });
+
+      const buffer = Buffer.from(fileContent, 'base64');
+      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<any[]>(firstSheet, { header: 1 });
+      
+      const apartmentNames = rows.slice(1).map(row => row[0]).filter(Boolean);
+      setApartments(apartmentNames);
+      console.log('Parsed apartments:', apartmentNames);
+      Alert.alert('Success', `Parsed ${apartmentNames.length} apartments`);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to parse Excel file');
+      console.error(error);
+    }
+  };
+
+  const handleFilePicker = async (fileType: 'excel' | 'pdf' | 'images', field: keyof ResidenceFormData) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: fileType === 'images' ? 'image/*' : 
+              fileType === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
+              'application/pdf'
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+      const extension = file.name.toLowerCase().split('.').pop();
+      const allowedExts = ALLOWED_EXTENSIONS[fileType];
+
+      if (!allowedExts.includes(`.${extension}`)) {
+        Alert.alert('Invalid file type', `Please select a ${allowedExts.join(' or ')} file`);
+        return;
+      }
+
+      if (!formData.name) {
+        Alert.alert('Error', 'Please enter a residence name first');
+        return;
+      }
+
+      const directory = FileSystem.cacheDirectory + `residence/${formData.name}/`;
+      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+
+      const newPath = directory + file.name;
+      await FileSystem.copyAsync({
+        from: file.uri,
+        to: newPath
+      });
+
+      if (field === 'tenantsFile') {
+        await parseExcelFile(newPath);
+      }
+
+      if (field === 'pictures') {
+        setFormData(prev => ({
+          ...prev,
+          pictures: [...prev.pictures, newPath]
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [field]: newPath
+        }));
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to upload file');
+      console.error(error);
+    }
+  };
 
   const validateWebsite = (url: string): boolean => {
     try {
@@ -64,7 +150,6 @@ function CreateResidenceForm() {
       [field]: text
     }));
 
-    // Clear error when user starts typing
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
@@ -77,7 +162,7 @@ function CreateResidenceForm() {
     const newErrors: FormErrors = {};
 
     if (formData.website && !validateWebsite(formData.website)) {
-      newErrors.website = 'Please enter a valid website URL (e.g., https://example.com)';
+      newErrors.website = 'Please enter a valid website URL';
     }
 
     if (formData.email && !validateEmail(formData.email)) {
@@ -88,7 +173,7 @@ function CreateResidenceForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
       navigation.navigate("ResidenceList");
     }
@@ -165,15 +250,6 @@ function CreateResidenceForm() {
           />
 
           <CustomTextField
-            testID="number-of-apartments"
-            value={formData.numberOfApartments}
-            onChangeText={handleChange('numberOfApartments')}
-            placeholder="Number of apartments"
-            style={appStyles.formFullWidth}
-            keyboardType="numeric"
-          />
-
-          <CustomTextField
             testID="description"
             value={formData.description}
             onChangeText={handleChange('description')}
@@ -190,17 +266,39 @@ function CreateResidenceForm() {
             autoCapitalize="none"
           />
           <ErrorText error={errors.website} />
-          <TouchableOpacity style={appStyles.uploadButton}>
+
+          <TouchableOpacity 
+            style={appStyles.uploadButton}
+            onPress={() => handleFilePicker('excel', 'tenantsFile')}
+          >
             <Ionicons name="cloud-upload-outline" size={24} color="#666" />
-            <Text style={appStyles.uploadText}>List of Apartments and Tenants (.xlsx)</Text>
+            <Text style={appStyles.uploadText}>
+              {apartments.length > 0 
+                ? `${apartments.length} apartments loaded` 
+                : 'List of Apartments (.xlsx)'}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={appStyles.uploadButton}>
+
+          <TouchableOpacity 
+            style={appStyles.uploadButton}
+            onPress={() => handleFilePicker('pdf', 'ownershipProof')}
+          >
             <Ionicons name="cloud-upload-outline" size={24} color="#666" />
-            <Text style={appStyles.uploadText}>Proof of Ownership</Text>
+            <Text style={appStyles.uploadText}>
+              {formData.ownershipProof ? 'Proof uploaded' : 'Proof of Ownership'}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={appStyles.uploadButton}>
+
+          <TouchableOpacity 
+            style={appStyles.uploadButton}
+            onPress={() => handleFilePicker('images', 'pictures')}
+          >
             <Ionicons name="cloud-upload-outline" size={24} color="#666" />
-            <Text style={appStyles.uploadText}>Pictures of residence</Text>
+            <Text style={appStyles.uploadText}>
+              {formData.pictures.length > 0 
+                ? `${formData.pictures.length} pictures uploaded` 
+                : 'Pictures of residence'}
+            </Text>
           </TouchableOpacity>
 
           <CustomButton

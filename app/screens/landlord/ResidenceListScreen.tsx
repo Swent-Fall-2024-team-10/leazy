@@ -22,7 +22,8 @@ const mockResidences: Residence[] = [
     tenantIds: ['T1', 'T2', 'T3', 'T4', 'T5'],
     laundryMachineIds: ['LM1', 'LM2'],
     apartments: ['A1', 'A2', 'A3'],
-    tenantCodesID: ['TC1', 'TC2', 'TC3']
+    tenantCodesID: ['TC1', 'TC2', 'TC3'],
+    situationReportLayout: []
   },
   {
     residenceId: 'R2',
@@ -36,7 +37,8 @@ const mockResidences: Residence[] = [
     tenantIds: ['T6', 'T7', 'T8', 'T9'],
     laundryMachineIds: ['LM3', 'LM4'],
     apartments: ['A4', 'A5'],
-    tenantCodesID: ['TC4', 'TC5']
+    tenantCodesID: ['TC4', 'TC5'],
+    situationReportLayout: []
   },
   {
     residenceId: 'R3',
@@ -50,7 +52,8 @@ const mockResidences: Residence[] = [
     tenantIds: ['T10', 'T11', 'T12'],
     laundryMachineIds: ['LM5'],
     apartments: ['A6', 'A7', 'A8'],
-    tenantCodesID: ['TC6', 'TC7', 'TC8']
+    tenantCodesID: ['TC6', 'TC7', 'TC8'],
+    situationReportLayout: []
   }
 ];
 
@@ -59,49 +62,57 @@ const mockApartments: Apartment[] = [
     apartmentId: 'A1',
     residenceId: 'R1',
     tenants: ['T1', 'T2'],
-    maintenanceRequests: ['MR1', 'MR2']
+    maintenanceRequests: ['MR1', 'MR2'],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A2',
     residenceId: 'R1',
     tenants: ['T3'],
-    maintenanceRequests: []
+    maintenanceRequests: [],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A3',
     residenceId: 'R1',
     tenants: ['T4', 'T5'],
-    maintenanceRequests: ['MR3']
+    maintenanceRequests: ['MR3'],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A4',
     residenceId: 'R2',
     tenants: ['T6', 'T7'],
-    maintenanceRequests: ['MR4', 'MR5', 'MR6']
+    maintenanceRequests: ['MR4', 'MR5', 'MR6'],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A5',
     residenceId: 'R2',
     tenants: ['T8', 'T9'],
-    maintenanceRequests: []
+    maintenanceRequests: [],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A6',
     residenceId: 'R3',
     tenants: ['T10'],
-    maintenanceRequests: []
+    maintenanceRequests: [],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A7',
     residenceId: 'R3',
     tenants: ['T11'],
-    maintenanceRequests: ['MR7']
+    maintenanceRequests: ['MR7'],
+    situationReportId: 'none'
   },
   {
     apartmentId: 'A8',
     residenceId: 'R3',
     tenants: ['T12'],
-    maintenanceRequests: []
+    maintenanceRequests: [],
+    situationReportId: 'none'
   }
 ];
 

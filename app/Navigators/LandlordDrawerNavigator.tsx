@@ -6,7 +6,8 @@ import SettingsScreen from '../screens/tenant/SettingsScreen';
 import React from 'react';
 import CustomDrawerContent from '../components/drawer/CustomDrawer';
 import { Color, appStyles } from '../../styles/styles';
-import SituationReport from '../screens/landlord/SituationReportScreen';
+import ResidenceStack from './ResidenceStack';
+import { LandlordProvider } from '../context/LandlordContext';
 
 
 const Drawer = createDrawerNavigator();
@@ -14,8 +15,7 @@ const Drawer = createDrawerNavigator();
 const LandlordDrawerNavigator = () => {
   return (
     
-    <LandlordProvider 
-    >
+    <LandlordProvider>
       <Drawer.Navigator 
       screenOptions={{
           headerShown: false, // This hides the default header
@@ -27,12 +27,15 @@ const LandlordDrawerNavigator = () => {
       }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
 
-      <Drawer.Screen name="List Issues" component={LandlordListIssuesScreen} />
-      <Drawer.Screen name="Manage Machines" component={ManageMachinesScreen} />
-      <Drawer.Screen name="Washing Machine" component={WashingMachineScreen} />
-      <Drawer.Screen name="Manage Tenants" component={SettingsScreen} />
-      <Drawer.Screen name="Situation Report" component={SituationReport} />
-    </Drawer.Navigator>
+      >
+
+        <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
+        <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
+        <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
+        <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
+        <Drawer.Screen name="Settings" component={SettingsScreen} />
+      </Drawer.Navigator>
+    </LandlordProvider>
   );
 };
 

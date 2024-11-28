@@ -42,11 +42,10 @@
       "!**/node_modules/**",
       "!**/babel.config.js",
       "!**/expo-env.d.ts",
-      "!**/.expo/**", 
-      "!**/hooks/**", 
+      "!**/.expo/**",
+      "!**/hooks/**",
       "!**/constants/**"
     ],
-
     "coveragePathIgnorePatterns": [
       "/jest/"
     ]
@@ -57,13 +56,13 @@
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-clipboard/clipboard": "^1.15.0",
     "@react-native-community/masked-view": "^0.1.11",
-
     "@react-native-firebase/auth": "^21.0.0",
     "@react-native-picker/picker": "^2.8.1",
     "@react-navigation/drawer": "^6.7.2",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "@react-navigation/stack": "^6.4.1",
+    "buffer": "^6.0.3",
     "enzyme-matchers": "^7.1.2",
     "expo": "~51.0.28",
     "expo-auth-session": "~5.5.2",
@@ -72,6 +71,7 @@
     "expo-constants": "~16.0.2",
     "expo-crypto": "~13.0.2",
     "expo-dev-client": "~4.0.28",
+    "expo-document-picker": "~12.0.2",
     "expo-file-system": "~17.0.1",
     "expo-font": "~12.0.9",
     "expo-image-manipulator": "~12.0.5",
@@ -103,7 +103,8 @@
     "react-native-svg": "^15.7.1",
     "react-native-timer-picker": "^1.0.0",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-web": "~0.19.10"
+    "react-native-web": "~0.19.10",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.8",

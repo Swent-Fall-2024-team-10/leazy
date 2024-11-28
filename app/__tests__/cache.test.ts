@@ -114,7 +114,6 @@ describe("File System Functions", () => {
       (global as any).FileReader = class {
         public onload: () => void = () => {};
         public result: string | null = null;
-
         readAsDataURL() {
           this.onload();
         }
@@ -131,7 +130,6 @@ describe("File System Functions", () => {
       (global as any).FileReader = class {
         public onload: () => void = () => {};
         public result: any = 12345; // Non-string result
-
         readAsDataURL() {
           this.onload();
         }

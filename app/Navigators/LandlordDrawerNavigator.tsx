@@ -13,18 +13,19 @@ const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {
   return (
-    <Drawer.Navigator 
-    screenOptions={{
-        headerShown: false, // This hides the default header
-        drawerStyle: {
-            backgroundColor: Color.HeaderBackground,
-        },
-        drawerActiveTintColor: Color.HeaderText,
-        drawerLabelStyle: appStyles.drawerLabel,
-    }}
-    drawerContent={(props) => <CustomDrawerContent {...props} />}
-
+    
+    <LandlordProvider 
     >
+      <Drawer.Navigator 
+      screenOptions={{
+          headerShown: false, // This hides the default header
+          drawerStyle: {
+              backgroundColor: Color.HeaderBackground,
+          },
+          drawerActiveTintColor: Color.HeaderText,
+          drawerLabelStyle: appStyles.drawerLabel,
+      }}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
 
       <Drawer.Screen name="List Issues" component={LandlordListIssuesScreen} />
       <Drawer.Screen name="Manage Machines" component={ManageMachinesScreen} />

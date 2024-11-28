@@ -7,8 +7,73 @@ export type RootStackParamList = {
   Settings: undefined; // No parameters for Settings screen
 };
 
+// Constants
 export const defaultButtonRadius = 100;
 export const textInputHeight = 40;
+
+export const residenceManagementListStyles = StyleSheet.create({
+  addApartmentButton: {
+    height: 36,
+    backgroundColor: 'white', 
+    borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginTop:2,
+    width: '80%',
+    alignSelf: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  addApartmentText: {
+    color: '#333333',
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  searchContainer: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    margin: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    color: '#333333',
+  },
+  searchClearButton: {
+    padding: 4,
+  },
+  flatItem: {
+    width: '90%',
+    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginVertical: 4,
+  },
+  noResultsText: {
+    textAlign: 'center',
+    marginTop: 12,
+    color: '#666666',
+    fontSize: 14,
+  },
+});
+
 export const ButtonDimensions = {
 
   fullWidthButtonWidth : Dimensions.get('window').width * 0.85,
@@ -27,35 +92,28 @@ export const ButtonDimensions = {
 }
 
 export const IconDimension = {
-  smallIcon : 24,
-  mediumIcon : 34,
-  largeIcon : 44,
-}
+  smallIcon: 24,
+  mediumIcon: 34,
+  largeIcon: 44,
+};
 
 export const LayoutPadding = {
-  Header : '8%',
-  LabelTop : '5%',
-  LabelBottom : '5%',
-
-  InputField : '1.25%',
+  Header: '8%',
+  LabelTop: '5%',
+  LabelBottom: '5%',
+  InputField: '1.25%',
 } as const;
 
 export const FontSizes = {
-  ScreenHeader : 24,
-  
-  legend : 10,
-  DateText : 14,
-  
-  ButtonText : 15,
-  
-  confirmText : 16,
-
-  TextInputText : 16,
-  TextInputLabel : 16,
-
-  backArrow : 32,
-
-  label : 16,
+  ScreenHeader: 24,
+  legend: 10,
+  DateText: 14,
+  ButtonText: 15,
+  confirmText: 16,
+  TextInputText: 16,
+  TextInputLabel: 16,
+  backArrow: 32,
+  label: 16,
 } as const;
 
 export const FontWeight = {
@@ -73,19 +131,14 @@ export const Color = {
   GrayGroupBackground: "#f2f2f2",
 
   IssueTextBackground: "#FFFFFF",
-  CancelColor : '#E74C3C',
-
-  ShadowColor : '#171717',
-
+  CancelColor: '#E74C3C',
+  ShadowColor: '#171717',
   HeaderText: "#0f5257",
   HeaderBackground: "#e9d5ff",
-
   ScreenHeader: "#0f5257",
   DateText: "#7F7F7F",
-
   ButtonBackgroundDisabled: "#7F7F7F",
   ButtonTextDisabled: "#FFFFFF",
-
   ButtonBackground: "#0F5257",
   ButtonBorder: "#7F7F7F",
   ButtonText: "#FFFFFF",
@@ -102,7 +155,6 @@ export const Color = {
 
   CameraButtonBackground: "#0F5257",
   CameraButtonBorder: "#7F7F7F",
-
   inProgress: "#F39C12",
   notStarted: "#E74C3C",
   completed: "#2ECC71",
@@ -111,6 +163,21 @@ export const Color = {
 };
 
 export const appStyles = StyleSheet.create({
+  // Sign Up Styles
+  signUpInputField: {
+    width: 246,
+    marginTop: 20,
+  },
+
+  grayGroupBackground: {
+    backgroundColor: Color.GrayGroupBackground,
+    borderWidth: 0.5,
+    borderColor: Color.GrayGroupMargin, /* Purple border */
+    borderRadius: 15, /* Rounded corners */
+    justifyContent: "center",
+    padding: "2%",
+    marginBottom: "3%",
+  },
 
   grayGroupBackground: {
     backgroundColor: Color.GrayGroupBackground,
@@ -125,7 +192,8 @@ export const appStyles = StyleSheet.create({
   tickingBox : {
     borderRadius: 5,
   },
-  
+
+  // Image Related
   expandedImageNextButton: {
     position: 'absolute',
     top: '50%',
@@ -133,8 +201,8 @@ export const appStyles = StyleSheet.create({
     zIndex: 1,
     padding: 8,
   },
-  
-  smallCaptionText:{
+
+  smallCaptionText: {
     fontFamily: "Inter-Regular",
     fontSize: FontSizes.legend,
   },
@@ -160,37 +228,40 @@ export const appStyles = StyleSheet.create({
   },
 
   mediumThumbnailImage: {
-    width: 150, // Square dimension
-    height: 150, // Square dimension
+    width: 150,
+    height: 150,
     marginHorizontal: 5,
     borderRadius: 8,
     borderColor: 'lightgrey',
     borderWidth: 0.5,
   },
 
+  // Date and Time
   date: {
     fontSize: 16,
     marginBottom: 5,
     textAlign: 'center',
     color: Color.DateText,
-  },  
-
-  inputFieldLabel : {
-      fontSize: 16,
-      marginBottom: 2.5,
-      fontWeight: "600",
-      color: Color.TextInputLabel,
-      marginLeft: '3%',
-      marginRight: '3%',
-      paddingBottom: '1%',
-      paddingTop: '1%',
   },
 
-  scrollContainer : {
+  // Input Fields
+  inputFieldLabel: {
+    fontSize: 16,
+    marginBottom: 2.5,
+    fontWeight: "600",
+    color: Color.TextInputLabel,
+    marginLeft: '3%',
+    marginRight: '3%',
+    paddingBottom: '1%',
+    paddingTop: '1%',
+  },
+
+  // Layout
+  scrollContainer: {
     flex: 1,
-    paddingBottom: '15%',
   },
 
+  // Navigation
   backButton: {
     top: '7.5%',
     left: '7.5%',
@@ -204,23 +275,27 @@ export const appStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  submitButtonText : {
-      textAlign: 'center',
-      fontSize: FontSizes.ButtonText,
-      color: Color.ButtonText,
-      fontWeight: '300',
-      fontFamily: 'Inter-SemiBold',
+  // Buttons
+  submitButton: {
+    backgroundColor: Color.ButtonBackground,
+    borderColor: Color.ButtonBorder,
+    borderWidth: 1,
+    borderRadius: defaultButtonRadius,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
+    marginTop: 16,
   },
 
-  submitButton : {
-      backgroundColor: Color.ButtonBackground,
-      borderColor: Color.ButtonBorder,
-      borderWidth: 1,
-      borderRadius: defaultButtonRadius,
-      justifyContent: 'center',
-      alignItems: 'center',
+  submitButtonText: {
+    textAlign: 'center',
+    fontSize: FontSizes.ButtonText,
+    color: Color.ButtonText,
+    fontWeight: '600',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
 
+  // Header
   appHeader: {
     fontSize: 26,
     fontWeight: "800",
@@ -231,22 +306,10 @@ export const appStyles = StyleSheet.create({
     textAlign: "center",
   },
 
-  InputFieldContainer : {
-    padding: LayoutPadding.InputField,
-  },
-
-  drawerLabel: {
-    fontSize: 15,
-    fontWeight: "800",
-    fontFamily: "Inter-Bold",
-    color: Color.ScreenHeader,
-    alignItems: "center",
-    borderColor: Color.ScreenHeader,
-  },
-
+  // General Screen
   screenContainer: {
     flex: 1,
-    padding: '6%',
+    paddingVertical: '6%',
   },
 
   screenHeader: {
@@ -258,8 +321,311 @@ export const appStyles = StyleSheet.create({
     textAlign: 'center',
     color: Color.ScreenHeader,
   },
-});
 
+  // Drawer
+  drawerLabel: {
+    fontSize: 15,
+    fontWeight: "800",
+    fontFamily: "Inter-Bold",
+    color: Color.ScreenHeader,
+    alignItems: "center",
+    borderColor: Color.ScreenHeader,
+  },
+
+  // Forms
+  formContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    width: '95%',
+    alignSelf: 'center',
+    marginBottom: 500
+  },
+
+  formRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+
+  formFullWidth: {
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  formHalfWidth: {
+    width: '48%',
+    marginVertical: 10,
+  },
+
+  formZipCode: {
+    flex: 1,
+    marginRight: 10,
+  },
+
+  formCity: {
+    flex: 1,
+    marginLeft: 10,
+  },
+
+  // Upload
+  uploadButton: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#666',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    width: '90%',
+    marginTop: 10,
+    flexDirection:'row'
+
+  },
+
+  uploadText: {
+    color: '#666',
+    marginTop: 8,
+    marginLeft:20
+  },
+
+  descriptionInput: {
+    height: 100,
+    textAlignVertical: 'top',
+    paddingTop: 10,
+  },
+
+  // Residence List Styles
+  residenceHeaderContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
+    backgroundColor: '#FFFFFF',
+  },
+
+  residenceTitle: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#0F2B46',
+    letterSpacing: 0.3,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    alignSelf: 'center',
+  },
+
+  residenceScrollView: {
+    flex: 1,
+    zIndex: 1,
+  },
+
+  residenceScrollViewContent: {
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingBottom: 100,
+  },
+
+  residenceContainer: {
+    marginBottom: 12,
+  },
+
+  residenceButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+
+  expandedResidence: {
+    backgroundColor: Color.TextInputBackground,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0,
+      },
+      android: {
+        elevation: 0,
+      },
+    }),
+  },
+
+  residenceText: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#0F2B46',
+    letterSpacing: 0.2,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  residenceIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  residenceEditButton: {
+    marginRight: 16,
+    padding: 4,
+  },
+
+  flatsContainer: {
+    backgroundColor: Color.TextInputBackground,
+    paddingHorizontal:20,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+
+  flatText: {
+    fontSize: 16,
+    color: '#0F2B46',
+    paddingVertical: 8,
+    fontWeight: '400',
+    letterSpacing: 0.2,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    paddingRight: 10,
+  },
+
+  addResidenceButton: {
+    zIndex: 2,
+    position: 'absolute',
+    bottom: '35%',
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Color.ButtonBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+
+  residenceBottomSpacing: {
+    height: 80,
+  },
+
+  // Flat Details Styles
+  flatCard: {
+    margin: 16,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+
+  flatTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: Color.ScreenHeader,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  idContainer: {
+    backgroundColor: Color.TextInputBackground,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+
+  idText: {
+    color: Color.TextInputText,
+    fontSize: 16,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  flatImageContainer: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+
+  flatImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  tenantsSection: {
+    backgroundColor: Color.TextInputBackground,
+    padding: 16,
+    borderRadius: 8,
+  },
+
+  tenantHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  tenantsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Color.TextInputText,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  tenantRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  tenantNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  tenantName: {
+    fontSize: 14,
+    color: Color.TextInputText,
+    marginLeft: 8,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  tenantId: {
+    color: Color.TextInputPlaceholder,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+});
 
 export const stylesForNonHeaderScreens = StyleSheet.create({
   approvedText: {
@@ -355,11 +721,7 @@ export const stylesForHeaderScreens = StyleSheet.create({
     marginTop: 20,
     width: 186,
   },
-
-  tickingBox : {
+  tickingBox: {
     borderRadius: 5,
-  },
-
-
-
+  }
 });

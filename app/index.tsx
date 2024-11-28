@@ -9,6 +9,10 @@ import { AuthProvider } from "./Navigators/AuthContext";
 import { getUser, getTenant, getLandlord } from "../firebase/firestore/firestore";
 import { User } from "firebase/auth";
 import  RootNavigator from "./Navigators/RootNavigator";
+import ResidencesList from "./screens/landlord/ResidenceListScreen";
+import ResidenceStack from "./Navigators/ResidenceStack";
+import SignUpScreen from "./screens/auth/SignUpScreen";
+import SignInScreen from "./screens/auth/SignInScreen";
 
 // portions of this code were generated with chatGPT as an AI assistant
 

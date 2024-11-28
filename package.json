@@ -25,6 +25,7 @@
     },
     "transformIgnorePatterns": [
       "node_modules/(?!(@react-native|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|@react-native-firebase|react-native-feather|@react-native-async-storage|react-native-picker-select|@react-native-picker/picker)/)"
+
     ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [

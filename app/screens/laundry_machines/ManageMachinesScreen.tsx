@@ -8,14 +8,14 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
-import Header from "@/app/components/Header";
-import { LaundryMachine } from "@/types/types";
+import Header from "../../../app/components/Header";
+import { LaundryMachine } from "../../../types/types";
 import {
   createLaundryMachine,
   deleteLaundryMachine,
   updateLaundryMachine,
   getAllLaundryMachines,
-} from "@/firebase/firestore/firestore";
+} from "../../../firebase/firestore/firestore";
 import { Timestamp } from "firebase/firestore";
 import { Color } from "../../../styles/styles";
 

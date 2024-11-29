@@ -17,6 +17,7 @@ const LandlordDrawerNavigator = () => {
     
     <LandlordProvider>
       <Drawer.Navigator 
+        initialRouteName="ListIssues"
       screenOptions={{
           headerShown: false, // This hides the default header
           drawerStyle: {

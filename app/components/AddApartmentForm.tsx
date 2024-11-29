@@ -46,14 +46,16 @@ const AddApartmentForm: React.FC<AddApartmentFormProps> = ({ onSubmit, onCancel 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
                 <Pressable
                     testID="cancel-add-apartment"
-                    onPress={onCancel}
+                    onPress={() => {
+                        onCancel()
+                        setApartmentName('')}}
                     style={{ marginRight: 20 }}
                 >
                     <Feather name="x" size={20} color="#666666" />
                 </Pressable>
                 <Pressable
                     testID="confirm-add-apartment"
-                    onPress={onCancel}
+                    onPress={handleSubmit}
                 >
                     <Feather name="check" size={20} color="#666666"/>
                 </Pressable>

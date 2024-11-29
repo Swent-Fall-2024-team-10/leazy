@@ -5,12 +5,12 @@ import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import * as XLSX from 'xlsx';
 import { Buffer } from 'buffer';
-import { appStyles, ButtonDimensions } from '@/styles/styles';
+import { appStyles, ButtonDimensions } from '../../../styles/styles';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ResidenceStackParamList } from '@/types/types';
 import CustomTextField from '../../components/CustomTextField';
 import CustomButton from '../../components/CustomButton';
-import Header from '@/app/components/Header';
+import Header from '../../components/Header';
 
 interface ResidenceFormData {
   name: string;
@@ -38,7 +38,7 @@ const ALLOWED_EXTENSIONS = {
   images: ['.jpg', '.jpeg', '.png']
 };
 
-function CreateResidenceForm() {
+function ResidenceCreationScreen() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const [formData, setFormData] = useState<ResidenceFormData>({
     name: '',
@@ -314,4 +314,4 @@ function CreateResidenceForm() {
   );
 }
 
-export default CreateResidenceForm;
+export default ResidenceCreationScreen;

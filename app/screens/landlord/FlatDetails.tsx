@@ -9,8 +9,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { ResidenceStackParamList } from '@/types/types';
-import Header from '@/app/components/Header';
-import { appStyles, Color } from '@/styles/styles';
+import Header from '../../components/Header';
+import { appStyles, Color } from '../../../styles/styles';
 
 function FlatDetails() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();

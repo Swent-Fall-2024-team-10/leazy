@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, Platform, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { appStyles, residenceManagementListStyles, Color} from '@/styles/styles';
-import { Residence, ResidenceStackParamList, Apartment } from '@/types/types';
-import Header from '@/app/components/Header';
-import ApartmentItem from '@/app/components/ApartmentItem';
-import ResidenceItem  from '@/app/components/ResidenceItem';
+import { appStyles, residenceManagementListStyles, Color} from '../../../styles/styles';
+import { Residence, ResidenceStackParamList, Apartment } from '../../../types/types';
+import Header from '../../components/Header';
+import ApartmentItem from '../../components/ApartmentItem';
+import ResidenceItem  from '../../components/ResidenceItem';
 
 // Mock Data
 const mockResidences: Residence[] = [

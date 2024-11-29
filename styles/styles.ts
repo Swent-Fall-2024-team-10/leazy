@@ -245,7 +245,7 @@ export const appStyles = StyleSheet.create({
   },
 
   screenContainer: {
-    flex: 1,
+    flex: 0.75,
     padding: '6%',
   },
 

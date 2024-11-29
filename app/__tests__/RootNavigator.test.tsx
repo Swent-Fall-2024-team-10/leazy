@@ -5,7 +5,7 @@ import RootNavigator from "../Navigators/RootNavigator";
 import { useAuth } from "../context/AuthContext";
 
 // Mock dependencies
-jest.mock("../Navigators/AuthContext", () => ({
+jest.mock("../context/AuthContext", () => ({
   useAuth: jest.fn(),
 }));
 

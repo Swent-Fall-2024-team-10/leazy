@@ -74,7 +74,7 @@ jest.mock('@react-navigation/native', () => {
   
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
-jest.mock('../Navigators/AuthContext', () => ({
+jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 

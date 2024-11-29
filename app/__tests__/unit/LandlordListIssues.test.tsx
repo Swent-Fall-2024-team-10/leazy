@@ -14,7 +14,7 @@ jest.mock("firebase/auth", () => ({
 }));
 
 // Mock the AuthContext
-jest.mock("../../Navigators/AuthContext", () => ({
+jest.mock("../../context/AuthContext", () => ({
   useAuth: () => ({
     user: { uid: "landlord1" },
   }),

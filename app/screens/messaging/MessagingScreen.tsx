@@ -10,7 +10,7 @@ import { auth, db } from "../../../firebase/firebase";
 import Header from "../../components/Header";
 import { appStyles } from "../../../styles/styles";
 import { ReportStackParamList } from "../../../types/types";
-import { useAuth } from "@/app/Navigators/AuthContext";
+import { useAuth } from "../../Navigators/AuthContext";
 
 export default function MessagingScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();

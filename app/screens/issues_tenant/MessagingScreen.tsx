@@ -11,6 +11,9 @@ import Header from "../../components/Header";
 import { appStyles } from "../../../styles/styles";
 import { ReportStackParamList } from "../../../types/types";
 import { useAuth } from "../../Navigators/AuthContext";
+import CustomInputToolbar from "./CustomInputToolbar";
+import CustomBubble from "./CustomBubble";
+
 
 export default function MessagingScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
@@ -23,46 +26,15 @@ export default function MessagingScreen() {
     const { _id, createdAt, text, user } = newMessages[0];
     addDoc(collection(db, "chats"), { _id, createdAt, text, user });
   }, []);
-
+  
   const renderInputToolbar = (props: any) => (
-    <View style={styles.input}>
-      <Composer
-        {...props}
-        textInputProps={{
-          ...props.textInputProps,
-          style: styles.textInput,
-        }}
-      />
-      <TouchableOpacity
-        onPress={() => {
-          if (props.text && props.onSend) {
-            props.onSend({ text: props.text.trim() }, true);
-          }
-        }}
-        style={styles.sendButton}
-      >
-        <Icon name="send" size={24} style={styles.sendIcon} />
-      </TouchableOpacity>
-    </View>
+    <CustomInputToolbar {...props}>
+    </CustomInputToolbar>
   );
 
   const renderBubble = (props: any) => (
-    <Bubble
-      {...props}
-      wrapperStyle={{
-        left: styles.bubbleLeft,
-        right: styles.bubbleRight,
-      }}
-      textStyle={{
-        left: styles.bubbleTextLeft,
-        right: styles.bubbleTextRight,
-      }}
-      timeTextStyle={{
-        left: styles.timeText,
-        right: styles.timeText,
-      }}
-      renderTime={() => null}
-    />
+    <CustomBubble {...props}>
+    </CustomBubble>
   );
 
   return (
@@ -70,8 +42,10 @@ export default function MessagingScreen() {
       <View style={appStyles.screenContainer}>
         <SafeAreaView>
           <View style={styles.container}>
-            <TouchableOpacity onPress={() => {
-              console.log("navifating to issues")
+            <TouchableOpacity
+            testID="arrow-left" 
+            onPress={() => {
+              console.log("navigating to issues")
               navigation.navigate("Issues");
             }}
             style={{padding: 10
@@ -82,6 +56,7 @@ export default function MessagingScreen() {
           </View>
         </SafeAreaView>
 
+        <View testID="gifted-chat" style={{flex:1}}>
         <GiftedChat
           renderBubble={renderBubble}
           messages={messages}
@@ -93,6 +68,7 @@ export default function MessagingScreen() {
           }}
           renderInputToolbar={renderInputToolbar}
         />
+        </View>
       </View>
     </Header>
   );
@@ -112,51 +88,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: -24, // Offset the back button width
   },
-  input: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "90%",
-    height: 47,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: "#7F7F7F",
-    backgroundColor: "#FFFFFF",
-    elevation: 4,
-    alignSelf: "center",
-    marginVertical: 25,
-    paddingLeft: 16,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#000",
-  },
-  sendButton: {
-    marginHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bubbleLeft: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-    marginLeft: 8,
-  },
-  bubbleRight: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#7F7F7F",
-    marginRight: 8,
-  },
-  bubbleTextLeft: {
-    color: "#000000",
-  },
-  bubbleTextRight: {
-    color: "#000000",
-  },
-  timeText: {
-    color: "#7F7F7F",
-  },
   chatContainer: {
     backgroundColor: "#fff",
   },
@@ -165,8 +96,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-  },
-  sendIcon: {
-    color: "#CCCCCC",
   },
 });

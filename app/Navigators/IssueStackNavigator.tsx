@@ -5,7 +5,7 @@ import IssueDetailsScreen from '../screens/issues_tenant/IssueDetailsScreen';
 import ReportScreen from '../screens/issues_tenant/ReportScreen';
 import CameraScreen from '../screens/camera/CameraScreen';
 import CapturedMediaScreen from '../screens/camera/CapturedMediaScreen';
-import MessagingScreen from '../screens/issues_tenant/MessagingScreen';
+import MessagingScreen from '../screens/messaging/MessagingScreen';
 
 const Stack = createStackNavigator();
 

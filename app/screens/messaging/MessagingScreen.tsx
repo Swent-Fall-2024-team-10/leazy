@@ -2,7 +2,6 @@ import React, { useState, useCallback } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
-import { Icon } from 'react-native-elements'
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { GiftedChat, Bubble, Composer, IMessage } from "react-native-gifted-chat";
 import { collection, addDoc } from "firebase/firestore";
@@ -52,7 +51,7 @@ export default function MessagingScreen() {
           }}>
               <ArrowLeft size={24} color={styles.gobackIcon.color} />
             </TouchableOpacity>
-            <Text style={styles.title}>Apartment manager</Text>
+            <Text style={styles.chatTitle}>Apartment manager</Text>
           </View>
         </SafeAreaView>
 
@@ -80,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  title: {
+  chatTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: "#000",

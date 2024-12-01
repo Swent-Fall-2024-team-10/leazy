@@ -140,7 +140,7 @@ function ResidenceCreationScreen() {
   };
 
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^@]+@[^@]+\.[^@]+$/;
     return emailRegex.test(email);
   };
 

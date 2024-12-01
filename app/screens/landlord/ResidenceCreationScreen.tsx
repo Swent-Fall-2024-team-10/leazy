@@ -170,11 +170,6 @@ function ResidenceCreationScreen() {
     }
   };
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^@]+@[^@]+\.[^@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleChange = (field: keyof ResidenceFormData) => (text: string) => {
     setFormData(prev => ({
       ...prev,

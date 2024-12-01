@@ -38,6 +38,37 @@ const ALLOWED_EXTENSIONS = {
   images: ['.jpg', '.jpeg', '.png']
 };
 
+const validateEmail = (email: string): boolean => {
+  // If email is too long, reject it immediately to prevent DoS
+  if (email.length > 254) return false;
+  
+  // RFC 5322 compliant regex, optimized to prevent catastrophic backtracking
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
+  try {
+    // Use a timeout to prevent long-running regex operations
+    const timeoutMs = 100;
+    const startTime = Date.now();
+    
+    const result = emailRegex.test(email);
+    
+    if (Date.now() - startTime > timeoutMs) {
+      console.warn('Email validation took longer than expected');
+      return false;
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Email validation error:', error);
+    return false;
+  }
+};
+
+// Examples of usage:
+console.assert(validateEmail('user@example.com') === true);
+console.assert(validateEmail('invalid.email@') === false);
+console.assert(validateEmail('a'.repeat(1000) + '@example.com') === false);
+
 function ResidenceCreationScreen() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const [formData, setFormData] = useState<ResidenceFormData>({

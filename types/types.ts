@@ -63,7 +63,7 @@ export type Tenant = {
 };
 
 export type Residence = {
-  residenceId: string;
+  residenceName: string;
   street: string;
   number: string;
   city: string;
@@ -86,7 +86,7 @@ export type TenantCode = {
 };
 
 export type Apartment = {
-  apartmentId: string;
+  apartmentName: string;
   residenceId: string;
   tenants: string[]; // list of tenant uids
   maintenanceRequests: string[]; // list of maintenance request ids

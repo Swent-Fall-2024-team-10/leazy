@@ -7,5 +7,4 @@ module.exports = {
     },
     transformIgnorePatterns: [
       'node_modules/(?!(firebase|@firebase|react-native-elements)/)',
-    ],
-  };
+    ],};

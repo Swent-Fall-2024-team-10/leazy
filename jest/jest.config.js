@@ -6,5 +6,5 @@ module.exports = {
       '^.+\\.(ts|tsx)$': 'ts-jest',
     },
     transformIgnorePatterns: [
-      'node_modules/(?!(firebase|@firebase|react-native-elements|react-native|expo|@expo|expo-font|expo-constants|expo-sqlite|expo-modules-core)/)'    ],
-  };
+      'node_modules/(?!(firebase|@firebase|react-native-elements)/)',
+    ],};

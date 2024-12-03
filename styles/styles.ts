@@ -90,6 +90,9 @@ export const ButtonDimensions = {
 
   mediumButtonWidth : 200,
   mediumButtonHeight : 44,
+
+  smallerButtonWidth : 90,
+  smallerButtonHeight : 40,
 }
 
 export const IconDimension = {
@@ -267,6 +270,10 @@ export const appStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  submitContainer: {
+    flex  : 1,
+    alignSelf: 'center',
+  },
   // Buttons
   submitButton: {
     backgroundColor: Color.ButtonBackground,
@@ -305,11 +312,22 @@ export const appStyles = StyleSheet.create({
   },
 
   emptyListText: {
-    color: '#666666',
+    color: Color.GrayText,
     padding: '15%',
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
+  },
+
+  buttonCancel: {
+    backgroundColor: Color.CancelColor,
+    borderColor: Color.ButtonBorder,
+    marginRight: "5%",
+  },
+
+  buttonAccept: {
+    backgroundColor: Color.ButtonBackground,
+    borderColor: Color.ButtonBorder,
   },
 
   screenHeader: {

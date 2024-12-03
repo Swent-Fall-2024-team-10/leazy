@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { Color, FontSizes, FontWeight } from "../../../../styles/styles";
+import { ButtonDimensions, Color, defaultButtonRadius, FontSizes, FontWeight } from "../../../../styles/styles";
 
 export const situationReportStyles = StyleSheet.create({
     groupSituationReport: {
@@ -16,6 +16,12 @@ export const situationReportStyles = StyleSheet.create({
     marginTop: "5%",
   },
 
+
+
+  layoutCreationSeparationLine : {
+    marginTop: "5%",
+  },
+
   labels: {
     fontSize: FontSizes.label,
     flexDirection: "row",
@@ -24,7 +30,7 @@ export const situationReportStyles = StyleSheet.create({
     left: "65%",
     bottom: "10%",
   },
-  
+
   wearStatus: {
     color: Color.TextInputLabel, /* Purple border */
     fontSize: FontSizes.TextInputLabel,
@@ -138,3 +144,45 @@ export const pickerSelectStyles = {
         color : "black",
     },
   };
+
+
+export const layoutCreationStyles = StyleSheet.create({
+
+    addButtonContainer: {
+
+    },
+
+    addButton: {
+        padding: "2%",
+    },
+
+    buttonText:{    
+        fontSize: FontSizes.label,
+        color: Color.TextInputLabel,
+        fontWeight: FontWeight.DateText,
+        textAlign: "center",
+        alignItems: "center",    
+    },
+
+    layoutModificationButton : {
+        width: ButtonDimensions.smallerButtonWidth,
+        height: ButtonDimensions.smallerButtonHeight,
+        borderRadius: defaultButtonRadius,
+    },
+    
+    editButton: {
+        flex : 1,
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        padding : "2%",
+        marginRight : "3%",
+    },
+
+    cancelOrSaveContainer: {
+        flexDirection: "row",
+        marginRight : "3%",
+        padding : "2%",
+        justifyContent: "space-between",
+      },
+
+});

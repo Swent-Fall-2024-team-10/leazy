@@ -214,16 +214,18 @@ export default function SituationReport() {
               style={{ marginTop: "5%" }}
             />
           </View>
-
-          <SubmitButton
-            label="Submit"
-            testID="submit"
-            width={ButtonDimensions.smallButtonWidth}
-            height={ButtonDimensions.smallButtonHeight}
-            disabled={false}
-            onPress={() => {navigation.navigate("List Issues" as never)}}
-            style={appStyles.submitButton}
-          />
+          <View style={appStyles.submitContainer}>
+            <SubmitButton
+              label="Submit"
+              testID="submit"
+              width={ButtonDimensions.smallButtonWidth}
+              height={ButtonDimensions.smallButtonHeight}
+              disabled={false}
+              onPress={() => {navigation.navigate("List Issues" as never)}}
+              style={appStyles.submitButton}
+            />
+          </View>
+    
         </View>
       </ScrollView>
     </Header>

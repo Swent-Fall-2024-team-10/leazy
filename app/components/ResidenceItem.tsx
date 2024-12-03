@@ -29,7 +29,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   const [showAddForm, setShowAddForm] = useState(false);
 
   const filteredApartments = apartments.filter(apt =>
-    apt.apartmentId.toLowerCase().includes(apartmentSearch.toLowerCase())
+    apt.apartmentName.toLowerCase().includes(apartmentSearch.toLowerCase())
   );
 
   const handleAddApartment = (name: string) => {
@@ -46,9 +46,9 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   };
 
   return (
-    <View testID={`residence-item-${residence.residenceId}`} style={appStyles.residenceContainer}>
+    <View testID={`residence-item-${residence.residenceName}`} style={appStyles.residenceContainer}>
       <Pressable
-        testID={`residence-button-${residence.residenceId}`}
+        testID={`residence-button-${residence.residenceName}`}
         style={({ pressed }) => [
           appStyles.residenceButton,
           isExpanded && appStyles.expandedResidence,
@@ -106,9 +106,9 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
             />
           )}
 
-          {filteredApartments.map((apartment) => (
+          {filteredApartments.map((apartment, index) => (
             <ApartmentItem
-              key={apartment.apartmentId}
+              key={index}
               apartment={apartment}
               editMode={editMode}
               navigation={navigation}

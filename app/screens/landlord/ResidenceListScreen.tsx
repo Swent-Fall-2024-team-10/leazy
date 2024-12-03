@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView, Platform, TextInput } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { appStyles, residenceManagementListStyles, Color} from '../../../styles/styles';
+import { appStyles } from '../../../styles/styles';
 import { Residence, ResidenceStackParamList, Apartment } from '../../../types/types';
 import Header from '../../components/Header';
 import ApartmentItem from '../../components/ApartmentItem';
-import ResidenceItem  from '../../components/ResidenceItem';
+import ResidenceItem from '../../components/ResidenceItem';
 
 // Mock Data
-const mockResidences: Residence[] = [
-  {
-    residenceId: 'R1',
+const mockResidences = new Map<string, Residence>([
+  ['R1', {
+    residenceName: 'R1',
     street: 'Maple Avenue',
     number: '123',
     city: 'Springfield',
@@ -24,9 +24,9 @@ const mockResidences: Residence[] = [
     apartments: ['A1', 'A2', 'A3'],
     tenantCodesID: ['TC1', 'TC2', 'TC3'],
     situationReportLayout: []
-  },
-  {
-    residenceId: 'R2',
+  }],
+  ['R2', {
+    residenceName: 'R2',
     street: 'Oak Street',
     number: '456',
     city: 'Springfield',
@@ -39,61 +39,56 @@ const mockResidences: Residence[] = [
     apartments: ['A4', 'A5'],
     tenantCodesID: ['TC4', 'TC5'],
     situationReportLayout: []
-  }
-];
+  }]
+]);
 
-const mockApartments: Apartment[] = [
-  {
-    apartmentId: 'A1',
-    residenceId: 'R1',
-    tenants: ['T1', 'T2'],
-    maintenanceRequests: ['MR1', 'MR2'],
-    situationReportId: 'none'
-  },
-  {
-    apartmentId: 'A2',
-    residenceId: 'R1',
-    tenants: ['T3'],
-    maintenanceRequests: [],
-    situationReportId: 'none'
-  },
-  {
-    apartmentId: 'A3',
-    residenceId: 'R1',
-    tenants: ['T4', 'T5'],
-    maintenanceRequests: ['MR3'],
-    situationReportId: 'none'
-  },
-  {
-    apartmentId: 'A4',
-    residenceId: 'R2',
-    tenants: ['T6', 'T7'],
-    maintenanceRequests: ['MR4'],
-    situationReportId: 'none'
-  }
-];
+const mockApartments: Map<string, Apartment[]> = new Map([
+  ['R1', [
+    {
+      apartmentName: 'A1',
+      residenceId: 'R1',
+      tenants: ['T1', 'T2'],
+      maintenanceRequests: ['MR1', 'MR2'],
+      situationReportId: 'none'
+    },
+    {
+      apartmentName: 'A2',
+      residenceId: 'R1',
+      tenants: ['T3'],
+      maintenanceRequests: [],
+      situationReportId: 'none'
+    },
+    {
+      apartmentName: 'A3',
+      residenceId: 'R1',
+      tenants: ['T4', 'T5'],
+      maintenanceRequests: ['MR3'],
+      situationReportId: 'none'
+    }
+  ]],
+  ['R2', [
+    {
+      apartmentName: 'A4',
+      residenceId: 'R2',
+      tenants: ['T6', 'T7'],
+      maintenanceRequests: ['MR4'],
+      situationReportId: 'none'
+    }
+  ]]
+]);
 
-const mockResidenceMap = new Map<Residence, Apartment[]>();
-mockResidences.forEach(residence => {
-  const residenceApartments = mockApartments.filter(apt =>
-    apt.residenceId === residence.residenceId
-  );
-  mockResidenceMap.set(residence, residenceApartments);
-});
-
-// Main Screen Component
 const ResidencesListScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const [expandedResidence, setExpandedResidence] = useState<string | null>(null);
 
-  const residenceElements = Array.from(mockResidenceMap.entries()).map(([residence, apartments]) => (
+  const residenceElements = Array.from(mockResidences.entries()).map(([residenceId, residence]) => (
     <ResidenceItem
-      key={residence.residenceId}
+      key={residenceId}
       residence={residence}
-      apartments={apartments}
-      isExpanded={expandedResidence === residence.residenceId}
+      apartments={mockApartments.get(residenceId) || []}
+      isExpanded={expandedResidence === residenceId}
       onPress={() => setExpandedResidence(
-        expandedResidence === residence.residenceId ? null : residence.residenceId
+        expandedResidence === residenceId ? null : residenceId
       )}
       navigation={navigation}
     />
@@ -131,6 +126,6 @@ const ResidencesListScreen: React.FC = () => {
     </Header>
   );
 };
-export {ApartmentItem, ResidenceItem };
 
+export { ApartmentItem, ResidenceItem };
 export default ResidencesListScreen;

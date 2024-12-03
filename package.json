@@ -24,8 +24,7 @@
       "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(@react-native|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|@react-native-firebase|react-native-feather|@react-native-async-storage|expo-linear-gradient|react-native-timer-picker|react-native-elements)/)"
-    ],
+      "node_modules/(?!(@react-native|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|@react-native-firebase|react-native-feather|@react-native-async-storage|expo-linear-gradient|react-native-timer-picker|react-native-elements)/)"    ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [
       "ts",

@@ -1,7 +1,9 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
 import LandlordListIssuesScreen from "../../screens/issues_landlord/LandlordListIssuesScreen";
 import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from "../../../firebase/firestore/firestore";
+import { useAuth } from "../../context/AuthContext";
 import "@testing-library/jest-native/extend-expect";
 
 // Mock the entire firebase/auth module
@@ -11,13 +13,6 @@ jest.mock("firebase/auth", () => ({
   }),
   initializeAuth: jest.fn(),
   getReactNativePersistence: jest.fn(),
-}));
-
-// Mock the AuthContext
-jest.mock("../../context/AuthContext", () => ({
-  useAuth: () => ({
-    user: { uid: "landlord1" },
-  }),
 }));
 
 // Mock AsyncStorage
@@ -38,8 +33,10 @@ jest.mock('../../../firebase/firestore/firestore', () => ({
 }));
 
 // Mock the auth context
-jest.mock('../../Navigators/AuthContext', () => ({
-  useAuth: jest.fn(),
+jest.mock('../../context/AuthContext', () => ({
+  useAuth: jest.fn(() => ({
+    user: { uid: 'testLandlordId' },
+  })),
 }));
 
 jest.mock('@expo/vector-icons', () => ({
@@ -103,11 +100,6 @@ describe('LandlordListIssuesScreen', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
-
-    // Mock auth context
-    (useAuth as jest.Mock).mockReturnValue({
-      user: { uid: 'testLandlordId' },
-    });
 
     // Set up mock implementations
     (getLandlord as jest.Mock).mockResolvedValue(mockLandlord);

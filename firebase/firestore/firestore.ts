@@ -178,7 +178,7 @@ export async function deleteTenant(userId: string) {
  * @returns The generated document ID of the newly created residence.
  */
 export async function createResidence(residence: Residence): Promise<string> {
-  if (!residence.residenceId) {
+  if (!residence.residenceName) {
     throw new Error("Invalid residence ID.");
   }
   const residencesRef = collection(db, "residences");
@@ -228,7 +228,7 @@ export async function deleteResidence(residenceId: string) {
  * @param apartment - The apartment object to be added to the 'apartments' collection.
  */
 export async function createApartment(apartment: Apartment) {
-  if (!apartment.apartmentId || !apartment.residenceId) {
+  if (!apartment.apartmentName || !apartment.residenceId) {
     throw new Error("Invalid apartment data");
   }
   const appartmentsRef = collection(db, "apartments");

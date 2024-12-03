@@ -24,7 +24,7 @@
       "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(@react-native|react-native-parsed-text|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|react-native-gifted-chat|uuid|react-native-get-random-values|@react-native-firebase|react-native-feather|@react-native-async-storage|expo-linear-gradient|react-native-timer-picker)/)"
+"node_modules/(?!(@react-native|react-native-parsed-text|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|react-native-gifted-chat|uuid|react-native-get-random-values|@react-native-firebase|react-native-feather|@react-native-async-storage|expo-linear-gradient|react-native-timer-picker)/)"
     ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [

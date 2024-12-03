@@ -15,12 +15,12 @@ import { Residence, Apartment } from "../../../types/types";
 // The code will be used by the tenant to access the app for a specific residence
 export default function CodeCreationScreen() {
   const [code, setCode] = useState("");
-  const [residenceNumber, setResidenceNumber] = useState("");
+  const [residenceId, setResidenceId] = useState("");
   const [apartmentNumber, setApartmentNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
   const createCode = async () => {
-    if (!residenceNumber || !apartmentNumber) {
+    if (!residenceId || !apartmentNumber) {
       Alert.alert("Please enter both residence number and apartment number.");
       return;
     }
@@ -31,7 +31,7 @@ export default function CodeCreationScreen() {
     const residencesRef = collection(db, "residences");
     const residenceQuery = query(
       residencesRef,
-      where("residenceId", "==", residenceNumber)
+      where("residenceId", "==", residenceId)
     );
     const residenceSnapshot = await getDocs(residenceQuery);
     // I am not sure about this line
@@ -66,22 +66,13 @@ export default function CodeCreationScreen() {
         `Apartment ID ${apartmentUID} is not associated with residence ID ${residenceUID}.`
       );
       throw new Error(
-        `Apartment ID ${apartmentNumber} is not associated with residence ID ${residenceNumber}.`
-      );
-    }
-
-    if (apartmentData.residenceId !== residenceUID) {
-      console.log(
-        `Apartment's residence ID ${apartmentData.residenceId} does not match the residence UID ${residenceUID}.`
-      );
-      throw new Error(
-        `The residence linked to the apartment ${apartmentNumber} is different.`
+        `Apartment ID ${apartmentNumber} is not associated with residence ID ${residenceId}.`
       );
     }
 
     // Generate the new code
     try {
-      // Assuming generateCode is an asynchronous function that takes residenceNumber and apartmentNumber as parameters
+      // Assuming generateCode is an asynchronous function that takes residenceId and apartmentNumber as parameters
       const generatedCode = await generate_unique_code(
         residenceUID,
         apartmentUID
@@ -137,8 +128,8 @@ export default function CodeCreationScreen() {
 
             <InputField
               testID="Residence ID"
-              value={residenceNumber}
-              setValue={setResidenceNumber}
+              value={residenceId}
+              setValue={setResidenceId}
               placeholder="Enter residence ID"
               height={40}
               style={{ flex: 0 }}

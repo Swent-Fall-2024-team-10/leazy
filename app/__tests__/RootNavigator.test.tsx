@@ -2,10 +2,10 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import RootNavigator from "../Navigators/RootNavigator";
-import { useAuth } from "../Navigators/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 // Mock dependencies
-jest.mock("../Navigators/AuthContext", () => ({
+jest.mock("../context/AuthContext", () => ({
   useAuth: jest.fn(),
 }));
 

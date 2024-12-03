@@ -3,21 +3,23 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 're
 import { Feather } from '@expo/vector-icons';
 import Header from '../../components/Header';
 import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
+
 import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '../../../types/types';
 import { getAuth } from 'firebase/auth';
-import { useAuth } from '../../Navigators/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
+
+type ResidenceWithId = Residence & { id: string };
 
 const LandlordListIssuesScreen: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [expandedResidences, setExpandedResidences] = useState<string[]>([]);
-  const [filterVisible, setFilterVisible] = useState(false); // Control the visibility of the filter
-  const [residences, setResidences] = useState<Residence[]>([]); // Store residence data
-  const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>(
-    {}
-  ); // Store tenants data by residence
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [residences, setResidences] = useState<ResidenceWithId[]>([]);
+  const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   const { user } = useAuth();
   if (!user) {
@@ -28,112 +30,84 @@ const LandlordListIssuesScreen: React.FC = () => {
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        if (!landlordId) {
-          console.error("Landlord is not logged in");
-          return;
-        }
-
-        // Fetch tenant data and maintenance requests for that tenant
+        setIsLoading(true);
+        
         const landlord = await getLandlord(landlordId);
         if (!landlord) {
-          console.error("Landlord not found");
-          return;
+          throw new Error("Landlord not found");
         }
 
-        if (landlord && landlord.residenceIds.length > 0) {
-          const fetchedResidences: Residence[] = [];
+        if (landlord.residenceIds.length > 0) {
+          const fetchedResidences: ResidenceWithId[] = [];
           const residenceTenants: { [residenceId: string]: Tenant[] } = {};
+          const allIssues: MaintenanceRequest[] = [];
 
-          // Fetch each residence and its tenants
           for (const residenceId of landlord.residenceIds) {
-            console.log("residenceId: ", residenceId);
-            const residence: Residence | null = await getResidence(residenceId);
+            const residence = await getResidence(residenceId);
             if (residence) {
-              fetchedResidences.push(residence);
-              console.log("fetchedResidences: ", fetchedResidences);
+              fetchedResidences.push({
+                ...residence,
+                id: residenceId
+              });
 
-              // Fetch tenants for each residence
               const tenantsForResidence = await Promise.all(
                 residence.tenantIds.map(async (tenantId) => {
                   const tenant = await getTenant(tenantId);
-                  return tenant ? tenant : null;
+                  return tenant;
                 })
               );
 
-              console.log("tenantsForResidence: ", tenantsForResidence);
-
-              // Filter out any null tenants
               residenceTenants[residenceId] = tenantsForResidence.filter(
                 (tenant): tenant is Tenant => tenant !== null
               );
-              console.log("after filter: ", residenceTenants);
+
+              for (const tenant of residenceTenants[residenceId]) {
+                const requests = await Promise.all(
+                  tenant.maintenanceRequests.map(async (requestId) => {
+                    const request = await getMaintenanceRequest(requestId);
+                    if (request) {
+                      return request;
+                    }
+                    return null;
+                  })
+                );
+
+                const validRequests = requests.filter(
+                  (request): request is MaintenanceRequest => request !== null
+                );
+                allIssues.push(...validRequests);
+              }
             }
           }
 
           setResidences(fetchedResidences);
           setTenants(residenceTenants);
-
-          // Fetch maintenance requests for each tenant
-          const allIssues: MaintenanceRequest[] = [];
-          for (const residenceId in residenceTenants) {
-            const tenants = residenceTenants[residenceId];
-            console.log("tenants in this residence: ", tenants);
-            for (const tenant of tenants) {
-              const requests = await Promise.all(
-                tenant.maintenanceRequests.map(async (requestId) => {
-                  const request = await getMaintenanceRequest(requestId);
-                  if (request) {
-                    const residence = await getResidence(request.residenceId);
-                    return {
-                      ...request,
-                      residenceId: residence
-                        ? residence.residenceId
-                        : request.residenceId, // Update the residenceId
-                    };
-                  }
-                  return null;
-                })
-              );
-              console.log("list of request for a tenant: ", requests);
-              // Filter out null requests
-              const validRequests = requests.filter(
-                (request): request is MaintenanceRequest => request !== null
-              );
-              allIssues.push(...validRequests);
-            }
-          }
           setIssues(allIssues);
         }
       } catch (error) {
         console.error("Error fetching landlord data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchIssues();
-  }, []);
+  }, [landlordId]);
 
-  // Toggle the visibility of the filter section
   const toggleFilter = () => {
     setFilterVisible(!filterVisible);
   };
 
-  console.log("expandedResidences: ", expandedResidences);
-  console.log("residences: ", residences);
-
-  // Toggle residence expansion
   const toggleResidenceExpansion = (residenceId: string) => {
-    if (expandedResidences.includes(residenceId)) {
-      setExpandedResidences(
-        expandedResidences.filter((id) => id !== residenceId)
-      );
-    } else {
-      setExpandedResidences([...expandedResidences, residenceId]);
-    }
+    setExpandedResidences(prevExpanded =>
+      prevExpanded.includes(residenceId)
+        ? prevExpanded.filter(id => id !== residenceId)
+        : [...prevExpanded, residenceId]
+    );
   };
 
-  // Filter the issues based on archived state
-  const filteredIssues = issues.filter(
-    (issue) => issue.requestStatus !== "completed" || showArchived
+  const filteredIssues = issues.filter(issue =>
+    !showArchived ? issue.requestStatus !== "completed" : true
   );
 
   return (
@@ -144,66 +118,59 @@ const LandlordListIssuesScreen: React.FC = () => {
             <Text style={styles.title}>Maintenance issues</Text>
           </View>
 
-          {/* Archived switch */}
           <View style={styles.switchContainer}>
             <Text>Archived issues</Text>
-            <Switch style={[{ marginLeft: 8 }, {marginRight: 48}, 
-                {marginBottom: 8}, {marginTop: 8}]}
-                value={showArchived} onValueChange={setShowArchived} testID='archivedSwitch' />
-            {/* Filter button */}
+            <Switch
+              style={styles.switch}
+              value={showArchived}
+              onValueChange={setShowArchived}
+              testID="archivedSwitch"
+            />
+            
             <TouchableOpacity
               onPress={toggleFilter}
               style={styles.filterButton}
+              testID="filterSection"
             >
               <Feather name="filter" size={24} color="black" />
               <Text style={styles.filterText}>Filter</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Expandable Filter Section */}
           {filterVisible && (
             <View style={styles.filterOptions}>
               <Text>Filter by...</Text>
               <Text>Status</Text>
               <Text>Sort by...</Text>
-              {/* Add filter options as needed */}
               <TouchableOpacity onPress={toggleFilter}>
                 <Text style={styles.applyButton}>Apply</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          {/* Residences and issues */}
           <View style={styles.residenceList}>
             {residences.map((residence) => (
-              <View key={residence.residenceId}>
+              <View key={residence.id}>
                 <TouchableOpacity
                   style={styles.residenceItem}
-                  onPress={() => toggleResidenceExpansion(residence.residenceId)}
-                  testID='residenceButton'
+                  onPress={() => toggleResidenceExpansion(residence.id)}
+                  testID="residenceButton"
                 >
                   <Text style={styles.residenceText}>
                     Residence {residence.street}
                   </Text>
                   <Feather
-                    name={
-                      expandedResidences.includes(residence.residenceId)
-                        ? "chevron-up"
-                        : "chevron-down"
-                    }
+                    name={expandedResidences.includes(residence.id) ? "chevron-up" : "chevron-down"}
                     size={24}
                     color="black"
                   />
                 </TouchableOpacity>
 
-                {/* If expanded, show the related issues */}
-                {expandedResidences.includes(residence.residenceId) && (
+                {expandedResidences.includes(residence.id) && (
                   <View style={styles.issueList}>
                     {filteredIssues
-                      .filter(
-                        (issue) => issue.residenceId == residence.residenceId
-                      )
-                      .map((issue) => (
+                      .filter(issue => issue.residenceId === residence.id)
+                      .map(issue => (
                         <View key={issue.requestID} style={styles.issueItem}>
                           <Text>{issue.requestTitle}</Text>
                           <View
@@ -215,8 +182,8 @@ const LandlordListIssuesScreen: React.FC = () => {
                                     ? "#F39C12"
                                     : issue.requestStatus === "notStarted"
                                     ? "#E74C3C"
-                                    : "#2ECC71",
-                              },
+                                    : "#2ECC71"
+                              }
                             ]}
                           >
                             <Text style={styles.statusText}>
@@ -240,6 +207,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+    paddingTop: 15,
+  },
   titleContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -256,6 +227,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignSelf: "center",
     alignItems: "center",
+  },
+  switch: {
+    marginLeft: 8,
+    marginRight: 48,
+    marginBottom: 8,
+    marginTop: 8,
   },
   filterButton: {
     flexDirection: "row",
@@ -300,12 +277,21 @@ const styles = StyleSheet.create({
   },
   issueList: {
     paddingLeft: 16,
+    marginTop: 8,
   },
   issueItem: {
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
   },
   statusBadge: {
     borderRadius: 16,
@@ -317,10 +303,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: "#fff",
     fontSize: 12,
-  },
-  scrollView: {
-    flex: 1,
-    paddingTop: 15,
+    fontWeight: "500",
   },
 });
 

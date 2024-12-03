@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
 import LandlordFormScreen from "../../screens/auth/LandlordFormScreen";
-import { add_new_landlord, createLandlord, createUser } from "../../../firebase/firestore/firestore";
+import { createLandlord, createUser } from "../../../firebase/firestore/firestore";
 import { Alert } from "react-native";
 import "@testing-library/jest-native/extend-expect";
 import { emailAndPasswordSignIn } from "../../../firebase/auth/auth";

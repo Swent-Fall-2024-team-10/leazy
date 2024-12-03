@@ -24,6 +24,7 @@ export const situationReportStyles = StyleSheet.create({
     left: "65%",
     bottom: "10%",
   },
+  
   wearStatus: {
     color: Color.TextInputLabel, /* Purple border */
     fontSize: FontSizes.TextInputLabel,
@@ -101,6 +102,31 @@ export const situationReportStyles = StyleSheet.create({
     marginLeft: '2%',
     marginRight: '10%',
     color: Color.ButtonBackground,
+  },
+
+  groupContainer: {
+    backgroundColor: Color.TextInputBackground, // Light purple background
+    padding : "4%",
+    paddingRight: "1%",
+    borderRadius: 15,
+    marginBottom: '2%',
+  },
+
+  groupLabel: {
+    fontSize: FontSizes.TextInputText,
+    color: Color.TextInputLabel,
+    fontWeight: FontWeight.TextInputLabel,
+    marginBottom: '2%',
+
+  },
+
+  groupItemContainer: {
+    borderColor: 'transparent',
+  },
+
+  singleItemContainer: {
+    borderColor: 'transparent',
+    paddingLeft: "2%",
   },
 });
 

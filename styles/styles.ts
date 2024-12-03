@@ -131,6 +131,8 @@ export const Color = {
   GrayGroupMargin: "#A3A3A3CC",
   GrayGroupBackground: "#f2f2f2",
 
+  GrayText: "#666666",
+
   IssueTextBackground: "#FFFFFF",
   CancelColor: '#E74C3C',
   ShadowColor: '#171717',
@@ -300,6 +302,14 @@ export const appStyles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     padding : '6%'
+  },
+
+  emptyListText: {
+    color: '#666666',
+    padding: '15%',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 
   screenHeader: {

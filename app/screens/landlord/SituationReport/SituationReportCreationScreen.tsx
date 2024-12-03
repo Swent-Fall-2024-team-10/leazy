@@ -7,6 +7,7 @@ import { Button, Icon } from "react-native-elements";
 import StraightLine from "../../../components/SeparationLine";
 import { layoutCreationStyles, situationReportStyles } from "./SituationReportStyling";
 import TickingBox from "../../../components/forms/TickingBox";
+import { addGroupToLayout } from "../../../utils/SituationReport";
 
 type SituationReportItemProps = {
     label: string;
@@ -250,7 +251,11 @@ export default function SituationReportCreation() {
                         testID="add-single-item-button"
                         buttonStyle={layoutCreationStyles.addButton}
                         textStyle={layoutCreationStyles.buttonText}
-                        onPress={() => console.log('Add new group')}
+                        onPress={() =>{
+                            let nextLayout = addGroupToLayout(layout, [["New Item", 0]], "New Group");
+                            setLayout(nextLayout);
+                        } 
+                        }
                     />
                 </View>
                 )}

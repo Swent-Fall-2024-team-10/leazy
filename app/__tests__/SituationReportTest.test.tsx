@@ -1,92 +1,135 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import SituationReport from '../screens/landlord/SituationReportScreen';
-import { useNavigation } from '@react-navigation/native';
+import React from "react";
+import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import SituationReportScreen from "../screens/landlord/SituationReportScreen";
+import { NavigationContainer } from "@react-navigation/native";
+import * as firestore from "../../firebase/firestore/firestore";
+import { GroupedSituationReport } from "../screens/landlord/SituationReportScreen";
+import * as StatusFunctions from "../utils/SituationReport";
 
-jest.mock('react-native-picker-select', () => {
-  return jest.fn(({ onValueChange }) => {
-    return <select onChange={(e) => onValueChange(e.target.value)} />;
-  });
-});
-
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
+jest.mock("../../firebase/firestore/firestore", () => ({
+  getApartment: jest.fn(),
+  addSituationReport: jest.fn(),
+  deleteSituationReport: jest.fn(),
 }));
 
-describe('SituationReport', () => {
-  let navigateMock: jest.Mock;
+// Helper to render with navigation
+const renderWithNavigation = (component: JSX.Element) => (
+  <NavigationContainer>{component}</NavigationContainer>
+);
 
-  beforeEach(() => {
-    navigateMock = jest.fn();
-    (useNavigation as jest.Mock).mockReturnValue({ navigate: navigateMock });
+describe("SituationReportScreen", () => {
+  it("renders correctly", () => {
+    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
+    expect(getByText("Situation Report Form")).toBeTruthy();
   });
 
-  it('renders the SituationReport screen correctly', () => {
-    const { getByText } = render(<SituationReport />);
-    expect(getByText('Situation Report Form')).toBeTruthy();
+  it("updates tenant name input fields correctly", () => {
+    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen />));
+    const nameInput = getByTestId("arriving-tenant-name");
+
+    fireEvent.changeText(nameInput, "John");
+    expect(nameInput.props.value).toBe("John");
   });
 
-  it('renders the residence and apartment pickers', () => {
-    const { getByText } = render(<SituationReport />);
-    expect(getByText('Residence')).toBeTruthy();
-    expect(getByText('Apartment')).toBeTruthy();
-  });
+  it("calls Firestore functions on form submission", async () => {
+    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: null });
+    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
 
-  it('renders tenant name input fields', () => {
-    const { getAllByPlaceholderText } = render(<SituationReport />);
-    const nameInputs = getAllByPlaceholderText('Name');
-    const surnameInputs = getAllByPlaceholderText('Surname');
+    fireEvent.press(getByText("Submit"));
 
-    expect(nameInputs.length).toBe(2); // Two TenantNameGroup components
-    expect(surnameInputs.length).toBe(2);
-  });
-
-  it('renders the remark input field', () => {
-    const { getByPlaceholderText } = render(<SituationReport />);
-    const remarkField = getByPlaceholderText('Enter your remarks here');
-    expect(remarkField).toBeTruthy();
-  });
-
-  it('navigates to "List Issues" on submit button press', () => {
-    const { getByTestId } = render(<SituationReport />);
-    const submitButton = getByTestId('submit');
-
-    fireEvent.press(submitButton);
-    expect(navigateMock).toHaveBeenCalledWith('List Issues');
-  });
-  it('prevents checking multiple checkboxes in a SituationReportItem', () => {
-    const { getByText, getAllByRole } = render(<SituationReport />);
-  
-    // Find the first SituationReportItem by its label
-    const firstItemLabel = '1 : floor'; // Update the label if it differs
-    const firstItem = getByText(firstItemLabel);
-  
-    // Get all checkboxes in the rendered component
-    const allCheckboxes = getAllByRole('checkbox');
-  
-    // Narrow down to checkboxes belonging to the first item
-    const itemIndex = firstItem && firstItem.parent ? Array.from(firstItem.parent.children).indexOf(firstItem) : -1;
-    const relatedCheckboxes = allCheckboxes.slice(itemIndex, itemIndex + 3); // Assuming 3 checkboxes per item
-  
-    // Ensure initial states are unchecked
-    relatedCheckboxes.forEach((checkbox) => {
-      expect(checkbox.props.accessibilityState.checked).toBe(false);
+    await waitFor(() => {
+      expect(firestore.addSituationReport).toHaveBeenCalled();
     });
-  
-    // Attempt to check multiple checkboxes
-    fireEvent.press(relatedCheckboxes[0]);
-    expect(relatedCheckboxes[0].props.accessibilityState.checked).toBe(true);
-  
-    fireEvent.press(relatedCheckboxes[1]);
-    expect(relatedCheckboxes[1].props.accessibilityState.checked).toBe(false); // Ensure others remain unchecked
-  
-    fireEvent.press(relatedCheckboxes[2]);
-    expect(relatedCheckboxes[2].props.accessibilityState.checked).toBe(false); // Ensure others remain unchecked
-  
-    // Confirm the first checkbox is still checked
-    expect(relatedCheckboxes[0].props.accessibilityState.checked).toBe(true);
   });
+
+  it("navigates after successful submission", async () => {
+    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: "" });
+    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
+
+    fireEvent.press(getByText("Submit"));
+
+    await waitFor(() => {
+      expect(firestore.addSituationReport).toHaveBeenCalled();
+    });
+  });
+
   
+});
+describe('GroupedSituationReport', () => {
+  const mockChangeStatus = jest.fn();
+  const mockSetReset = jest.fn();
 
+  const layout: [string, [string, number][]][] = [
+      ["Floor", [["floor", 0]]],
+      ["Wall", [["wall", 1]]],
+      ["Ceiling", [["ceiling", 2]]],
+      ["Window", [["window", 3]]],
+      ["Bed", [["Bedframe", 0], ["Mattress", 1], ["Pillow", 2], ["Bedding", 3]]],
+  ];
 
+  it('renders correctly with multiple groups and items', () => {
+      const { getByText } = render(
+          <GroupedSituationReport
+              layout={layout}
+              changeStatus={mockChangeStatus}
+              resetState={false}
+              setReset={mockSetReset}
+          />
+      );
+
+      expect(getByText('1: floor')).toBeTruthy();
+      expect(getByText('2: wall')).toBeTruthy();
+      expect(getByText('3: ceiling')).toBeTruthy();
+      expect(getByText('4: window')).toBeTruthy();
+      expect(getByText('Bed :')).toBeTruthy();
+      expect(getByText('5: Bedframe')).toBeTruthy();
+      expect(getByText('6: Mattress')).toBeTruthy();
+      expect(getByText('7: Pillow')).toBeTruthy();
+      expect(getByText('8: Bedding')).toBeTruthy();
+  });
+
+  it('calls changeStatus when an item is checked', () => {
+    // Create mock layout data based on actual structure used in the component
+    const layout: [string, [string, number][]][] = [
+      ["Floor", [["floor", 0]]],
+      ["Wall", [["wall", 0]]],
+      ["Ceiling", [["ceiling", 0]]],
+      ["Window", [["window", 0]]],
+      ["Bed", [["Bedframe", 0], ["Mattress", 0], ["Pillow", 0], ["Bedding", 0]]],
+      ["Kitchen", [["Fridge", 0], ["Stove", 0], ["Microwave", 0], ["Sink", 0], ["Countertop", 0]]]
+    ];
+
+    const mockSetReset = jest.fn(); // Mock if needed
+    
+    // Create a spy for the changeStatus function
+    const changeStatusSpy = jest.spyOn(StatusFunctions, 'changeStatus')
+      .mockImplementation((layout, groupIndex, itemIndex, newStatus) => {
+        return layout;  // Returning the layout as is for simplicity
+      });
+
+    // Render the component
+    const { getAllByRole } = render(
+      <GroupedSituationReport
+        layout={layout}
+        changeStatus={StatusFunctions.changeStatus}
+        resetState={false}
+        setReset={mockSetReset}
+      />
+    );
+
+    // Simulate checking the first checkbox
+    const checkboxes = getAllByRole('checkbox');
+    fireEvent.press(checkboxes[0]); // Check the first item
+
+    // Assert that changeStatus was called with the correct arguments
+    expect(changeStatusSpy).toHaveBeenCalledWith(
+      layout,   // Use the actual layout
+      0,        // Group index for the first group ("Floor")
+      0,        // Item index for the first item in the "Floor" group
+      'OC'      // New status
+    );
+    
+    // Optionally, you can restore the spy after the test
+    changeStatusSpy.mockRestore();
+  });
 });

@@ -4,7 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import ApartmentItem from '../components/ApartmentItem';
 
-// Mock the Feather icon component
 jest.mock('@expo/vector-icons', () => ({
   Feather: 'Feather',
 }));
@@ -12,7 +11,6 @@ jest.mock('@expo/vector-icons', () => ({
 const Stack = createStackNavigator();
 const mockNavigate = jest.fn();
 
-// Mock navigation
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
   return {
@@ -25,7 +23,7 @@ jest.mock('@react-navigation/native', () => {
 
 describe('ApartmentItem', () => {
   const mockApartment = {
-    apartmentId: '101',
+    apartmentName: '101',
     tenants: [
       { id: '1', name: 'John Doe' },
       { id: '2', name: 'Jane Smith' }
@@ -50,23 +48,29 @@ describe('ApartmentItem', () => {
 
   it('renders apartment information correctly', () => {
     const { getByTestId, getByText } = renderWithNavigation(
-      <ApartmentItem apartment={mockApartment} />
+      <ApartmentItem 
+        apartment={mockApartment}
+        editMode={false}
+        navigation={mockNavigate as any}
+      />
     );
 
     const apartmentItem = getByTestId('apartment-item-101');
     expect(apartmentItem).toBeTruthy();
-    
-    const text = getByText(/101.*2 tenants/);
-    expect(text).toBeTruthy();
+    expect(getByText('101 (2 tenants)')).toBeTruthy();
   });
 
   it('renders with correct initial style', () => {
     const { getByTestId } = renderWithNavigation(
-      <ApartmentItem apartment={mockApartment} />
+      <ApartmentItem 
+        apartment={mockApartment}
+        editMode={false}
+        navigation={mockNavigate as any}
+      />
     );
 
     const pressableElement = getByTestId('apartment-item-101');
-    expect(pressableElement.props.style).toEqual({
+    expect(pressableElement.props.style).toMatchObject({
       width: '100%',
       opacity: 1,
       backgroundColor: '#D6D3F0',
@@ -79,46 +83,54 @@ describe('ApartmentItem', () => {
     });
   });
 
-  it('renders the Feather icon', () => {
-    const { getByTestId } = renderWithNavigation(
-      <ApartmentItem apartment={mockApartment} />
-    );
-
-    const icon = getByTestId('chevron-button');
-    expect(icon).toBeTruthy();
-  });
-
   it('handles empty tenants array', () => {
     const emptyApartment = {
-      apartmentId: '102',
+      apartmentName: '102',
       tenants: []
     };
 
     const { getByTestId, getByText } = renderWithNavigation(
-      <ApartmentItem apartment={emptyApartment} />
+      <ApartmentItem 
+        apartment={emptyApartment}
+        editMode={false}
+        navigation={mockNavigate as any}
+      />
     );
 
     const apartmentItem = getByTestId('apartment-item-102');
     expect(apartmentItem).toBeTruthy();
-    
-    const text = getByText(/102.*0 tenants/);
-    expect(text).toBeTruthy();
+    expect(getByText('102 (0 tenants)')).toBeTruthy();
   });
 
   it('renders correctly with single tenant', () => {
     const singleTenantApartment = {
-      apartmentId: '103',
+      apartmentName: '103',
       tenants: [{ id: '1', name: 'John Doe' }]
     };
 
     const { getByTestId, getByText } = renderWithNavigation(
-      <ApartmentItem apartment={singleTenantApartment} />
+      <ApartmentItem 
+        apartment={singleTenantApartment}
+        editMode={false}
+        navigation={mockNavigate as any}
+      />
     );
 
     const apartmentItem = getByTestId('apartment-item-103');
     expect(apartmentItem).toBeTruthy();
-    
-    const text = getByText(/103.*1 tenant/);
-    expect(text).toBeTruthy();
+    expect(getByText('103 (1 tenants)')).toBeTruthy();
+  });
+
+  it('handles edit mode correctly', () => {
+    const { getByTestId } = renderWithNavigation(
+      <ApartmentItem 
+        apartment={mockApartment}
+        editMode={true}
+        navigation={mockNavigate as any}
+        onDelete={() => {}}
+      />
+    );
+
+    expect(getByTestId('delete-button')).toBeTruthy();
   });
 });

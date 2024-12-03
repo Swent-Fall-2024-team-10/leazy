@@ -19,7 +19,7 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
   onDelete
 }) => (
   <Pressable
-    testID={`apartment-item-${apartment.apartmentId}`}
+    testID={`apartment-item-${apartment.apartmentName}`}
     style={({ pressed }: { pressed: boolean }) => ({
       width: '100%',
       opacity: pressed ? 0.6 : 1,
@@ -34,14 +34,14 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
     onPress={() => navigation.navigate('FlatDetails', { apartment })}
   >
     <Text style={appStyles.flatText}>
-      {apartment.apartmentId} ({apartment.tenants.length} tenants)
+      {apartment.apartmentName} ({apartment.tenants.length} tenants)
     </Text>
     <View style={{ flex: 1 }} />
     <Pressable
       testID={editMode ? 'delete-button' : 'chevron-button'}
       onPress={() => {
         if (editMode && onDelete) {
-          onDelete(apartment.apartmentId);
+          onDelete(apartment.apartmentName);
         } else {
           navigation.navigate('FlatDetails', { apartment });
         }

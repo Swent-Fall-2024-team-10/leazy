@@ -61,7 +61,7 @@ export function LandlordProvider({ children }: PropertyProviderProps) {
             const newResidenceMap = new Map<Residence, Apartment[]>();
 
             for (const doc of residenceSnapshot.docs) {
-              const residence = { ...doc.data(), residenceId: doc.id } as Residence;
+              const residence = { ...doc.data(), residenceName: doc.id } as Residence;
               residencesData.push(residence);
 
               const apartmentsSnapshot = await getDocs(
@@ -76,7 +76,6 @@ export function LandlordProvider({ children }: PropertyProviderProps) {
               apartmentsSnapshot.forEach(apartmentDoc => {
                 const apartment = {
                   ...apartmentDoc.data(),
-                  apartmentId: apartmentDoc.id
                 } as Apartment;
                 
                 apartmentsData.push(apartment);

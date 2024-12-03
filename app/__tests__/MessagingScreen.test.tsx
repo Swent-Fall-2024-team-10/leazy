@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import MessagingScreen from '../screens/messaging/MessagingScreen';
-import { addDoc, collection } from 'firebase/firestore';
 
 // Mock Firebase functions
 jest.mock('firebase/firestore', () => ({

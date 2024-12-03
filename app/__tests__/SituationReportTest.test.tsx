@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import SituationReport from '../screens/landlord/SituationReportScreen';
+import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
 import { useNavigation } from '@react-navigation/native';
 
 jest.mock('react-native-picker-select', () => {

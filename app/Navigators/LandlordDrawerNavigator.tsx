@@ -8,7 +8,8 @@ import CustomDrawerContent from '../components/drawer/CustomDrawer';
 import { Color, appStyles } from '../../styles/styles';
 import ResidenceStack from './ResidenceStack';
 import { LandlordProvider } from '../context/LandlordContext';
-
+import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
+import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -34,6 +35,8 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
         <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
         <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
+        <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
+        <Drawer.Screen name="Situation Report Form" component={SituationReport} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />
       </Drawer.Navigator>
     </LandlordProvider>

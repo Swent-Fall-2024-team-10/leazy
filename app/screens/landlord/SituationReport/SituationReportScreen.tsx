@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
-import TickingBox from "../../components/forms/TickingBox";
-import Header from "../../components/Header";
-import { appStyles, ButtonDimensions, Color, FontSizes, FontWeight } from "../../../styles/styles";
-import InputField from "../../components/forms/text_input";
-import StraightLine from "../../components/SeparationLine";
-import SubmitButton from "../../components/buttons/SubmitButton";
+import TickingBox from "../../../components/forms/TickingBox";
+import Header from "../../../components/Header";
+import { appStyles, ButtonDimensions, Color} from "../../../../styles/styles";
+import InputField from "../../../components/forms/text_input";
+import StraightLine from "../../../components/SeparationLine";
+import SubmitButton from "../../../components/buttons/SubmitButton";
 import RNPickerSelect from 'react-native-picker-select';
+import { situationReportStyles, pickerSelectStyles } from "./SituationReportStyling";
 
 type PickerItem = {
     label: string;
@@ -31,10 +32,10 @@ const apartments = Array.from({ length: 10 }, (_, i) => ({ label: `${i + 1}`, va
   // Picker group to select residence and apartment
 function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
     return (
-        <View style={[appStyles.grayGroupBackground, styles.pickerContainer]}>
-            <Text style={styles.label}>{label}</Text>
+        <View style={[appStyles.grayGroupBackground, situationReportStyles.pickerContainer]}>
+            <Text style={situationReportStyles.label}>{label}</Text>
 
-            <View style={styles.pickerWrapper} testID="">
+            <View style={situationReportStyles.pickerWrapper} testID="">
                 <RNPickerSelect
                     onValueChange={(value) => setValue(value)}
                     items={data}
@@ -69,9 +70,9 @@ function SituationReportItem({ label, n }: { label: string; n: number }) {
 
 
 return (
-    <View style={styles.item}>
-        <View style={styles.itemRow}>
-        <Text style={[styles.text, styles.label]}>
+    <View style={situationReportStyles.item}>
+        <View style={situationReportStyles.itemRow}>
+        <Text style={[situationReportStyles.text, situationReportStyles.label]}>
             {n} : {label}
         </Text>
             <TickingBox checked={checked1} onChange={(value) => handleCheck(setChecked1)} />
@@ -95,12 +96,12 @@ return (
     const width = 140;
     return (
       <View style={appStyles.grayGroupBackground}>
-            <View style={styles.tenantNameContainer}>
-                <View style={styles.tenantLabelContainer}>
-                    <Text testID={testID} style={[styles.tenantLabel]}>{label}</Text>
+            <View style={situationReportStyles.tenantNameContainer}>
+                <View style={situationReportStyles.tenantLabelContainer}>
+                    <Text testID={testID} style={[situationReportStyles.tenantLabel]}>{label}</Text>
                 </View>
 
-                <View style={[styles.tenantRow, {justifyContent: "flex-end", flexDirection: 'column' }]}>
+                <View style={[situationReportStyles.tenantRow, {justifyContent: "flex-end", flexDirection: 'column' }]}>
                     <InputField
                         value={name}
                         setValue={onNameChange}
@@ -174,7 +175,7 @@ export default function SituationReport() {
             label={"Leaving Tenant"}
             />
 
-          <View style={styles.lineContainer}>
+          <View style={situationReportStyles.lineContainer}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
 
               <View style={{ marginBottom: "2%" }}>
@@ -183,10 +184,10 @@ export default function SituationReport() {
                 <Text testID="AW-description">AW = Abnormal Wear</Text>
               </View>
 
-              <View style={styles.labels}>
-                <Text testID="OC-tag" style={styles.wearStatus}>OC</Text>
-                <Text testID="NW-tag" style={styles.wearStatus}>NW</Text>
-                <Text testID="AW-tag" style={styles.wearStatus}>AW</Text>
+              <View style={situationReportStyles.labels}>
+                <Text testID="OC-tag" style={situationReportStyles.wearStatus}>OC</Text>
+                <Text testID="NW-tag" style={situationReportStyles.wearStatus}>NW</Text>
+                <Text testID="AW-tag" style={situationReportStyles.wearStatus}>AW</Text>
               </View>
             </View>
 
@@ -197,8 +198,8 @@ export default function SituationReport() {
                 <SituationReportItem key={index} label={String(item[0])} n={index + 1}/>
             ))}
 
-          <View style={styles.lineContainer}>
-            <Text style={styles.remark}> Remark :</Text>
+          <View style={situationReportStyles.lineContainer}>
+            <Text style={situationReportStyles.remark}> Remark :</Text>
             <StraightLine />
 
             <InputField
@@ -229,115 +230,5 @@ export default function SituationReport() {
   );
 }
 
-const styles = StyleSheet.create({
-    groupSituationReport: {
-        margin : "2%",
-    },
 
-    tenantNameContainer : {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-
-  lineContainer: {
-    marginBottom: "5%",
-    marginTop: "5%",
-  },
-
-  labels: {
-    fontSize: FontSizes.label,
-    flexDirection: "row",
-    alignSelf: "flex-end",
-    position: "absolute",
-    left: "65%",
-    bottom: "10%",
-  },
-  wearStatus: {
-    color: Color.TextInputLabel, /* Purple border */
-    fontSize: FontSizes.TextInputLabel,
-    fontWeight: FontWeight.TextInputLabel, // Use a valid fontWeight value
-    marginRight: "15%",
-  },
-
-  remark: {
-    color: Color.ButtonBackground, /* Purple border */
-    marginBottom: "2%",
-    fontSize: FontSizes.label,
-    fontWeight: "600", // Use a valid fontWeight value
-  },
-
-  item: {
-    backgroundColor: Color.GrayGroupBackground, /* Light gray background */
-    borderWidth: 0.5,
-    borderColor: Color.GrayGroupMargin, /* Purple border */
-    borderRadius: 15, /* Rounded corners */
-    height: 80,
-    width: "100%",
-    justifyContent: "center",
-    padding: "2%",
-    marginBottom : "2%",
-  },
-  
-  itemRow: {
-    flexDirection: "row", /* Align items horizontally */
-    alignItems: "flex-start", /* Align items to the start */
-    flexWrap: "wrap", /* Allow text to wrap to the next line */
-  },
-
-  text: {
-    fontSize: FontSizes.TextInputLabel,
-    color: Color.ButtonBackground,
-    fontWeight: FontWeight.TextInputLabel, 
-    marginRight: '2%', 
-    flex: 1,
-  },
-
-  tenantLabelContainer: {
-    marginTop : "3%",
-  },
-
-  tenantLabel: {
-    fontSize: FontSizes.TextInputLabel,
-    color: Color.ButtonBackground,
-    fontWeight: FontWeight.TextInputLabel,
-    marginRight: "2%",
-    marginLeft: "2%",
-  },
-  
-  tenantRow: {
-    flexDirection: "row",
-  },
-
-  pickerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding : '2%',
-  },
-
-  pickerWrapper: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 25,
-    backgroundColor: Color.TextInputBackground,
-    borderColor: Color.TextInputBorder,
-  },
-
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-    marginLeft: '2%',
-    marginRight: '10%',
-    color: Color.ButtonBackground,
-  },
-});
-
-const pickerSelectStyles = {
-    inputIOS: {
-        color: "black",
-    },
-    inputAndroid: {
-        color : "black",
-    },
-  };
   

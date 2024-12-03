@@ -21,6 +21,7 @@ import { TimerPickerModal } from "react-native-timer-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import SubmitButton from "../../../app/components/buttons/SubmitButton";
 import { appStyles } from "../../../styles/styles";
+import * as Notifications from 'expo-notifications';
 
 const WashingMachineScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -59,6 +60,22 @@ const WashingMachineScreen = () => {
     [timerIntervals]
   );
 
+  const scheduleFinishNotification = async (machineId: string, delayS: number) => {
+    const now = Date.now();
+    if (delayS > now) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `Laundry Machine ${machineId}`,
+          body: `Your laundry will be ready in 3 minutes!`,
+        },
+        trigger: { seconds: delayS }, // Schedule after calculated delay
+      });
+      console.log(`Notification scheduled for ${delayS} seconds from now.`);
+    } else {
+      console.warn('Notification time is in the past. Not scheduling.');
+    }
+  };
+
   const calculateTimer = useCallback(
     (laundryMachineId: string, estimatedFinishTime: Timestamp) => {
       // Don't start a new timer if one already exists for this machine
@@ -69,25 +86,9 @@ const WashingMachineScreen = () => {
       const now = Date.now();
       const remainingTimeMs = estimatedFinishTime.toMillis() - now;
 
-      // If already completed, set the status immediately
-      if (remainingTimeMs <= 0) {
-        setRemainingTimes((prev) => ({
-          ...prev,
-          [laundryMachineId]: "Cycle completed",
-        }));
-        return;
-      }
-
-      // Calculate and set initial time immediately
-      const hours = Math.floor((remainingTimeMs / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((remainingTimeMs / (1000 * 60)) % 60);
-      const seconds = Math.floor((remainingTimeMs / 1000) % 60);
-      const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
-      
-      setRemainingTimes((prev) => ({
-        ...prev,
-        [laundryMachineId]: formattedTime,
-      }));
+      // Schedule the notification 3 minutes before finish time
+      const remainingTimeS = Math.round((remainingTimeMs - 3 * 60 * 1000) / 1000);
+      scheduleFinishNotification(laundryMachineId, remainingTimeS);
 
       // Set up the interval to update the remaining time
       const intervalId = setInterval(async () => {
@@ -106,25 +107,6 @@ const WashingMachineScreen = () => {
             return updated;
           });
           return;
-        }
-
-        // Check if remaining time is under 3 minutes and notification hasn't been sent
-        //no entry for a specific machine in notificationStatus acts as a false
-        if (
-          currentRemainingTimeMs <= 3 * 60 * 1000 &&
-          currentRemainingTimeMs >= 2 * 60 * 1000 + 59 * 1000 &&
-          userId
-        ) {
-          const initialData = await getLaundryMachine(
-            residenceId,
-            laundryMachineId
-          );
-          if (!initialData) return;
-          const notificationAlreadySent =
-            initialData.notificationScheduled || false;
-          if (!notificationAlreadySent) {
-            createMachineNotification(userId);
-          }
         }
 
         // Calculate hours, minutes, and seconds

@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from "@testing-library/react-native";
-import CustomInputToolbar from "../screens/messaging/CustomInputToolbar";
+import CustomInputToolbar from "../components/messaging/CustomInputToolbar";
 
 describe('CustomInputToolbar', () => {
     it('renders correctly', () => {

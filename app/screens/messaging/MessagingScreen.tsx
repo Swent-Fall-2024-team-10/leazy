@@ -10,8 +10,8 @@ import Header from "../../components/Header";
 import { appStyles } from "../../../styles/styles";
 import { ReportStackParamList } from "../../../types/types";
 import { useAuth } from "../../Navigators/AuthContext";
-import CustomInputToolbar from "./CustomInputToolbar";
-import CustomBubble from "./CustomBubble";
+import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
+import CustomBubble from "../../components/messaging/CustomBubble";
 
 
 export default function MessagingScreen() {

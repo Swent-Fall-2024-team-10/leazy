@@ -30,8 +30,7 @@ import {
   FontSizes,
   stylesForNonHeaderScreens,
 } from "../../../styles/styles";
-import { useNavigation } from "@react-navigation/native"; // Assuming React Navigation is used
-import SubmitButton from "../../components/buttons/SubmitButton";
+import { useNavigation } from "@react-navigation/native";
 
 const RoundedRectangle: React.FC<{
   children: React.ReactNode;
@@ -55,7 +54,7 @@ const LandlordDashboard: React.FC = () => {
     MaintenanceRequest[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [error, setError] = useState<string | null>(null);
 
   const fetchResidence = useCallback(async () => {
     setLoading(true);
@@ -66,19 +65,16 @@ const LandlordDashboard: React.FC = () => {
         throw new Error("Landlord not found");
       }
 
-      // Fetch all residences in parallel
       const residencesPromises = landlord.residenceIds.map((resId) =>
         getResidence(resId)
       );
       const residencesResults = await Promise.all(residencesPromises);
       const residences: Residence[] = residencesResults as Residence[];
 
-      // Fetch all apartments for each residence in parallel
       const apartmentsPromises: Promise<Apartment>[] = [];
       residences.forEach((residence) => {
         residence.apartments.forEach((apartId) => {
           const apartmentPromise = getApartment(apartId);
-          // Ensure the promise resolves to Apartment and not null
           apartmentsPromises.push(
             apartmentPromise.then((apartment) => {
               if (!apartment) {
@@ -92,8 +88,6 @@ const LandlordDashboard: React.FC = () => {
 
       const apartmentsResults = await Promise.all(apartmentsPromises);
       const apartments: Apartment[] = apartmentsResults as Apartment[];
-
-      // Fetch all maintenance requests for each apartment in parallel
       const maintenanceRequestsPromises: Promise<MaintenanceRequest | null>[] =
         [];
       apartments.forEach((apartment) => {
@@ -168,7 +162,6 @@ const LandlordDashboard: React.FC = () => {
     },
   ];
 
-  // Wait to have a screen listing all residences
   const handleResidencePress = (residence: Residence) => {};
 
   const handleRetry = () => {

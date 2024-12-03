@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, act, waitFor } from '@testing-library/react-native';
 import { View, Text } from 'react-native';
-import { AuthProvider, useAuth } from '../Navigators/AuthContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 import { User as FirebaseUser } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
 import { TUser, Tenant, Landlord } from '../../types/types';

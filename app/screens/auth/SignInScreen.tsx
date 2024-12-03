@@ -74,6 +74,7 @@ export default function SignInScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        style={appStyles.signUpInputField}
       />
       {errors.email && <Text style={stylesForNonHeaderScreens.errorText}>{errors.email}</Text>}
       
@@ -82,6 +83,7 @@ export default function SignInScreen() {
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
+        style={appStyles.signUpInputField}
         secureTextEntry
       />
       

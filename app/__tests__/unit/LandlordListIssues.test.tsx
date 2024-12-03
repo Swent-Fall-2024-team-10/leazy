@@ -1,21 +1,28 @@
-import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { act } from 'react-test-renderer';
-import LandlordListIssuesScreen from '../../screens/issues_landlord/LandlordListIssuesScreen';
-import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
-import { useAuth } from '../../Navigators/AuthContext';
-import { NavigationContainer } from '@react-navigation/native';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
+import LandlordListIssuesScreen from "../../screens/issues_landlord/LandlordListIssuesScreen";
+import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from "../../../firebase/firestore/firestore";
+import { useAuth } from "../../context/AuthContext";
+import "@testing-library/jest-native/extend-expect";
 
-// Mock React Navigation
-jest.mock('@react-navigation/native', () => {
-  return {
-    ...jest.requireActual('@react-navigation/native'),
-    useNavigation: jest.fn(() => ({
-      navigate: jest.fn(),
-      openDrawer: jest.fn(),
-    })),
-  };
-});
+// Mock the entire firebase/auth module
+jest.mock("firebase/auth", () => ({
+  getAuth: () => ({
+    currentUser: { uid: "landlord1" },
+  }),
+  initializeAuth: jest.fn(),
+  getReactNativePersistence: jest.fn(),
+}));
+
+// Mock AsyncStorage
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  default: {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+  },
+}));
 
 // Mock the Firebase functions
 jest.mock('../../../firebase/firestore/firestore', () => ({
@@ -26,8 +33,10 @@ jest.mock('../../../firebase/firestore/firestore', () => ({
 }));
 
 // Mock the auth context
-jest.mock('../../Navigators/AuthContext', () => ({
-  useAuth: jest.fn(),
+jest.mock('../../context/AuthContext', () => ({
+  useAuth: jest.fn(() => ({
+    user: { uid: 'testLandlordId' },
+  })),
 }));
 
 jest.mock('@expo/vector-icons', () => ({
@@ -91,11 +100,6 @@ describe('LandlordListIssuesScreen', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
-
-    // Mock auth context
-    (useAuth as jest.Mock).mockReturnValue({
-      user: { uid: 'testLandlordId' },
-    });
 
     // Set up mock implementations
     (getLandlord as jest.Mock).mockResolvedValue(mockLandlord);

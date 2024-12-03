@@ -1,5 +1,5 @@
 import Header from "@/app/components/Header";
-import { appStyles, defaultButtonRadius} from "@/styles/styles";
+import { appStyles, ButtonDimensions, defaultButtonRadius} from "@/styles/styles";
 import { useState } from "react";
 import React from "react";
 import { Text, View, ScrollView, TouchableOpacity} from "react-native";
@@ -8,6 +8,7 @@ import StraightLine from "../../../components/SeparationLine";
 import { layoutCreationStyles, situationReportStyles } from "./SituationReportStyling";
 import TickingBox from "../../../components/forms/TickingBox";
 import { addGroupToLayout } from "../../../utils/SituationReport";
+import SubmitButton from "@/app/components/buttons/SubmitButton";
 
 type SituationReportItemProps = {
     label: string;
@@ -220,7 +221,8 @@ export default function SituationReportCreation() {
                                 title="Edit"
                                 titleStyle={appStyles.submitButtonText}
                                 onPress={()=> {
-                                    setEditMode(true);                                
+                                    setEditMode(true); 
+                                    setTempLayout(layout);                               
                                 }}
                                 buttonStyle={[
                                     appStyles.buttonAccept, 
@@ -233,7 +235,11 @@ export default function SituationReportCreation() {
                 {layout.length === 0 && !editMode ? (
                     <Text style={appStyles.emptyListText}> Tap the "Edit" button to start creating a new situation report layout  </Text>
                 ) : (
-                    <GroupedSituationReport layout={layout} />
+                    editMode ? (
+                        <GroupedSituationReport layout={tempLayout} />
+                    ) : (
+                        <GroupedSituationReport layout={layout} />
+                    )
                 )}
 
                 {editMode && (
@@ -252,15 +258,29 @@ export default function SituationReportCreation() {
                         buttonStyle={layoutCreationStyles.addButton}
                         textStyle={layoutCreationStyles.buttonText}
                         onPress={() =>{
-                            let nextLayout = addGroupToLayout(layout, [["New Item", 0]], "New Group");
-                            setLayout(nextLayout);
+                            let nextLayout = addGroupToLayout(tempLayout, [["New Item", 0]], "New Group");
+                            setTempLayout(nextLayout);
                         } 
                         }
                     />
                 </View>
                 )}
-
-
+                    <View style={appStyles.submitContainer}>
+                        <SubmitButton
+                            disabled={false}
+                            label="Submit"
+                            testID="submit-button"
+                            width={ButtonDimensions.mediumButtonWidth}
+                            height={ButtonDimensions.mediumButtonHeight}
+                            style={appStyles.submitButton}
+                            textStyle={appStyles.submitButtonText}
+                            onPress={() => {
+                                console.log("Submit")
+                                setLayout([]);
+                                }
+                            }
+                        />
+                    </View>
                 </View>
         </ScrollView>
     </Header>

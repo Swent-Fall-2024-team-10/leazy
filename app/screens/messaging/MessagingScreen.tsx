@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
@@ -12,6 +12,7 @@ import { ReportStackParamList } from "../../../types/types";
 import { useAuth } from "../../Navigators/AuthContext";
 import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
 import CustomBubble from "../../components/messaging/CustomBubble";
+import { Key } from "react-native-feather";
 
 
 export default function MessagingScreen() {
@@ -45,6 +46,7 @@ export default function MessagingScreen() {
             testID="arrow-left" 
             onPress={() => {
               console.log("navigating to issues")
+              Keyboard.dismiss();
               navigation.navigate("Issues");
             }}
             style={{padding: 10

@@ -23,8 +23,7 @@ export default function MessagingScreen() {
   const onSend = useCallback((newMessages: IMessage[] = []) => {
     setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
 
-    const { _id, createdAt, text, user } = newMessages[0];
-    addDoc(collection(db, "chats"), { _id, createdAt, text, user });
+    // Function call to viewModel to be added here
   }, []);
   
   const renderInputToolbar = (props: any) => (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Dimensions, Keyboard, KeyboardAvoidingView } from "react-native";
 import TickingBox from "../../../components/forms/TickingBox";
 import Header from "../../../components/Header";
 import { appStyles, borderWidth, ButtonDimensions, Color, FontSizes, FontWeight } from "../../../../styles/styles";
@@ -297,123 +297,127 @@ export default function SituationReportScreen() {
 
   return (
     <Header>
-      <ScrollView style={[appStyles.screenContainer]} 
-      automaticallyAdjustKeyboardInsets={true}
-      removeClippedSubviews={true}
-      ref={scrollViewRef}
-      >
-        <View style={{ marginBottom: "90%", paddingBottom: "30%" }}>
-          <Text style={appStyles.screenHeader}>Situation Report Form</Text>
+      <KeyboardAvoidingView behavior="padding" style={appStyles.screenContainer}>
+        <ScrollView 
+        automaticallyAdjustKeyboardInsets={true}
+        removeClippedSubviews={true}
+        ref={scrollViewRef}
+        >
+          <View style={{ marginBottom: "90%", paddingBottom: "30%" }}>
+            <Text style={appStyles.screenHeader}>Situation Report Form</Text>
 
-          <PickerGroup testID="residence-picker" label={"Residence"} data={residences} chosed={selectedResidence} setValue={setSelectedResidence} />
-          <PickerGroup testID="apartment-picker" label={"Apartment"} data={apartments} chosed={selectedApartment} setValue={setSelectedApartment} />
+            <PickerGroup testID="residence-picker" label={"Residence"} data={residences} chosed={selectedResidence} setValue={setSelectedResidence} />
+            <PickerGroup testID="apartment-picker" label={"Apartment"} data={apartments} chosed={selectedApartment} setValue={setSelectedApartment} />
 
-          <TenantNameGroup 
-            name={arrivingTenantName}
-            onNameChange={setArrivingTenantName}
-            surname={arrivingTenantSurname}
-            onSurnameChange={setArrivingTenantSurname}
-            testID={"arriving-tenant-label"} 
-            label={"Arriving Tenant"} 
-            testIDName="arriving-tenant-name"
-            testIDSurname="arriving-tenant-surname"
-            />
+            <TenantNameGroup 
+              name={arrivingTenantName}
+              onNameChange={setArrivingTenantName}
+              surname={arrivingTenantSurname}
+              onSurnameChange={setArrivingTenantSurname}
+              testID={"arriving-tenant-label"} 
+              label={"Arriving Tenant"} 
+              testIDName="arriving-tenant-name"
+              testIDSurname="arriving-tenant-surname"
+              />
 
-          <TenantNameGroup
-            name={leavingTenantName}
-            onNameChange={(value) => {setLeavingTenantName(value)}}
-            surname={leavingTenantSurname}
-            onSurnameChange={(value) => {setLeavingTenantSurname(value)}}
-            testID={"leavning-tenant-label"} 
-            label={"Leaving Tenant"}
-            testIDName="leaving-tenant-name"
-            testIDSurname="leaving-tenant-surname"
-            />
+            <TenantNameGroup
+              name={leavingTenantName}
+              onNameChange={(value) => {setLeavingTenantName(value)}}
+              surname={leavingTenantSurname}
+              onSurnameChange={(value) => {setLeavingTenantSurname(value)}}
+              testID={"leavning-tenant-label"} 
+              label={"Leaving Tenant"}
+              testIDName="leaving-tenant-name"
+              testIDSurname="leaving-tenant-surname"
+              />
 
-          <View style={situationReportStyles.lineContainer}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={situationReportStyles.lineContainer}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-              <View style={{ marginBottom: "2%" }}>
-                <Text testID="OC-description">OC = Original Condition </Text>
-                <Text testID="NW-description">NW = Natural Wear</Text>
-                <Text testID="AW-description">AW = Abnormal Wear</Text>
+                <View style={{ marginBottom: "2%" }}>
+                  <Text testID="OC-description">OC = Original Condition </Text>
+                  <Text testID="NW-description">NW = Natural Wear</Text>
+                  <Text testID="AW-description">AW = Abnormal Wear</Text>
+                </View>
+
+                <View style={situationReportStyles.labels}>
+                  <Text testID="OC-tag" style={situationReportStyles.wearStatus}>OC</Text>
+                  <Text testID="NW-tag" style={situationReportStyles.wearStatus}>NW</Text>
+                  <Text testID="AW-tag" style={situationReportStyles.wearStatus}>AW</Text>
+                </View>
               </View>
 
-              <View style={situationReportStyles.labels}>
-                <Text testID="OC-tag" style={situationReportStyles.wearStatus}>OC</Text>
-                <Text testID="NW-tag" style={situationReportStyles.wearStatus}>NW</Text>
-                <Text testID="AW-tag" style={situationReportStyles.wearStatus}>AW</Text>
-              </View>
+              <StraightLine />
             </View>
 
-            <StraightLine />
+            <GroupedSituationReport layout={newLayout} changeStatus={changeStatus} resetState={resetState} setReset={() => setResetState(false)}/>
+
+
+            <View style={situationReportStyles.lineContainer}>
+              <Text style={situationReportStyles.remark}> Remark :</Text>
+              <StraightLine />
+
+              <InputField
+                value={remark}
+                setValue={(value) => {setRemark(value)}}
+                placeholder="Enter your remarks here"
+                height={100} // Increased height for the input field
+                width={Dimensions.get("window").width * 0.85}
+                backgroundColor={Color.TextInputBackground}
+                radius={20}
+                testID="testRemarkField"
+                style={{ marginTop: "5%" }}
+              />
+            </View>
+            <View style={appStyles.submitContainer}>
+
+              <SubmitButton
+                label="Submit"
+                testID="submit"
+                width={ButtonDimensions.smallButtonWidth}
+                height={ButtonDimensions.smallButtonHeight}
+                disabled={false}
+                onPress={async () => {
+
+                  // Hardcoded value for the apartmentId since residence and apartment
+                  const report : SituationReport = {
+                    reportDate: new Date().toISOString(),
+                    residenceId: selectedResidence,
+                    apartmentId: "damH2jH7NRxIVZa0cZgL",
+                    arrivingTenant: JSON.stringify({
+                      name: arrivingTenantName,
+                      surname: arrivingTenantSurname,
+                    }),
+                    leavingTenant: JSON.stringify({
+                      name: leavingTenantName,
+                      surname: leavingTenantSurname,
+                    }),
+                    remarks: remark,
+                    reportForm: toDatabaseFormat(newLayout, arrivingTenantName + " Situation Report"),
+                  }
+
+                  console.log(report);
+                  reset();
+
+
+                  const apartment = await getApartment("damH2jH7NRxIVZa0cZgL");
+                  if (!apartment) {
+                    console.log("Apartment not found");
+                  }
+                  
+                  if (apartment?.situationReportId) {
+                    await deleteSituationReport(apartment.situationReportId);
+                  }
+
+                  addSituationReport(report,"damH2jH7NRxIVZa0cZgL");
+                  navigation.navigate("List Issues" as never)
+                }}
+                style={appStyles.submitButton}
+              />
+            </View>
           </View>
-
-          <GroupedSituationReport layout={newLayout} changeStatus={changeStatus} resetState={resetState} setReset={() => setResetState(false)}/>
-
-
-          <View style={situationReportStyles.lineContainer}>
-            <Text style={situationReportStyles.remark}> Remark :</Text>
-            <StraightLine />
-
-            <InputField
-              value={remark}
-              setValue={(value) => {setRemark(value)}}
-              placeholder="Enter your remarks here"
-              height={100} // Increased height for the input field
-              width={Dimensions.get("window").width * 0.85}
-              backgroundColor={Color.TextInputBackground}
-              radius={20}
-              testID="testRemarkField"
-              style={{ marginTop: "5%" }}
-            />
-          </View>
-
-          <SubmitButton
-            label="Submit"
-            testID="submit"
-            width={ButtonDimensions.smallButtonWidth}
-            height={ButtonDimensions.smallButtonHeight}
-            disabled={false}
-            onPress={async () => {
-
-              // Hardcoded value for the apartmentId since residence and apartment
-              const report : SituationReport = {
-                reportDate: new Date().toISOString(),
-                residenceId: selectedResidence,
-                apartmentId: "damH2jH7NRxIVZa0cZgL",
-                arrivingTenant: JSON.stringify({
-                  name: arrivingTenantName,
-                  surname: arrivingTenantSurname,
-                }),
-                leavingTenant: JSON.stringify({
-                  name: leavingTenantName,
-                  surname: leavingTenantSurname,
-                }),
-                remarks: remark,
-                reportForm: toDatabaseFormat(newLayout, arrivingTenantName + " Situation Report"),
-              }
-
-              console.log(report);
-              reset();
-
-
-              const apartment = await getApartment("damH2jH7NRxIVZa0cZgL");
-              if (!apartment) {
-                console.log("Apartment not found");
-              }
-              
-              if (apartment?.situationReportId) {
-                await deleteSituationReport(apartment.situationReportId);
-              }
-
-              addSituationReport(report,"damH2jH7NRxIVZa0cZgL");
-              navigation.navigate("List Issues" as never)
-            }}
-            style={appStyles.submitButton}
-          />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Header>
   );
 }

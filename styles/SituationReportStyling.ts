@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet } from "react-native";
-import { ButtonDimensions, Color, defaultButtonRadius, FontSizes, FontWeight } from "./styles";
+import { borderWidth, ButtonDimensions, Color, defaultButtonRadius, FontSizes, FontWeight } from "./styles";
 
 export const situationReportStyles = StyleSheet.create({
     groupSituationReport: {
@@ -204,6 +204,16 @@ export const layoutCreationStyles = StyleSheet.create({
         padding : "2%",
         justifyContent: "space-between",
       },
+
+    layoutNameContainer:{
+        backgroundColor: Color.GrayGroupBackground,
+        padding: "2%",
+        borderRadius: 15,
+        borderWidth: borderWidth.thin,
+        borderColor: Color.GrayGroupMargin,
+        marginBottom: "10%",
+        marginTop: "10%",
+    },
 
       
 

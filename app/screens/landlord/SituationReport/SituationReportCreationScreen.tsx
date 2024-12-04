@@ -1,15 +1,19 @@
 import Header from "@/app/components/Header";
-import { appStyles, ButtonDimensions, defaultButtonRadius} from "@/styles/styles";
-import { useCallback, useState } from "react";
+import { appStyles, ButtonDimensions, Color, defaultButtonRadius, textInputHeight} from "@/styles/styles";
+import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import { Text, View, ScrollView, TouchableOpacity} from "react-native";
 import { Button, Icon } from "react-native-elements";
 import StraightLine from "../../../components/SeparationLine";
 import { layoutCreationStyles, situationReportStyles } from "../../../../styles/SituationReportStyling";
 import TickingBox from "../../../components/forms/TickingBox";
-import { addGroupToLayout, addSingleItemToGroup, removeGroupFromLayout, removeItemFrom } from "../../../utils/SituationReport";
+import { addGroupToLayout, addSingleItemToGroup, removeGroupFromLayout, removeItemFrom, toDatabaseFormat } from "../../../utils/SituationReport";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 import InputField from "@/app/components/forms/text_input";
+import { Key } from "react-native-feather";
+import { KeyboardAvoidingView } from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { addSituationReportLayout, getResidence } from "@/firebase/firestore/firestore";
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -125,6 +129,9 @@ type SituationReportItemProps = {
               placeholder="Item Name"
               testID={`item-name-input-${groupIndex}-${itemIndex}`}
               style={layoutCreationStyles.inputField}
+              height={textInputHeight}
+              width={ButtonDimensions.fullWidthButtonWidth}
+              backgroundColor={Color.TextInputBackground}
             />
           ) : (
             <Text style={[situationReportStyles.text, situationReportStyles.label]}>{itemNumber} : {itemText}</Text>
@@ -193,6 +200,9 @@ type GroupedSituationReportProps = {
                     placeholder={groupName}
                     testID={`group-name-input-${groupIndex}`}
                     style={layoutCreationStyles.inputField}
+                    height={textInputHeight}
+                    width={ButtonDimensions.fullWidthButtonWidth}
+                    backgroundColor={Color.TextInputBackground}
                   />
                 ) : (
                   <Text style={situationReportStyles.groupLabel}>{groupName} :</Text>
@@ -317,163 +327,200 @@ export function AddItemButton({ label, testID, buttonStyle, textStyle, onPress }
 
 
 export default function SituationReportCreation() {
+    const navigation = useNavigation();
     const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
     const [editMode, setEditMode] = useState(false);
-
     const [tempLayout, setTempLayout] = useState<[string, [string, number][]][]>([]);
+
+    const [situationReportName, setSituationReportName] = useState("");
+
 
     function resetStates() {
         setLayout([]);
+        setSituationReportName("");
         setEditMode(false);
         setTempLayout([]);
     }
+
+    useFocusEffect(
+      useCallback(() => {
+        return () => {
+          resetStates();
+        };
+      }, [])
+    );
+
     
     return (
     <Header>
-        <ScrollView style={[appStyles.screenContainer]} 
-        automaticallyAdjustKeyboardInsets={true}
-        removeClippedSubviews={true}
-        >
-            <View style={{ marginBottom: "90%", paddingBottom: "30%" }}>
-                <Text style={appStyles.screenHeader}>Situation Report : Layout Creation </Text>
-                
-                
-                <View style={situationReportStyles.layoutCreationSeparationLine}>
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <KeyboardAvoidingView behavior="padding" style={appStyles.screenContainer}>
+          <ScrollView
+          automaticallyAdjustKeyboardInsets={true}
+          removeClippedSubviews={true}
+          >
+              <View style={{ marginBottom: "90%", paddingBottom: "30%" }}>
+                  <Text style={appStyles.screenHeader}>Situation Report : Layout Creation </Text>
+                  
+                  <View>
+                      <View style={[situationReportStyles.itemRow, layoutCreationStyles.layoutNameContainer]}>
+                          <Text style={appStyles.inputFieldLabel}> Layout Name : </Text>
+                          <InputField
+                              value={situationReportName}
+                              setValue={(newName) => setSituationReportName(newName)}
+                              placeholder={"Situation Report Name"}
+                              testID={"situation-report-name"}
+                              height={textInputHeight}
+                              width={ButtonDimensions.fullWidthButtonWidth}
+                              backgroundColor={Color.TextInputBackground}
+                          />
+                      </View>
+                  </View>
 
-                    <View style={{ marginBottom: "2%" }}>
-                        <Text testID="OC-description">OC = Original Condition </Text>
-                        <Text testID="NW-description">NW = Natural Wear</Text>
-                        <Text testID="AW-description">AW = Abnormal Wear</Text>
-                    </View>
+                  
+                  <View style={situationReportStyles.layoutCreationSeparationLine}>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-                    <View style={situationReportStyles.labels}>
-                        <Text testID="OC-tag" style={situationReportStyles.wearStatus}>OC</Text>
-                        <Text testID="NW-tag" style={situationReportStyles.wearStatus}>NW</Text>
-                        <Text testID="AW-tag" style={situationReportStyles.wearStatus}>AW</Text>
-                    </View>
-                    </View>
+                      <View style={{ marginBottom: "2%" }}>
+                          <Text testID="OC-description">OC = Original Condition </Text>
+                          <Text testID="NW-description">NW = Natural Wear</Text>
+                          <Text testID="AW-description">AW = Abnormal Wear</Text>
+                      </View>
 
-                    <StraightLine />
-                </View>
+                      <View style={situationReportStyles.labels}>
+                          <Text testID="OC-tag" style={situationReportStyles.wearStatus}>OC</Text>
+                          <Text testID="NW-tag" style={situationReportStyles.wearStatus}>NW</Text>
+                          <Text testID="AW-tag" style={situationReportStyles.wearStatus}>AW</Text>
+                      </View>
+                      </View>
 
-                {editMode ? (
-                    <View style={layoutCreationStyles.cancelOrSaveContainer}>
-                            <Button
-                                testID="cancel-button"
-                                title="Cancel"
-                                titleStyle={appStyles.submitButtonText}
-                                onPress={()=> {
-                                    setLayout(layout);
-                                    setTempLayout(layout);
-                                    setEditMode(false);
-                                }}
-                                buttonStyle={[
-                                    appStyles.buttonCancel, 
-                                    layoutCreationStyles.layoutModificationButton
-                                ]}
-                            />
+                      <StraightLine />
+                  </View>
 
-                            <Button
-                                testID="save-button"
-                                title="Save"
-                                titleStyle={appStyles.submitButtonText}
-                                onPress={()=> {
-                                    setLayout(tempLayout);
-                                    setTempLayout(layout);
-                                    setEditMode(false);                                
-                                }}
-                                buttonStyle={[
-                                    appStyles.buttonAccept, 
-                                    layoutCreationStyles.layoutModificationButton,
-                                ]}
-                            />
-                    </View>
-                    ) : (
-                    <View style={layoutCreationStyles.editButton}>
-                        <Button
-                                testID="edit-button"
-                                title="Edit"
-                                titleStyle={appStyles.submitButtonText}
-                                onPress={()=> {
-                                    setEditMode(true); 
-                                    setTempLayout(layout);                               
-                                }}
-                                buttonStyle={[
-                                    appStyles.buttonAccept, 
-                                    layoutCreationStyles.layoutModificationButton,
-                                ]}
-                        />
-                    </View>
-                )}
+                  {editMode ? (
+                      <View style={layoutCreationStyles.cancelOrSaveContainer}>
+                              <Button
+                                  testID="cancel-button"
+                                  title="Cancel"
+                                  titleStyle={appStyles.submitButtonText}
+                                  onPress={()=> {
+                                      setLayout(layout);
+                                      setTempLayout(layout);
+                                      setEditMode(false);
+                                  }}
+                                  buttonStyle={[
+                                      appStyles.buttonCancel, 
+                                      layoutCreationStyles.layoutModificationButton
+                                  ]}
+                              />
 
-                {layout.length === 0 && !editMode ? (
-                    <Text style={appStyles.emptyListText}> Tap the "Edit" button to start creating a new situation report layout  </Text>
-                ) : (
-                    editMode ? (
-                        <GroupedSituationReport 
-                            layout={tempLayout} 
-                            editMode={editMode} 
-                            setTempLayout={setTempLayout}
-                            tempLayout={tempLayout}
-                        />
-                    ) : (
-                        <GroupedSituationReport 
-                            layout={layout} 
-                            editMode={editMode} 
-                            setTempLayout={setTempLayout}
-                            tempLayout={tempLayout}
-                        />
-                    )
-                )}
+                              <Button
+                                  testID="save-button"
+                                  title="Save"
+                                  titleStyle={appStyles.submitButtonText}
+                                  onPress={()=> {
+                                      setLayout(tempLayout);
+                                      setTempLayout(layout);
+                                      setEditMode(false);                                
+                                  }}
+                                  buttonStyle={[
+                                      appStyles.buttonAccept, 
+                                      layoutCreationStyles.layoutModificationButton,
+                                  ]}
+                              />
+                      </View>
+                      ) : (
+                      <View style={layoutCreationStyles.editButton}>
+                          <Button
+                                  testID="edit-button"
+                                  title="Edit"
+                                  titleStyle={appStyles.submitButtonText}
+                                  onPress={()=> {
+                                      setEditMode(true); 
+                                      setTempLayout(layout);                               
+                                  }}
+                                  buttonStyle={[
+                                      appStyles.buttonAccept, 
+                                      layoutCreationStyles.layoutModificationButton,
+                                  ]}
+                          />
+                      </View>
+                  )}
 
-                {editMode && (
-                <View style={layoutCreationStyles.addButtonContainer}>
-                    <AddItemButton
-                        label="Add New Group"
-                        testID="add-group-button"
-                        buttonStyle={[layoutCreationStyles.addButton, layoutCreationStyles.globalButton]}
-                        textStyle={[layoutCreationStyles.buttonText]}
-                        onPress={() => {
-                          let nextLayout = addGroupToLayout(tempLayout, [["New Item 1", 0], ["New Item 2", 0]], "New Group");
-                          setTempLayout(nextLayout);
-                          console.log('Add new group')
-                        
-                        }}
-                    />
+                  {layout.length === 0 && !editMode ? (
+                      <Text style={appStyles.emptyListText}> Tap the "Edit" button to start creating a new situation report layout  </Text>
+                  ) : (
+                      editMode ? (
+                          <GroupedSituationReport 
+                              layout={tempLayout} 
+                              editMode={editMode} 
+                              setTempLayout={setTempLayout}
+                              tempLayout={tempLayout}
+                          />
+                      ) : (
+                          <GroupedSituationReport 
+                              layout={layout} 
+                              editMode={editMode} 
+                              setTempLayout={setTempLayout}
+                              tempLayout={tempLayout}
+                          />
+                      )
+                  )}
 
-                    <AddItemButton
-                        label="Add New Single Item"
-                        testID="add-single-item-button"
-                        buttonStyle={[layoutCreationStyles.addButton, layoutCreationStyles.globalButton]}
-                        textStyle={layoutCreationStyles.buttonText}
-                        onPress={() =>{
-                            let nextLayout = addGroupToLayout(tempLayout, [["New Item", 0]], "New Group");
+                  {editMode && (
+                  <View style={layoutCreationStyles.addButtonContainer}>
+                      <AddItemButton
+                          label="Add New Group"
+                          testID="add-group-button"
+                          buttonStyle={[layoutCreationStyles.addButton, layoutCreationStyles.globalButton]}
+                          textStyle={[layoutCreationStyles.buttonText]}
+                          onPress={() => {
+                            let nextLayout = addGroupToLayout(tempLayout, [["New Item 1", 0], ["New Item 2", 0]], "New Group");
                             setTempLayout(nextLayout);
-                        } 
-                        }
-                    />
-                </View>
-                )}
-                    <View style={[appStyles.submitContainer, situationReportStyles.submitMargin]}>
-                        <SubmitButton
-                            disabled={false}
-                            label="Submit"
-                            testID="submit-button"
-                            width={ButtonDimensions.mediumButtonWidth}
-                            height={ButtonDimensions.mediumButtonHeight}
-                            style={appStyles.submitButton}
-                            textStyle={appStyles.submitButtonText}
-                            onPress={() => {
-                                console.log("Submit")
-                                resetStates();
-                                setLayout([]);
-                                }
-                            }
-                        />
-                    </View>
-                </View>
-        </ScrollView>
+                            console.log('Add new group')
+                          
+                          }}
+                      />
+
+                      <AddItemButton
+                          label="Add New Single Item"
+                          testID="add-single-item-button"
+                          buttonStyle={[layoutCreationStyles.addButton, layoutCreationStyles.globalButton]}
+                          textStyle={layoutCreationStyles.buttonText}
+                          onPress={() =>{
+                              let nextLayout = addGroupToLayout(tempLayout, [["New Item", 0]], "New Group");
+                              setTempLayout(nextLayout);
+                          } 
+                          }
+                      />
+                  </View>
+                  )}
+                  { situationReportName === "" 
+                  && 
+                  <Text style={[appStyles.emptyListText]}> Situation Report Name cannot be empty ! </Text> 
+                  }
+
+
+                      <View style={[appStyles.submitContainer, situationReportStyles.submitMargin]}>
+                          <SubmitButton
+                              disabled={(layout.length === 0) || (situationReportName === "")}
+                              label="Submit"
+                              testID="submit-button"
+                              width={ButtonDimensions.mediumButtonWidth}
+                              height={ButtonDimensions.mediumButtonHeight}
+                              style={appStyles.submitButton}
+                              textStyle={appStyles.submitButtonText}
+                              onPress={() => {
+                                  const reportLayout = [toDatabaseFormat(layout, situationReportName)];
+                                  const residenceId = "GpcR4a8vz8L8SIpe3TbE";
+                                  addSituationReportLayout(reportLayout, residenceId);
+                                  navigation.navigate("ListIssues" as never);
+                                  }
+                              }
+                          />
+                      </View>
+                  </View>
+          </ScrollView>
+      </KeyboardAvoidingView>
     </Header>
     );
 }

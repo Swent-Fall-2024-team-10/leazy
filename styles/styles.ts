@@ -304,7 +304,7 @@ export const appStyles = StyleSheet.create({
 
   // General Screen
   screenContainer: {
-    flex: 1,
+    flex: 0.75,
     paddingVertical: '6%',
   },
 
@@ -327,10 +327,6 @@ export const appStyles = StyleSheet.create({
     alignItems: "center",
     borderColor: Color.ScreenHeader,
   },
-
-  screenContainer: {
-    flex: 0.75,
-    padding: '6%',
 
   // Forms
   formContainer: {

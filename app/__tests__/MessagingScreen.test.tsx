@@ -25,7 +25,7 @@ jest.mock('../../firebase/firebase', () => ({
   db: {}, // Mock Firestore database object
 }));
 
-jest.mock('../Navigators/AuthContext', () => ({
+jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(() => ({
     user: { email: 'test@example.com' },
   })),

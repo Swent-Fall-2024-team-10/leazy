@@ -3,16 +3,14 @@ import { View, StyleSheet, Text, TouchableOpacity, Keyboard } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { GiftedChat, Bubble, Composer, IMessage } from "react-native-gifted-chat";
-import { collection, addDoc } from "firebase/firestore";
-import { auth, db } from "../../../firebase/firebase";
+import { GiftedChat, IMessage } from "react-native-gifted-chat";
+import { auth } from "../../../firebase/firebase";
 import Header from "../../components/Header";
 import { appStyles } from "../../../styles/styles";
 import { ReportStackParamList } from "../../../types/types";
-import { useAuth } from "../../Navigators/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
 import CustomBubble from "../../components/messaging/CustomBubble";
-import { Key } from "react-native-feather";
 
 
 export default function MessagingScreen() {

@@ -1,14 +1,15 @@
 import Header from "@/app/components/Header";
 import { appStyles, ButtonDimensions, defaultButtonRadius} from "@/styles/styles";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import React from "react";
 import { Text, View, ScrollView, TouchableOpacity} from "react-native";
 import { Button, Icon } from "react-native-elements";
 import StraightLine from "../../../components/SeparationLine";
-import { layoutCreationStyles, situationReportStyles } from "./SituationReportStyling";
+import { layoutCreationStyles, situationReportStyles } from "../../../../styles/SituationReportStyling";
 import TickingBox from "../../../components/forms/TickingBox";
 import { addGroupToLayout, addSingleItemToGroup, removeGroupFromLayout, removeItemFrom } from "../../../utils/SituationReport";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
+import InputField from "@/app/components/forms/text_input";
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -80,6 +81,11 @@ export function RemoveGroupButton({ layout, groupIndex, setTempLayout, testID }:
 
 type SituationReportItemProps = {
     label: string;
+    layout: [string, [string, number][]][];
+    setLayout: (a: [string, [string, number][]][]) => void;
+    itemIndex: number;
+    groupIndex: number;
+    editMode: boolean;
   };
   /**
  * represent a situation report item where the check boxes are displayed but not functional
@@ -89,12 +95,41 @@ type SituationReportItemProps = {
  * */
   function SituationReportItem({
     label,
+    layout,
+    setLayout,
+    itemIndex,
+    groupIndex,
+    editMode,
   }: SituationReportItemProps) {
-  
+    const [itemName, setItemName] = useState(label);
+
+    const handleItemNameChange = useCallback(
+      (newName: string) => {
+        setItemName(newName);
+        const updatedLayout = [...layout];
+        updatedLayout[groupIndex][1][itemIndex][0] = newName; // Update item name in layout
+        setLayout(updatedLayout);
+      },
+      [layout, groupIndex, itemIndex, setLayout]
+    );
+
+    const [itemNumber, itemText] = label.split(': ');
+
     return (
       <View style={situationReportStyles.item}>
         <View style={situationReportStyles.itemRow}>
-          <Text style={[situationReportStyles.text, situationReportStyles.label]}>{label}</Text>
+          {editMode ? (
+            <InputField
+              value={itemText}
+              setValue={handleItemNameChange}
+              placeholder="Item Name"
+              testID={`item-name-input-${groupIndex}-${itemIndex}`}
+              style={layoutCreationStyles.inputField}
+            />
+          ) : (
+            <Text style={[situationReportStyles.text, situationReportStyles.label]}>{itemNumber} : {itemText}</Text>
+          )}
+          
           <TickingBox
             checked={false}
             onChange={() => {}}
@@ -128,6 +163,17 @@ type GroupedSituationReportProps = {
     tempLayout
   }: GroupedSituationReportProps) {
 
+    const handleGroupNameChange = useCallback(
+      (groupIndex: number, newName: string) => {
+        const updatedLayout = [...tempLayout];
+        updatedLayout[groupIndex][0] = newName;
+        setTempLayout(updatedLayout);
+      },
+      [tempLayout, setTempLayout]
+    );
+
+    
+
     let itemCounter = 1;
   
     return (
@@ -140,7 +186,21 @@ type GroupedSituationReportProps = {
             // Render group with more than one item inside a purple container
             return (
               <View key={groupIndex} style={situationReportStyles.groupContainer}>
-                <Text style={situationReportStyles.groupLabel}>{groupName} :</Text>
+                {editMode ? (
+                  <InputField
+                    value={groupName}
+                    setValue={(newName) => handleGroupNameChange(groupIndex, newName)}
+                    placeholder={groupName}
+                    testID={`group-name-input-${groupIndex}`}
+                    style={layoutCreationStyles.inputField}
+                  />
+                ) : (
+                  <Text style={situationReportStyles.groupLabel}>{groupName} :</Text>
+                )}
+                
+                
+
+
                 {items.map((item, itemIndex) => {
                   const itemNumber = itemCounter++;
                   return (
@@ -160,6 +220,11 @@ type GroupedSituationReportProps = {
                       <View style={{flex: 100}}>
                         <SituationReportItem
                           label={`${itemNumber}: ${item[0]}`} // Label with item number
+                          layout={tempLayout}
+                          setLayout={setTempLayout}
+                          itemIndex={itemIndex}
+                          groupIndex={groupIndex}
+                          editMode={editMode}
                           />
                       </View>
                     </View>
@@ -198,7 +263,12 @@ type GroupedSituationReportProps = {
                     </View>
                     <View style={{flex: 100}}>
                     <SituationReportItem
-                      label={`${itemNumber}: ${items[0][0]}`} // Label with item number
+                      label={`${itemNumber}: ${items[0][0]}`} 
+                      setLayout={setTempLayout}
+                      layout={tempLayout}
+                      itemIndex={0}
+                      groupIndex={groupIndex}
+                      editMode={editMode}
                       />
                     </View>
                     
@@ -257,7 +327,6 @@ export default function SituationReportCreation() {
         setEditMode(false);
         setTempLayout([]);
     }
-
     
     return (
     <Header>
@@ -296,6 +365,7 @@ export default function SituationReportCreation() {
                                 titleStyle={appStyles.submitButtonText}
                                 onPress={()=> {
                                     setLayout(layout);
+                                    setTempLayout(layout);
                                     setEditMode(false);
                                 }}
                                 buttonStyle={[
@@ -310,6 +380,7 @@ export default function SituationReportCreation() {
                                 titleStyle={appStyles.submitButtonText}
                                 onPress={()=> {
                                     setLayout(tempLayout);
+                                    setTempLayout(layout);
                                     setEditMode(false);                                
                                 }}
                                 buttonStyle={[
@@ -361,8 +432,8 @@ export default function SituationReportCreation() {
                     <AddItemButton
                         label="Add New Group"
                         testID="add-group-button"
-                        buttonStyle={layoutCreationStyles.addButton}
-                        textStyle={layoutCreationStyles.buttonText}
+                        buttonStyle={[layoutCreationStyles.addButton, layoutCreationStyles.globalButton]}
+                        textStyle={[layoutCreationStyles.buttonText]}
                         onPress={() => {
                           let nextLayout = addGroupToLayout(tempLayout, [["New Item 1", 0], ["New Item 2", 0]], "New Group");
                           setTempLayout(nextLayout);
@@ -374,7 +445,7 @@ export default function SituationReportCreation() {
                     <AddItemButton
                         label="Add New Single Item"
                         testID="add-single-item-button"
-                        buttonStyle={layoutCreationStyles.addButton}
+                        buttonStyle={[layoutCreationStyles.addButton, layoutCreationStyles.globalButton]}
                         textStyle={layoutCreationStyles.buttonText}
                         onPress={() =>{
                             let nextLayout = addGroupToLayout(tempLayout, [["New Item", 0]], "New Group");

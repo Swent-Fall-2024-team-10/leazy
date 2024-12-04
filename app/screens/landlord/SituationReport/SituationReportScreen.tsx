@@ -11,7 +11,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import { changeStatus, toDatabaseFormat} from "../../../utils/SituationReport";
 import { addSituationReport, getApartment, deleteSituationReport } from "../../../../firebase/firestore/firestore";
 import { SituationReport } from "../../../../types/types";
-import { pickerSelectStyles, situationReportStyles } from "./SituationReportStyling";
+import { pickerSelectStyles, situationReportStyles } from "../../../../styles/SituationReportStyling";
 
 
 enum enumStatus {

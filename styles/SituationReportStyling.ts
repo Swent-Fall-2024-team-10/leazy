@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { ButtonDimensions, Color, defaultButtonRadius, FontSizes, FontWeight } from "../../../../styles/styles";
+import { Dimensions, StyleSheet } from "react-native";
+import { ButtonDimensions, Color, defaultButtonRadius, FontSizes, FontWeight } from "./styles";
 
 export const situationReportStyles = StyleSheet.create({
     groupSituationReport: {
@@ -159,6 +159,11 @@ export const layoutCreationStyles = StyleSheet.create({
     addButtonContainer: {
     },
 
+    inputField:{
+      width: Dimensions.get("screen").width * 0.5,
+      marginBottom: '2%',
+    },
+
     removeButton: {
         padding: "2%",
     },
@@ -173,6 +178,10 @@ export const layoutCreationStyles = StyleSheet.create({
         fontWeight: FontWeight.DateText,
         textAlign: "center",
         alignItems: "center",    
+    },
+
+    globalButton: {
+      marginLeft: "4%",
     },
 
     layoutModificationButton : {

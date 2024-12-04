@@ -28,3 +28,11 @@ jest.mock("firebase/auth");
 jest.mock("firebase/storage");
 
 
+// Mock GiftedChat
+jest.mock('react-native-gifted-chat', () => ({
+  GiftedChat: 'GiftedChat',
+  Bubble: 'Bubble',
+  Composer: 'Composer',
+}));
+
+

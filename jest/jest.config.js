@@ -13,7 +13,8 @@ module.exports = {
   ],
   testPathIgnorePatterns: ['/node_modules/'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.svg': '<rootDir>/__mocks__/svgMock.ts'
   },
   globals: {
     'ts-jest': {

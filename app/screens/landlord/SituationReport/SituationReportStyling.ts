@@ -16,7 +16,10 @@ export const situationReportStyles = StyleSheet.create({
     marginTop: "5%",
   },
 
-
+  submitMargin: {
+    position: "absolute",
+    bottom: "2%",
+  },
 
   layoutCreationSeparationLine : {
     marginTop: "5%",

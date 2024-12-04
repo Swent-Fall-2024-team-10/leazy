@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
-import TickingBox from "../../components/forms/TickingBox";
-import Header from "../../components/Header";
-import { appStyles, borderWidth, ButtonDimensions, Color, FontSizes, FontWeight } from "../../../styles/styles";
-import InputField from "../../components/forms/text_input";
-import StraightLine from "../../components/SeparationLine";
-import SubmitButton from "../../components/buttons/SubmitButton";
+import TickingBox from "../../../components/forms/TickingBox";
+import Header from "../../../components/Header";
+import { appStyles, borderWidth, ButtonDimensions, Color, FontSizes, FontWeight } from "../../../../styles/styles";
+import InputField from "../../../components/forms/text_input";
+import StraightLine from "../../../components/SeparationLine";
+import SubmitButton from "../../../components/buttons/SubmitButton";
 import RNPickerSelect from 'react-native-picker-select';
-import { changeStatus, toDatabaseFormat} from "../../utils/SituationReport";
-import { addSituationReport, getApartment, deleteSituationReport } from "../../../firebase/firestore/firestore";
-import { SituationReport } from "../../../types/types";
+import { changeStatus, toDatabaseFormat} from "../../../utils/SituationReport";
+import { addSituationReport, getApartment, deleteSituationReport } from "../../../../firebase/firestore/firestore";
+import { SituationReport } from "../../../../types/types";
+import { situationReportStyles } from "./SituationReportStyling";
+
 
 enum enumStatus {
     OC = 1,

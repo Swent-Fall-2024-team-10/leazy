@@ -48,10 +48,16 @@ type SituationReportItemProps = {
 
 type GroupedSituationReportProps = {
     layout: [string, [string, number][]][]; // Layout containing groups and items
+    editMode: boolean; // Whether the layout is in edit mode this will allow the user to add new groups or items while in edit mode
+    setTempLayout: (newLayout: [string, [string, number][]][]) => void;
+    tempLayout: [string, [string, number][]][];
   };
   
   export function GroupedSituationReport({
     layout,
+    editMode,
+    setTempLayout,
+    tempLayout
   }: GroupedSituationReportProps) {
     // Flatten the layout to calculate the total number of items
     const totalItems = layout.reduce((sum, group) => sum + group[1].length, 0);
@@ -77,9 +83,23 @@ type GroupedSituationReportProps = {
                       <SituationReportItem
                         label={`${itemNumber}: ${item[0]}`} // Label with item number
                       />
+                                          
                     </View>
                   );
                 })}
+                {editMode &&
+                <AddItemButton
+                        label="Add New Item"
+                        testID={"add-item-button-group-" + groupName}
+                        buttonStyle={layoutCreationStyles.addButton}
+                        textStyle={layoutCreationStyles.buttonText}
+                        onPress={() => {
+                          let nextLayout = addGroupToLayout(tempLayout, [["New Item", 0]], groupName);
+                          setTempLayout(nextLayout);
+                          console.log('Add new item')
+                          console.log(groupIndex)
+                        }}
+                        />  }
               </View>
             );
           } else {
@@ -135,25 +155,17 @@ export function AddItemButton({ label, testID, buttonStyle, textStyle, onPress }
 
 
 export default function SituationReportCreation() {
-    const [layout, setLayout] = useState<[string, [string, number][]][]>([["Floor", [["floor", 0]]],
-        ["Wall", [["wall", 0]]],
-        ["Ceiling", [["ceiling", 0]]],
-        ["Window", [["window", 0]]],
-        ["Bed", [["Bedframe", 0], ["Mattress", 0], ["Pillow", 0], ["Bedding", 0]]],
-        ["Kitchen", [["Fridge", 0], ["Stove", 0], ["Microwave", 0], ["Sink", 0], ["Countertop", 0]]]]);
+    const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
     const [editMode, setEditMode] = useState(false);
 
     const [tempLayout, setTempLayout] = useState<[string, [string, number][]][]>([]);
 
+    function resetStates() {
+        setLayout([]);
+        setEditMode(false);
+        setTempLayout([]);
+    }
 
-    const originalLayout : [string, [string, number][]][] = [
-        ["Floor", [["floor", 0]]],
-        ["Wall", [["wall", 0]]],
-        ["Ceiling", [["ceiling", 0]]],
-        ["Window", [["window", 0]]],
-        ["Bed", [["Bedframe", 0], ["Mattress", 0], ["Pillow", 0], ["Bedding", 0]]],
-        ["Kitchen", [["Fridge", 0], ["Stove", 0], ["Microwave", 0], ["Sink", 0], ["Countertop", 0]]],
-      ];
     
     return (
     <Header>
@@ -236,9 +248,19 @@ export default function SituationReportCreation() {
                     <Text style={appStyles.emptyListText}> Tap the "Edit" button to start creating a new situation report layout  </Text>
                 ) : (
                     editMode ? (
-                        <GroupedSituationReport layout={tempLayout} />
+                        <GroupedSituationReport 
+                            layout={tempLayout} 
+                            editMode={editMode} 
+                            setTempLayout={(value) => setTempLayout}
+                            tempLayout={tempLayout}
+                        />
                     ) : (
-                        <GroupedSituationReport layout={layout} />
+                        <GroupedSituationReport 
+                            layout={layout} 
+                            editMode={editMode} 
+                            setTempLayout={(value) => setTempLayout}
+                            tempLayout={tempLayout}
+                        />
                     )
                 )}
 
@@ -249,7 +271,12 @@ export default function SituationReportCreation() {
                         testID="add-group-button"
                         buttonStyle={layoutCreationStyles.addButton}
                         textStyle={layoutCreationStyles.buttonText}
-                        onPress={() => console.log('Add new group')}
+                        onPress={() => {
+                          let nextLayout = addGroupToLayout(tempLayout, [["New Item 1", 0], ["New Item 2", 0]], "New Group");
+                          setTempLayout(nextLayout);
+                          console.log('Add new group')
+                        
+                        }}
                     />
 
                     <AddItemButton
@@ -265,7 +292,7 @@ export default function SituationReportCreation() {
                     />
                 </View>
                 )}
-                    <View style={appStyles.submitContainer}>
+                    <View style={[appStyles.submitContainer, situationReportStyles.submitMargin]}>
                         <SubmitButton
                             disabled={false}
                             label="Submit"
@@ -276,6 +303,7 @@ export default function SituationReportCreation() {
                             textStyle={appStyles.submitButtonText}
                             onPress={() => {
                                 console.log("Submit")
+                                resetStates();
                                 setLayout([]);
                                 }
                             }

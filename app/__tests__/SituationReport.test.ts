@@ -285,3 +285,50 @@ describe('changing the status of an item', () => {
         }).toThrow("Invalid groupIndex, itemIndex or newStatus");
     });
 });
+
+
+describe('adding a single item to a group', () => {
+    it ('Adding a single item to different groups in a row should result in the correct groups being modified', () => {
+        const layout: [string, [string, number][]][] = [
+            ["group1", [["group11", 0], ["group12", 0]]],
+            ["group2", [["group21", 0], ["group22", 0]]],
+            ["group3", [["group31", 0], ["group32", 0], ["group33", 0]]]
+        ];
+        const firstItem: [string, number] = ["group13", 0];
+        const secondItem: [string, number] = ["group23", 0];
+        const thirdItem: [string, number] = ["group34", 0];
+        const fourthItem: [string, number] = ["group35", 0];
+
+        const expected = [
+            ["group1", [["group11", 0], ["group12", 0], ["group13", 0]]],
+            ["group2", [["group21", 0], ["group22", 0], ["group23", 0]]],
+            ["group3", [["group31", 0], ["group32", 0], ["group33", 0], ["group34", 0], ["group35", 0]]
+        ]];
+
+        let newLayout = SituationReport.addSingleItemToGroup(layout, firstItem, 0);
+        newLayout = SituationReport.addSingleItemToGroup(newLayout, secondItem, 1);
+        newLayout = SituationReport.addSingleItemToGroup(newLayout, thirdItem, 2);
+        newLayout = SituationReport.addSingleItemToGroup(newLayout, fourthItem, 2);
+
+        expect(newLayout).toEqual(expected);
+
+    });
+
+    it ('Adding a single item to a group should add the item to the correct group', () => {
+        const layout: [string, [string, number][]][] = [
+            ["group1", [["group11", 0], ["group12", 0]]],
+            ["group2", [["group21", 0], ["group22", 0]]]
+        ];
+
+        const groupIndex = 0;
+        const item: [string, number] = ["group13", 0];
+
+        const expected = [
+            ["group1", [["group11", 0], ["group12", 0], ["group13", 0]]],
+            ["group2", [["group21", 0], ["group22", 0]]]
+        ];
+
+        const newLayout = SituationReport.addSingleItemToGroup(layout, item, groupIndex);
+        expect(newLayout).toEqual(expected);
+    });
+});

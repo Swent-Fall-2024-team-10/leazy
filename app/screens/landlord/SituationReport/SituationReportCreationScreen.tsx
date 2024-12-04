@@ -7,7 +7,7 @@ import { Button, Icon } from "react-native-elements";
 import StraightLine from "../../../components/SeparationLine";
 import { layoutCreationStyles, situationReportStyles } from "./SituationReportStyling";
 import TickingBox from "../../../components/forms/TickingBox";
-import { addGroupToLayout } from "../../../utils/SituationReport";
+import { addGroupToLayout, addSingleItemToGroup } from "../../../utils/SituationReport";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
 
 type SituationReportItemProps = {
@@ -94,9 +94,10 @@ type GroupedSituationReportProps = {
                         buttonStyle={layoutCreationStyles.addButton}
                         textStyle={layoutCreationStyles.buttonText}
                         onPress={() => {
-                          let nextLayout = addGroupToLayout(tempLayout, [["New Item", 0]], groupName);
+                          let nextLayout = addSingleItemToGroup(tempLayout, ["New Item", 0], groupIndex);
                           setTempLayout(nextLayout);
                           console.log('Add new item')
+                          console.log(tempLayout)
                           console.log(groupIndex)
                         }}
                         />  }
@@ -251,14 +252,14 @@ export default function SituationReportCreation() {
                         <GroupedSituationReport 
                             layout={tempLayout} 
                             editMode={editMode} 
-                            setTempLayout={(value) => setTempLayout}
+                            setTempLayout={setTempLayout}
                             tempLayout={tempLayout}
                         />
                     ) : (
                         <GroupedSituationReport 
                             layout={layout} 
                             editMode={editMode} 
-                            setTempLayout={(value) => setTempLayout}
+                            setTempLayout={setTempLayout}
                             tempLayout={tempLayout}
                         />
                     )

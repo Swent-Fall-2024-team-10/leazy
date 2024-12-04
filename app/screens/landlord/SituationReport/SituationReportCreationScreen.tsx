@@ -7,8 +7,76 @@ import { Button, Icon } from "react-native-elements";
 import StraightLine from "../../../components/SeparationLine";
 import { layoutCreationStyles, situationReportStyles } from "./SituationReportStyling";
 import TickingBox from "../../../components/forms/TickingBox";
-import { addGroupToLayout, addSingleItemToGroup } from "../../../utils/SituationReport";
+import { addGroupToLayout, addSingleItemToGroup, removeGroupFromLayout, removeItemFrom } from "../../../utils/SituationReport";
 import SubmitButton from "@/app/components/buttons/SubmitButton";
+
+type RemoveSingleProps = {
+  layout: [string, [string, number][]][];
+  groupId: number;
+  itemId: number;
+  setTempLayout: (newLayout: [string, [string, number][]][]) => void;
+  testID: string;
+};
+
+export function RemoveSingleInGroup({
+  layout, groupId, itemId, setTempLayout, testID
+}: RemoveSingleProps){
+  return (
+    <TouchableOpacity
+    testID={testID}
+    style={layoutCreationStyles.addButton}
+    onPress={ () => {
+        let nextLayout = removeItemFrom(layout, itemId, groupId);
+        setTempLayout(nextLayout);
+      }
+    }
+
+    >
+        <View style={{flex: 1, flexDirection : "row", alignItems : "center"}}>
+            <Icon
+                name="remove"
+                size={20}
+                color="white"
+                backgroundColor={"red"}
+                style={{borderRadius: defaultButtonRadius}}
+                />
+        </View>
+    </TouchableOpacity>
+
+  );
+}
+
+type RemoveGroupButtonProps = {
+  layout: [string, [string, number][]][];
+  groupIndex: number;
+  setTempLayout: (newLayout: [string, [string, number][]][]) => void;
+  testID: string;
+};
+
+export function RemoveGroupButton({ layout, groupIndex, setTempLayout, testID }: RemoveGroupButtonProps) {
+  return (
+      <TouchableOpacity
+      testID={testID}
+      style={layoutCreationStyles.addButton}
+      onPress={ () => {
+          let nextLayout = removeGroupFromLayout(layout, groupIndex);
+          setTempLayout(nextLayout);
+        }
+      }
+
+      >
+          <View style={{flex: 1, flexDirection : "row", alignItems : "center"}}>
+              <Icon
+                  name="remove"
+                  size={20}
+                  color="white"
+                  backgroundColor={"red"}
+                  style={{borderRadius: defaultButtonRadius}}
+                  />
+          </View>
+      </TouchableOpacity>
+  );
+}
 
 type SituationReportItemProps = {
     label: string;
@@ -59,10 +127,7 @@ type GroupedSituationReportProps = {
     setTempLayout,
     tempLayout
   }: GroupedSituationReportProps) {
-    // Flatten the layout to calculate the total number of items
-    const totalItems = layout.reduce((sum, group) => sum + group[1].length, 0);
-  
-    // Counter for numbering items across the layout
+
     let itemCounter = 1;
   
     return (
@@ -79,11 +144,24 @@ type GroupedSituationReportProps = {
                 {items.map((item, itemIndex) => {
                   const itemNumber = itemCounter++;
                   return (
-                    <View key={itemIndex} style={situationReportStyles.groupItemContainer}>
-                      <SituationReportItem
-                        label={`${itemNumber}: ${item[0]}`} // Label with item number
-                      />
-                                          
+                    <View key={itemIndex} style={[situationReportStyles.groupItemContainer, situationReportStyles.removeContainer]}>
+                      <View>
+                      {editMode && 
+                          <RemoveSingleInGroup
+                            itemId={itemIndex}
+                            testID={"remove-element-id-" + groupIndex} 
+                            layout={tempLayout} 
+                            groupId={groupIndex} 
+                            setTempLayout={setTempLayout}
+                          />
+                        }
+                      </View>
+
+                      <View style={{flex: 100}}>
+                        <SituationReportItem
+                          label={`${itemNumber}: ${item[0]}`} // Label with item number
+                          />
+                      </View>
                     </View>
                   );
                 })}
@@ -107,9 +185,25 @@ type GroupedSituationReportProps = {
             const itemNumber = itemCounter++;
             return (
               <View key={groupIndex} style={situationReportStyles.singleItemContainer}>
-                <SituationReportItem
-                  label={`${itemNumber}: ${items[0][0]}`} // Label with item number
-                />
+                  <View style={situationReportStyles.removeContainer}>
+                    <View>
+                      {editMode && 
+                        <RemoveGroupButton
+                          testID={"remove-element-id-" + groupIndex} 
+                          layout={tempLayout} 
+                          groupIndex={groupIndex} 
+                          setTempLayout={setTempLayout}
+                        />
+                      }
+                    </View>
+                    <View style={{flex: 100}}>
+                    <SituationReportItem
+                      label={`${itemNumber}: ${items[0][0]}`} // Label with item number
+                      />
+                    </View>
+                    
+
+                  </View>
               </View>
             );
           }
@@ -150,9 +244,6 @@ export function AddItemButton({ label, testID, buttonStyle, textStyle, onPress }
             </TouchableOpacity>
     );
 }
-
-
-
 
 
 export default function SituationReportCreation() {

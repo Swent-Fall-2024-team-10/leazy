@@ -331,4 +331,36 @@ describe('adding a single item to a group', () => {
         const newLayout = SituationReport.addSingleItemToGroup(layout, item, groupIndex);
         expect(newLayout).toEqual(expected);
     });
+
+    describe('removing an item from a group', () => {
+        it('Removing an item from a group should return the correct layout with the item removed', () => {
+            const layout: [string, [string, number][]][] = [
+                ["group1", [["group11", 0], ["group12", 0]]],
+                ["group2", [["group21", 0], ["group22", 0]]]
+            ];
+
+            const expected = [
+                ["group1", [["group11", 0]]],
+                ["group2", [["group21", 0], ["group22", 0]]]
+            ];
+
+            const newLayout = SituationReport.removeItemFrom(layout, 1, 0);
+            expect(newLayout).toEqual(expected);
+        });
+
+        it('Removing an item from a group with multiple items should return the correct layout', () => {
+            const layout: [string, [string, number][]][] = [
+                ["group1", [["group11", 0], ["group12", 0], ["group13", 0]]],
+                ["group2", [["group21", 0], ["group22", 0]]]
+            ];
+
+            const expected = [
+                ["group1", [["group11", 0], ["group13", 0]]],
+                ["group2", [["group21", 0], ["group22", 0]]]
+            ];
+
+            const newLayout = SituationReport.removeItemFrom(layout, 1, 0);
+            expect(newLayout).toEqual(expected);
+        });
+    });
 });

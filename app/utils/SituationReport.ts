@@ -63,6 +63,17 @@ export function addSingleItemToGroup(
     return newLayout;
 }    
 
+export function removeItemFrom(
+    currentLayout: [string, [string, number][]][],
+    itemId: number,
+    groupId: number,
+): [string, [string, number][]][]{
+    const updatedGroup = currentLayout[groupId][1].filter((_, i) => i !== itemId);
+    const newLayout = [...currentLayout];
+    newLayout[groupId] = [currentLayout[groupId][0], updatedGroup];
+    return newLayout;
+}
+
 /**
  * Remove a group from the layout of a situation report
  * 

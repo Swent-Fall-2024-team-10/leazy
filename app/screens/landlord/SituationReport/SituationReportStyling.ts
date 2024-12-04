@@ -59,11 +59,17 @@ export const situationReportStyles = StyleSheet.create({
     padding: "2%",
     marginBottom : "2%",
   },
+
+  removeContainer:{
+    flex: 1,
+    flexDirection: "row", 
+    alignItems: "center"
+  },
   
   itemRow: {
-    flexDirection: "row", /* Align items horizontally */
-    alignItems: "flex-start", /* Align items to the start */
-    flexWrap: "wrap", /* Allow text to wrap to the next line */
+    flexDirection: "row", 
+    alignItems: "center", 
+    flexWrap: "wrap", 
   },
 
   text: {
@@ -153,6 +159,10 @@ export const layoutCreationStyles = StyleSheet.create({
 
     addButtonContainer: {
 
+    },
+
+    removeButton: {
+        padding: "2%",
     },
 
     addButton: {

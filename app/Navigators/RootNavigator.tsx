@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../context/AuthContext";
 import AuthStackNavigator from "./AuthStackNavigator";
 import TenantHomeDrawerNavigator from "./TenantHomeDrawerNavigator";
 import React, { useEffect } from "react";

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import ReportScreen from '../screens/issues_tenant/ReportScreen';
-import * as AuthContext from '../Navigators/AuthContext';
+import * as AuthContext from '../context/AuthContext';
 import * as PictureContext from '../context/PictureContext';
 import * as FirestoreModule from '../../firebase/firestore/firestore';
 import * as CacheUtils from '../utils/cache';
@@ -74,7 +74,7 @@ jest.mock('@react-navigation/native', () => {
   
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
-jest.mock('../Navigators/AuthContext', () => ({
+jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 

@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputField from "../../components/forms/text_input";
 import SubmitButton from "../../components/buttons/SubmitButton";
-import { useAuth } from "../../Navigators/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function CodeEntryScreen() {
   const [code, setCode] = useState("");

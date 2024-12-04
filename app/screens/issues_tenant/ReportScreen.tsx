@@ -23,7 +23,7 @@ import Header from "../../components/Header";
 import { usePictureContext } from "../../context/PictureContext";
 import { storage } from "../../../firebase/firebase"; // Import storage from your Firebase config
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase imports
-import { useAuth } from "../../Navigators/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { getFileBlob, clearFiles } from "../../utils/cache";
 import {
   getTenant,

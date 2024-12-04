@@ -11,7 +11,7 @@ import {
   updateApartment,
   updateTenant,
 } from "../../firebase/firestore/firestore";
-import { useAuth } from "../Navigators/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 // Mock the firestore functions
 jest.mock("../../firebase/firestore/firestore", () => ({
@@ -25,7 +25,7 @@ jest.mock("../../firebase/firestore/firestore", () => ({
 }));
 
 // Mock the auth context
-jest.mock("../Navigators/AuthContext", () => ({
+jest.mock("../context/AuthContext", () => ({
   useAuth: jest.fn(),
 }));
 

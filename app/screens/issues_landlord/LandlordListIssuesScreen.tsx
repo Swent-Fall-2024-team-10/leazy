@@ -3,8 +3,10 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 're
 import { Feather } from '@expo/vector-icons';
 import Header from '../../components/Header';
 import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
-import { MaintenanceRequest, Landlord, Residence, Tenant } from '../../../types/types';
-import { useAuth } from '../../Navigators/AuthContext';
+
+import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '../../../types/types';
+import { getAuth } from 'firebase/auth';
+import { useAuth } from '../../context/AuthContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 

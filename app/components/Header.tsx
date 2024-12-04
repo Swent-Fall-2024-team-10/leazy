@@ -26,10 +26,7 @@ const Header: React.FC<PropsWithChildren<{}>> = ({children}) => {
             <View style={styles.whiteBackground}>
               {children}
             </View>
-
-            </View>
-            
-            
+            </View> 
         </View>
     )
 }

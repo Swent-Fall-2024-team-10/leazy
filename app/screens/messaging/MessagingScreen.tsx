@@ -76,7 +76,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: "5%",
+    marginHorizontal: "5%",
   },
   chatTitle: {
     fontSize: 18,

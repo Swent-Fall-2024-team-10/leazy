@@ -90,9 +90,12 @@ export function changeStatus(layout: [string, [string, number][]][], groupIndex:
         case "AW":
             nextStatus = SituationReportStatus.AW;
             break;
+        case "NONE":
+            nextStatus = SituationReportStatus.NONE;
+            break;
     }
     
-    if (layout.length <= groupIndex || layout[groupIndex][1].length <= itemIndex || nextStatus === SituationReportStatus.NONE){
+    if (layout.length <= groupIndex || layout[groupIndex][1].length <= itemIndex){
         throw new Error("Invalid groupIndex, itemIndex or newStatus");
     }
     nextLayout[groupIndex][1][itemIndex][1] = nextStatus;

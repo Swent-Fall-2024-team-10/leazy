@@ -11,7 +11,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import { changeStatus, toDatabaseFormat} from "../../../utils/SituationReport";
 import { addSituationReport, getApartment, deleteSituationReport } from "../../../../firebase/firestore/firestore";
 import { SituationReport } from "../../../../types/types";
-import { situationReportStyles } from "./SituationReportStyling";
+import { pickerSelectStyles, situationReportStyles } from "./SituationReportStyling";
 
 
 enum enumStatus {
@@ -85,12 +85,12 @@ export function GroupedSituationReport({
         if (items.length > 1) {
           // Render group with more than one item inside a purple container
           return (
-            <View key={groupIndex} style={styles.groupContainer}>
-              <Text style={styles.groupLabel}>{groupName} :</Text>
+            <View key={groupIndex} style={situationReportStyles.groupContainer}>
+              <Text style={situationReportStyles.groupLabel}>{groupName} :</Text>
               {items.map((item, itemIndex) => {
                 const itemNumber = itemCounter++;
                 return (
-                  <View key={itemIndex} style={styles.groupItemContainer}>
+                  <View key={itemIndex} style={situationReportStyles.groupItemContainer}>
                     <SituationReportItem
                       label={`${itemNumber}: ${item[0]}`} // Label with item number
                       groupIndex={groupIndex}
@@ -109,7 +109,7 @@ export function GroupedSituationReport({
           // Render single item outside of any group
           const itemNumber = itemCounter++;
           return (
-            <View key={groupIndex} style={styles.singleItemContainer}>
+            <View key={groupIndex} style={situationReportStyles.singleItemContainer}>
               <SituationReportItem
                 label={`${itemNumber}: ${items[0][0]}`} // Label with item number
                 groupIndex={groupIndex}
@@ -189,9 +189,9 @@ function SituationReportItem({
   }
 
   return (
-    <View style={styles.item}>
-      <View style={styles.itemRow}>
-        <Text style={[styles.text, styles.label]}>{label}</Text>
+    <View style={situationReportStyles.item}>
+      <View style={situationReportStyles.itemRow}>
+        <Text style={[situationReportStyles.text, situationReportStyles.label]}>{label}</Text>
         <TickingBox
           checked={checked === enumStatus.OC}
           onChange={() => handleCheck(enumStatus.OC)}
@@ -418,139 +418,4 @@ export default function SituationReportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-    groupSituationReport: {
-        margin : "2%",
-    },
-
-    tenantNameContainer : {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-
-  lineContainer: {
-    marginBottom: "5%",
-    marginTop: "5%",
-  },
-
-  labels: {
-    fontSize: FontSizes.label,
-    flexDirection: "row",
-    alignSelf: "flex-end",
-    position: "absolute",
-    left: "65%",
-    bottom: "10%",
-  },
-  wearStatus: {
-    color: Color.TextInputLabel, /* Purple border */
-    fontSize: FontSizes.TextInputLabel,
-    fontWeight: FontWeight.TextInputLabel, // Use a valid fontWeight value
-    marginRight: "15%",
-  },
-
-  remark: {
-    color: Color.ButtonBackground, /* Purple border */
-    marginBottom: "2%",
-    fontSize: FontSizes.label,
-    fontWeight: "600", // Use a valid fontWeight value
-  },
-
-  item: {
-    backgroundColor: Color.GrayGroupBackground, /* Light gray background */
-    borderWidth: borderWidth.thin,
-    borderColor: Color.GrayGroupMargin, /* Purple border */
-    borderRadius: 15, /* Rounded corners */
-    height: 80,
-    width: "100%",
-    justifyContent: "center",
-    padding: "2%",
-    marginBottom : "2%",
-  },
-  
-  itemRow: {
-    flexDirection: "row", 
-    alignItems: "center",
-    flexWrap: "wrap", 
-    verticalAlign: "middle",
-  },
-
-  text: {
-    fontSize: FontSizes.TextInputLabel,
-    color: Color.ButtonBackground,
-    fontWeight: FontWeight.TextInputLabel, 
-    marginRight: '2%',
-    flex: 1,
-  },
-
-  tenantLabelContainer: {
-    marginTop : "3%",
-  },
-
-  tenantLabel: {
-    fontSize: FontSizes.TextInputLabel,
-    color: Color.ButtonBackground,
-    fontWeight: FontWeight.TextInputLabel,
-    marginRight: "2%",
-    marginLeft: "2%",
-  },
-  
-  tenantRow: {
-    flexDirection: "row",
-  },
-
-  pickerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding : '2%',
-  },
-
-  pickerWrapper: {
-    flex: 1,
-    borderWidth: borderWidth.thin,
-    borderRadius: 25,
-    backgroundColor: Color.TextInputBackground,
-    borderColor: Color.TextInputBorder,
-  },
-
-  label: {
-    fontSize: FontSizes.TextInputLabel,
-    fontWeight: "bold",
-    marginLeft: '2%',
-    marginRight: '10%',
-    color: Color.TextInputLabel,
-  },
-
-  groupContainer: {
-    backgroundColor: Color.TextInputBackground, // Light purple background
-    padding : "4%",
-    paddingRight: "1%",
-    borderRadius: 15,
-    marginBottom: '2%',
-  },
-  groupLabel: {
-    fontSize: FontSizes.TextInputText,
-    color: Color.TextInputLabel,
-    fontWeight: FontWeight.TextInputLabel,
-    marginBottom: '2%',
-
-  },
-  groupItemContainer: {
-    borderColor: 'transparent',
-  },
-
-  singleItemContainer: {
-    borderColor: 'transparent',
-    paddingLeft: "2%",
-  },
-});
-
-const pickerSelectStyles = {
-    inputIOS: {
-        color: "black",
-    },
-    inputAndroid: {
-        color : "black",
-    },
-  };
-  
 

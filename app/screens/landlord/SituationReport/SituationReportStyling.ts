@@ -156,9 +156,7 @@ export const pickerSelectStyles = {
 
 
 export const layoutCreationStyles = StyleSheet.create({
-
     addButtonContainer: {
-
     },
 
     removeButton: {
@@ -197,5 +195,7 @@ export const layoutCreationStyles = StyleSheet.create({
         padding : "2%",
         justifyContent: "space-between",
       },
+
+      
 
 });

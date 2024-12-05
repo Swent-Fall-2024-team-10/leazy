@@ -21,7 +21,7 @@ import { emailAndPasswordSignIn } from "../../../firebase/auth/auth";
 import SubmitButton from "../../components/buttons/SubmitButton";
 import InputField from "../../components/forms/text_input";
 import Spacer from "../../components/Spacer";
-import { Color } from "../../../styles/styles";
+import { appStyles, ButtonDimensions, Color } from "../../../styles/styles";
 import { RouteProp } from "@react-navigation/native";
 
 const LandlordFormScreen = () => {
@@ -73,109 +73,113 @@ const LandlordFormScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.header}>Landlord Profile</Text>
-        <Spacer height={20} />
+      <ScrollView >
+        <View style={appStyles.screenContainer}>
 
-        <View style={styles.row}>
+          <Text style={styles.header}>Landlord Profile</Text>
+          <Spacer height={20} />
+
+          <View style={styles.row}>
+            <InputField
+              value={firstName}
+              setValue={setFirstName}
+              placeholder="First Name"
+              testID="testFirstNameField"
+              style={styles.inputField}
+            />
+            <InputField
+              value={lastName}
+              setValue={setLastName}
+              placeholder="Last Name"
+              testID="testLastNameField"
+              style={styles.inputField}
+            />
+          </View>
+
           <InputField
-            value={firstName}
-            setValue={setFirstName}
-            placeholder="First Name"
-            testID="testFirstNameField"
+            value={phone}
+            setValue={setPhone}
+            placeholder="Phone number"
+            testID="testPhoneField"
             style={styles.inputField}
           />
+
           <InputField
-            value={lastName}
-            setValue={setLastName}
-            placeholder="Last Name"
-            testID="testLastNameField"
+            value={street}
+            setValue={setStreet}
+            placeholder="Street"
+            testID="testStreetField"
             style={styles.inputField}
           />
+
+          <View style={styles.row}>
+            <InputField
+              value={zip}
+              setValue={setZip}
+              placeholder="Zip code"
+              testID="testZipField"
+              style={styles.inputField}
+            />
+            <InputField
+              value={city}
+              setValue={setCity}
+              placeholder="City"
+              testID="testCityField"
+              style={styles.inputField}
+            />
+          </View>
+
+          <View style={styles.row}>
+            <InputField
+              value={canton}
+              setValue={setCanton}
+              placeholder="Province/State"
+              testID="testCantonField"
+              style={styles.inputField}
+            />
+            <InputField
+              value={number}
+              setValue={setNumber}
+              placeholder="Number"
+              testID="testNumberField"
+              style={styles.inputField}
+            />
+          </View>
+
+          <InputField
+            value={country}
+            setValue={setCountry}
+            placeholder="Country"
+            testID="testCountryField"
+            style={styles.inputField}
+          />
+
+          <Spacer height={30} />
+          <View style={appStyles.submitContainer}>
+            <SubmitButton
+              disabled={
+                !firstName ||
+                !lastName ||
+                !email ||
+                !phone ||
+                !street ||
+                !zip ||
+                !city ||
+                !canton ||
+                !number ||
+                !country ||
+                submitting
+              }
+              onPress={handleSubmit}
+              width={ButtonDimensions.mediumButtonWidth}
+              height={ButtonDimensions.mediumButtonHeight}
+              label="Next"
+              style={appStyles.submitButton}
+              textStyle={appStyles.submitButtonText}
+              testID="testSubmitButtonLandlord"
+            />
+          </View>
         </View>
-
-        <InputField
-          value={phone}
-          setValue={setPhone}
-          placeholder="Phone number"
-          testID="testPhoneField"
-          style={styles.inputField}
-        />
-
-        <InputField
-          value={street}
-          setValue={setStreet}
-          placeholder="Street"
-          testID="testStreetField"
-          style={styles.inputField}
-        />
-
-        <View style={styles.row}>
-          <InputField
-            value={zip}
-            setValue={setZip}
-            placeholder="Zip code"
-            testID="testZipField"
-            style={styles.inputField}
-          />
-          <InputField
-            value={city}
-            setValue={setCity}
-            placeholder="City"
-            testID="testCityField"
-            style={styles.inputField}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <InputField
-            value={canton}
-            setValue={setCanton}
-            placeholder="Province/State"
-            testID="testCantonField"
-            style={styles.inputField}
-          />
-          <InputField
-            value={number}
-            setValue={setNumber}
-            placeholder="Number"
-            testID="testNumberField"
-            style={styles.inputField}
-          />
-        </View>
-
-        <InputField
-          value={country}
-          setValue={setCountry}
-          placeholder="Country"
-          testID="testCountryField"
-          style={styles.inputField}
-        />
-
-        <Spacer height={30} />
-
-        <SubmitButton
-          disabled={
-            !firstName ||
-            !lastName ||
-            !email ||
-            !phone ||
-            !street ||
-            !zip ||
-            !city ||
-            !canton ||
-            !number ||
-            !country ||
-            submitting
-          }
-          onPress={handleSubmit}
-          width={200}
-          height={55}
-          label="Next"
-          style={styles.submitButtonCustom}
-          textStyle={{ fontSize: 20 }}
-          testID="testSubmitButtonLandlord"
-        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -186,13 +190,11 @@ const styles = StyleSheet.create({
     backgroundColor: Color.ScreenBackground,
     flex: 1,
   },
-  contentContainer: {
-    padding: 20,
-  },
   header: {
     fontSize: 40,
     fontWeight: "bold",
     textAlign: "center",
+    marginTop: '15%',
     marginBottom: 15,
     color: Color.ScreenHeader,
   },

@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import LandlordListIssuesScreen from "../screens/issues_landlord/LandlordListIssuesScreen";
 import IssueDetailsScreen from "../screens/issues_tenant/IssueDetailsScreen";
 import MessagingScreen from "../screens/messaging/MessagingScreen";
-import LandloardDashboard from "../screens/landlord/LandloardDashboard";
+import LandlordDashboard from "../screens/landlord/LandlordDashboard";
 
 const Stack = createStackNavigator();
 
@@ -12,7 +12,7 @@ const IssueStackLandlord = () => {
     <Stack.Navigator>
       <Stack.Screen
         name="Dashboard"
-        component={LandloardDashboard}
+        component={LandlordDashboard}
         options={{ headerShown: false }}
       />
       <Stack.Screen

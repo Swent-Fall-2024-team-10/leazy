@@ -41,7 +41,7 @@ export type ReportStackParamList = {
 };
 
 export type LandlordStackParamList = {
-  LandloardDashboard: undefined;
+  LandlordDashboard: undefined;
   Issues: undefined;
   IssueDetails: {
     requestID: string;

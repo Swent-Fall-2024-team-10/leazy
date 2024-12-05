@@ -43,7 +43,6 @@ const RoundedRectangle: React.FC<{
 
 const LandlordDashboard: React.FC = () => {
   const { user } = useAuth();
-  console.log(user);
   const navigation = useNavigation<NavigationProp<LandlordStackParamList>>();
   if (!user) {
     throw new Error("User not found.");

@@ -7,10 +7,9 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import Header from "../../components/Header";
-import { useAuth } from "../../Navigators/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   getApartment,
   getLandlord,
@@ -30,7 +29,8 @@ import {
   FontSizes,
   stylesForNonHeaderScreens,
 } from "../../../styles/styles";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { LandlordStackParamList } from "../../../types/types";
 
 const RoundedRectangle: React.FC<{
   children: React.ReactNode;
@@ -43,7 +43,8 @@ const RoundedRectangle: React.FC<{
 
 const LandlordDashboard: React.FC = () => {
   const { user } = useAuth();
-  const navigation = useNavigation(); // Initialize navigation
+  console.log(user);
+  const navigation = useNavigation<NavigationProp<LandlordStackParamList>>();
   if (!user) {
     throw new Error("User not found.");
   }
@@ -148,9 +149,7 @@ const LandlordDashboard: React.FC = () => {
       notStarted,
       inProgress,
       completed,
-      mostRecent: mostRecentRequest
-        ? mostRecentRequest.requestTitle
-        : "No maintenance requests",
+      mostRecent: mostRecentRequest ? mostRecentRequest : null,
     };
   }, [maintenanceRequestList]);
 
@@ -258,7 +257,7 @@ const LandlordDashboard: React.FC = () => {
                           ]}
                           testID={`LandlordDashboard_ResidenceName_${index}`}
                         >
-                          {residence.residenceId}
+                          {residence.residenceName}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -325,7 +324,15 @@ const LandlordDashboard: React.FC = () => {
                       {calculateMaintenanceIssues.completed} Completed
                     </Text>
                   </View>
-                  <View
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (calculateMaintenanceIssues.mostRecent) {
+                        navigation.navigate("IssueDetails", {
+                          requestID:
+                            calculateMaintenanceIssues.mostRecent.requestID,
+                        });
+                      }
+                    }}
                     style={[
                       appStyles.grayGroupBackground,
                       { flex: 1, marginLeft: 8, alignItems: "center" },
@@ -341,9 +348,11 @@ const LandlordDashboard: React.FC = () => {
                       style={{ fontSize: 16 }}
                       testID="LandlordDashboard_MostRecentIssue"
                     >
-                      {calculateMaintenanceIssues.mostRecent}
+                      {calculateMaintenanceIssues.mostRecent
+                        ? calculateMaintenanceIssues.mostRecent.requestTitle
+                        : "No recent issues"}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 </View>
               </RoundedRectangle>
 

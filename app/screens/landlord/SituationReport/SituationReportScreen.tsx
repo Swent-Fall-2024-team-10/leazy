@@ -129,7 +129,7 @@ export function GroupedSituationReport({
 
 
   // Picker group to select residence and apartment
-function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
+export function PickerGroup({label, data, chosed, testID ,setValue}: { testID: string, label: string, data: PickerItem[] ,chosed: string, setValue: (value: string) => void}) {
     return (
         <View style={[appStyles.grayGroupBackground, situationReportStyles.pickerContainer]}>
             <Text style={situationReportStyles.label}>{label}</Text>

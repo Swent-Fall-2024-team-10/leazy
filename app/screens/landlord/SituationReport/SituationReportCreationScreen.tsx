@@ -1,14 +1,15 @@
-import Header from '@/app/components/Header';
+import { cloneDeep } from 'lodash';
+import Header from '../../../components/Header';
 import {
   appStyles,
   ButtonDimensions,
   Color,
   defaultButtonRadius,
   textInputHeight,
-} from '@/styles/styles';
-import { useCallback, useState } from 'react';
+} from '../../../../styles/styles';
+import { useCallback, useEffect, useState } from 'react';
 import React from 'react';
-import { Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Button, Icon } from 'react-native-elements';
 import StraightLine from '../../../components/SeparationLine';
 import {
@@ -23,13 +24,17 @@ import {
   removeItemFrom,
   toDatabaseFormat,
 } from '../../../utils/SituationReport';
-import SubmitButton from '@/app/components/buttons/SubmitButton';
-import InputField from '@/app/components/forms/text_input';
+import SubmitButton from '../../../components/buttons/SubmitButton';
+import InputField from '../../../components/forms/text_input';
 import { KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   addSituationReportLayout,
-} from '@/firebase/firestore/firestore';
+  getResidence,
+} from '../../../../firebase/firestore/firestore';
+import { PickerGroup } from './SituationReportScreen';
+import { useAuth } from '../../../context/AuthContext';
+import { auth } from '@/firebase/firebase';
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -117,7 +122,7 @@ type SituationReportItemProps = {
  *
  *
  * */
-function SituationReportItem({
+export function SituationReportItem({
   label,
   layout,
   setLayout,
@@ -191,11 +196,12 @@ export function GroupedSituationReport({
     [tempLayout, setTempLayout],
   );
 
+  let toDisplay = editMode ? tempLayout : layout;
   let itemCounter = 1;
 
   return (
     <View>
-      {layout.map((group, groupIndex) => {
+      {toDisplay.map((group, groupIndex) => {
         const groupName = group[0];
         const items = group[1];
 
@@ -350,13 +356,32 @@ export default function SituationReportCreation() {
   const navigation = useNavigation();
   const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [tempLayout, setTempLayout] = useState<[string, [string, number][]][]>(
-    [],
-  );
-
+  const [tempLayout, setTempLayout] = useState<[string, [string, number][]][]>([],);
+  const [selectedResidence, setSelectedResidence] = useState('');
+  const [residencesMappedToName, setResidencesMappedToName] = useState<{ label: string; value: string; }[]>([]);
+  const { landlord } = useAuth();
   const [situationReportName, setSituationReportName] = useState('');
 
+  useEffect(() => {
+    const fetchResidences = async () => {
+      if (landlord?.residenceIds) {
+        const mappedResidences = await Promise.all(
+          landlord.residenceIds.map(async id => {
+            const test = await getResidence(id);
+            return {
+              label: test?.residenceName ?? 'Unknown',
+              value: id
+            };
+          })
+        );
+        setResidencesMappedToName(mappedResidences);
+      }
+    };
+    fetchResidences();
+  }, [landlord?.residenceIds]);
+
   function resetStates() {
+    setSelectedResidence('');
     setLayout([]);
     setSituationReportName('');
     setEditMode(false);
@@ -385,6 +410,14 @@ export default function SituationReportCreation() {
             <Text style={appStyles.screenHeader}>
               Situation Report : Layout Creation{' '}
             </Text>
+
+            <PickerGroup 
+              testID="residence-picker" 
+              label={"Residence"} 
+              data={residencesMappedToName} 
+              chosed={selectedResidence} 
+              setValue={setSelectedResidence} 
+            />
 
             <View>
               <View
@@ -446,8 +479,7 @@ export default function SituationReportCreation() {
                   title='Cancel'
                   titleStyle={appStyles.submitButtonText}
                   onPress={() => {
-                    setLayout(layout);
-                    setTempLayout(layout);
+                    setTempLayout(cloneDeep(layout));
                     setEditMode(false);
                   }}
                   buttonStyle={[
@@ -461,8 +493,7 @@ export default function SituationReportCreation() {
                   title='Save'
                   titleStyle={appStyles.submitButtonText}
                   onPress={() => {
-                    setLayout(tempLayout);
-                    setTempLayout(layout);
+                    setLayout(cloneDeep(tempLayout));
                     setEditMode(false);
                   }}
                   buttonStyle={[
@@ -478,8 +509,9 @@ export default function SituationReportCreation() {
                   title='Edit'
                   titleStyle={appStyles.submitButtonText}
                   onPress={() => {
+                    console.log(selectedResidence)
                     setEditMode(true);
-                    setTempLayout(layout);
+                    setTempLayout(cloneDeep(layout));
                   }}
                   buttonStyle={[
                     appStyles.buttonAccept,
@@ -497,7 +529,7 @@ export default function SituationReportCreation() {
               </Text>
             ) : editMode ? (
               <GroupedSituationReport
-                layout={tempLayout}
+                layout={layout}
                 editMode={editMode}
                 setTempLayout={setTempLayout}
                 tempLayout={tempLayout}
@@ -549,6 +581,8 @@ export default function SituationReportCreation() {
                       [['New Item', 0]],
                       'New Group',
                     );
+                    console.log(layout);
+                    console.log(tempLayout);
                     setTempLayout(nextLayout);
                   }}
                 />
@@ -579,9 +613,11 @@ export default function SituationReportCreation() {
                   const reportLayout = [
                     toDatabaseFormat(layout, situationReportName),
                   ];
-                  const residenceId = 'GpcR4a8vz8L8SIpe3TbE';
+                  const residenceId = selectedResidence;
                   addSituationReportLayout(reportLayout, residenceId);
-                  navigation.navigate('ListIssues' as never);
+                  Alert.alert('Situation Report Created', 'Situation Report has been created successfully');
+                  navigation.navigate('Situation Report Creation' as never);
+                  resetStates();
                 }}
               />
             </View>

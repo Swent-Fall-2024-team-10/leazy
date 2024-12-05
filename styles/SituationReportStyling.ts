@@ -157,6 +157,8 @@ export const pickerSelectStyles = {
 
 export const layoutCreationStyles = StyleSheet.create({
     addButtonContainer: {
+      padding: "2%",
+      marginBottom: "4%",
     },
 
     inputField:{

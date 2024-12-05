@@ -2,7 +2,6 @@ import React from 'react';
 import { render, act } from '@testing-library/react-native';
 import App from '../index';
 import { auth } from '../../firebase/firebase';
-import { getUser, getTenant, getLandlord } from '../../firebase/firestore/firestore';
 
 // Mock all the required dependencies
 jest.mock('react-native-gesture-handler', () => ({}));
@@ -44,7 +43,7 @@ jest.mock('../context/PictureContext', () => ({
   PictureProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-jest.mock('../Navigators/AuthContext', () => ({
+jest.mock('../context/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 

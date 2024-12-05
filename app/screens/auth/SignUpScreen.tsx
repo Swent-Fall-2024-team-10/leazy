@@ -95,6 +95,7 @@ export default function SignUpScreen() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          style={appStyles.signUpInputField}
         />
         {errors.email && <Text style={stylesForNonHeaderScreens.errorText}>{errors.email}</Text>}
 
@@ -104,6 +105,7 @@ export default function SignUpScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          style={appStyles.signUpInputField}
         />
         {errors.password && (
           <Text style={stylesForNonHeaderScreens.errorText}>{errors.password}</Text>
@@ -114,6 +116,7 @@ export default function SignUpScreen() {
           placeholder="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
+          style={appStyles.signUpInputField}
           secureTextEntry
         />
         {errors.confirmPassword && (

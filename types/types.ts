@@ -1,5 +1,5 @@
-// portions of this code were generated with chatGPT as an AI assistant
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from "@firebase/firestore-types";
+
 
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -22,7 +22,13 @@ export type AuthStackParamList = {
     password: string;
   };
 };
-
+export type ResidenceStackParamList = {
+  ResidenceList: undefined;
+  FlatDetails: {
+    apartment: Apartment;
+  };
+  CreateResidence: undefined;
+};
 export type ReportStackParamList = {
   Issues: undefined;
   Report: undefined;
@@ -63,7 +69,7 @@ export type Tenant = {
 };
 
 export type Residence = {
-  residenceId: string;
+  residenceName: string;
   street: string;
   number: string;
   city: string;
@@ -86,7 +92,7 @@ export type TenantCode = {
 };
 
 export type Apartment = {
-  apartmentId: string;
+  apartmentName: string;
   residenceId: string;
   tenants: string[]; // list of tenant uids
   maintenanceRequests: string[]; // list of maintenance request ids
@@ -120,7 +126,8 @@ export type SituationReport = {
   reportDate: string;
   arrivingTenant: string;
   leavingTenant: string;
+  residenceId: string;
   apartmentId: string;
-  reportForm: string[];
+  reportForm: string;
   remarks: string;
 }

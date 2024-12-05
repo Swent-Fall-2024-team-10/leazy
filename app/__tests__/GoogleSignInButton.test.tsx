@@ -28,7 +28,7 @@ jest.mock('firebase/auth', () => ({
 }));
 
 // Mock AuthContext
-jest.mock('../Navigators/AuthContext', () => ({
+jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(() => ({ user: null })),
 }));
 
@@ -58,7 +58,7 @@ describe('GoogleSignInButton', () => {
     mockNavigate.mockClear();
 
     mockUseAuth = jest.fn(() => ({ user: null }));
-    require('../Navigators/AuthContext').useAuth = mockUseAuth;
+    require('../context/AuthContext').useAuth = mockUseAuth;
 
     (Google.useAuthRequest as jest.Mock).mockReturnValue([
       { type: 'success' }, // request

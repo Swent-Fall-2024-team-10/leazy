@@ -1,36 +1,40 @@
-import { createDrawerNavigator } from "@react-navigation/drawer";
-import ManageMachinesScreen from "../screens/laundry_machines/ManageMachinesScreen";
-import WashingMachineScreen from "../screens/laundry_machines/WashingMachineScreen";
-import LandlordListIssuesScreen from "../screens/issues_landlord/LandlordListIssuesScreen";
-import LandloardDashboard from "../screens/landlord/LandloardDashboard";
-import SettingsScreen from "../screens/tenant/SettingsScreen";
-import React from "react";
-import CustomDrawerContent from "../components/drawer/CustomDrawer";
-import { Color, appStyles } from "../../styles/styles";
-import SituationReport from "../screens/landlord/SituationReportScreen";
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import ManageMachinesScreen from '../screens/laundry_machines/ManageMachinesScreen';
+import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
+import LandlordListIssuesScreen from '../screens/issues_landlord/LandlordListIssuesScreen';
+import SettingsScreen from '../screens/tenant/SettingsScreen';
+import React from 'react';
+import CustomDrawerContent from '../components/drawer/CustomDrawer';
+import { Color, appStyles } from '../../styles/styles';
+import ResidenceStack from './ResidenceStack';
+import { LandlordProvider } from '../context/LandlordContext';
 
 const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {
   return (
-    <Drawer.Navigator
+    <LandlordProvider>
+      <Drawer.Navigator 
+        initialRouteName="ListIssues"
       screenOptions={{
-        headerShown: false, // This hides the default header
-        drawerStyle: {
-          backgroundColor: Color.HeaderBackground,
-        },
-        drawerActiveTintColor: Color.HeaderText,
-        drawerLabelStyle: appStyles.drawerLabel,
+          headerShown: false, // This hides the default header
+          drawerStyle: {
+              backgroundColor: Color.HeaderBackground,
+          },
+          drawerActiveTintColor: Color.HeaderText,
+          drawerLabelStyle: appStyles.drawerLabel,
       }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
-    >
-      <Drawer.Screen name="List Issues" component={LandlordListIssuesScreen} />
-      <Drawer.Screen name="Manage Machines" component={ManageMachinesScreen} />
-      <Drawer.Screen name="Washing Machine" component={WashingMachineScreen} />
-      <Drawer.Screen name="Manage Tenants" component={SettingsScreen} />
-      <Drawer.Screen name="Situation Report" component={SituationReport} />
-      <Drawer.Screen name="LandloardDashboard" component={LandloardDashboard} />
-    </Drawer.Navigator>
+
+      >
+
+        <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
+        <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
+        <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
+        <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
+        <Drawer.Screen name="Settings" component={SettingsScreen} />
+      </Drawer.Navigator>
+    </LandlordProvider>
   );
 };
 

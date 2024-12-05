@@ -5,7 +5,7 @@ import { registerRootComponent } from "expo"; // Ensures it works with Expo Go
 import { auth } from "../firebase/firebase";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PictureProvider } from "./context/PictureContext";
-import { AuthProvider } from "./Navigators/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { getUser, getTenant, getLandlord } from "../firebase/firestore/firestore";
 import { User } from "firebase/auth";
 import  RootNavigator from "./Navigators/RootNavigator";

@@ -13,7 +13,7 @@ const { height } = Dimensions.get('window');
 const Header: React.FC<PropsWithChildren<{}>> = ({children}) => {
     const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
     return(
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.openDrawer()}>
                     <Menu stroke="#0f5257" />
@@ -23,13 +23,11 @@ const Header: React.FC<PropsWithChildren<{}>> = ({children}) => {
             </View>
             {/* Content Rendered On Top of Background */}
             <View style={styles.contentContainer}>
-              <View style={styles.whiteBackground}>
-                {children}
+            <View style={styles.whiteBackground}>
+              {children}
             </View>
-            </View>
-            
-            
-        </SafeAreaView>
+            </View> 
+        </View>
     )
 }
 
@@ -75,6 +73,9 @@ container: {
 
     // Shadow for Android
     elevation: 5,
+
+    flex:1,
+
   },
   contentContainer: {
     flex: 1,              // Takes up the remaining space

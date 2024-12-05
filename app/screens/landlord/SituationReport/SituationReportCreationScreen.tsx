@@ -527,21 +527,14 @@ export default function SituationReportCreation() {
                 Tap the "Edit" button to start creating a new situation report
                 layout{' '}
               </Text>
-            ) : editMode ? (
+            ) : 
               <GroupedSituationReport
                 layout={layout}
                 editMode={editMode}
                 setTempLayout={setTempLayout}
                 tempLayout={tempLayout}
               />
-            ) : (
-              <GroupedSituationReport
-                layout={layout}
-                editMode={editMode}
-                setTempLayout={setTempLayout}
-                tempLayout={tempLayout}
-              />
-            )}
+            }
 
             {editMode && (
               <View style={layoutCreationStyles.addButtonContainer}>

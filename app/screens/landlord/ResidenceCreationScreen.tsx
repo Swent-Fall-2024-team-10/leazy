@@ -212,7 +212,10 @@ function ResidenceCreationScreen() {
 
   return (
     <Header>
-      <ScrollView style={[appStyles.scrollContainer, {paddingBottom: 200}]}>
+      <ScrollView style={[appStyles.scrollContainer, {paddingBottom: 200, paddingHorizontal: 20}]}>
+      <Text testID="screen-title" style={[appStyles.residenceTitle, {marginTop: 20}]}>
+            Create Your Residence
+          </Text>
         <View style={appStyles.formContainer}>
           <CustomTextField
             testID="residence-name"

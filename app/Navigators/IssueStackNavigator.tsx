@@ -6,13 +6,11 @@ import ReportScreen from '../screens/issues_tenant/ReportScreen';
 import CameraScreen from '../screens/camera/CameraScreen';
 import CapturedMediaScreen from '../screens/camera/CapturedMediaScreen';
 import MessagingScreen from '../screens/messaging/MessagingScreen';
-import { ReportProvider } from '../context/ReportContext';
 
 const Stack = createStackNavigator();
 
 const IssueStackNavigator = () => {
     return (
-        <ReportProvider>
             <Stack.Navigator>
             <Stack.Screen
                 name="Issues"
@@ -45,7 +43,6 @@ const IssueStackNavigator = () => {
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>
-        </ReportProvider>  
     );
 };
 

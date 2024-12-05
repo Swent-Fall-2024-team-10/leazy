@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text, TouchableOpacity, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, ChartNoAxesCombinedIcon } from "lucide-react-native";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { ArrowLeft } from "lucide-react-native";
+import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { auth, db } from "../../../firebase/firebase";
 import Header from "../../components/Header";
@@ -13,24 +13,22 @@ import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
 import CustomBubble from "../../components/messaging/CustomBubble";
 
 import {createChatIfNotPresent, sendMessage, subscribeToMessages} from "../../../firebase/chat/chat"
-import { useReportContext } from "../../context/ReportContext";
 
 
 export default function MessagingScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
-  const { user } = useAuth();
+  const route = useRoute<RouteProp<ReportStackParamList, "Messaging">>();
+  const { chatID } = route.params;
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const {requestID} = useReportContext();
-  const chatID = requestID;
 
   
   useEffect(() => {
-    createChatIfNotPresent(requestID);
+    createChatIfNotPresent(chatID);
 
     console.log("Retrieving messages");
   
     // Subscribe to messages
-    const unsub = subscribeToMessages(requestID, (newMessages) => {
+    const unsub = subscribeToMessages(chatID, (newMessages) => {
       setMessages(newMessages); // Update state with new messages
     });
 

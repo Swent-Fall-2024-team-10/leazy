@@ -30,12 +30,12 @@ import {
   updateMaintenanceRequest,
   updateTenant,
 } from "../../../firebase/firestore/firestore";
-import { useReportContext } from "../../context/ReportContext";
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
+
   const { user } = useAuth();
 
   const [room, setRoom] = useState("");
@@ -51,8 +51,6 @@ export default function ReportScreen() {
   const hours = currentDay.getHours().toString().padStart(2, "0");
   const minutes = currentDay.getMinutes().toString().padStart(2, "0");
   const { pictureList, resetPictureList } = usePictureContext();
-
-  const { setRequestID } = useReportContext();
 
   async function resetStates() {
     setRoom("");
@@ -147,8 +145,7 @@ export default function ReportScreen() {
 
       if (tick) {
         setTick(false);
-        setRequestID(requestID.id);
-        navigation.navigate("Messaging");
+        navigation.navigate("Messaging", {chatID: requestID.id});
       } else {
         setTick(false);
         navigation.navigate("Issues");

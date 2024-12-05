@@ -28,7 +28,6 @@ import Spacer from "../../components/Spacer";
 import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";
-import { useReportContext } from "../../context/ReportContext";
 
 
 // portions of this code were generated with chatGPT as an AI assistant
@@ -50,7 +49,6 @@ const IssueDetailsScreen: React.FC = () => {
 
   const route = useRoute<RouteProp<ReportStackParamList, "IssueDetails">>();
   const { requestID } = route.params;
-  const {setRequestID} = useReportContext();
 
   const [issue, setIssue] = useState<MaintenanceRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -177,8 +175,7 @@ const openFullScreen = (index: number) => {
           </View>
             <AdaptiveButton title = 'Open chat about this subject' 
               onPress = { () => {
-                setRequestID(requestID)
-                navigation.navigate('Messaging')
+                navigation.navigate('Messaging', {chatID: requestID})
               }
             }
               icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}

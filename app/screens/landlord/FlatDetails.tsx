@@ -25,7 +25,7 @@ function FlatDetails() {
           
           <View style={appStyles.idContainer}>
             <Text style={appStyles.idText}>
-              Apartment ID: {apartment?.apartment.apartmentId}
+              Apartment ID: {apartment?.apartment.apartmentName}
             </Text>
           </View>
 

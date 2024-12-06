@@ -28,7 +28,7 @@ describe("Firestore functions", () => {
   });
 
   const residenceMock: Residence = {
-    residenceId: "res123",
+    residenceName: "res123",
     street: "123 Main St",
     number: "10",
     city: "Fribourg",
@@ -44,7 +44,7 @@ describe("Firestore functions", () => {
   };
 
   const apartmentMock: Apartment = {
-    apartmentId: "apt123",
+    apartmentName: "apt123",
     residenceId: "res123",
     tenants: ["tenant123"],
     maintenanceRequests: ["request123"],

@@ -19,7 +19,7 @@ describe("StatusBadge Component", () => {
     (getIssueStatusColor as jest.Mock).mockReturnValue("#FF0000");
     (getIssueStatusText as jest.Mock).mockReturnValue("Pending");
 
-    const { getByText, toJSON } = render(<StatusBadge status="pending" />);
+    const { getByText, toJSON } = render(<StatusBadge status="inProgress" />);
 
     // Verify the text content
     expect(getByText("Status: Pending")).toBeTruthy();
@@ -40,7 +40,7 @@ describe("StatusBadge Component", () => {
     (getIssueStatusColor as jest.Mock).mockReturnValueOnce("#00FF00");
     (getIssueStatusText as jest.Mock).mockReturnValueOnce("Resolved");
 
-    const { getByText, toJSON } = render(<StatusBadge status="resolved" />);
+    const { getByText, toJSON } = render(<StatusBadge status="completed" />);
 
     // Verify the text content
     expect(getByText("Status: Resolved")).toBeTruthy();

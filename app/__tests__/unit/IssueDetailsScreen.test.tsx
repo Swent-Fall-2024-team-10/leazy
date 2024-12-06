@@ -6,8 +6,7 @@ import {
   updateMaintenanceRequest,
 } from "../../../firebase/firestore/firestore";
 import "@testing-library/jest-native/extend-expect";
-import { Image } from 'react-native';
-
+import { Image } from "react-native";
 
 // portions of this code were generated using chatGPT as an AI assistant
 
@@ -60,7 +59,6 @@ jest.mock("react-native-dropdown-picker", () => {
   };
 });
 
-
 // Mock Navigation and Route
 const mockNavigate = jest.fn();
 jest.mock("@react-navigation/native", () => ({
@@ -81,15 +79,14 @@ describe("IssueDetailsScreen", () => {
         successCallback: (width: number, height: number) => void,
         failureCallback?: (error: any) => void
       ): void => {
-        if (uri === 'bad-uri') {
-          failureCallback?.(new Error('Failed to fetch image size'));
+        if (uri === "bad-uri") {
+          failureCallback?.(new Error("Failed to fetch image size"));
         } else {
           successCallback(300, 200);
         }
       }
     );
   });
-
 
   afterAll(() => {
     jest.restoreAllMocks();
@@ -115,10 +112,14 @@ describe("IssueDetailsScreen", () => {
     const screen = render(<IssueDetailsScreen />);
 
     // Wait for data to load and assert the correct elements are displayed
-    await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalledWith("mockRequestID"));
+    await waitFor(() =>
+      expect(getMaintenanceRequest).toHaveBeenCalledWith("mockRequestID")
+    );
     expect(screen.getByText("Issue : Leaky faucet")).toBeTruthy();
     expect(screen.getByText("Status: In Progress")).toBeTruthy();
-    expect(screen.getByText("A faucet is leaking in the bathroom.")).toBeTruthy();
+    expect(
+      screen.getByText("A faucet is leaking in the bathroom.")
+    ).toBeTruthy();
   });
 
   test("displays 'Issue not found' if issue data is not available", async () => {
@@ -126,7 +127,9 @@ describe("IssueDetailsScreen", () => {
     const screen = render(<IssueDetailsScreen />);
 
     // Wait for loading state to pass and check for 'Issue not found' message
-    await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalledWith("mockRequestID"));
+    await waitFor(() =>
+      expect(getMaintenanceRequest).toHaveBeenCalledWith("mockRequestID")
+    );
     expect(screen.getByText("Issue not found.")).toBeTruthy();
   });
 
@@ -147,7 +150,7 @@ describe("IssueDetailsScreen", () => {
     const chatButton = screen.getByText("Open chat about this subject");
     act(() => {
       fireEvent.press(chatButton);
-      });
+    });
 
     expect(mockNavigate).toHaveBeenCalledWith("Messaging");
   });
@@ -161,23 +164,31 @@ describe("IssueDetailsScreen", () => {
       picture: ["https://via.placeholder.com/400x300"],
     };
 
+    const mockGoBack = jest.fn();
+    jest
+      .spyOn(require("@react-navigation/native"), "useNavigation")
+      .mockReturnValue({
+        goBack: mockGoBack,
+      });
+
     (getMaintenanceRequest as jest.Mock).mockResolvedValueOnce(mockIssueData);
 
     const screen = render(<IssueDetailsScreen />);
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
     // Simulate changing status through StatusDropdown
-    const statusDropdown = screen.getByTestId('statusDropdown'); // Existing status
+    const statusDropdown = screen.getByTestId("statusDropdown"); // Existing status
     act(() => {
-      fireEvent(statusDropdown, 'setOpen', true);
+      fireEvent(statusDropdown, "setOpen", true);
     });
 
     // Simulate selecting a new status
     const newStatus = "completed"; // Value to simulate
-      // After opening the dropdown, the options should be available
-    await waitFor(() => {const dropdownOption = screen.getByTestId(`statusDropdown-${newStatus}`);
-    act(() => {
-      fireEvent.press(dropdownOption); // Simulates selecting the new status
+    // After opening the dropdown, the options should be available
+    await waitFor(() => {
+      const dropdownOption = screen.getByTestId(`statusDropdown-${newStatus}`);
+      act(() => {
+        fireEvent.press(dropdownOption); // Simulates selecting the new status
       });
     });
 
@@ -191,7 +202,7 @@ describe("IssueDetailsScreen", () => {
     const closeButton = screen.getByTestId("saveChangesButton");
     act(() => {
       fireEvent.press(closeButton);
-      });
+    });
 
     await waitFor(() => {
       expect(updateMaintenanceRequest).toHaveBeenCalledWith("mockRequestID", {
@@ -199,7 +210,7 @@ describe("IssueDetailsScreen", () => {
         requestDescription: "A faucet is leaking in the bathroom.",
       });
     });
-    expect(mockNavigate).toHaveBeenCalledWith("Issues");
+    expect(mockGoBack).toHaveBeenCalled();
   });
 
   test("opens and closes full-screen image modal", async () => {
@@ -216,11 +227,11 @@ describe("IssueDetailsScreen", () => {
     await waitFor(() => expect(getMaintenanceRequest).toHaveBeenCalled());
 
     // Open full-screen modal by pressing the image
-    const thumbnailImage = screen.getByTestId('imageItem-0');
+    const thumbnailImage = screen.getByTestId("imageItem-0");
 
     // Trigger state changes that open the modal
     act(() => {
-    fireEvent.press(thumbnailImage);
+      fireEvent.press(thumbnailImage);
     });
 
     // Wait for the modal to appear
@@ -230,7 +241,9 @@ describe("IssueDetailsScreen", () => {
     });
 
     // Verify that the full-screen image modal is visible
-    const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
+    const fullScreenImage = await waitFor(() =>
+      screen.getByTestId("imageFull")
+    );
     expect(fullScreenImage).toBeTruthy();
 
     // Close the modal
@@ -266,25 +279,33 @@ describe("IssueDetailsScreen", () => {
     const firstThumbnailImage = screen.getByTestId("imageItem-0");
     act(() => {
       fireEvent.press(firstThumbnailImage);
-      });
+    });
 
     // Verify initial image is displayed
-    const fullScreenImage = await waitFor(() => screen.getByTestId("imageFull"));
+    const fullScreenImage = await waitFor(() =>
+      screen.getByTestId("imageFull")
+    );
 
-    expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/400x300");
+    expect(fullScreenImage.props.source.uri).toBe(
+      "https://via.placeholder.com/400x300"
+    );
 
     // Press the right arrow to navigate to the next image
     const rightArrowButton = screen.getByTestId("rightButton");
     act(() => {
       fireEvent.press(rightArrowButton);
-      });
-    expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/300x400");
+    });
+    expect(fullScreenImage.props.source.uri).toBe(
+      "https://via.placeholder.com/300x400"
+    );
 
     // Press the left arrow to navigate back to the previous image
     const leftArrowButton = screen.getByTestId("leftButton");
     act(() => {
       fireEvent.press(leftArrowButton);
-      });
-    expect(fullScreenImage.props.source.uri).toBe("https://via.placeholder.com/400x300");
+    });
+    expect(fullScreenImage.props.source.uri).toBe(
+      "https://via.placeholder.com/400x300"
+    );
   });
 });

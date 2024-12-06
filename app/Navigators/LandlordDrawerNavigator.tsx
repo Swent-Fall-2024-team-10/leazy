@@ -8,6 +8,7 @@ import CustomDrawerContent from '../components/drawer/CustomDrawer';
 import { Color, appStyles } from '../../styles/styles';
 import ResidenceStack from './ResidenceStack';
 import { LandlordProvider } from '../context/LandlordContext';
+import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
 
 
 const Drawer = createDrawerNavigator();
@@ -35,6 +36,7 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
         <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
         <Drawer.Screen name="Settings" component={SettingsScreen} />
+        <Drawer.Screen name="SnitchMode" component={SnitchModeScreen} />
       </Drawer.Navigator>
     </LandlordProvider>
   );

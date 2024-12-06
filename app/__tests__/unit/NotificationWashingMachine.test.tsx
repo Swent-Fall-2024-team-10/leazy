@@ -2,13 +2,26 @@ import React from "react";
 import { render, fireEvent, act } from "@testing-library/react-native";
 import WashingMachineScreen from "../../screens/laundry_machines/WashingMachineScreen";
 import * as Notifications from "expo-notifications";
-import { getLaundryMachine, updateLaundryMachine } from "../../../firebase/firestore/firestore";
+import { getAllLaundryMachines, getLaundryMachine, updateLaundryMachine } from "../../../firebase/firestore/firestore";
 import { NotificationPermissionsStatus } from "expo-notifications";
+import { onSnapshot } from "firebase/firestore";
 
 // Mock Firestore functions
 jest.mock("../../../firebase/firestore/firestore", () => ({
   getLaundryMachine: jest.fn(),
   updateLaundryMachine: jest.fn(),
+}));
+
+jest.mock('expo-linear-gradient', () => ({
+    LinearGradient: jest.fn().mockImplementation(({ children }) => children),
+  }));
+
+jest.mock('@react-navigation/native', () => ({
+...jest.requireActual('@react-navigation/native'),
+useNavigation: () => ({
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+}),
 }));
 
 // Mock expo-notifications
@@ -23,6 +36,30 @@ describe("WashingMachineScreen - Notifications", () => {
     jest.clearAllMocks();
   });
 
+  it("renders the washing machine fetched from Firestore", async () => {
+    const mockMachineData = {
+      laundryMachineId: "TestMachine1",
+      isAvailable: true,
+      isFunctional: true,
+      notificationScheduled: false,
+    };
+  
+    const mockQuery = jest.fn();
+    (getAllLaundryMachines as jest.Mock).mockResolvedValue(mockQuery);
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      callback({
+        forEach: (fn: any) => fn({ data: () => mockMachineData }),
+      });
+    });
+  
+    const { getByText } = render(<WashingMachineScreen />);
+  
+    // Wait for async rendering
+    await act(async () => {});
+  
+    expect(getByText("Machine TestMachine1")).toBeTruthy();
+  });
+  
   it("requests notification permissions when ensuring permissions", async () => {
     // Mock permissions to be undetermined initially
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValueOnce({
@@ -33,10 +70,13 @@ describe("WashingMachineScreen - Notifications", () => {
       status: "granted",
     } as NotificationPermissionsStatus);
 
-    const { getByTestId } = render(<WashingMachineScreen />);
-    const button = getByTestId("setTimerButton");
+    const { getByText, getByTestId } = render(<WashingMachineScreen />);
+
+    // Verify that the placeholder machine is rendered
+    expect(getByText("Machine TestMachine1")).toBeTruthy();
 
     // Simulate setting a timer
+    const button = getByTestId("setTimerButton");
     await act(async () => {
       fireEvent.press(button);
     });

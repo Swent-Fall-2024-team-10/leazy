@@ -94,7 +94,7 @@ const scheduleFinishNotification = async (machineId: string, delayS: number) => 
 };
 
   const calculateTimer = useCallback(
-    (laundryMachineId: string, estimatedFinishTime: Timestamp) => {
+    async (laundryMachineId: string, estimatedFinishTime: Timestamp) => {
       // Don't start a new timer if one already exists for this machine
       if (timerIntervals[laundryMachineId]) {
         return;
@@ -103,7 +103,17 @@ const scheduleFinishNotification = async (machineId: string, delayS: number) => 
       const now = Date.now();
       const remainingTimeMs = estimatedFinishTime.toMillis() - now;
       const durationS = (remainingTimeMs - 3*60*1000) / 1000;
-      scheduleFinishNotification(laundryMachineId, durationS);
+
+      // Fetch the machine data to check the current notification status
+      const machine = await getLaundryMachine(residenceId, laundryMachineId);
+
+      if (machine && !machine.notificationScheduled && durationS > 0) {
+        // Schedule the notification and update Firestore
+        await scheduleFinishNotification(laundryMachineId, durationS);
+        await updateLaundryMachine(residenceId, laundryMachineId, {
+          notificationScheduled: true, // Set the Firestore flag
+        });
+      }
 
       // Set up the interval to update the remaining time
       const intervalId = setInterval(async () => {
@@ -166,7 +176,8 @@ const scheduleFinishNotification = async (machineId: string, delayS: number) => 
         setMachines(updatedMachines);
         
         updatedMachines.forEach((machine) => {
-          if (machine.estimatedFinishTime && !machine.isAvailable) {
+          if (machine.estimatedFinishTime && !machine.isAvailable &&
+            !machine.notificationScheduled) {
             calculateTimer(machine.laundryMachineId, machine.estimatedFinishTime);
           }
         });
@@ -199,6 +210,7 @@ const scheduleFinishNotification = async (machineId: string, delayS: number) => 
     await updateLaundryMachine(residenceId, laundryMachineId, {
       isAvailable: true,
       occupiedBy: "none",
+      notificationScheduled: false
     });
 
     // Update local state for UI

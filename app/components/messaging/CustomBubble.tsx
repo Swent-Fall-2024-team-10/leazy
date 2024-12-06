@@ -27,7 +27,7 @@ export default CustomBubble;
 
 const styles = StyleSheet.create({
     bubbleLeft: {
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#0F5257",
         borderWidth: 1,
         borderColor: "#E8E8E8",
         marginLeft: 8,
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         marginRight: 8,
       },
       bubbleTextLeft: {
-        color: "#000000",
+        color: "#FFFFFF",
       },
       bubbleTextRight: {
         color: "#000000",

@@ -313,7 +313,7 @@ const WashingMachineScreen = () => {
                   />
                 )}
                 {!machine.isAvailable && (
-                  <Text style={styles.remainingTime}>
+                  <Text style={appStyles.flatText}>
                     {remainingTimes[machine.laundryMachineId] ||
                       "Calculating..."}
                   </Text>

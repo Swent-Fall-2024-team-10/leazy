@@ -15,6 +15,7 @@ import Header from '../../components/Header';
 interface ResidenceFormData {
   name: string;
   address: string;
+  number: string;
   zipCode: string;
   city: string;
   provinceState: string;
@@ -74,6 +75,7 @@ function ResidenceCreationScreen() {
   const [formData, setFormData] = useState<ResidenceFormData>({
     name: '',
     address: '',
+    number: '',
     zipCode: '',
     city: '',
     provinceState: '',
@@ -99,7 +101,6 @@ function ResidenceCreationScreen() {
       
       const apartmentNames = rows.slice(1).map(row => row[0]).filter(Boolean);
       setApartments(apartmentNames);
-      console.log('Parsed apartments:', apartmentNames);
       Alert.alert('Success', `Parsed ${apartmentNames.length} apartments`);
     } catch (error) {
       Alert.alert('Error', 'Failed to parse Excel file');
@@ -211,7 +212,10 @@ function ResidenceCreationScreen() {
 
   return (
     <Header>
-      <ScrollView style={[appStyles.scrollContainer, {paddingBottom: 200}]}>
+      <ScrollView style={[appStyles.scrollContainer, {paddingBottom: 200, paddingHorizontal: 20}]}>
+      <Text testID="screen-title" style={[appStyles.residenceTitle, {marginTop: 20}]}>
+            Create Your Residence
+          </Text>
         <View style={appStyles.formContainer}>
           <CustomTextField
             testID="residence-name"
@@ -242,22 +246,30 @@ function ResidenceCreationScreen() {
 
           <View style={appStyles.formRow}>
             <CustomTextField
-              testID="zip-code"
-              value={formData.zipCode}
-              onChangeText={handleChange('zipCode')}
-              placeholder="Zip Code"
+              testID="number"
+              value={formData.number}
+              onChangeText={handleChange('number')}
+              placeholder="Street no"
               style={appStyles.formZipCode}
               keyboardType="numeric"
             />
 
             <CustomTextField
-              testID="city"
-              value={formData.city}
-              onChangeText={handleChange('city')}
-              placeholder="City"
-              style={appStyles.formCity}
+              testID="zip-code"
+              value={formData.zipCode}
+              onChangeText={handleChange('zipCode')}
+              placeholder="Zip Code"
+              style={appStyles.formZipCode}
             />
           </View>
+
+          <CustomTextField
+            testID="city"
+            value={formData.city}
+            onChangeText={handleChange('city')}
+            placeholder="City"
+            style={appStyles.formFullWidth}
+          />
 
           <CustomTextField
             testID="province-state"

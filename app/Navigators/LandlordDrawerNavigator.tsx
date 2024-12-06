@@ -11,6 +11,7 @@ import { LandlordProvider } from '../context/LandlordContext';
 import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
 import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
 import IssueStackLandlord from './IssueStackLandlord';
+import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
 
 
 const Drawer = createDrawerNavigator();
@@ -38,6 +39,7 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
         <Drawer.Screen name="Situation Report Form" component={SituationReport} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />
+        <Drawer.Screen name="SnitchMode" component={SnitchModeScreen} />
       </Drawer.Navigator>
     </LandlordProvider>
   );

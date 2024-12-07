@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Composer } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Color } from '@/styles/styles';
+import { Color, FontSizes } from '@/styles/styles';
 
 const CustomInputToolbar = (props: any) => {
   return (
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     },
     textInput: {
         flex: 1,
-        fontSize: 16,
+        fontSize: FontSizes.TextInputText,
         color: Color.chatInputText,
     },
     sendButton: {

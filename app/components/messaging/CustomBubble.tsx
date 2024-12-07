@@ -1,4 +1,4 @@
-import { Color } from '@/styles/styles';
+import { Color, FontSizes } from '@/styles/styles';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Bubble } from 'react-native-gifted-chat';
@@ -41,9 +41,11 @@ const styles = StyleSheet.create({
       },
       bubbleTextLeft: {
         color: Color.chatBubbleLeftText,
+        fontSize: FontSizes.TextInputText,
       },
       bubbleTextRight: {
         color: Color.chatBubbleRightText,
+        fontSize: FontSizes.TextInputText,
       },
       timeText: {
         color: Color.chatTimeText,

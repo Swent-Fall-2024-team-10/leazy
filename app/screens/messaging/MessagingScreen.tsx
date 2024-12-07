@@ -6,7 +6,7 @@ import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navig
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { auth, db } from "../../../firebase/firebase";
 import Header from "../../components/Header";
-import { appStyles } from "../../../styles/styles";
+import { Color, appStyles } from "../../../styles/styles";
 import { ReportStackParamList } from "../../../types/types";
 import { useAuth } from "../../context/AuthContext";
 import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
@@ -105,16 +105,16 @@ const styles = StyleSheet.create({
   chatTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#000",
+    color: Color.chatTitle,
     textAlign: "center",
     flex: 1,
     marginLeft: -24, // Offset the back button width
   },
   chatContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: Color.chatBackground,
   },
   gobackIcon: {
-    color: "#000000",
+    color: Color.chatGoBackIcon,
     flexDirection: "row",
     alignItems: "center",
     flex: 1,

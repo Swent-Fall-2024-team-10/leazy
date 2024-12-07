@@ -1,3 +1,4 @@
+import { Color } from '@/styles/styles';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Bubble } from 'react-native-gifted-chat';
@@ -27,24 +28,24 @@ export default CustomBubble;
 
 const styles = StyleSheet.create({
     bubbleLeft: {
-        backgroundColor: "#0F5257",
+        backgroundColor: Color.chatBubbleLeftBackground,
         borderWidth: 1,
-        borderColor: "#E8E8E8",
+        borderColor: Color.chatBubbleLeftBorder,
         marginLeft: 8,
       },
       bubbleRight: {
-        backgroundColor: "#FFFFFF",
+        backgroundColor: Color.chatBubbleRightBackground,
         borderWidth: 1,
-        borderColor: "#7F7F7F",
+        borderColor: Color.chatBubbleRightBorder,
         marginRight: 8,
       },
       bubbleTextLeft: {
-        color: "#FFFFFF",
+        color: Color.chatBubbleLeftText,
       },
       bubbleTextRight: {
-        color: "#000000",
+        color: Color.chatBubbleRightText,
       },
       timeText: {
-        color: "#7F7F7F",
+        color: Color.chatTimeText,
       },
 });

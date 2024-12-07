@@ -167,6 +167,27 @@ export const Color = {
   completed: "#2ECC71",
   rejected: "#95A5A6",
   default: "#95A5A6",
+
+
+  // Chat
+  chatTitle: "#000000",
+  chatBackground: "#FFFFFF",
+  chatGoBackIcon: "#000000",
+
+  chatInputBackground: "#FFFFFF",
+  chatInputBorder: "#7F7F7F",
+  chatInputText: "#000000",
+  chatSendIcon: "#AAAAAA",
+
+  chatBubbleLeftBackground: "#0F5257",
+  chatBubbleLeftBorder: "#E8E8E8",
+  chatBubbleLeftText: "#FFFFFF",
+
+  chatBubbleRightBackground: "#FFFFFF",
+  chatBubbleRightBorder: "#7F7F7F",
+  chatBubbleRightText: "#000000",
+
+  chatTimeText: "#7F7F7F",
 };
 
 export const appStyles = StyleSheet.create({

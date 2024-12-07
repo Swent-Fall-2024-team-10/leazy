@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
         height: "9%",
         borderRadius: 25,
         borderWidth: 1,
-        borderColor: "#7F7F7F",
-        backgroundColor: "#FFFFFF",
+        borderColor: Color.chatInputBorder,
+        backgroundColor: Color.chatInputBackground,
         elevation: 4,
         alignSelf: "center",
         marginVertical: "10%",
@@ -48,12 +48,12 @@ const styles = StyleSheet.create({
     textInput: {
         flex: 1,
         fontSize: 16,
-        color: "#000",
+        color: Color.chatInputText,
     },
     sendButton: {
         marginHorizontal: "5%",
       },
     sendIcon: {
-    color: "#AAAAAA",
+    color: Color.chatSendIcon,
   },
 });

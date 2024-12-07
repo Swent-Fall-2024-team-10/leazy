@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Keyboard } from "react-native";
+import { View, Text, TouchableOpacity, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { auth, db } from "../../../firebase/firebase";
 import Header from "../../components/Header";
-import { Color, appStyles } from "../../../styles/styles";
+import { chatStyles, appStyles, IconDimension } from "../../../styles/styles";
 import { ReportStackParamList } from "../../../types/types";
 import { useAuth } from "../../context/AuthContext";
 import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
@@ -61,7 +61,7 @@ export default function MessagingScreen() {
     <Header>
       <View style={appStyles.screenContainer}>
         <SafeAreaView>
-          <View style={styles.container}>
+          <View style={chatStyles.container}>
             <TouchableOpacity
             testID="arrow-left" 
             onPress={() => {
@@ -71,10 +71,14 @@ export default function MessagingScreen() {
             }}
             style={{padding: 10
           }}>
-              <ArrowLeft size={24} color={styles.gobackIcon.color} />
+              <ArrowLeft size={IconDimension.smallIcon} color={chatStyles.gobackIcon.color} />
             </TouchableOpacity>
-            <Text style={styles.chatTitle}>Apartment manager</Text>
+            <Text style={chatStyles.chatTitle}>Apartment manager</Text>
+            <View style={{width:IconDimension.smallIcon}}>
+              {/*For the centering of the title*/}
           </View>
+          </View>
+          
         </SafeAreaView>
 
         <View testID="gifted-chat" style={{flex:1}}>
@@ -82,7 +86,7 @@ export default function MessagingScreen() {
           renderBubble={renderBubble}
           messages={messages}
           onSend={onSend}
-          messagesContainerStyle={styles.chatContainer}
+          messagesContainerStyle={chatStyles.chatContainer}
           placeholder="New message"
           user={{
             _id: auth?.currentUser?.uid || "0", // "0" is a fallback
@@ -94,29 +98,3 @@ export default function MessagingScreen() {
     </Header>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: "5%",
-    marginHorizontal: "5%",
-  },
-  chatTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Color.chatTitle,
-    textAlign: "center",
-    flex: 1,
-    marginLeft: -24, // Offset the back button width
-  },
-  chatContainer: {
-    backgroundColor: Color.chatBackground,
-  },
-  gobackIcon: {
-    color: Color.chatGoBackIcon,
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-});

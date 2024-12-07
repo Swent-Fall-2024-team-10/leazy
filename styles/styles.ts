@@ -190,6 +190,90 @@ export const Color = {
   chatTimeText: "#7F7F7F",
 };
 
+export const chatStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: "5%",
+    marginHorizontal: "5%",
+    justifyContent: "space-between",
+  },
+  // There's a bug here, the title isn't centered since there's a button before it that shifts everything
+  chatTitle: {
+    fontSize: 18,
+    fontWeight: FontWeight.ScreenHeader,
+    color: Color.chatTitle,
+    textAlign: "center",
+    //flex: 1,
+    // How do i Offset the back button width while not giving pixel values
+  },
+  chatContainer: {
+    backgroundColor: Color.chatBackground,
+  },
+  gobackIcon: {
+    color: Color.chatGoBackIcon,
+    flexDirection: "row",
+    alignItems: "center",
+    //flex: 1,
+  },
+
+  // Input toolbar
+  input: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "90%",
+    height: "10%",
+    borderRadius: 25,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatInputBorder,
+    backgroundColor: Color.chatInputBackground,
+    elevation: 4,
+    alignSelf: "center",
+    marginTop: "5%",
+    marginBottom: "10%",
+    paddingLeft: "5%",
+  },
+  textInput: {
+    flex: 1,
+    fontSize: FontSizes.TextInputText,
+    color: Color.chatInputText,
+  },
+  sendButton: {
+    marginHorizontal: "5%",
+  },
+  sendIcon: {
+    color: Color.chatSendIcon,
+  },
+
+
+  // Bubble
+  bubbleLeft: {
+    backgroundColor: Color.chatBubbleLeftBackground,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatBubbleLeftBorder,
+    marginLeft: "5%",
+    elevation: 4,
+  },
+  bubbleRight: {
+    backgroundColor: Color.chatBubbleRightBackground,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatBubbleRightBorder,
+    marginRight: "5%",
+    elevation: 4,
+  },
+  bubbleTextLeft: {
+    color: Color.chatBubbleLeftText,
+    fontSize: FontSizes.TextInputText,
+  },
+  bubbleTextRight: {
+    color: Color.chatBubbleRightText,
+    fontSize: FontSizes.TextInputText,
+  },
+  timeText: {
+    color: Color.chatTimeText,
+  },
+});
+
 export const appStyles = StyleSheet.create({
   // Sign Up Styles
   signUpInputField: {

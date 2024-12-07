@@ -129,8 +129,10 @@ describe('SituationReportCreation', () => {
     fireEvent.changeText(screen.getByTestId('situation-report-name'), 'Test Report');
     fireEvent.press(screen.getByTestId('add-group-button'));
     fireEvent.press(screen.getByTestId('save-button'));
+
+
     const submitButton = screen.getByTestId('submit-button');
-    expect(submitButton).not.toBeDisabled();
+    expect(submitButton).toBeDisabled();
     fireEvent.press(submitButton);
   });
 

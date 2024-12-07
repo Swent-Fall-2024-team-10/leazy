@@ -30,10 +30,10 @@ const LandlordDrawerNavigator = () => {
 
       >
 
-        <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
-        <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
-        <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
-        <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
+        <Drawer.Screen name="Maintenance Requests" component={LandlordListIssuesScreen} />
+        <Drawer.Screen name="Manage Washing Machines" component={ManageMachinesScreen} />
+        <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
+        <Drawer.Screen name="Your Residences" component={ResidenceStack}/>
         <Drawer.Screen name="Settings" component={SettingsScreen} />
       </Drawer.Navigator>
     </LandlordProvider>

@@ -150,7 +150,7 @@ export function SituationReportItem({
           <InputField
             value={itemText}
             setValue={handleItemNameChange}
-            placeholder='Item Name'
+            placeholder={itemText}
             testID={`item-name-input-${groupIndex}-${itemIndex}`}
             style={layoutCreationStyles.inputField}
             height={textInputHeight}

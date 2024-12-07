@@ -34,7 +34,6 @@ import {
 } from '../../../../firebase/firestore/firestore';
 import { PickerGroup } from './SituationReportScreen';
 import { useAuth } from '../../../context/AuthContext';
-import { auth } from '@/firebase/firebase';
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -365,11 +364,12 @@ export default function SituationReportCreation() {
   useEffect(() => {
     const fetchResidences = async () => {
       if (landlord?.residenceIds) {
+        // Map residence IDs to their corresponding names
         const mappedResidences = await Promise.all(
-          landlord.residenceIds.map(async id => {
-            const test = await getResidence(id);
+          landlord.residenceIds.map(async (id: string) => {
+            const residence = await getResidence(id);
             return {
-              label: test?.residenceName ?? 'Unknown',
+              label: residence?.residenceName ?? 'Unknown',
               value: id
             };
           })
@@ -581,10 +581,10 @@ export default function SituationReportCreation() {
                 />
               </View>
             )}
-            {situationReportName === '' && (
+            {situationReportName === '' || selectedResidence === '' && (
               <Text style={[appStyles.emptyListText]}>
                 {' '}
-                Situation Report Name cannot be empty !{' '}
+                Situation Report Name or selected residence cannot be empty !{' '}
               </Text>
             )}
 
@@ -595,7 +595,7 @@ export default function SituationReportCreation() {
               ]}
             >
               <SubmitButton
-                disabled={layout.length === 0 || situationReportName === ''}
+                disabled={layout.length === 0 || situationReportName === '' || selectedResidence === ''}
                 label='Submit'
                 testID='submit-button'
                 width={ButtonDimensions.mediumButtonWidth}

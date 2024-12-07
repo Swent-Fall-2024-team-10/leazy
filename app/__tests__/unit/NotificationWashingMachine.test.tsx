@@ -104,6 +104,7 @@ return {
 
 describe("WashingMachineScreen - Notifications", () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     global.alert = jest.fn();
 
@@ -114,6 +115,11 @@ describe("WashingMachineScreen - Notifications", () => {
 jest.spyOn(require("firebase/auth"), "getAuth").mockReturnValue({
   currentUser: { uid: 'testUser' }
 });  });
+
+afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
 
   it("renders the washing machine fetched from Firestore", async () => {
   

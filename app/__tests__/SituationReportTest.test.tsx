@@ -1,9 +1,9 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import SituationReportScreen from "../screens/landlord/SituationReportScreen";
+import SituationReportScreen from "../screens/landlord/SituationReport/SituationReportScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import * as firestore from "../../firebase/firestore/firestore";
-import { GroupedSituationReport } from "../screens/landlord/SituationReportScreen";
+import { GroupedSituationReport } from "../screens/landlord/SituationReport/SituationReportScreen";
 import * as StatusFunctions from "../utils/SituationReport";
 
 jest.mock("../../firebase/firestore/firestore", () => ({

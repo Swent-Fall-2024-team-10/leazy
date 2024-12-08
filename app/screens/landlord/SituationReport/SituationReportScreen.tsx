@@ -7,21 +7,16 @@ import {
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Dimensions,
-  Keyboard,
   KeyboardAvoidingView,
 } from 'react-native';
 import TickingBox from '../../../components/forms/TickingBox';
 import Header from '../../../components/Header';
 import {
   appStyles,
-  borderWidth,
   ButtonDimensions,
   Color,
-  FontSizes,
-  FontWeight,
 } from '../../../../styles/styles';
 import InputField from '../../../components/forms/text_input';
 import StraightLine from '../../../components/SeparationLine';
@@ -112,8 +107,6 @@ export function GroupedSituationReport({
   resetState,
   setReset,
 }: GroupedSituationReportProps) {
-  // Flatten the layout to calculate the total number of items
-  const totalItems = layout.reduce((sum, group) => sum + group[1].length, 0);
 
   // Counter for numbering items across the layout
   let itemCounter = 1;

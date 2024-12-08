@@ -12,6 +12,12 @@ export type RootStackParamList = {
 export const defaultButtonRadius = 100;
 export const textInputHeight = 40;
 
+
+
+export const borderWidth = {
+  thin: 0.5,
+  thick: 1,
+};
 export const residenceManagementListStyles = StyleSheet.create({
   addApartmentButton: {
     height: 36,
@@ -298,7 +304,7 @@ export const appStyles = StyleSheet.create({
 
   // General Screen
   screenContainer: {
-    flex: 1,
+    flex: 0.75,
     paddingVertical: '6%',
     paddingHorizontal: '5%',
   },
@@ -491,7 +497,7 @@ export const appStyles = StyleSheet.create({
   addResidenceButton: {
     zIndex: 2,
     position: 'absolute',
-    bottom: '35%',
+    bottom: '10%',
     right: 24,
     width: 56,
     height: 56,

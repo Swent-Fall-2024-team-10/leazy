@@ -17,7 +17,7 @@ const mockNavigation = {
 const mockRoute = {
   params: {
     apartment: {
-      apartmentId: 'APT123',
+      apartmentName: 'APT123',
       tenants: ['TEN001', 'TEN002', 'TEN003'],
     },
   },

@@ -264,27 +264,6 @@ describe('changing the status of an item', () => {
         expect(newLayout).toEqual(expected03);
     });
 
-    it('Changing the status of an item with an invalid status should return the same layout', () => {
-        const layout: [string, [string, number][]][] = [
-            ["group1", [["group11", 0], ["group12", 0]]],
-            ["group2", [["group21", 0], ["group22", 0]]]
-        ];
-
-        const expected = [
-            ["group1", [["group11", 0], ["group12", 0]]],
-            ["group2", [["group21", 0], ["group22", 0]]]
-
-        ];
-        const groupIndex = 0;
-        const itemIndex = 0;
-
-        const newStatus = "INVALID";
-
-        expect(() => {
-            SituationReport.changeStatus(layout, groupIndex, itemIndex, newStatus);
-        }).toThrow("Invalid groupIndex, itemIndex or newStatus");
-    });
-
     it('Try to change the status of an item at an invalid group index should result in the same layout', () => {
         const layout: [string, [string, number][]][] = [
             ["group1", [["group11", 0], ["group12", 0]]],

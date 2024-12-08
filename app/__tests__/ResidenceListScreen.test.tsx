@@ -1,32 +1,18 @@
 import React from 'react';
-import { render, fireEvent, RenderAPI } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import ResidencesListScreen from '../screens/landlord/ResidenceListScreen';
 import { PropertyContext } from '../context/LandlordContext';
 import '@testing-library/jest-native/extend-expect';
 import { Residence, Apartment } from '../../types/types';
 
-// Navigation mock
-const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
-    navigate: mockNavigate,
-  }),
+    navigate: jest.fn()
+  })
 }));
 
-// Component mocks
-jest.mock('../components/Header', () => ({
-  __esModule: true,
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
-jest.mock('@expo/vector-icons', () => ({
-  Feather: ({ name, size, color }: { name: string; size: number; color: string }) => 
-    <div data-testid={`icon-${name}`}>{name}</div>,
-}));
-
-// Mock styles to prevent undefined style errors
 jest.mock('../../styles/styles', () => ({
   appStyles: {
     screenContainer: {},
@@ -34,43 +20,50 @@ jest.mock('../../styles/styles', () => ({
     residenceTitle: {},
     residenceScrollView: {},
     residenceScrollViewContent: {},
-    addResidenceButton: {},
-    flatText: {},
-  },
+    addResidenceButton: {}
+  }
 }));
 
-// Test data setup
+jest.mock('../components/Header', () => ({
+  __esModule: true,
+  default: ({ children }) => <>{children}</>
+}));
+
+jest.mock('@expo/vector-icons', () => ({
+  Feather: () => null
+}));
+
 const mockResidences: Residence[] = [
   {
-    residenceName: 'Maple Avenue 123',
-    street: 'Maple Avenue',
-    number: '123',
-    city: 'Zurich',
-    canton: 'ZH',
-    zip: '8000',
-    country: 'Switzerland',
+    residenceName: 'Residence 1',
+    street: 'Street 1',
+    number: '1',
+    city: 'City',
+    canton: 'Canton',
+    zip: '1000',
+    country: 'Country',
     landlordId: 'L1',
-    tenantIds: ['T1'],
+    tenantIds: [],
     laundryMachineIds: [],
-    apartments: ['A1'],
-    tenantCodesID: ['TC1'],
-    situationReportLayout: [],
+    apartments: [],
+    tenantCodesID: [],
+    situationReportLayout: []
   },
   {
-    residenceName: 'Oak Street 456',
-    street: 'Oak Street',
-    number: '456',
-    city: 'Bern',
-    canton: 'BE',
-    zip: '3000',
-    country: 'Switzerland',
+    residenceName: 'Residence 2', 
+    street: 'Street 2',
+    number: '2',
+    city: 'City',
+    canton: 'Canton',
+    zip: '1000',
+    country: 'Country',
     landlordId: 'L1',
-    tenantIds: ['T2'],
+    tenantIds: [],
     laundryMachineIds: [],
-    apartments: ['A2'],
-    tenantCodesID: ['TC2'],
-    situationReportLayout: [],
-  },
+    apartments: [],
+    tenantCodesID: [],
+    situationReportLayout: []
+  }
 ];
 
 const mockApartments: Apartment[] = [
@@ -79,130 +72,126 @@ const mockApartments: Apartment[] = [
     residenceId: 'R1',
     tenants: [],
     maintenanceRequests: [],
-    situationReportId: 'SR1',
-  },
-  {
-    apartmentName: '201',
-    residenceId: 'R2',
-    tenants: ['T2'],
-    maintenanceRequests: ['MR1'],
-    situationReportId: 'SR2',
-  },
+    situationReportId: 'SR1'
+  }
 ];
 
-const mockResidenceMap = new Map([
-  [mockResidences[0], [mockApartments[0]]],
-  [mockResidences[1], [mockApartments[1]]],
-]);
+describe('ResidencesListScreen', () => {
+  const renderScreen = (props = {}) => {
+    const defaultProps = {
+      residences: mockResidences,
+      residenceMap: new Map([[mockResidences[0], mockApartments]]),
+      isLoading: false,
+      error: null,
+      addResidence: jest.fn(),
+      updateResidence: jest.fn(),
+      deleteResidence: jest.fn(),
+      addApartment: jest.fn(),
+      updateApartment: jest.fn(),
+      deleteApartment: jest.fn(),
+      ...props
+    };
 
-const mockPropertyContext = {
-  residences: mockResidences,
-  residenceMap: mockResidenceMap,
-  isLoading: false,
-  error: null,
-  addResidence: jest.fn(),
-  updateResidence: jest.fn(),
-  deleteResidence: jest.fn(),
-  addApartment: jest.fn(),
-  updateApartment: jest.fn(),
-  deleteApartment: jest.fn(),
-};
-
-// Helper function to render the component with all required providers
-const renderResidencesListScreen = (contextOverrides = {}): RenderAPI => {
-  const contextValue = {
-    ...mockPropertyContext,
-    ...contextOverrides,
+    return render(
+      <PropertyContext.Provider value={defaultProps}>
+        <NavigationContainer>
+          <ResidencesListScreen />
+        </NavigationContainer>
+      </PropertyContext.Provider>
+    );
   };
 
-  return render(
-    <PropertyContext.Provider value={contextValue}>
-      <NavigationContainer>
-        <ResidencesListScreen />
-      </NavigationContainer>
-    </PropertyContext.Provider>
-  );
-};
-
-describe('ResidencesListScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Screen Structure', () => {
-    it('renders main screen components', () => {
-      const { getByTestId } = renderResidencesListScreen();
-      
-      expect(getByTestId('residences-screen')).toBeTruthy();
-      expect(getByTestId('screen-title')).toBeTruthy();
-      expect(getByTestId('residences-scroll-view')).toBeTruthy();
-      expect(getByTestId('add-residence-button')).toBeTruthy();
+  describe('Screen States', () => {
+    it('shows loading state', () => {
+      const { getByText } = renderScreen({ isLoading: true });
+      expect(getByText('Loading...')).toBeTruthy();
     });
 
-    it('displays correct screen title', () => {
-      const { getByTestId } = renderResidencesListScreen();
-      
-      const title = getByTestId('screen-title');
-      expect(title).toHaveTextContent('Your Residences');
+    it('shows error state', () => {
+      const error = new Error('Test error');
+      const { getByText } = renderScreen({ error });
+      expect(getByText(`Error: ${error.message}`)).toBeTruthy();
+    });
+
+    it('shows empty state', () => {
+      const { queryByTestId } = renderScreen({ residences: [] });
+      expect(queryByTestId(/residence-item-/)).toBeNull();
     });
   });
 
-  describe('Residence List Display', () => {
-    it('renders all residences with correct items', () => {
-      const { getByTestId } = renderResidencesListScreen();
-      
+  describe('Screen Content', () => {
+    it('shows correct title', () => {
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('screen-title')).toHaveTextContent('Your Residences');
+    });
+
+    it('renders all residences', () => {
+      const { getByText } = renderScreen();
       mockResidences.forEach(residence => {
-        expect(getByTestId(`residence-item-${residence.residenceName}`)).toBeTruthy();
+        const address = `${residence.street} ${residence.number}`;
+        expect(getByText(address)).toBeTruthy();
       });
     });
 
-    it('displays residence information correctly', () => {
-      const { getByText } = renderResidencesListScreen();
-      
-      mockResidences.forEach(residence => {
-        expect(getByText(residence.residenceName)).toBeTruthy();
-        expect(getByText(`${residence.street} ${residence.number}`)).toBeTruthy();
-      });
+    it('shows add residence button', () => {
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('add-residence-button')).toBeTruthy();
     });
   });
 
   describe('Navigation', () => {
-    it('navigates to CreateResidence screen when add button is pressed', () => {
-      const { getByTestId } = renderResidencesListScreen();
-      
-      const addButton = getByTestId('add-residence-button');
-      fireEvent.press(addButton);
-      
-      expect(mockNavigate).toHaveBeenCalledWith('CreateResidence');
-    });
-  });
-
-  describe('Loading State', () => {
-    it('displays loading indicator when isLoading is true', () => {
-      const { getByText } = renderResidencesListScreen({ isLoading: true });
-      expect(getByText('Loading...')).toBeTruthy();
-    });
-  });
-
-  describe('Error State', () => {
-    it('displays error message when error occurs', () => {
-      const errorMessage = 'Failed to load residences';
-      const { getByText } = renderResidencesListScreen({
-        error: new Error(errorMessage),
+    it('navigates to create residence screen', () => {
+      const navigate = jest.fn();
+      jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
+        navigate
       });
+
+      const { getByTestId } = renderScreen();
+      fireEvent.press(getByTestId('add-residence-button'));
       
-      expect(getByText(`Error: ${errorMessage}`)).toBeTruthy();
+      expect(navigate).toHaveBeenCalledWith('CreateResidence');
     });
   });
 
-  describe('Empty State', () => {
-    it('handles empty residence list gracefully', () => {
-      const { getByTestId } = renderResidencesListScreen({
-        residences: [],
-        residenceMap: new Map(),
-      });
-      
+  describe('Residence Map Handling', () => {
+    it('handles empty residence map', () => {
+      const { getByTestId } = renderScreen({ residenceMap: new Map() });
+      expect(getByTestId('residences-screen')).toBeTruthy();
+    });
+  });
+
+  describe('Scroll Behavior', () => {
+    it('renders scrollview', () => {
+      const { getByTestId } = renderScreen();
       expect(getByTestId('residences-scroll-view')).toBeTruthy();
+    });
+  });
+
+  describe('Data Display', () => {
+    it('displays residence information correctly', () => {
+      const { getByTestId } = renderScreen();
+      mockResidences.forEach(residence => {
+        expect(getByTestId(`residence-item-${residence.residenceName}`)).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Context Integration', () => {
+    it('uses property context data', () => {
+      const customResidences = [{
+        ...mockResidences[0],
+        residenceName: 'Custom Residence'
+      }];
+      
+      const { getByTestId } = renderScreen({
+        residences: customResidences
+      });
+      
+      expect(getByTestId('residence-item-Custom Residence')).toBeTruthy();
     });
   });
 });

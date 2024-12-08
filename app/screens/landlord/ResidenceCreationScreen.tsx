@@ -12,8 +12,8 @@ import CustomTextField from '../../components/CustomTextField';
 import CustomButton from '../../components/CustomButton';
 import Header from '../../components/Header';
 import { useAuth } from '../../context/AuthContext';
-import { createApartment, createResidence, updateResidence } from '@/firebase/firestore/firestore';
-import CustomPopUp from '@/app/components/CustomPopUp';
+import { createApartment, createResidence, updateResidence } from '../../../firebase/firestore/firestore';
+import CustomPopUp from '../../components/CustomPopUp';
 
 interface ResidenceFormData {
   name: string;

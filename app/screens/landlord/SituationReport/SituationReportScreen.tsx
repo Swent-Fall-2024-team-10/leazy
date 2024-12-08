@@ -87,7 +87,6 @@ const apartments = Array.from({ length: 10 }, (_, i) => ({
   value: `${i + 1}`,
 }));
 
-// ============================================ END OF TEMPORARY TEST CONSTANTS ================================================
 
 type GroupedSituationReportProps = {
   layout: [string, [string, number][]][]; // Layout containing groups and items

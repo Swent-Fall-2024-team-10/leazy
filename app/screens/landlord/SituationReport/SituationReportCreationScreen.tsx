@@ -150,7 +150,7 @@ export function SituationReportItem({
           <InputField
             value={itemText}
             setValue={handleItemNameChange}
-            placeholder={itemText}
+            placeholder={'Item Name'}
             testID={`item-name-input-${groupIndex}-${itemIndex}`}
             style={layoutCreationStyles.inputField}
             height={textInputHeight}
@@ -213,7 +213,7 @@ export function GroupedSituationReport({
                   setValue={(newName) =>
                     handleGroupNameChange(groupIndex, newName)
                   }
-                  placeholder={groupName}
+                  placeholder={'Group name'}
                   testID={`group-name-input-${groupIndex}`}
                   style={layoutCreationStyles.inputField}
                   height={textInputHeight}
@@ -264,7 +264,7 @@ export function GroupedSituationReport({
               {editMode && (
                 <AddItemButton
                   label='Add New Item'
-                  testID={'add-item-button-group-' + groupName}
+                  testID={'add-item-button-group-' + groupIndex}
                   buttonStyle={layoutCreationStyles.addButton}
                   textStyle={layoutCreationStyles.buttonText}
                   onPress={() => {
@@ -274,9 +274,6 @@ export function GroupedSituationReport({
                       groupIndex,
                     );
                     setTempLayout(nextLayout);
-                    console.log('Add new item');
-                    console.log(tempLayout);
-                    console.log(groupIndex);
                   }}
                 />
               )}
@@ -355,11 +352,18 @@ export default function SituationReportCreation() {
   const navigation = useNavigation();
   const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [tempLayout, setTempLayout] = useState<[string, [string, number][]][]>([],);
+  const [tempLayout, setTempLayout] = useState<[string, [string, number][]][]>(
+    [],
+  );
   const [selectedResidence, setSelectedResidence] = useState('');
-  const [residencesMappedToName, setResidencesMappedToName] = useState<{ label: string; value: string; }[]>([]);
+  const [residencesMappedToName, setResidencesMappedToName] = useState<
+    { label: string; value: string }[]
+  >([]);
   const { landlord } = useAuth();
   const [situationReportName, setSituationReportName] = useState('');
+
+  const defaultItemName = '';
+  const defaultGroupName = '';
 
   useEffect(() => {
     const fetchResidences = async () => {
@@ -370,9 +374,9 @@ export default function SituationReportCreation() {
             const residence = await getResidence(id);
             return {
               label: residence?.residenceName ?? 'Unknown',
-              value: id
+              value: id,
             };
-          })
+          }),
         );
         setResidencesMappedToName(mappedResidences);
       }
@@ -411,12 +415,12 @@ export default function SituationReportCreation() {
               Situation Report : Layout Creation{' '}
             </Text>
 
-            <PickerGroup 
-              testID="residence-picker" 
-              label={"Residence"} 
-              data={residencesMappedToName} 
-              chosed={selectedResidence} 
-              setValue={setSelectedResidence} 
+            <PickerGroup
+              testID='residence-picker'
+              label={'Residence'}
+              data={residencesMappedToName}
+              chosed={selectedResidence}
+              setValue={setSelectedResidence}
             />
 
             <View>
@@ -509,7 +513,6 @@ export default function SituationReportCreation() {
                   title='Edit'
                   titleStyle={appStyles.submitButtonText}
                   onPress={() => {
-                    console.log(selectedResidence)
                     setEditMode(true);
                     setTempLayout(cloneDeep(layout));
                   }}
@@ -527,14 +530,14 @@ export default function SituationReportCreation() {
                 Tap the "Edit" button to start creating a new situation report
                 layout{' '}
               </Text>
-            ) : 
+            ) : (
               <GroupedSituationReport
                 layout={layout}
                 editMode={editMode}
                 setTempLayout={setTempLayout}
                 tempLayout={tempLayout}
               />
-            }
+            )}
 
             {editMode && (
               <View style={layoutCreationStyles.addButtonContainer}>
@@ -550,13 +553,12 @@ export default function SituationReportCreation() {
                     let nextLayout = addGroupToLayout(
                       tempLayout,
                       [
-                        ['New Item 1', 0],
-                        ['New Item 2', 0],
+                        [defaultItemName, 0],
+                        [defaultItemName, 0],
                       ],
-                      'New Group',
+                      defaultGroupName,
                     );
                     setTempLayout(nextLayout);
-                    console.log('Add new group');
                   }}
                 />
 
@@ -571,22 +573,21 @@ export default function SituationReportCreation() {
                   onPress={() => {
                     let nextLayout = addGroupToLayout(
                       tempLayout,
-                      [['New Item', 0]],
-                      'New Group',
+                      [[defaultItemName, 0]],
+                      defaultGroupName,
                     );
-                    console.log(layout);
-                    console.log(tempLayout);
                     setTempLayout(nextLayout);
                   }}
                 />
               </View>
             )}
-            {situationReportName === '' || selectedResidence === '' && (
-              <Text style={[appStyles.emptyListText]}>
-                {' '}
-                Situation Report Name or selected residence cannot be empty !{' '}
-              </Text>
-            )}
+            {situationReportName === '' ||
+              (selectedResidence === '' && (
+                <Text style={[appStyles.emptyListText]}>
+                  {' '}
+                  Situation Report Name or selected residence cannot be empty !{' '}
+                </Text>
+              ))}
 
             <View
               style={[
@@ -595,7 +596,11 @@ export default function SituationReportCreation() {
               ]}
             >
               <SubmitButton
-                disabled={layout.length === 0 || situationReportName === '' || selectedResidence === ''}
+                disabled={
+                  layout.length === 0 ||
+                  situationReportName === '' ||
+                  selectedResidence === ''
+                }
                 label='Submit'
                 testID='submit-button'
                 width={ButtonDimensions.mediumButtonWidth}
@@ -608,7 +613,10 @@ export default function SituationReportCreation() {
                   ];
                   const residenceId = selectedResidence;
                   addSituationReportLayout(reportLayout, residenceId);
-                  Alert.alert('Situation Report Created', 'Situation Report has been created successfully');
+                  Alert.alert(
+                    'Situation Report Created',
+                    'Situation Report has been created successfully',
+                  );
                   navigation.navigate('Situation Report Creation' as never);
                   resetStates();
                 }}

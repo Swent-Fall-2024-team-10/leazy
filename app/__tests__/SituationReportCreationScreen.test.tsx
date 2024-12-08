@@ -69,7 +69,7 @@ describe('SituationReportCreation', () => {
     );
     fireEvent.press(screen.getByTestId('edit-button'));
     fireEvent.press(screen.getByTestId('add-group-button'));
-    fireEvent.press(screen.getByTestId('add-item-button-group-New Group'));
+    fireEvent.press(screen.getByTestId('add-item-button-group-0'));
     expect(screen.getByTestId('item-name-input-0-1')).toBeTruthy();
     expect(screen.getByTestId('item-name-input-0-2')).toBeTruthy();
 
@@ -159,9 +159,9 @@ describe('SituationReportCreation', () => {
     );
     fireEvent.press(screen.getByTestId('edit-button'));
     fireEvent.press(screen.getByTestId('add-group-button'));
-    fireEvent.press(screen.getByTestId('add-item-button-group-New Group'));
+    fireEvent.press(screen.getByTestId('add-item-button-group-0'));
     fireEvent.press(screen.getByTestId('cancel-button'));
-    expect(screen.queryByText('New Group')).toBeFalsy();
+    expect(screen.queryByText('')).toBeFalsy();
 
   });
 });

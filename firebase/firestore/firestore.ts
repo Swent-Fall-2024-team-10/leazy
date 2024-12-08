@@ -25,6 +25,7 @@ import {
   MaintenanceRequest,
   TenantCode,
   SituationReport,
+  News,
 } from "../../types/types";
 
 // Set the log level to 'silent' to disable logging
@@ -625,4 +626,145 @@ export async function getSituationReportLayout(residenceId: string) {
   const residence = await getResidence(residenceId);
   const situationReportLayout = residence?.situationReportLayout;
   return situationReportLayout ? situationReportLayout : [];
+}
+
+
+
+/**
+ * Creates a new news document in Firestore.
+ * @param news - The news object to be added to the 'news' collection.
+ */
+export async function createNews(news: News) {
+  const docRef = doc(db, "news", news.maintenanceRequestID);
+  try {
+    await setDoc(docRef, news);
+  } catch (e) {
+    console.error("Error creating news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Retrieves a news document from Firestore by its `maintenanceRequestID`.
+ * @param maintenanceRequestID - The unique identifier of the news document.
+ * @returns The news object or null if not found.
+ */
+export async function getNews(maintenanceRequestID: string): Promise<News | null> {
+  const newsRef = doc(db, "news", maintenanceRequestID);
+  const docSnap = await getDoc(newsRef);
+  return docSnap.exists() ? (docSnap.data() as News) : null;
+}
+
+/**
+ * Updates an existing news document in Firestore by `maintenanceRequestID`.
+ * @param maintenanceRequestID - The unique identifier of the news to update.
+ * @param news - The partial news data to update.
+ */
+export async function updateNews(
+  maintenanceRequestID: string,
+  news: Partial<News>
+) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  try {
+    await updateDoc(docRef, news);
+  } catch (e) {
+    console.error("Error updating news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Deletes a news document from Firestore by its `maintenanceRequestID`.
+ * @param maintenanceRequestID - The unique identifier of the news to delete.
+ */
+export async function deleteNews(maintenanceRequestID: string) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  try {
+    await deleteDoc(docRef);
+  } catch (e) {
+    console.error("Error deleting news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Retrieves all news documents for a specific `ReceiverID`.
+ * @param receiverID - The unique identifier of the news receiver.
+ * @returns An array of news objects.
+ */
+export async function getNewsByReceiver(receiverID: string): Promise<News[]> {
+  const newsRef = collection(db, "news");
+  const q = query(newsRef, where("ReceiverID", "==", receiverID));
+  const querySnapshot = await getDocs(q);
+
+  const news: News[] = [];
+  querySnapshot.forEach((doc) => {
+    news.push(doc.data() as News);
+  });
+
+  return news;
+}
+
+/**
+ * Marks a news document as read by updating the `isRead` and `ReadAt` fields.
+ * @param maintenanceRequestID - The unique identifier of the news to update.
+ */
+export async function markNewsAsRead(maintenanceRequestID: string) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  try {
+    await updateDoc(docRef, {
+      isRead: true,
+      ReadAt: Timestamp.now(),
+    });
+  } catch (e) {
+    console.error("Error marking news as read:", e);
+    throw e;
+  }
+}
+
+/**
+ * Adds an image to a news document's `images` array.
+ * @param maintenanceRequestID - The unique identifier of the news document.
+ * @param imageUrl - The URL of the image to add.
+ */
+export async function addNewsImage(
+  maintenanceRequestID: string,
+  imageUrl: string
+) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  const news = await getNews(maintenanceRequestID);
+
+  if (!news) {
+    throw new Error("News not found");
+  }
+
+  const updatedImages = [...(news.images || []), imageUrl];
+  try {
+    await updateDoc(docRef, { images: updatedImages });
+  } catch (e) {
+    console.error("Error adding image to news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Fetches all unread news for a specific `ReceiverID`.
+ * @param receiverID - The unique identifier of the news receiver.
+ * @returns An array of unread news objects.
+ */
+export async function getUnreadNewsByReceiver(receiverID: string): Promise<News[]> {
+  const newsRef = collection(db, "news");
+  const q = query(
+    newsRef,
+    where("ReceiverID", "==", receiverID),
+    where("isRead", "==", false)
+  );
+  const querySnapshot = await getDocs(q);
+
+  const news: News[] = [];
+  querySnapshot.forEach((doc) => {
+    news.push(doc.data() as News);
+  });
+
+  return news;
 }

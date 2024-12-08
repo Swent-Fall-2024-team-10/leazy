@@ -13,7 +13,7 @@ type PropertyContextType = {
   error?: Error;
 };
 
-const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
+export const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
 type PropertyProviderProps = {
   children: ReactNode;

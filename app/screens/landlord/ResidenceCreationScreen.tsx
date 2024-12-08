@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Modal } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,10 +7,13 @@ import * as XLSX from 'xlsx';
 import { Buffer } from 'buffer';
 import { appStyles, ButtonDimensions } from '../../../styles/styles';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { ResidenceStackParamList } from '@/types/types';
+import { ResidenceStackParamList, Residence, Apartment } from '@/types/types';
 import CustomTextField from '../../components/CustomTextField';
 import CustomButton from '../../components/CustomButton';
 import Header from '../../components/Header';
+import { useAuth } from '../../context/AuthContext';
+import { createApartment, createResidence, updateResidence } from '../../../firebase/firestore/firestore';
+import CustomPopUp from '../../components/CustomPopUp';
 
 interface ResidenceFormData {
   name: string;
@@ -65,13 +68,9 @@ const validateEmail = (email: string): boolean => {
   }
 };
 
-// Examples of usage:
-console.assert(validateEmail('user@example.com') === true);
-console.assert(validateEmail('invalid.email@') === false);
-console.assert(validateEmail('a'.repeat(1000) + '@example.com') === false);
-
 function ResidenceCreationScreen() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<ResidenceFormData>({
     name: '',
     address: '',
@@ -87,6 +86,8 @@ function ResidenceCreationScreen() {
   });
   const [apartments, setApartments] = useState<string[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [firebaseError, setFirebaseError] = useState<boolean>(false);
+  const [firebaseErrorText, setFirebaseErrorText] = useState<string>('');
 
   const parseExcelFile = async (fileUri: string) => {
     try {
@@ -186,6 +187,7 @@ function ResidenceCreationScreen() {
   };
 
   const validateForm = (): boolean => {
+    console.log("validate")
     const newErrors: FormErrors = {};
 
     if (formData.website && !validateWebsite(formData.website)) {
@@ -201,7 +203,63 @@ function ResidenceCreationScreen() {
   };
 
   const handleSubmit = async () => {
-    if (validateForm()) {
+    if (validateForm() && user) {
+      const newResidence: Residence = {
+        residenceName: formData.name,
+        street: formData.address,
+        number: formData.zipCode,
+        city: formData.city,
+        canton: formData.provinceState,
+        zip: formData.zipCode,
+        country: formData.country,
+        landlordId: user.uid,
+        tenantIds: [],
+        laundryMachineIds: [],
+        apartments: [],
+        tenantCodesID: [],
+        situationReportLayout: []
+      };
+  
+      const newResidenceId = await createResidence(newResidence);
+      
+      if (!newResidenceId) {
+        setFirebaseError(true);
+        setFirebaseErrorText('Failed to create residence');
+      } else {
+        try {
+          // Use Promise.all with map instead of forEach
+          const newApartments = await Promise.all(
+            apartments.map(async apartmentName => {
+              const newApartment: Apartment = {
+                apartmentName: apartmentName,
+                residenceId: newResidenceId,
+                tenants: [],
+                maintenanceRequests: [],
+                situationReportId: ''
+              };
+              
+              const newApartmentId = await createApartment(newApartment);
+              if (!newApartmentId) {
+                setFirebaseError(true);
+                setFirebaseErrorText(`Failed to create apartment ${apartmentName}`);
+                return null;
+              }
+              console.log("s: " + newApartmentId);
+              return newApartmentId;
+            })
+          );
+  
+          // Filter out any null values from failed creations
+          const successfulApartments = newApartments.filter(id => id !== null);
+          
+          newResidence.apartments = successfulApartments;
+          console.log("New Residence Apps" + newResidence.apartments);
+          await updateResidence(newResidenceId, newResidence);
+        } catch (error) {
+          setFirebaseError(true);
+          setFirebaseErrorText('Failed to create apartments');
+        }
+      }
       navigation.navigate("ResidenceList");
     }
   };
@@ -217,6 +275,11 @@ function ResidenceCreationScreen() {
             Create Your Residence
           </Text>
         <View style={appStyles.formContainer}>
+          <View>{firebaseError && (
+              <Modal>
+              <CustomPopUp testID='FirebaseErrorModal' text={firebaseErrorText} onPress={() => setFirebaseError(false)}/>
+            </Modal>)}
+          </View>
           <CustomTextField
             testID="residence-name"
             value={formData.name}

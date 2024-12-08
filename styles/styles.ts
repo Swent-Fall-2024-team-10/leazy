@@ -306,6 +306,7 @@ export const appStyles = StyleSheet.create({
   screenContainer: {
     flex: 0.75,
     paddingVertical: '6%',
+    paddingHorizontal: '5%',
   },
 
   screenHeader: {

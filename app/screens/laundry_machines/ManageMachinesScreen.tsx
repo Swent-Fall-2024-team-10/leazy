@@ -80,6 +80,7 @@ const ManageMachinesScreen = () => {
       prev.map((m) =>
         m.laundryMachineId === machine.laundryMachineId ? updatedMachine : m
       )
+      
     );
   };
 

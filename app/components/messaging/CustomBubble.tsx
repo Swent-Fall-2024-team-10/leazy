@@ -1,4 +1,4 @@
-import { chatStyles } from '@/styles/styles';
+import { chatStyles } from '../../../styles/styles';
 import React from 'react';
 import { Bubble } from 'react-native-gifted-chat';
 

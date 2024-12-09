@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Composer } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Color, chatStyles } from '@/styles/styles';
+import { chatStyles } from '../../../styles/styles';
 
 const CustomInputToolbar = (props: any) => {
   return (

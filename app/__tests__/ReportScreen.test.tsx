@@ -318,3 +318,34 @@ const mockUpdateMaintenanceRequest = FirestoreModule.updateMaintenanceRequest as
     }, { timeout: 3000 });
   });
 });
+
+it('navigates to the correct screen based on tick state after submission', async () => {
+  const mockNavigate = jest.fn();
+  jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
+    navigate: mockNavigate,
+  });
+
+  const { getByTestId } = render(<ReportScreen />);
+
+  // Fill out the required fields
+  fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
+  fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
+  fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
+
+  const mockRequest = { id: 'test-id' };
+  const mockFirestore = require('firebase/firestore');
+  mockFirestore.addDoc.mockResolvedValueOnce(mockRequest);
+
+  // Simulate tick being checked
+  fireEvent(getByTestId("messaging-checkbox"), 'press', true);
+
+
+  // Submit the form
+  await fireEvent.press(getByTestId('testSubmitButton'));
+
+  // Wait for navigation
+  await waitFor(() => {
+    expect(mockNavigate).toHaveBeenCalledWith('Messaging', { chatID: 'test-id' });
+  });
+});
+

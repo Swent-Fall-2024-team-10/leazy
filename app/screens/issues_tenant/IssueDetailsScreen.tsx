@@ -29,6 +29,7 @@ import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "..
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";
 
+
 // portions of this code were generated with chatGPT as an AI assistant
 
 // for the first adaptive button, upon click, go to the messaging screen (replace the onPressFunction)
@@ -173,7 +174,10 @@ const openFullScreen = (index: number) => {
             <StatusBadge status={status} />
           </View>
             <AdaptiveButton title = 'Open chat about this subject' 
-              onPress = { () => navigation.navigate('Messaging')}
+              onPress = { () => {
+                navigation.navigate('Messaging', {chatID: requestID})
+              }
+            }
               icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}
               iconPosition= {'right'}
               style = {appStyles.submitButton}

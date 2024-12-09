@@ -11,7 +11,7 @@ const Stack = createStackNavigator();
 
 const IssueStackNavigator = () => {
     return (
-        <Stack.Navigator>
+            <Stack.Navigator>
             <Stack.Screen
                 name="Issues"
                 component={ListIssueScreen}

@@ -16,6 +16,7 @@ import { Audio } from "expo-av";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 
+
 const SnitchModeScreen: React.FC = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -51,12 +52,9 @@ const SnitchModeScreen: React.FC = () => {
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
         (status) => {
           if (status.metering !== undefined) {
-            // Raw metering values typically range from -160 (silence) to 0 (max)
-            // Convert to dB scale where -160 = 0dB and 0 = 120dB
             const decibelLevel = Math.max(0, ((status.metering + 160) / 160) * 120);
             setMetering(decibelLevel);
-            // Only exceed threshold if actual noise is above 80dB
-            setNoiseThresholdExceeded(decibelLevel >= 80);
+            setNoiseThresholdExceeded(decibelLevel >= NOISE_THRESHOLD);
           }
         }
       );
@@ -81,7 +79,6 @@ const SnitchModeScreen: React.FC = () => {
       await recordingToStop.stopAndUnloadAsync();
     } catch (err) {
       console.error("Failed to stop recording", err);
-      // Reset states even if stop fails
       setRecording(null);
       setIsRecording(false);
     }
@@ -234,7 +231,7 @@ const styles = {
     alignItems: "center" as const,
     justifyContent: "center" as const,
     padding: 20,
-    marginTop: -350,
+    marginTop: "-60%" as const,
   },
   meteringContainer: {
     flexDirection: "row" as const,
@@ -254,12 +251,12 @@ const styles = {
     elevation: Platform.OS === "android" ? 5 : 0,
   },
   meteringBar: {
-    width: 8,
+    width: "3%",
     backgroundColor: "#2F4F4F",
-    marginHorizontal: 2,
-    borderRadius: 3,
+    marginHorizontal: "0.8%",
+    borderRadius: "10%",
     elevation: Platform.OS === "android" ? 2 : 0,
-    maxHeight: 100,
+    maxHeight: "200%",
   },
   meteringBarExceeded: {
     backgroundColor: "#FF4444",

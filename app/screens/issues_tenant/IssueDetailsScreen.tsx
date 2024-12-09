@@ -11,7 +11,10 @@ import {
 } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
-import { MaintenanceRequest, ReportStackParamList } from "../../../types/types";
+import {
+  MaintenanceRequest,
+  ReportStackParamList,
+} from "../../../types/types";
 import { MessageSquare } from "react-native-feather";
 import StatusDropdown from "../../components/StatusDropdown";
 import Header from "../../components/Header";
@@ -22,13 +25,7 @@ import {
   updateMaintenanceRequest,
 } from "../../../firebase/firestore/firestore";
 import Spacer from "../../components/Spacer";
-import {
-  Color,
-  FontSizes,
-  ButtonDimensions,
-  IconDimension,
-  appStyles,
-} from "../../../styles/styles";
+import { Color, FontSizes, ButtonDimensions, IconDimension, appStyles } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";
 
@@ -83,32 +80,32 @@ const IssueDetailsScreen: React.FC = () => {
     }
   };
 
-  const openFullScreen = (index: number) => {
-    if (issue) {
-      setCurrentImageIndex(index);
+const openFullScreen = (index: number) => {
+  if (issue) {
+    setCurrentImageIndex(index);
 
-      Image.getSize(issue.picture[index], (width, height) => {
-        const screenWidth = Dimensions.get("window").width * 0.9;
-        const screenHeight = Dimensions.get("window").height * 0.9;
+    Image.getSize(issue.picture[index], (width, height) => {
+      const screenWidth = Dimensions.get("window").width * 0.9;
+      const screenHeight = Dimensions.get("window").height * 0.9;
 
-        const aspectRatio = width / height;
+      const aspectRatio = width / height;
 
-        let finalWidth, finalHeight;
-        if (width > height) {
-          // Landscape image
-          finalWidth = screenWidth;
-          finalHeight = screenWidth / aspectRatio;
-        } else {
-          // Portrait image
-          finalHeight = screenHeight;
-          finalWidth = screenHeight * aspectRatio;
-        }
+      let finalWidth, finalHeight;
+      if (width > height) {
+        // Landscape image
+        finalWidth = screenWidth;
+        finalHeight = screenWidth / aspectRatio;
+      } else {
+        // Portrait image
+        finalHeight = screenHeight;
+        finalWidth = screenHeight * aspectRatio;
+      }
 
-        setFullImageDimensions({ width: finalWidth, height: finalHeight });
-        setFullScreenMode(true); // Show the modal
-      });
-    }
-  };
+      setFullImageDimensions({ width: finalWidth, height: finalHeight });
+      setFullScreenMode(true);  // Show the modal
+    });
+  }
+};
 
   // Close full-screen mode
   const closeFullScreen = () => {
@@ -147,7 +144,7 @@ const IssueDetailsScreen: React.FC = () => {
       });
       // Rediriger après la mise à jour
       // Navigation vers la liste des issues après la mise à jour
-      navigation.goBack();
+      navigation.navigate("Issues");
     }
   };
 
@@ -228,70 +225,43 @@ const IssueDetailsScreen: React.FC = () => {
           </View>
 
           <StatusDropdown value={status} setValue={setStatus}></StatusDropdown>
-          <SubmitButton
-            disabled={false}
-            label={"Close"}
-            onPress={handleClose}
-            width={ButtonDimensions.veryLargeButtonWidth}
-            height={ButtonDimensions.veryLargeButtonHeight}
-            testID={"saveChangesButton"}
-            style={appStyles.submitButton}
-            textStyle={appStyles.submitButtonText}
-          ></SubmitButton>
+            <SubmitButton 
+              disabled = {false}
+              label = {'Close'} 
+              onPress = {handleClose} 
+              width = {ButtonDimensions.veryLargeButtonWidth} 
+              height = {ButtonDimensions.veryLargeButtonHeight} 
+              testID = {'saveChangesButton'}
+              style = {appStyles.submitButton} 
+              textStyle = {appStyles.submitButtonText}>
+            </SubmitButton>
           {/* Full-Screen Modal */}
           <Modal
-            visible={fullScreenMode}
-            transparent={true}
-            onRequestClose={closeFullScreen}
-            testID="fullModal"
+          visible={fullScreenMode}
+          transparent={true}
+          onRequestClose={closeFullScreen}
+          testID="fullModal"
           >
-            <View style={styles.modalBackground}>
-              <TouchableOpacity
-                onPress={closeFullScreen}
-                style={styles.closeModalButton}
-                testID="closeModalButton"
-              >
-                <Icon
-                  name="close"
-                  type="font-awesome"
-                  color="white"
-                  size={IconDimension.smallIcon}
-                />
-              </TouchableOpacity>
+              <View style={styles.modalBackground}>
+                <TouchableOpacity onPress={closeFullScreen} style={styles.closeModalButton} testID="closeModalButton">
+                  <Icon name="close" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={handlePreviousImage}
-                style={[appStyles.expandedImageNextButton, styles.leftArrow]}
-                testID="leftButton"
-              >
-                <Icon
-                  name="chevron-left"
-                  type="font-awesome"
-                  color="white"
-                  size={IconDimension.smallIcon}
-                />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={handlePreviousImage} style={[appStyles.expandedImageNextButton, styles.leftArrow]} testID="leftButton">
+                  <Icon name="chevron-left" type="font-awesome" color="white" size={IconDimension.smallIcon} />
+                </TouchableOpacity>
 
-              <Image
-                source={{ uri: issue.picture[currentImageIndex] }}
-                style={[styles.fullImage, fullImageDimensions]}
-                resizeMode="contain"
-                testID="imageFull"
-              />
-
-              <TouchableOpacity
-                onPress={handleNextImage}
-                style={[appStyles.expandedImageNextButton, styles.rightArrow]}
-                testID="rightButton"
-              >
-                <Icon
-                  name="chevron-right"
-                  type="font-awesome"
-                  color={"white"}
-                  size={IconDimension.smallIcon}
+                <Image
+                  source={{ uri: issue.picture[currentImageIndex] }}
+                  style={[styles.fullImage, fullImageDimensions]}
+                  resizeMode="contain"
+                  testID="imageFull"
                 />
-              </TouchableOpacity>
-            </View>
+
+                <TouchableOpacity onPress={handleNextImage} style={[appStyles.expandedImageNextButton, styles.rightArrow]} testID="rightButton">
+                  <Icon name="chevron-right" type="font-awesome" color={"white"} size={IconDimension.smallIcon} />
+                </TouchableOpacity>
+              </View>
           </Modal>
 
           <Spacer height={20} />

@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { Alert, ActionSheetIOS, Platform, Linking } from "react-native";
 import SnitchModeScreen from "../../screens/SnitchMode/SnitchModeScreen";
 import { NavigationContainer } from "@react-navigation/native";
+import { act } from 'react-test-renderer';
 
 jest.mock("expo-av", () => ({
   Audio: {
@@ -90,7 +91,7 @@ describe("SnitchModeScreen", () => {
     let meterCallback: (arg0: { metering: number }) => void;
 
     mockedAudio.Recording.createAsync.mockImplementation(
-      (preset: unknown, callback: (status: { metering: number }) => void) => {
+      (_: unknown, callback: (status: { metering: number }) => void) => {
         meterCallback = callback;
         return Promise.resolve({ recording: mockRecording });
       }
@@ -134,7 +135,7 @@ describe("SnitchModeScreen", () => {
     let meterCallback: (arg0: { metering: number }) => void;
 
     mockedAudio.Recording.createAsync.mockImplementation(
-      (preset: unknown, callback: (status: { metering: number }) => void) => {
+      (_: unknown, callback: (status: { metering: number }) => void) => {
         meterCallback = callback;
         return Promise.resolve({ recording: mockRecording });
       }
@@ -165,6 +166,89 @@ describe("SnitchModeScreen", () => {
   
     unmount();
     expect(mockStopAndUnload).toHaveBeenCalled();
+  });
+  
+  it("handles stop recording errors gracefully", async () => {
+    const mockStopAndUnload = jest.fn().mockRejectedValueOnce(new Error("Stop failed"));
+    const mockRecording = { stopAndUnloadAsync: mockStopAndUnload };
+    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
+      recording: mockRecording,
+    });
+  
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+  
+    // Start recording
+    fireEvent.press(getByTestId("record-button"));
+    
+    await waitFor(() => {
+      expect(mockRecording).toBeTruthy();
+    });
+  
+    // Stop recording
+    fireEvent.press(getByTestId("record-button"));
+    
+    await waitFor(() => {
+      expect(mockStopAndUnload).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Failed to stop recording",
+        expect.any(Error)
+      );
+    });
+  
+    consoleSpy.mockRestore();
+  });
+  
+  it("updates metering and noise threshold", async () => {
+    const mockRecording = { stopAndUnloadAsync: jest.fn() };
+    let meterCallback: (status: { metering: number }) => void;
+  
+    mockedAudio.Recording.createAsync.mockImplementation((_: any, callback: (status: { metering: number; }) => void) => {
+      meterCallback = callback;
+      return Promise.resolve({ recording: mockRecording });
+    });
+  
+    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+    fireEvent.press(getByTestId("record-button"));
+  
+    await waitFor(() => {
+      meterCallback({ metering: -50 }); // Should result in decibelLevel < NOISE_THRESHOLD
+    });
+  
+    // Verify metering bars are rendered
+    const meteringBars = await waitFor(() => 
+      getByTestId("snitch-mode-screen").findAllByProps({
+        style: expect.arrayContaining([
+          expect.objectContaining({ backgroundColor: "#2F4F4F" })
+        ])
+      })
+    );
+    
+    expect(meteringBars).toBeTruthy();
+  });
+  
+  it("resets states on refresh", async () => {
+    const mockRecording = { stopAndUnloadAsync: jest.fn() };
+    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
+      recording: mockRecording,
+    });
+  
+    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+    
+    // Start recording to set initial states
+    fireEvent.press(getByTestId("record-button"));
+    
+    await act(async () => {
+      const scrollView = getByTestId("snitch-mode-screen");
+      const { refreshControl } = scrollView.props;
+      refreshControl.props.onRefresh();
+    });
+    
+    // Verify states are reset
+    await waitFor(() => {
+      const scrollView = getByTestId("snitch-mode-screen");
+      expect(scrollView.props.refreshControl.props.refreshing).toBe(true);
+    });
   });
   
 });

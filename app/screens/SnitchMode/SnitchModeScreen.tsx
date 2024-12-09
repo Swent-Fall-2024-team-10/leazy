@@ -9,6 +9,7 @@ import {
   ActionSheetIOS,
   ScrollView,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import { appStyles } from "../../../styles/styles";
 import { Audio } from "expo-av";
@@ -22,7 +23,7 @@ const SnitchModeScreen: React.FC = () => {
   const [noiseThresholdExceeded, setNoiseThresholdExceeded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const NOISE_THRESHOLD = -20;
+  const NOISE_THRESHOLD = 80;
 
   useEffect(() => {
     return () => {
@@ -46,19 +47,26 @@ const SnitchModeScreen: React.FC = () => {
         playsInSilentModeIOS: true,
       });
 
-      const { recording: recordingObject } = await Audio.Recording.createAsync(
+      const result = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
         (status) => {
-          if (status.metering) {
-            setMetering(status.metering);
-            setNoiseThresholdExceeded(status.metering > NOISE_THRESHOLD);
+          if (status.metering !== undefined) {
+            // Raw metering values typically range from -160 (silence) to 0 (max)
+            // Convert to dB scale where -160 = 0dB and 0 = 120dB
+            const decibelLevel = Math.max(0, ((status.metering + 160) / 160) * 120);
+            setMetering(decibelLevel);
+            // Only exceed threshold if actual noise is above 80dB
+            setNoiseThresholdExceeded(decibelLevel >= 80);
           }
-        },
-        1000
+        }
       );
 
-      setRecording(recordingObject);
-      setIsRecording(true);
+      if (result && result.recording) {
+        setRecording(result.recording);
+        setIsRecording(true);
+      } else {
+        throw new Error("Recording object is undefined");
+      }
     } catch (err) {
       console.error("Failed to start recording", err);
     }
@@ -67,11 +75,15 @@ const SnitchModeScreen: React.FC = () => {
   const stopRecording = async () => {
     try {
       if (!recording) return;
-      await recording.stopAndUnloadAsync();
+      const recordingToStop = recording;
       setRecording(null);
       setIsRecording(false);
+      await recordingToStop.stopAndUnloadAsync();
     } catch (err) {
       console.error("Failed to stop recording", err);
+      // Reset states even if stop fails
+      setRecording(null);
+      setIsRecording(false);
     }
   };
 
@@ -93,26 +105,20 @@ const SnitchModeScreen: React.FC = () => {
       );
     } else {
       Alert.alert(
-        "",
-        `Call ${phoneNumber}`,
+        "Call Security",
+        `Do you want to call security at ${phoneNumber}?`,
         [
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => {},
           },
           {
             text: "Call",
+            onPress: () => Linking.openURL(`tel:${phoneNumber}`),
             style: "default",
-            onPress: () => {
-              Linking.openURL(`tel:${phoneNumber}`);
-            },
           },
         ],
-        {
-          cancelable: true,
-          userInterfaceStyle: "light",
-        }
+        { cancelable: true }
       );
     }
   };
@@ -169,12 +175,12 @@ const SnitchModeScreen: React.FC = () => {
             <Text
               style={[appStyles.flatText, { textAlign: "center", marginTop: 20 }]}
             >
-              If your neighbor are making too much noise, acivate the Snitch Mode,
-              if the noise level is too high, you can call the security.
+              If your neighbors are making too much noise (above 80dB), activate the Snitch Mode.
+              When the noise level is too high, you can call security.
             </Text>
           </View>
 
-          <View style={[styles.recorderContainer]}>
+          <View style={styles.recorderContainer}>
             {renderMeteringBars()}
 
             <TouchableOpacity
@@ -201,7 +207,7 @@ const SnitchModeScreen: React.FC = () => {
                   </Text>
                 ) : null}
 
-                <TouchableOpacity
+                <Pressable
                   testID="call-security-button"
                   style={[
                     styles.callSecurityButton,
@@ -209,9 +215,10 @@ const SnitchModeScreen: React.FC = () => {
                   ]}
                   onPress={handleCallSecurity}
                   disabled={!noiseThresholdExceeded}
+                  android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 >
                   <Text style={styles.callSecurityText}>Call security</Text>
-                </TouchableOpacity>
+                </Pressable>
               </>
             )}
           </View>
@@ -234,6 +241,7 @@ const styles = {
     alignItems: "flex-end" as const,
     height: 150,
     marginVertical: 20,
+    paddingBottom: 40,
   },
   recordButton: {
     width: 120,
@@ -243,12 +251,15 @@ const styles = {
     justifyContent: "center" as const,
     alignItems: "center" as const,
     marginBottom: 20,
+    elevation: Platform.OS === "android" ? 5 : 0,
   },
   meteringBar: {
     width: 8,
     backgroundColor: "#2F4F4F",
-    marginHorizontal: 3,
-    borderRadius: 4,
+    marginHorizontal: 2,
+    borderRadius: 3,
+    elevation: Platform.OS === "android" ? 2 : 0,
+    maxHeight: 100,
   },
   meteringBarExceeded: {
     backgroundColor: "#FF4444",
@@ -258,15 +269,18 @@ const styles = {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 25,
+    elevation: Platform.OS === "android" ? 3 : 0,
   },
   callSecurityText: {
     color: "white",
     fontSize: 16,
+    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
   },
   statusText: {
-    marginBottom: 20,
+    marginBottom: 40,
     fontSize: 16,
     color: "#2F4F4F",
+    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
   },
   disabledButton: {
     opacity: 0.5,

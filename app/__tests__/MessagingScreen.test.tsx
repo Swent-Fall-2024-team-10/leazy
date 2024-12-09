@@ -14,7 +14,7 @@ jest.mock('../../firebase/firebase', () => ({
 }));
 
 // Mock chat functions
-jest.mock('../../firebase/chat/chat', () => ({
+jest.mock('../../firebase/firestore/firestore', () => ({
   createChatIfNotPresent: jest.fn(),
   sendMessage: jest.fn(),
   subscribeToMessages: jest.fn((chatID, callback) => {
@@ -86,7 +86,7 @@ jest.mock('react-native-gifted-chat', () => {
 });
 
 describe('MessagingScreen', () => {
-  const { createChatIfNotPresent, sendMessage, subscribeToMessages } = require('../../firebase/chat/chat');
+  const { createChatIfNotPresent, sendMessage, subscribeToMessages } = require('../../firebase/firestore/firestore');
   
   beforeEach(() => {
     jest.clearAllMocks();

@@ -12,7 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
 import CustomBubble from "../../components/messaging/CustomBubble";
 
-import {createChatIfNotPresent, sendMessage, subscribeToMessages} from "../../../firebase/chat/chat"
+import {createChatIfNotPresent, sendMessage, subscribeToMessages} from "../../../firebase/firestore/firestore"
 
 
 export default function MessagingScreen() {

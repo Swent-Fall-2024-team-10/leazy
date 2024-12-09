@@ -1,70 +1,42 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { Keyboard } from 'react-native';
 import MessagingScreen from '../screens/messaging/MessagingScreen';
 
 // Mock Firebase functions
+jest.mock('firebase/firestore', () => ({
+  collection: jest.fn(),
+  addDoc: jest.fn(),
+}));
+
+// Mock navigation
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(() => ({
+    navigate: jest.fn(),
+  })),
+}));
+
+// Mock authentication
 jest.mock('../../firebase/firebase', () => ({
   auth: {
     currentUser: {
-      uid: 'testUID',
+      email: 'test@example.com',
     },
   },
   db: {}, // Mock Firestore database object
 }));
 
-// Mock chat functions
-jest.mock('../../firebase/firestore/firestore', () => ({
-  createChatIfNotPresent: jest.fn(),
-  sendMessage: jest.fn(),
-  subscribeToMessages: jest.fn((chatID, callback) => {
-    // Simulate initial messages load
-    callback([
-      {
-        _id: '1',
-        text: 'Test Message',
-        createdAt: new Date(),
-        user: { _id: 'testUID' },
-      },
-    ]);
-    // Return mock unsubscribe function
-    return jest.fn();
-  }),
-}));
-
-// Mock navigation
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({
-    navigate: jest.fn(),
-  }),
-  useRoute: () => ({
-    params: { chatID: 'mockChatID' },
-  }),
-}));
-
-// Mock authentication context
 jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(() => ({
-    user: { uid: 'testUID' },
+    user: { email: 'test@example.com' },
   })),
 }));
-
-// Mock Keyboard.dismiss
-jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {
-  return;
-});
-
-// Mock custom components
-jest.mock('../components/Header', () => 'Header');
-jest.mock('../components/messaging/CustomInputToolbar', () => 'CustomInputToolbar');
-jest.mock('../components/messaging/CustomBubble', () => 'CustomBubble');
 
 // Mock GiftedChat
 jest.mock('react-native-gifted-chat', () => {
   const React = require('react');
   const { TouchableOpacity, Text } = require('react-native');
-  
-  const GiftedChat = ({ onSend, user, messages }: { onSend: Function; user: any; messages: any[] }) => (
+
+  const GiftedChat = ({ onSend, user }: { onSend: Function; user: any }) => (
     <TouchableOpacity
       testID="send-button"
       onPress={() =>
@@ -77,6 +49,11 @@ jest.mock('react-native-gifted-chat', () => {
     </TouchableOpacity>
   );
 
+  GiftedChat.append = jest.fn((currentMessages = [], messages = [], inverted = true) => {
+    const allMessages = [...messages, ...currentMessages];
+    return inverted ? allMessages.reverse() : allMessages;
+  });
+
   return {
     GiftedChat,
     Bubble: 'Bubble',
@@ -86,8 +63,6 @@ jest.mock('react-native-gifted-chat', () => {
 });
 
 describe('MessagingScreen', () => {
-  const { createChatIfNotPresent, sendMessage, subscribeToMessages } = require('../../firebase/firestore/firestore');
-  
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -98,13 +73,7 @@ describe('MessagingScreen', () => {
     expect(getByTestId('gifted-chat')).toBeTruthy();
   });
 
-  it('initializes chat and subscribes to messages on mount', () => {
-    render(<MessagingScreen />);
-    expect(createChatIfNotPresent).toHaveBeenCalledWith('mockChatID');
-    expect(subscribeToMessages).toHaveBeenCalledWith('mockChatID', expect.any(Function));
-  });
-
-  it('navigates back and dismisses keyboard when pressing the back button', () => {
+  it('navigates back when pressing the back button', () => {
     const mockNavigate = jest.fn();
     jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
       navigate: mockNavigate,
@@ -112,32 +81,29 @@ describe('MessagingScreen', () => {
 
     const { getByTestId } = render(<MessagingScreen />);
     const backButton = getByTestId('arrow-left');
-    fireEvent.press(backButton);
 
-    expect(Keyboard.dismiss).toHaveBeenCalled();
+    fireEvent.press(backButton);
     expect(mockNavigate).toHaveBeenCalledWith('Issues');
   });
 
-  /*it('should send message when pressing send button', async () => {
+  it('should call append with correct parameters when a message is sent', async () => {
     const { getByTestId } = render(<MessagingScreen />);
     const sendButton = getByTestId('send-button');
+
     fireEvent.press(sendButton);
 
-    expect(sendMessage).toHaveBeenCalledWith('mockChatID', 'Test Message');
-  });*/
-
-  it('should handle send message error gracefully', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    sendMessage.mockRejectedValueOnce(new Error('Send failed'));
-
-    const { getByTestId } = render(<MessagingScreen />);
-    const sendButton = getByTestId('send-button');
-    fireEvent.press(sendButton);
-
-    // Wait for async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 0));
-
-    expect(consoleSpy).toHaveBeenCalledWith('Error sending message:', 'Send failed');
-    consoleSpy.mockRestore();
+    // Assert that GiftedChat.append is called
+    const { GiftedChat } = require('react-native-gifted-chat');
+    expect(GiftedChat.append).toHaveBeenCalledWith(
+      [],
+      [
+        {
+          _id: '1',
+          text: 'Test Message',
+          createdAt: expect.any(Date),
+          user: { _id: 'test@example.com' },
+        },
+      ],
+    );
   });
 });

@@ -35,7 +35,6 @@ import {
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
-
   const { user } = useAuth();
 
   const [room, setRoom] = useState("");
@@ -51,6 +50,7 @@ export default function ReportScreen() {
   const hours = currentDay.getHours().toString().padStart(2, "0");
   const minutes = currentDay.getMinutes().toString().padStart(2, "0");
   const { pictureList, resetPictureList } = usePictureContext();
+  const { removePicture } = usePictureContext();
 
   async function resetStates() {
     setRoom("");
@@ -142,15 +142,10 @@ export default function ReportScreen() {
       Alert.alert("Success", "Your maintenance request has been submitted.");
 
       resetStates();
+      const nextScreen = tick ? "Messaging" : "Issues";
+      setTick(false);
 
-      if (tick) {
-        setTick(false);
-        navigation.navigate("Messaging", {chatID: requestID.id});
-      } else {
-        setTick(false);
-        navigation.navigate("Issues");
-      }
-    
+      navigation.navigate(nextScreen);
     } catch (error) {
       Alert.alert(
         "Error",

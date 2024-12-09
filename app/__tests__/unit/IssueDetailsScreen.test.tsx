@@ -149,7 +149,7 @@ describe("IssueDetailsScreen", () => {
       fireEvent.press(chatButton);
       });
 
-    expect(mockNavigate).toHaveBeenCalledWith("Messaging", {chatID: "mockRequestID"});
+    expect(mockNavigate).toHaveBeenCalledWith("Messaging");
   });
 
   test("updates status and description when 'Close' button is pressed", async () => {

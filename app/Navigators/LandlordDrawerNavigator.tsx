@@ -11,26 +11,25 @@ import { LandlordProvider } from '../context/LandlordContext';
 import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
 import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
 
+
 const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {
   return (
-    
     <LandlordProvider>
-      <Drawer.Navigator 
+      <Drawer.Navigator
         initialRouteName="ListIssues"
-      screenOptions={{
+        screenOptions={{
           headerShown: false, // This hides the default header
           drawerStyle: {
-              backgroundColor: Color.HeaderBackground,
+            backgroundColor: Color.HeaderBackground,
           },
           drawerActiveTintColor: Color.HeaderText,
           drawerLabelStyle: appStyles.drawerLabel,
-      }}
-      drawerContent={(props) => <CustomDrawerContent {...props} />}
-
+        }}
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
       >
-
+        <Drawer.Screen name="Dashboard" component={IssueStackLandlord} />
         <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
         <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
         <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />

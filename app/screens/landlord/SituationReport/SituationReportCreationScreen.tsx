@@ -20,6 +20,7 @@ import TickingBox from '../../../components/forms/TickingBox';
 import {
   addGroupToLayout,
   addSingleItemToGroup,
+  fetchResidences,
   removeGroupFromLayout,
   removeItemFrom,
   toDatabaseFormat,
@@ -366,23 +367,18 @@ export default function SituationReportCreation() {
   const defaultGroupName = '';
 
   useEffect(() => {
-    const fetchResidences = async () => {
-      if (landlord?.residenceIds) {
-        // Map residence IDs to their corresponding names
-        const mappedResidences = await Promise.all(
-          landlord.residenceIds.map(async (id: string) => {
-            const residence = await getResidence(id);
-            return {
-              label: residence?.residenceName ?? 'Unknown',
-              value: id,
-            };
-          }),
-        );
-        setResidencesMappedToName(mappedResidences);
-      }
-    };
-    fetchResidences();
-  }, [landlord?.residenceIds]);
+    if (landlord?.residenceIds) {
+      fetchResidences(landlord, setResidencesMappedToName);
+    }
+
+    getResidence(selectedResidence).then((residence) => {
+      residence?.apartments?.forEach((apartment) => {
+      });
+    }
+  )
+
+  }, [landlord?.residenceIds, selectedResidence]);
+
 
   function resetStates() {
     setSelectedResidence('');

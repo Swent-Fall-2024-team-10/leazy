@@ -418,8 +418,8 @@ export const appStyles = StyleSheet.create({
 
   // General Screen
   screenContainer: {
-    flex: 1,
-    padding : '6%'
+    flex: 0.75,
+    padding : '6%',
   },
 
   emptyListText: {

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { View, Text, TouchableOpacity, Keyboard } from "react-native";
+import { View, Text, TouchableOpacity, Keyboard, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -13,6 +13,7 @@ import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
 import CustomBubble from "../../components/messaging/CustomBubble";
 
 import {createChatIfNotPresent, sendMessage, subscribeToMessages} from "../../../firebase/firestore/firestore"
+import NetInfo from '@react-native-community/netinfo';
 
 
 export default function MessagingScreen() {
@@ -20,7 +21,7 @@ export default function MessagingScreen() {
   const route = useRoute<RouteProp<ReportStackParamList, "Messaging">>();
   const { chatID } = route.params;
   const [messages, setMessages] = useState<IMessage[]>([]);
-
+  const [isAlertAcknowledged, setIsAlertAcknowledged] = useState(false);
   
   useEffect(() => {
     createChatIfNotPresent(chatID);
@@ -34,11 +35,21 @@ export default function MessagingScreen() {
 
     // Cleanup subscription on component unmount
     return () => unsub();
-  }, []); // Include dependencies*/
+  }, [isAlertAcknowledged]); // Include dependencies*/
   
   
   const onSend = useCallback(async (newMessages: IMessage[] = []) => {
-    //setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
+    // TODO add online check here if device isn't online alert
+    const netInfo = await NetInfo.fetch();
+
+    if (!netInfo.isConnected) {
+      Alert.alert(
+        'No Internet Connection',
+        'You are offline. Please check your internet connection and try again.'
+      );
+      return;
+    }
+
     try {
       await sendMessage(chatID, newMessages[0].text);
     } catch (error) {
@@ -48,8 +59,9 @@ export default function MessagingScreen() {
   }, []);
   
   const renderInputToolbar = (props: any) => (
-    <CustomInputToolbar {...props}>
+      <CustomInputToolbar {...props}>
     </CustomInputToolbar>
+    
   );
 
   const renderBubble = (props: any) => (

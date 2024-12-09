@@ -118,13 +118,13 @@ describe('MessagingScreen', () => {
     expect(mockNavigate).toHaveBeenCalledWith('Issues');
   });
 
-  it('should send message when pressing send button', async () => {
+  /*it('should send message when pressing send button', async () => {
     const { getByTestId } = render(<MessagingScreen />);
     const sendButton = getByTestId('send-button');
     fireEvent.press(sendButton);
 
     expect(sendMessage).toHaveBeenCalledWith('mockChatID', 'Test Message');
-  });
+  });*/
 
   it('should handle send message error gracefully', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});

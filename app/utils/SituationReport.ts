@@ -1,6 +1,6 @@
-import { getApartment, getResidence, updateResidence } from "../../firebase/firestore/firestore";
-import { Landlord, SituationReport, SituationReportGroup, situationReportLayout, SituationReportSingleton } from "../../types/types";
-import { getFirestore, writeBatch, doc, collection, getDoc } from "firebase/firestore";
+import { getApartment, getResidence } from "../../firebase/firestore/firestore";
+import { Landlord, SituationReportLayout, SituationReportSingleton } from "../../types/types";
+import { getFirestore, writeBatch, doc, collection, getDoc, addDoc } from "firebase/firestore";
 
 enum SituationReportStatus {
     OC = 1,
@@ -34,41 +34,46 @@ export function toFrontendFormat(backendJsonString: string): [string, [string, [
     return [name, groups];
 }
 
+
 export async function fetchLayoutFromDatabase(
     situationReportId: string
   ): Promise<[string, [string, [string, number][]][]]> {
-    console.log("fetching situation report with id: ", situationReportId);
+    console.log("Fetching situation report with id: ", situationReportId);
     const db = getFirestore();
   
-    const situationReportRef = doc(db, "situationReportLayout", situationReportId);
-    const situationReportSnapshot = await getDoc(situationReportRef);
+    // Fetch the report document under "situationReports"
+    const reportRef = doc(db, "situationReports", situationReportId);
+    const reportSnapshot = await getDoc(reportRef);
   
-    if (!situationReportSnapshot.exists()) {
-      throw new Error(`SituationReportLayout with ID "${situationReportId}" does not exist.`);
+    if (!reportSnapshot.exists()) {
+      throw new Error(`SituationReport with ID "${situationReportId}" does not exist.`);
     }
   
-    const situationReportLayout = situationReportSnapshot.data();
-    const reportName = situationReportLayout.label;
-    const groupIds: string[] = situationReportLayout.value;
+    const reportData = reportSnapshot.data();
+    const reportName = reportData.name; // Assuming the name is stored as 'name' in the report doc
+    const groupIds: string[] = reportData.situationReportLayout || []; // The layout field stores the group IDs
   
-    const groupRefs = groupIds.map((id) => doc(db, "situationReportGroup", id));
-    const groupSnapshots = await Promise.all(groupRefs.map((ref) => getDoc(ref)));
+    // Fetch all groups under this report
+    const groupRefs = groupIds.map((groupId) => doc(reportRef, "situationReportGroup", groupId));
+    const groupSnapshots = await Promise.all(groupRefs.map((groupRef) => getDoc(groupRef)));
   
     const groups: { name: string; singletonIds: string[] }[] = [];
     for (const groupSnapshot of groupSnapshots) {
       if (groupSnapshot.exists()) {
         const groupData = groupSnapshot.data();
         groups.push({
-          name: groupData.label,
-          singletonIds: groupData.value,
+          name: groupData.label, // Group label (name)
+          singletonIds: groupData.value, // Array of singleton references (IDs)
         });
       }
     }
   
+    // Fetch all singletons under this report (across all groups)
     const allSingletonIds = groups.flatMap((group) => group.singletonIds);
-    const uniqueSingletonIds = Array.from(new Set(allSingletonIds)); // Avoid duplicates
-    const singletonRefs = uniqueSingletonIds.map((id) => doc(db, "situationReportSingleton", id));
-    const singletonSnapshots = await Promise.all(singletonRefs.map((ref) => getDoc(ref)));
+    const uniqueSingletonIds = Array.from(new Set(allSingletonIds)); // Remove duplicates
+  
+    const singletonRefs = uniqueSingletonIds.map((singletonId) => doc(reportRef, "situationReportSingleton", singletonId));
+    const singletonSnapshots = await Promise.all(singletonRefs.map((singletonRef) => getDoc(singletonRef)));
   
     const singletons: Record<string, { label: string; value: number }> = {};
     for (const singletonSnapshot of singletonSnapshots) {
@@ -81,91 +86,111 @@ export async function fetchLayoutFromDatabase(
       }
     }
   
+    // Build the result based on the fetched data
     const result: [string, [string, [string, number][]][]] = [
       reportName,
       groups.map((group) => [
         group.name,
         group.singletonIds.map((singletonId) => [
-          singletons[singletonId].label,
-          singletons[singletonId].value,
+          singletons[singletonId].label, // Get the label of the singleton
+          singletons[singletonId].value, // Get the value of the singleton
         ]),
       ]),
     ];
-    
+  
     return result;
   }
+  
 
-  export async function toDatabaseTest(
-    frontendFormat: [string, [string, number][]][],
-    reportName: string,
-  ) {
-    const db = getFirestore();
-    const BATCH_LIMIT = 500; // Firestore batch limit, cannot exceed 500 writes
+
+
+export async function toDatabaseTest(
+  frontendFormat: [string, [string, number][]][],
+  reportName: string
+) {
+  const db = getFirestore();
+  const BATCH_LIMIT = 500; // Firestore batch limit
   
-    const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
-  
-    let batch = writeBatch(db);
-    let batchCount = 0;
-  
-    // Handle the creation of the singletons using batches to avoid sending lots of requests
-    for (const group of frontendFormat) {
-      const groupName = group[0];
-      const items = group[1];
-  
-      const singletonRefs: string[] = [];
-      
-      // Create a singleton for each item in the group
-      for (const item of items) {
-        const singleton: SituationReportSingleton = {
-          label: item[0],
-          value: item[1],
-        };
-  
-        // Create the singleton document inside the situationReportTest collection
-        const singletonRef = doc(collection(db, "situationReportTest", "situationReportSingleton", groupName));
-        singletonRefs.push(singletonRef.id); 
-        batch.set(singletonRef, singleton);
-        batchCount++;
-  
-        if (batchCount === BATCH_LIMIT) {
-          await batch.commit();
-          batch = writeBatch(db);
-          batchCount = 0;
-        }
-      }
-  
-      // Create the group document inside the situationReportTest collection
-      const groupRef = doc(collection(db, "situationReportTest", "situationReportGroup", groupName));
-      groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
-      batch.set(groupRef, { label: groupName, value: singletonRefs });
+  const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
+
+  let batch = writeBatch(db);
+  let batchCount = 0;
+
+  const reportRef = await addDoc(collection(db, "situationReports"), {
+    name: reportName, 
+  });
+
+  console.log(`Created report document with ID: ${reportRef.id}`);
+
+  for (const group of frontendFormat) {
+    const groupName = group[0];
+    const items = group[1];
+
+    const singletonRefs: string[] = [];
+
+
+    const singletonCollectionRef = collection(reportRef, "situationReportSingleton");
+    for (const item of items) {
+      const singleton: SituationReportSingleton = {
+        label: item[0],
+        value: item[1],
+      };
+
+      const singletonRef = doc(singletonCollectionRef); 
+      batch.set(singletonRef, singleton); 
+      singletonRefs.push(singletonRef.id);
+
       batchCount++;
-  
+
       if (batchCount === BATCH_LIMIT) {
         await batch.commit();
         batch = writeBatch(db);
         batchCount = 0;
       }
     }
-  
-    if (batchCount > 0) {
+
+    const groupCollectionRef = collection(reportRef, "situationReportGroup");
+
+    const groupData = { label: groupName, value: singletonRefs };
+    const groupRef = doc(groupCollectionRef); 
+    batch.set(groupRef, groupData); 
+
+    groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
+
+    batchCount++;
+
+    if (batchCount === BATCH_LIMIT) {
       await batch.commit();
+      batch = writeBatch(db); 
+      batchCount = 0;
     }
-  
-    // Create the report layout document inside the situationReportTest collection
-    const reportLayout: situationReportLayout = {
-      label: reportName,
-      value: groupReferences.map((group) => group.groupID), 
-    };
-  
-    const situationReportRef = doc(collection(db, "situationReportTest", "situationReportLayout", reportLayout.label));
-    batch = writeBatch(db);
-    batch.set(situationReportRef, reportLayout);
-  
-    await batch.commit();
-  
-    return situationReportRef;
   }
+
+  const reportLayout: SituationReportLayout = {
+    label: reportName,
+    value: groupReferences.map((group) => group.groupID),
+  };
+
+  const layoutCollectionRef = collection(reportRef, "situationReportLayout");
+
+  const layoutRef = doc(layoutCollectionRef);
+  batch.set(layoutRef, reportLayout); 
+
+  batchCount++;
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  console.log("Data saved successfully");
+  console.log(`Report saved at ID : ${layoutCollectionRef}`);
+  console.log(`Report layout saved at ID : ${layoutRef.id}`);
+  return reportRef.id;
+}
+
   
+
+
 
 export async function toDatabase(
     frontendFormat: [string, [string, number][]][],
@@ -221,7 +246,7 @@ export async function toDatabase(
     await batch.commit();
     }
 
-    const reportLayout: situationReportLayout = {
+    const reportLayout: SituationReportLayout = {
     label: reportName,
     value: groupReferences.map((group) => group.groupID), 
     };

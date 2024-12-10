@@ -24,6 +24,7 @@ import {
   removeGroupFromLayout,
   removeItemFrom,
   toDatabase,
+  toDatabaseTest,
 } from '../../../utils/SituationReport';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import InputField from '../../../components/forms/text_input';
@@ -375,7 +376,13 @@ export default function SituationReportCreation() {
         fetchResidences(landlord, setResidencesMappedToName);
       }
 
-      residence = await getResidence(selectedResidence);
+      if (selectedResidence !== ''){
+        try{
+          residence = await getResidence(selectedResidence);
+        } catch {
+          
+        }
+      }
     };
 
     fetchData();
@@ -607,13 +614,13 @@ export default function SituationReportCreation() {
                 textStyle={appStyles.submitButtonText}
                 onPress={async () => {
                   
-                  const layoutRef = await toDatabase(layout, situationReportName);
+                  const layoutRef = await toDatabaseTest(layout, situationReportName);
                   let nextLayoutList: string[] = [];
 
                   if (residence) {
                     nextLayoutList = residence.situationReportLayout
                   }
-                  await updateResidence(selectedResidence, { situationReportLayout: [...nextLayoutList, layoutRef.id] });
+                  await updateResidence(selectedResidence, { situationReportLayout: [layoutRef] });
                  
                   Alert.alert(
                     'Situation Report Created',

@@ -132,7 +132,7 @@ export type SituationReportSingleton = {
   value: number;
 }
 
-export type situationReportLayout = {
+export type SituationReportLayout = {
   label: string;
   value: string[]; // list of SituationReportGroup's ID
 }

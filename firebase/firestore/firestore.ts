@@ -196,6 +196,11 @@ export async function createResidence(residence: Residence): Promise<string> {
 export async function getResidence(
   residenceId: string
 ): Promise<Residence | null> {
+
+  if (!residenceId || typeof residenceId !== "string") {
+    throw new Error("Invalid residence ID");
+  }
+
   const docRef = doc(db, "residences", residenceId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Residence) : null;

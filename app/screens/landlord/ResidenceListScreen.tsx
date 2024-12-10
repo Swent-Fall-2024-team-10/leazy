@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { appStyles } from '../../../styles/styles';
-import { ResidenceStackParamList } from '../../../types/types';
+import { ResidenceStackParamList, ResidenceWithId } from '../../../types/types';
 import Header from '../../components/Header';
 import ApartmentItem from '../../components/ApartmentItem';
 import ResidenceItem from '../../components/ResidenceItem';
@@ -13,6 +13,15 @@ const ResidencesListScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const [expandedResidence, setExpandedResidence] = useState<string | null>(null);
   const { residences, residenceMap, isLoading, error } = useProperty();
+
+  // This useEffect will trigger whenever the data from useProperty changes
+  useEffect(() => {
+    // If residenceMap changes and the currently expanded residence no longer exists,
+    // reset the expanded state
+    if (expandedResidence && !residences.find(r => r.id === expandedResidence)) {
+      setExpandedResidence(null);
+    }
+  }, [residences, residenceMap, isLoading, error, expandedResidence]);
 
   if (isLoading) {
     return (
@@ -34,14 +43,14 @@ const ResidencesListScreen: React.FC = () => {
     );
   }
 
-  const residenceElements = residences.map((residence) => (
+  const residenceElements = residences.map((residence: ResidenceWithId) => (
     <ResidenceItem
-      key={residence.residenceName}
+      key={residence.id}
       residence={residence}
       apartments={residenceMap.get(residence) || []}
-      isExpanded={expandedResidence === residence.residenceName}
+      isExpanded={expandedResidence === residence.id}
       onPress={() => setExpandedResidence(
-        expandedResidence === residence.residenceName ? null : residence.residenceName
+        expandedResidence === residence.id ? null : residence.id
       )}
       navigation={navigation}
     />
@@ -78,5 +87,4 @@ const ResidencesListScreen: React.FC = () => {
   );
 };
 
-export { ApartmentItem, ResidenceItem };
 export default ResidencesListScreen;

@@ -3,10 +3,10 @@ import { Pressable, Text, View } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { appStyles } from '../../styles/styles';
-import { Apartment, ResidenceStackParamList } from '../../types/types';
+import { ApartmentWithId, ResidenceStackParamList } from '../../types/types';
 
 interface ApartmentItemProps {
-  apartment: Apartment;
+  apartment: ApartmentWithId;
   editMode: boolean;
   navigation: NavigationProp<ResidenceStackParamList>;
   onDelete?: (apartmentId: string) => void;
@@ -19,7 +19,7 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
   onDelete
 }) => (
   <Pressable
-    testID={`apartment-item-${apartment.apartmentName}`}
+    testID={`apartment-item-${apartment.id}`}
     style={({ pressed }: { pressed: boolean }) => ({
       width: '100%',
       opacity: pressed ? 0.6 : 1,
@@ -41,7 +41,7 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
       testID={editMode ? 'delete-button' : 'chevron-button'}
       onPress={() => {
         if (editMode && onDelete) {
-          onDelete(apartment.apartmentName);
+          onDelete(apartment.id);
         } else {
           navigation.navigate('FlatDetails', { apartment });
         }
@@ -55,5 +55,4 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
     </Pressable>
   </Pressable>
 );
-
 export default ApartmentItem;

@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
-import { Residence, Apartment, ResidenceStackParamList } from '../../types/types';
-import { appStyles} from '../../styles/styles';
-import {residenceManagementListStyles} from '../../styles/styles';
+import { ResidenceWithId, ApartmentWithId, ResidenceStackParamList } from '../../types/types';
+import { appStyles } from '../../styles/styles';
+import { residenceManagementListStyles } from '../../styles/styles';
 import SearchBar from './SearchBar';
 import AddApartmentForm from './AddApartmentForm';
 import ApartmentItem from './ApartmentItem';
+import { createApartment, updateResidence, deleteApartment } from '../../firebase/firestore/firestore';
 
 interface ResidenceItemProps {
-  residence: Residence;
-  apartments: Apartment[];
+  residence: ResidenceWithId;
+  apartments: ApartmentWithId[];
   isExpanded: boolean;
   navigation: NavigationProp<ResidenceStackParamList>;
   onPress: () => void;
@@ -27,28 +28,73 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   const [editMode, setEditMode] = useState(false);
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localApartments, setLocalApartments] = useState<ApartmentWithId[]>(apartments);
 
-  const filteredApartments = apartments.filter(apt =>
+  // Update local apartments when the props change
+  useEffect(() => {
+    setLocalApartments(apartments);
+  }, [apartments]);
+
+  const filteredApartments = localApartments.filter(apt =>
     apt.apartmentName.toLowerCase().includes(apartmentSearch.toLowerCase())
   );
 
-  const handleAddApartment = (name: string) => {
-    console.log('Adding apartment:', name);
-    setShowAddForm(false); // Close form after successful submission
+  const handleAddApartment = async (name: string) => {
+    setIsSubmitting(true);
+    try {
+      const newApartment = {
+        apartmentName: name,
+        residenceId: residence.id,
+        tenants: [],
+        maintenanceRequests: [],
+        situationReportId: ''
+      };
+
+      const apartmentId = await createApartment(newApartment);
+
+      if (apartmentId) {
+        const updatedApartments = [...residence.apartments, apartmentId];
+        await updateResidence(residence.id, {
+          apartments: updatedApartments
+        });
+        
+        // Update local state with the new apartment
+        setLocalApartments(prev => [...prev, { ...newApartment, id: apartmentId }]);
+      }
+    } catch (error) {
+      console.error('Error creating apartment:', error);
+    } finally {
+      setIsSubmitting(false);
+      setShowAddForm(false);
+    }
   };
 
-  const handleDeleteApartment = (apartmentId: string) => {
-    console.log('Deleting apartment:', apartmentId);
+  const handleDeleteApartment = async (apartmentId: string) => {
+    try {
+      await deleteApartment(apartmentId);
+      
+      // Update residence apartments array
+      const updatedApartments = residence.apartments.filter(id => id !== apartmentId);
+      await updateResidence(residence.id, {
+        apartments: updatedApartments
+      });
+      
+      // Update local state
+      setLocalApartments(prev => prev.filter(apt => apt.id !== apartmentId));
+    } catch (error) {
+      console.error('Error deleting apartment:', error);    
+    }
   };
 
   const handleCancelAdd = () => {
-    setShowAddForm(false); // Close form when cancelled
+    setShowAddForm(false);
   };
 
   return (
-    <View testID={`residence-item-${residence.residenceName}`} style={appStyles.residenceContainer}>
+    <View testID={`residence-item-${residence.id}`} style={appStyles.residenceContainer}>
       <Pressable
-        testID={`residence-button-${residence.residenceName}`}
+        testID={`residence-button-${residence.id}`}
         style={({ pressed }) => [
           appStyles.residenceButton,
           isExpanded && appStyles.expandedResidence,
@@ -57,7 +103,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         onPress={onPress}
       >
         <Text style={appStyles.residenceText}>
-          {residence.street} {residence.number}
+          {residence.residenceName}
         </Text>
         <View style={appStyles.residenceIconContainer}>
           {isExpanded && (
@@ -100,19 +146,24 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
           )}
 
           {showAddForm && (
-            <AddApartmentForm
-              onSubmit={handleAddApartment}
-              onCancel={handleCancelAdd}
-            />
+            <>
+              <AddApartmentForm
+                onSubmit={handleAddApartment}
+                onCancel={handleCancelAdd}
+              />
+              {isSubmitting && (
+                <ActivityIndicator style={{ marginTop: 10 }} />
+              )}
+            </>
           )}
 
-          {filteredApartments.map((apartment, index) => (
+          {filteredApartments.map((apartment) => (
             <ApartmentItem
-              key={index}
+              key={apartment.id}
               apartment={apartment}
               editMode={editMode}
               navigation={navigation}
-              onDelete={handleDeleteApartment}
+              onDelete={() => handleDeleteApartment(apartment.id)}
             />
           ))}
 

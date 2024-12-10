@@ -23,18 +23,19 @@ import {
   fetchResidences,
   removeGroupFromLayout,
   removeItemFrom,
-  toDatabaseFormat,
+  toDatabase,
 } from '../../../utils/SituationReport';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import InputField from '../../../components/forms/text_input';
 import { KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
-  addSituationReportLayout,
   getResidence,
+  updateResidence,
 } from '../../../../firebase/firestore/firestore';
 import { PickerGroup } from './SituationReportScreen';
 import { useAuth } from '../../../context/AuthContext';
+import { Residence } from '@/types/types';
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -362,21 +363,22 @@ export default function SituationReportCreation() {
   >([]);
   const { landlord } = useAuth();
   const [situationReportName, setSituationReportName] = useState('');
-
+  
   const defaultItemName = '';
   const defaultGroupName = '';
+  
+  let residence: Residence | null = null;
 
   useEffect(() => {
-    if (landlord?.residenceIds) {
-      fetchResidences(landlord, setResidencesMappedToName);
-    }
+    const fetchData = async () => {
+      if (landlord?.residenceIds) {
+        fetchResidences(landlord, setResidencesMappedToName);
+      }
 
-    getResidence(selectedResidence).then((residence) => {
-      residence?.apartments?.forEach((apartment) => {
-      });
-    }
-  )
+      residence = await getResidence(selectedResidence);
+    };
 
+    fetchData();
   }, [landlord?.residenceIds, selectedResidence]);
 
 
@@ -603,12 +605,16 @@ export default function SituationReportCreation() {
                 height={ButtonDimensions.mediumButtonHeight}
                 style={appStyles.submitButton}
                 textStyle={appStyles.submitButtonText}
-                onPress={() => {
-                  const reportLayout = [
-                    toDatabaseFormat(layout, situationReportName),
-                  ];
-                  const residenceId = selectedResidence;
-                  addSituationReportLayout(reportLayout, residenceId);
+                onPress={async () => {
+                  
+                  const layoutRef = await toDatabase(layout, situationReportName);
+                  let nextLayoutList: string[] = [];
+
+                  if (residence) {
+                    nextLayoutList = residence.situationReportLayout
+                  }
+                  await updateResidence(selectedResidence, { situationReportLayout: [...nextLayoutList, layoutRef.id] });
+                 
                   Alert.alert(
                     'Situation Report Created',
                     'Situation Report has been created successfully',

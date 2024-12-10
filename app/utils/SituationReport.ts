@@ -1,4 +1,4 @@
-import { getApartment, getResidence } from "../../firebase/firestore/firestore";
+import { getApartment, getResidence, updateResidence } from "../../firebase/firestore/firestore";
 import { Landlord, SituationReport, SituationReportGroup, situationReportLayout, SituationReportSingleton } from "../../types/types";
 import { getFirestore, writeBatch, doc, collection, getDoc } from "firebase/firestore";
 
@@ -95,9 +95,81 @@ export async function fetchLayoutFromDatabase(
     return result;
   }
 
+  export async function toDatabaseTest(
+    frontendFormat: [string, [string, number][]][],
+    reportName: string,
+  ) {
+    const db = getFirestore();
+    const BATCH_LIMIT = 500; // Firestore batch limit, cannot exceed 500 writes
+  
+    const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
+  
+    let batch = writeBatch(db);
+    let batchCount = 0;
+  
+    // Handle the creation of the singletons using batches to avoid sending lots of requests
+    for (const group of frontendFormat) {
+      const groupName = group[0];
+      const items = group[1];
+  
+      const singletonRefs: string[] = [];
+      
+      // Create a singleton for each item in the group
+      for (const item of items) {
+        const singleton: SituationReportSingleton = {
+          label: item[0],
+          value: item[1],
+        };
+  
+        // Create the singleton document inside the situationReportTest collection
+        const singletonRef = doc(collection(db, "situationReportTest", "situationReportSingleton", groupName));
+        singletonRefs.push(singletonRef.id); 
+        batch.set(singletonRef, singleton);
+        batchCount++;
+  
+        if (batchCount === BATCH_LIMIT) {
+          await batch.commit();
+          batch = writeBatch(db);
+          batchCount = 0;
+        }
+      }
+  
+      // Create the group document inside the situationReportTest collection
+      const groupRef = doc(collection(db, "situationReportTest", "situationReportGroup", groupName));
+      groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
+      batch.set(groupRef, { label: groupName, value: singletonRefs });
+      batchCount++;
+  
+      if (batchCount === BATCH_LIMIT) {
+        await batch.commit();
+        batch = writeBatch(db);
+        batchCount = 0;
+      }
+    }
+  
+    if (batchCount > 0) {
+      await batch.commit();
+    }
+  
+    // Create the report layout document inside the situationReportTest collection
+    const reportLayout: situationReportLayout = {
+      label: reportName,
+      value: groupReferences.map((group) => group.groupID), 
+    };
+  
+    const situationReportRef = doc(collection(db, "situationReportTest", "situationReportLayout", reportLayout.label));
+    batch = writeBatch(db);
+    batch.set(situationReportRef, reportLayout);
+  
+    await batch.commit();
+  
+    return situationReportRef;
+  }
+  
+
 export async function toDatabase(
     frontendFormat: [string, [string, number][]][],
-    reportName: string
+    reportName: string,
   ) {
     const db = getFirestore();
     const BATCH_LIMIT = 500; // Firestore batch limit, cannot exceed 500 writes
@@ -159,6 +231,8 @@ export async function toDatabase(
     batch.set(situationReportRef, reportLayout);
 
     await batch.commit();
+
+    return situationReportRef
 }
   
 
@@ -272,15 +346,18 @@ export async function fetchResidences(
     setResidencesMappedToName: (residences: PickerData[]) => void
 ): Promise<void> {
     // Map residence IDs to their corresponding names
-    const mappedResidences: PickerData[] = await Promise.all(
+    const mappedResidences: PickerData[] = (await Promise.all(
         landlord.residenceIds.map(async (id: string) => {
             const residence = await getResidence(id);
-            return {
-                label: residence?.residenceName ?? 'Unknown',
-                value: id,
-            };
+            if (residence) {
+                return {
+                    label: residence?.residenceName ?? 'Unknown',
+                    value: id,
+                };
+            }
+            return undefined;
         }),
-    );
+    )).filter((item): item is PickerData => item !== undefined);
     setResidencesMappedToName(mappedResidences);
 }
 
@@ -316,20 +393,22 @@ export async function fetchSituationReportLayout(
 ): Promise<void> {
     const residence = await getResidence(residenceID);
     const mappedLayout = residence?.situationReportLayout.map(async (layout) => {
-        const [label, value] = await fetchLayoutFromDatabase(layout)
-        console.log(value)
-        value.map((group) => {
-            console.log(group)
-        });
-        return { 
-            label: label, 
-            value: value
-        };
+        if (layout) {
+            const [label, value] = await fetchLayoutFromDatabase(layout)
+            console.log(value)
+            value.map((group) => {
+                console.log(group)
+            });
+            return { 
+                label: label, 
+                value: value
+            };
+        }
     }
     );
 
     if (mappedLayout) {
         const resolvedLayout = await Promise.all(mappedLayout);
-        setLayout(resolvedLayout);
+        setLayout(resolvedLayout.filter((layout): layout is LayoutPickerData => layout !== undefined));
     }
 }

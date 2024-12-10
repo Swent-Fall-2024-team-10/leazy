@@ -348,7 +348,7 @@ export default function SituationReportScreen() {
       fetchApartmentNames(selectedResidence, setApartmentMappedToName);
       fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
     }
-
+    
   }, [landlord?.residenceIds, selectedResidence]);
 
 

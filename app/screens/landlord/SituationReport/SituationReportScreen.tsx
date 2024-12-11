@@ -22,7 +22,7 @@ import InputField from '../../../components/forms/text_input';
 import StraightLine from '../../../components/SeparationLine';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import RNPickerSelect from 'react-native-picker-select';
-import { changeStatus, fetchApartmentNames, fetchLayoutFromDatabase, fetchResidences, fetchSituationReportLayout, toDatabase, toDatabaseFormat } from '../../../utils/SituationReport';
+import { changeStatus, fetchApartmentNames, fetchResidences, fetchSituationReportLayout, toDatabase } from '../../../utils/SituationReport';
 import {
   addSituationReport,
   getApartment,
@@ -35,7 +35,6 @@ import {
   situationReportStyles,
 } from '../../../../styles/SituationReportStyling';
 import { useAuth } from '@/app/context/AuthContext';
-import { Button } from 'react-native-elements/dist/buttons/Button';
 
 enum enumStatus {
   OC = 1,
@@ -346,6 +345,7 @@ export default function SituationReportScreen() {
 
     if (selectedResidence) {
       fetchApartmentNames(selectedResidence, setApartmentMappedToName);
+      
       fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
     }
     
@@ -516,6 +516,8 @@ export default function SituationReportScreen() {
                 disabled={false}
                 onPress={async () => {
 
+                  const reportForm = await toDatabase(layout, "Situation Report arrival of " + arrivingTenantName + " " + arrivingTenantSurname);
+
                   const report: SituationReport = {
                     reportDate: new Date().toISOString(),
                     residenceId: selectedResidence,
@@ -529,10 +531,7 @@ export default function SituationReportScreen() {
                       surname: leavingTenantSurname,
                     }),
                     remarks: remark,
-                    reportForm: toDatabaseFormat(
-                      layout,
-                      arrivingTenantName + ' Situation Report',
-                    ),
+                    reportForm: reportForm,
                   };
 
                   reset();

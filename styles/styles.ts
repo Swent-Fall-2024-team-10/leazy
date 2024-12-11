@@ -172,7 +172,112 @@ export const Color = {
   completed: "#2ECC71",
   rejected: "#95A5A6",
   default: "#95A5A6",
+
+
+  // Chat
+  chatTitle: "#000000",
+  chatBackground: "#FFFFFF",
+  chatGoBackIcon: "#000000",
+
+  chatInputBackground: "#FFFFFF",
+  chatInputBorder: "#7F7F7F",
+  chatInputText: "#000000",
+  chatSendIcon: "#AAAAAA",
+
+  chatBubbleLeftBackground: "#0F5257",
+  chatBubbleLeftBorder: "#E8E8E8",
+  chatBubbleLeftText: "#FFFFFF",
+
+  chatBubbleRightBackground: "#FFFFFF",
+  chatBubbleRightBorder: "#7F7F7F",
+  chatBubbleRightText: "#000000",
+
+  chatTimeText: "#7F7F7F",
 };
+
+export const chatStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: "5%",
+    marginHorizontal: "5%",
+    justifyContent: "space-between",
+  },
+  // There's a bug here, the title isn't centered since there's a button before it that shifts everything
+  chatTitle: {
+    fontSize: 18,
+    fontWeight: FontWeight.ScreenHeader,
+    color: Color.chatTitle,
+    textAlign: "center",
+    //flex: 1,
+    // How do i Offset the back button width while not giving pixel values
+  },
+  chatContainer: {
+    backgroundColor: Color.chatBackground,
+  },
+  gobackIcon: {
+    color: Color.chatGoBackIcon,
+    flexDirection: "row",
+    alignItems: "center",
+    //flex: 1,
+  },
+
+  // Input toolbar
+  input: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "90%",
+    height: "10%",
+    borderRadius: 25,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatInputBorder,
+    backgroundColor: Color.chatInputBackground,
+    elevation: 4,
+    alignSelf: "center",
+    marginTop: "5%",
+    marginBottom: "10%",
+    paddingLeft: "5%",
+  },
+  textInput: {
+    flex: 1,
+    fontSize: FontSizes.TextInputText,
+    color: Color.chatInputText,
+  },
+  sendButton: {
+    marginHorizontal: "5%",
+  },
+  sendIcon: {
+    color: Color.chatSendIcon,
+  },
+
+
+  // Bubble
+  bubbleLeft: {
+    backgroundColor: Color.chatBubbleLeftBackground,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatBubbleLeftBorder,
+    marginLeft: "5%",
+    elevation: 4,
+  },
+  bubbleRight: {
+    backgroundColor: Color.chatBubbleRightBackground,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatBubbleRightBorder,
+    marginRight: "5%",
+    elevation: 4,
+  },
+  bubbleTextLeft: {
+    color: Color.chatBubbleLeftText,
+    fontSize: FontSizes.TextInputText,
+  },
+  bubbleTextRight: {
+    color: Color.chatBubbleRightText,
+    fontSize: FontSizes.TextInputText,
+  },
+  timeText: {
+    color: Color.chatTimeText,
+  },
+});
 
 export const appStyles = StyleSheet.create({
   // Sign Up Styles
@@ -313,8 +418,8 @@ export const appStyles = StyleSheet.create({
 
   // General Screen
   screenContainer: {
-    flex: 1,
-    padding : '6%'
+    flex: 0.75,
+    padding : '6%',
   },
 
   emptyListText: {

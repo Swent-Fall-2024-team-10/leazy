@@ -1,30 +1,12 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
-import { Feather } from "@expo/vector-icons";
-import Header from "../../components/Header";
-import {
-  getLandlord,
-  getResidence,
-  getTenant,
-  getMaintenanceRequest,
-} from "../../../firebase/firestore/firestore";
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import Header from '../../components/Header';
+import { getLandlord, getResidence, getTenant, getMaintenanceRequest } from '../../../firebase/firestore/firestore';
 
-import {
-  MaintenanceRequest,
-  Landlord,
-  Residence,
-  Tenant,
-  RootStackParamList,
-} from "../../../types/types";
-import { getAuth } from "firebase/auth";
-import { useAuth } from "../../context/AuthContext";
+import { MaintenanceRequest, Landlord, Residence, Tenant, RootStackParamList} from '../../../types/types';
+import { getAuth } from 'firebase/auth';
+import { useAuth } from '../../context/AuthContext';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -36,12 +18,8 @@ const LandlordListIssuesScreen: React.FC = () => {
   const [expandedResidences, setExpandedResidences] = useState<string[]>([]);
   const [filterVisible, setFilterVisible] = useState(false);
   const [residences, setResidences] = useState<ResidenceWithId[]>([]);
-  const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>(
-    {}
-  );
+  const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedResidenceId, setSelectedResidenceId] = useState<string>("all");
 
   const { user } = useAuth();
   if (!user) {
@@ -53,7 +31,7 @@ const LandlordListIssuesScreen: React.FC = () => {
     const fetchIssues = async () => {
       try {
         setIsLoading(true);
-
+        
         const landlord = await getLandlord(landlordId);
         if (!landlord) {
           throw new Error("Landlord not found");
@@ -69,7 +47,7 @@ const LandlordListIssuesScreen: React.FC = () => {
             if (residence) {
               fetchedResidences.push({
                 ...residence,
-                id: residenceId,
+                id: residenceId
               });
 
               const tenantsForResidence = await Promise.all(
@@ -121,35 +99,16 @@ const LandlordListIssuesScreen: React.FC = () => {
   };
 
   const toggleResidenceExpansion = (residenceId: string) => {
-    setExpandedResidences((prevExpanded) =>
+    setExpandedResidences(prevExpanded =>
       prevExpanded.includes(residenceId)
-        ? prevExpanded.filter((id) => id !== residenceId)
+        ? prevExpanded.filter(id => id !== residenceId)
         : [...prevExpanded, residenceId]
     );
   };
 
-  const filterOptions = {
-    status: ["all", "notStarted", "inProgress", "completed"],
-  };
-
-  const filteredIssues = issues.filter((issue) => {
-    if (!showArchived && issue.requestStatus === "completed") {
-      return false;
-    }
-
-    if (selectedStatus !== "all" && issue.requestStatus !== selectedStatus) {
-      return false;
-    }
-
-    if (
-      selectedResidenceId !== "all" &&
-      issue.residenceId !== selectedResidenceId
-    ) {
-      return false;
-    }
-
-    return true;
-  });
+  const filteredIssues = issues.filter(issue =>
+    !showArchived ? issue.requestStatus !== "completed" : true
+  );
 
   return (
     <View style={styles.container}>
@@ -167,7 +126,7 @@ const LandlordListIssuesScreen: React.FC = () => {
               onValueChange={setShowArchived}
               testID="archivedSwitch"
             />
-
+            
             <TouchableOpacity
               onPress={toggleFilter}
               style={styles.filterButton}
@@ -180,88 +139,11 @@ const LandlordListIssuesScreen: React.FC = () => {
 
           {filterVisible && (
             <View style={styles.filterOptions}>
-              <Text style={styles.filterTitle}>Sort by...</Text>
-
-              <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Status:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {filterOptions.status.map((status) => (
-                    <TouchableOpacity
-                      key={status}
-                      style={[
-                        styles.filterChip,
-                        selectedStatus === status && styles.filterChipSelected,
-                      ]}
-                      onPress={() => setSelectedStatus(status)}
-                    >
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          selectedStatus === status &&
-                            styles.filterChipTextSelected,
-                        ]}
-                      >
-                        {status === "all" ? "All" : status}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Residence:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <TouchableOpacity
-                    style={[
-                      styles.filterChip,
-                      selectedResidenceId === "all" &&
-                        styles.filterChipSelected,
-                    ]}
-                    onPress={() => setSelectedResidenceId("all")}
-                  >
-                    <Text
-                      style={[
-                        styles.filterChipText,
-                        selectedResidenceId === "all" &&
-                          styles.filterChipTextSelected,
-                      ]}
-                    >
-                      All
-                    </Text>
-                  </TouchableOpacity>
-                  {residences.map((residence) => (
-                    <TouchableOpacity
-                      key={residence.id}
-                      style={[
-                        styles.filterChip,
-                        selectedResidenceId === residence.id &&
-                          styles.filterChipSelected,
-                      ]}
-                      onPress={() => setSelectedResidenceId(residence.id)}
-                    >
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          selectedResidenceId === residence.id &&
-                            styles.filterChipTextSelected,
-                        ]}
-                      >
-                        {residence.residenceName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              <TouchableOpacity
-                style={styles.resetButton}
-                onPress={() => {
-                  setSelectedStatus("all");
-                  setSelectedResidenceId("all");
-                  setFilterVisible(false);
-                }}
-              >
-                <Text style={styles.resetButtonText}>Reset Filters</Text>
+              <Text>Filter by...</Text>
+              <Text>Status</Text>
+              <Text>Sort by...</Text>
+              <TouchableOpacity onPress={toggleFilter}>
+                <Text style={styles.applyButton}>Apply</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -278,11 +160,7 @@ const LandlordListIssuesScreen: React.FC = () => {
                     Residence {residence.street}
                   </Text>
                   <Feather
-                    name={
-                      expandedResidences.includes(residence.id)
-                        ? "chevron-up"
-                        : "chevron-down"
-                    }
+                    name={expandedResidences.includes(residence.id) ? "chevron-up" : "chevron-down"}
                     size={24}
                     color="black"
                   />
@@ -291,8 +169,8 @@ const LandlordListIssuesScreen: React.FC = () => {
                 {expandedResidences.includes(residence.id) && (
                   <View style={styles.issueList}>
                     {filteredIssues
-                      .filter((issue) => issue.residenceId === residence.id)
-                      .map((issue) => (
+                      .filter(issue => issue.residenceId === residence.id)
+                      .map(issue => (
                         <View key={issue.requestID} style={styles.issueItem}>
                           <Text>{issue.requestTitle}</Text>
                           <View
@@ -304,8 +182,8 @@ const LandlordListIssuesScreen: React.FC = () => {
                                     ? "#F39C12"
                                     : issue.requestStatus === "notStarted"
                                     ? "#E74C3C"
-                                    : "#2ECC71",
-                              },
+                                    : "#2ECC71"
+                              }
                             ]}
                           >
                             <Text style={styles.statusText}>
@@ -426,45 +304,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "500",
-  },
-  filterTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  filterSection: {
-    marginBottom: 16,
-  },
-  filterLabel: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  filterChip: {
-    backgroundColor: "#EDEDED",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  filterChipSelected: {
-    backgroundColor: "#2C3E50",
-  },
-  filterChipText: {
-    color: "#2C3E50",
-  },
-  filterChipTextSelected: {
-    color: "#FFFFFF",
-  },
-  resetButton: {
-    backgroundColor: "#E74C3C",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  resetButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
   },
 });
 

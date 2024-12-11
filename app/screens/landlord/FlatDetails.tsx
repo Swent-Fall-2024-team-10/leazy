@@ -98,7 +98,8 @@ function FlatDetails() {
                 disabled={isLoading}
                 testID="pencil"
               >
-                <Ionicons size={20} name="pencil" color={editTenants ? Color.TextInputPlaceholder: "black"}/>
+                {editTenants ? <Ionicons name="close" size={24} color="black" /> : <Ionicons name="pencil" size={24} color="black" />}
+                
               </TouchableOpacity>
             </View>
             {tenantUsers.map((tenant, index) => (

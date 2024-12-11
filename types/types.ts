@@ -2,7 +2,6 @@ import { Timestamp } from "@firebase/firestore";
 
 // WithId type helper
 export type WithId<T> = T & { id: string };
-
 // Define the navigation stack types
 export type RootStackParamList = {
   Home: undefined;
@@ -43,8 +42,15 @@ export type ReportStackParamList = {
     requestID: string;
   };
 };
+export type LandlordStackParamList = {
+  LandlordDashboard: undefined;
+  Issues: undefined;
+  IssueDetails: {
+    requestID: string;
+  };
+  Messaging: undefined;
+}
 
-// Base types for firestore
 export type TUser = {
   uid: string;
   type: "tenant" | "landlord";

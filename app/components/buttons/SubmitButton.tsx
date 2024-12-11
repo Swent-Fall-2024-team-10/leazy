@@ -18,7 +18,6 @@ interface SubmitButtonProps {
 
 export default function SubmitButton({ disabled, onPress, width, height, label, testID, style, textStyle, image} : SubmitButtonProps) {
   return (
-    <View style={styles.submitContainer}>
       <Button
         title={label}
         onPress={onPress}
@@ -47,7 +46,6 @@ export default function SubmitButton({ disabled, onPress, width, height, label, 
           textStyle
         ]}
       />
-    </View>
   );
 }
 

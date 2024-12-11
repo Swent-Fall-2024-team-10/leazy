@@ -7,20 +7,19 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { NavigationProp, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { ResidenceStackParamList, TUser, ApartmentWithId } from '@/types/types';
 import Header from '../../components/Header';
 import { appStyles, Color } from '../../../styles/styles';
-import { getUser, updateApartment } from '../../../firebase/firestore/firestore';
+import { getTenant, getUser, updateApartment, updateTenant } from '../../../firebase/firestore/firestore';
 import { useProperty } from '../../context/LandlordContext';
+import RenderTenant from '../../components/RenderTenant';
 
 function FlatDetails() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const route = useRoute<RouteProp<ResidenceStackParamList, 'FlatDetails'>>();
   const { apartments } = useProperty();
   
-  // Get real-time apartment data from context
   const currentApartment = apartments.find(apt => apt.id === route.params.apartment.id);
   const apartment = currentApartment || route.params.apartment;
   
@@ -52,7 +51,11 @@ function FlatDetails() {
       setIsLoading(true);
       const newTenants = apartment.tenants.filter(tenant => tenant !== tenantId);
       await updateApartment(apartment.id, { tenants: newTenants });
-      // No need to manually update tenantUsers - it will update via useEffect when apartment changes
+      const tenant = await getTenant(tenantId);
+      if (tenant) {
+        const updatedTenant = { ...tenant, apartmentId: '', residenceId: '' };
+        await updateTenant(tenantId, updatedTenant);
+      }
     } catch (error) {
       console.error('Error removing tenant:', error);
     } finally {
@@ -60,39 +63,13 @@ function FlatDetails() {
     }
   };
 
-  // Fetch tenant users whenever apartment.tenants changes
   useEffect(() => {
     fetchTenantUsers();
   }, [fetchTenantUsers]);
 
-  const renderTenant = (tenant: TUser | null, index: number) => {
-    if (!tenant) return null;
-
-    return (
-      <View key={tenant.uid || index} style={appStyles.tenantRow}>
-        <View style={appStyles.tenantNameContainer}>
-          <Ionicons
-            name="person-outline"
-            size={20}
-            color={Color.TextInputPlaceholder}
-          />
-          <Text style={appStyles.tenantName}>{tenant.name}</Text>
-        </View>
-        {editTenants && (
-            <TouchableOpacity 
-            onPress={() => removeTenant(tenant.uid)}
-            disabled={isLoading}
-            >
-            <Ionicons 
-              name='trash' 
-              size={20} 
-              color={Color.TextInputPlaceholder} 
-            />
-            </TouchableOpacity>
-        )}
-      </View>
-    );
-  };
+  const handleClose = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
 
   return (
     <Header>
@@ -119,22 +96,26 @@ function FlatDetails() {
               <TouchableOpacity 
                 onPress={() => setEditTenants(!editTenants)}
                 disabled={isLoading}
+                testID="pencil"
               >
-                <MaterialCommunityIcons 
-                  name={editTenants ? "pencil-off" : "pencil"} 
-                  size={20} 
-                  color={Color.TextInputPlaceholder} 
-                />
+                <Ionicons size={20} name="pencil" />
               </TouchableOpacity>
             </View>
-            {tenantUsers.map(renderTenant)}
+            {tenantUsers.map((tenant, index) => (
+              <RenderTenant
+                key={tenant?.uid || index}
+                tenant={tenant}
+                editMode={editTenants}
+                isLoading={isLoading}
+                onRemove={removeTenant}
+              />
+            ))}
           </View>
           <TouchableOpacity
-            style={[
-              appStyles.submitButton,
-            ]}
-            onPress={() => navigation.goBack()}
+            style={appStyles.submitButton}
+            onPress={handleClose}
             disabled={isLoading}
+            testID="close-button"
           >
             <Text style={appStyles.submitButtonText}>Close</Text>
           </TouchableOpacity>

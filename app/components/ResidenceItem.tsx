@@ -31,7 +31,6 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localApartments, setLocalApartments] = useState<ApartmentWithId[]>(apartments);
 
-  // Update local apartments when the props change
   useEffect(() => {
     setLocalApartments(apartments);
   }, [apartments]);
@@ -59,7 +58,6 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
           apartments: updatedApartments
         });
         
-        // Update local state with the new apartment
         setLocalApartments(prev => [...prev, { ...newApartment, id: apartmentId }]);
       }
     } catch (error) {
@@ -74,13 +72,11 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
     try {
       await deleteApartment(apartmentId);
       
-      // Update residence apartments array
       const updatedApartments = residence.apartments.filter(id => id !== apartmentId);
       await updateResidence(residence.id, {
         apartments: updatedApartments
       });
       
-      // Update local state
       setLocalApartments(prev => prev.filter(apt => apt.id !== apartmentId));
     } catch (error) {
       console.error('Error deleting apartment:', error);    
@@ -102,9 +98,14 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         ]}
         onPress={onPress}
       >
-        <Text style={appStyles.residenceText}>
-          {residence.residenceName}
-        </Text>
+        <View>
+          <Text style={appStyles.residenceText}>
+            {residence.residenceName}
+          </Text>
+          <Text style={appStyles.residenceAddressText}>
+            {`${residence.street} ${residence.number}`}
+          </Text>
+        </View>
         <View style={appStyles.residenceIconContainer}>
           {isExpanded && (
             <Pressable

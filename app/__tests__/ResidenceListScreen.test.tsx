@@ -35,6 +35,7 @@ jest.mock('@expo/vector-icons', () => ({
 
 const mockResidences: Residence[] = [
   {
+    id: 'R1',
     residenceName: 'Residence 1',
     street: 'Street 1',
     number: '1',
@@ -50,6 +51,7 @@ const mockResidences: Residence[] = [
     situationReportLayout: []
   },
   {
+    id: 'R2',
     residenceName: 'Residence 2', 
     street: 'Street 2',
     number: '2',
@@ -68,6 +70,7 @@ const mockResidences: Residence[] = [
 
 const mockApartments: Apartment[] = [
   {
+    id: 'A1',
     apartmentName: '101',
     residenceId: 'R1',
     tenants: [],
@@ -118,8 +121,9 @@ describe('ResidencesListScreen', () => {
     });
 
     it('shows empty state', () => {
-      const { queryByTestId } = renderScreen({ residences: [] });
-      expect(queryByTestId(/residence-item-/)).toBeNull();
+      const { queryByText } = renderScreen({ residences: [] });
+      expect(queryByText('Residence 1')).toBeNull();
+      expect(queryByText('Residence 2')).toBeNull();
     });
   });
 
@@ -129,9 +133,10 @@ describe('ResidencesListScreen', () => {
       expect(getByTestId('screen-title')).toHaveTextContent('Your Residences');
     });
 
-    it('renders all residences', () => {
+    it('renders all residences with their addresses', () => {
       const { getByText } = renderScreen();
       mockResidences.forEach(residence => {
+        expect(getByText(residence.residenceName)).toBeTruthy();
         const address = `${residence.street} ${residence.number}`;
         expect(getByText(address)).toBeTruthy();
       });
@@ -173,9 +178,11 @@ describe('ResidencesListScreen', () => {
 
   describe('Data Display', () => {
     it('displays residence information correctly', () => {
-      const { getByTestId } = renderScreen();
+      const { getByText } = renderScreen();
       mockResidences.forEach(residence => {
-        expect(getByTestId(`residence-item-${residence.residenceName}`)).toBeTruthy();
+        expect(getByText(residence.residenceName)).toBeTruthy();
+        const address = `${residence.street} ${residence.number}`;
+        expect(getByText(address)).toBeTruthy();
       });
     });
   });
@@ -187,11 +194,12 @@ describe('ResidencesListScreen', () => {
         residenceName: 'Custom Residence'
       }];
       
-      const { getByTestId } = renderScreen({
+      const { getByText } = renderScreen({
         residences: customResidences
       });
       
-      expect(getByTestId('residence-item-Custom Residence')).toBeTruthy();
+      expect(getByText('Custom Residence')).toBeTruthy();
+      expect(getByText('Street 1 1')).toBeTruthy();
     });
   });
 });

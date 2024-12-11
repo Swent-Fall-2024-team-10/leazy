@@ -170,6 +170,11 @@ export const Color = {
 };
 
 export const appStyles = StyleSheet.create({
+  residenceAddressText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 2,
+  },
   // Sign Up Styles
   signUpInputField: {
     width: 246,

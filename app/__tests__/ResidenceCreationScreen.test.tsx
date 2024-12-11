@@ -42,6 +42,7 @@ jest.mock('../../styles/styles', () => ({
 // Test data setup
 const mockResidences: Residence[] = [
   {
+    id: 'R1', // Added id field
     residenceName: 'Maple Avenue 123',
     street: 'Maple Avenue',
     number: '123',
@@ -57,6 +58,7 @@ const mockResidences: Residence[] = [
     situationReportLayout: [],
   },
   {
+    id: 'R2', // Added id field
     residenceName: 'Oak Street 456',
     street: 'Oak Street',
     number: '456',
@@ -152,16 +154,7 @@ describe('ResidencesListScreen', () => {
       const { getByTestId } = renderResidencesListScreen();
       
       mockResidences.forEach(residence => {
-        expect(getByTestId(`residence-item-${residence.residenceName}`)).toBeTruthy();
-      });
-    });
-
-    it('displays residence information correctly', () => {
-      const { getByText } = renderResidencesListScreen();
-      
-      mockResidences.forEach(residence => {
-        expect(getByText(residence.residenceName)).toBeTruthy();
-        expect(getByText(`${residence.street} ${residence.number}`)).toBeTruthy();
+        expect(getByTestId(`residence-item-${residence.id}`)).toBeTruthy();
       });
     });
   });

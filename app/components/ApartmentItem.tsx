@@ -17,42 +17,51 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
   editMode,
   navigation,
   onDelete
-}) => (
-  <Pressable
-    testID={`apartment-item-${apartment.id}`}
-    style={({ pressed }: { pressed: boolean }) => ({
-      width: '100%',
-      opacity: pressed ? 0.6 : 1,
-      backgroundColor: pressed ? '#bdbad4' : '#D6D3F0',
-      borderRadius: 4,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 10,
-      marginVertical: 4
-    })}
-    onPress={() => navigation.navigate('FlatDetails', { apartment })}
-  >
-    <Text style={appStyles.flatText}>
-      {apartment.apartmentName} ({apartment.tenants.length} tenants)
-    </Text>
-    <View style={{ flex: 1 }} />
+}) => {
+  const handleMainPress = () => {
+    navigation?.navigate?.('FlatDetails', { apartment });
+  };
+
+  const handleActionPress = () => {
+    if (editMode && onDelete) {
+      onDelete(apartment.id);
+    } else if (!editMode && navigation?.navigate) {
+      navigation.navigate('FlatDetails', { apartment });
+    }
+  };
+
+  return (
     <Pressable
-      testID={editMode ? 'delete-button' : 'chevron-button'}
-      onPress={() => {
-        if (editMode && onDelete) {
-          onDelete(apartment.id);
-        } else {
-          navigation.navigate('FlatDetails', { apartment });
-        }
-      }}
+      testID={`apartment-item-${apartment.id}`}
+      style={({ pressed }: { pressed: boolean }) => ({
+        width: '100%',
+        opacity: pressed ? 0.6 : 1,
+        backgroundColor: pressed ? '#bdbad4' : '#D6D3F0',
+        borderRadius: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        marginVertical: 4
+      })}
+      onPress={handleMainPress}
     >
-      <Feather
-        name={editMode ? "trash-2" : "chevron-right"}
-        size={20}
-        color="#666666"
-      />
+      <Text style={appStyles.flatText}>
+        {apartment.apartmentName} ({apartment.tenants.length} tenants)
+      </Text>
+      <View style={{ flex: 1 }} />
+      <Pressable
+        testID={editMode ? 'delete-button' : 'chevron-button'}
+        onPress={handleActionPress}
+      >
+        <Feather
+          name={editMode ? "trash-2" : "chevron-right"}
+          size={20}
+          color="#666666"
+        />
+      </Pressable>
     </Pressable>
-  </Pressable>
-);
+  );
+};
+
 export default ApartmentItem;

@@ -1,0 +1,70 @@
+appId: "com.leazy.swent"
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "signUpButton"
+
+- tapOn:
+    id: "userTypePicker"
+
+- tapOn: "Tenant Horizontal scroll bar, 1 page Unauthenticated Landlord Tenant Horizontal scroll bar, 1 page Unauthenticated Landlord Tenant Landlord Tenant Horizontal scroll bar, 1 page"
+
+- tapOn:
+    id: "emailInput"
+- inputText: "test-e2e-tenant@test.com"
+
+- tapOn:
+    id: "passwordInput"
+- inputText: "test-e2e-tenant"
+
+- tapOn:
+    id: "confirmPasswordInput"
+- inputText: "test-e2e-tenant"
+
+- tapOn:
+    id: "signUpButton"
+
+- tapOn:
+    id: "testFirstNameField"
+- inputText: "Test Tenant"
+
+- tapOn:
+    id: "testLastNameField"
+- inputText: "E2E Tenant"
+
+- tapOn:
+    id: "testAddressField"
+- inputText: "Test Address"
+
+- tapOn:
+    id: "testZipField"
+- inputText: "12345"
+
+- tapOn:
+    id: "testCityField"
+- inputText: "Test City"
+
+- tapOn:
+    id: "testProvinceField"
+- inputText: "Test Province"
+
+- tapOn:
+    id: "testNumberField"
+- inputText: "123"
+
+- tapOn:
+    id: "testPhoneField"
+- inputText: "1234567890"
+
+- tapOn:
+    id: "testGenreField"
+- tapOn: "Male"
+
+- tapOn:
+    id: "testCountryField"
+- tapOn: "Canada"
+
+- tapOn:
+    id: "submitButton"

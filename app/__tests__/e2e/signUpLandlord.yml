@@ -1,0 +1,65 @@
+appId: "com.leazy.swent"
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "signUpButton"
+
+- tapOn:
+    id: "userTypePicker"
+- tapOn: Landlord
+
+- tapOn:
+    id: "emailInput"
+- inputText: "test-e2e-landlord@test.com"
+
+- tapOn:
+    id: "passwordInput"
+- inputText: "test-e2e-landlord"
+
+- tapOn:
+    id: "confirmPasswordInput"
+- inputText: "test-e2e-landlord"
+
+- tapOn:
+    id: "signUpButton"
+
+- tapOn:
+    id: "testFirstNameField"
+- inputText: "Test Landlord"
+
+- tapOn:
+    id: "testLastNameField"
+- inputText: "E2E Landlord"
+
+- tapOn:
+    id: "testPhoneField"
+- inputText: "1234567890"
+
+- tapOn:
+    id: "testStreetField"
+- inputText: "Test Street"
+
+- tapOn:
+    id: "testZipField"
+- inputText: "12345"
+
+- tapOn:
+    id: "testCityField"
+- inputText: "Test City"
+
+- tapOn:
+    id: "testCantonField"
+- inputText: "Test Canton"
+
+- tapOn:
+    id: "testNumberField"
+- inputText: "123"
+
+- tapOn:
+    id: "testCountryField"
+- inputText: "Test Country"
+
+- tapOn:
+    id: "testSubmitButtonLandlord"

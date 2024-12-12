@@ -276,16 +276,18 @@ export default function ReportScreen() {
               I would like to start a chat with the manager about this issue
             </Text>
           </View>
-          <SubmitButton
-            disabled={room === "" || description === "" || issue === ""}
-            onPress={handleSubmit}
-            width={ButtonDimensions.mediumButtonWidth}
-            height={ButtonDimensions.mediumButtonHeight}
-            label="Submit"
-            testID="testSubmitButton"
-            style={appStyles.submitButton}
-            textStyle={appStyles.submitButtonText}
-          />
+          <View style={appStyles.submitContainer}>
+            <SubmitButton
+              disabled={room === "" || description === "" || issue === ""}
+              onPress={handleSubmit}
+              width={ButtonDimensions.mediumButtonWidth}
+              height={ButtonDimensions.mediumButtonHeight}
+              label="Submit"
+              testID="testSubmitButton"
+              style={appStyles.submitButton}
+              textStyle={appStyles.submitButtonText}
+            />
+          </View>
         </View>
       </ScrollView>
     </Header>

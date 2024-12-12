@@ -8,32 +8,35 @@ import CustomDrawerContent from '../components/drawer/CustomDrawer';
 import { Color, appStyles } from '../../styles/styles';
 import ResidenceStack from './ResidenceStack';
 import { LandlordProvider } from '../context/LandlordContext';
+import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
+import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
+import IssueStackLandlord from './IssueStackLandlord';
 
 
 const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {
   return (
-    
     <LandlordProvider>
-      <Drawer.Navigator 
+      <Drawer.Navigator
         initialRouteName="ListIssues"
-      screenOptions={{
+        screenOptions={{
           headerShown: false, // This hides the default header
           drawerStyle: {
-              backgroundColor: Color.HeaderBackground,
+            backgroundColor: Color.HeaderBackground,
           },
           drawerActiveTintColor: Color.HeaderText,
           drawerLabelStyle: appStyles.drawerLabel,
-      }}
-      drawerContent={(props) => <CustomDrawerContent {...props} />}
-
+        }}
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
       >
-
-        <Drawer.Screen name="Maintenance Requests" component={LandlordListIssuesScreen} />
-        <Drawer.Screen name="Manage Washing Machines" component={ManageMachinesScreen} />
-        <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
-        <Drawer.Screen name="Your Residences" component={ResidenceStack}/>
+        <Drawer.Screen name="Dashboard" component={IssueStackLandlord} />
+        <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
+        <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
+        <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
+        <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
+        <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
+        <Drawer.Screen name="Situation Report Form" component={SituationReport} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />
       </Drawer.Navigator>
     </LandlordProvider>

@@ -191,29 +191,30 @@ const TenantFormScreen = () => {
             label="Upload university proof of attendance"
           ></SubmitButton>
         </View>
-
-        <SubmitButton
-          testID="submitButton"
-          textStyle={appStyles.submitButtonText}
-          style={appStyles.submitButton}
-          disabled={
-            firstName === "" ||
-            lastName === "" ||
-            email === "" ||
-            phone === "" ||
-            address === "" ||
-            zip === "" ||
-            city === "" ||
-            province === "" ||
-            number === "" ||
-            genre === "" ||
-            country === ""
-          }
-          onPress={handleSubmit}
-          width={ButtonDimensions.mediumButtonWidth}
-          height={ButtonDimensions.mediumButtonHeight}
-          label="NEXT"
-        />
+        <View style={appStyles.submitContainer}>
+          <SubmitButton
+            testID="submitButton"
+            textStyle={appStyles.submitButtonText}
+            style={appStyles.submitButton}
+            disabled={
+              firstName === "" ||
+              lastName === "" ||
+              email === "" ||
+              phone === "" ||
+              address === "" ||
+              zip === "" ||
+              city === "" ||
+              province === "" ||
+              number === "" ||
+              genre === "" ||
+              country === ""
+            }
+            onPress={handleSubmit}
+            width={ButtonDimensions.mediumButtonWidth}
+            height={ButtonDimensions.mediumButtonHeight}
+            label="NEXT"
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

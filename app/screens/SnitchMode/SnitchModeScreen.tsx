@@ -10,11 +10,13 @@ import {
   ScrollView,
   RefreshControl,
   Pressable,
+  StyleSheet,
 } from "react-native";
 import { appStyles } from "../../../styles/styles";
 import { Audio } from "expo-av";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
+import { WaveformVisualizer } from "./WaveformVisualizer";
 
 const SnitchModeScreen: React.FC = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -33,42 +35,81 @@ const SnitchModeScreen: React.FC = () => {
     };
   }, [recording]);
 
-  useEffect(() => {
-    if (noiseThresholdExceeded && isRecording) {
-      stopRecording();
-    }
-  }, [noiseThresholdExceeded]);
-
   const startRecording = async () => {
     try {
-      await Audio.requestPermissionsAsync();
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "Please grant microphone permission to use this feature"
+        );
+        return;
+      }
+
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
-      const result = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY,
-        (status) => {
+      const recordingInstance = new Audio.Recording();
+      try {
+        await recordingInstance.prepareToRecordAsync({
+          ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
+          android: {
+            ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
+            extension: ".m4a",
+            outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+            audioEncoder: Audio.AndroidAudioEncoder.AAC,
+            sampleRate: 44100,
+            numberOfChannels: 2,
+            bitRate: 128000,
+          },
+          ios: {
+            ...Audio.RecordingOptionsPresets.HIGH_QUALITY.ios,
+            extension: ".m4a",
+            outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
+            audioQuality: Audio.IOSAudioQuality.HIGH,
+            sampleRate: 44100,
+            numberOfChannels: 2,
+            bitRate: 128000,
+            linearPCMBitDepth: 16,
+            linearPCMIsBigEndian: false,
+            linearPCMIsFloat: false,
+          },
+        });
+
+        await recordingInstance.startAsync();
+
+        // In startRecording function
+        recordingInstance.setOnRecordingStatusUpdate((status) => {
           if (status.metering !== undefined) {
+            setMetering(status.metering);
+
             const decibelLevel = Math.max(
               0,
               ((status.metering + 160) / 160) * 120
             );
-            setMetering(decibelLevel);
-            setNoiseThresholdExceeded(decibelLevel >= NOISE_THRESHOLD);
-          }
-        }
-      );
 
-      if (result && result.recording) {
-        setRecording(result.recording);
+            if (decibelLevel >= NOISE_THRESHOLD) {
+              setNoiseThresholdExceeded(true);
+              stopRecording();
+              return;
+            }
+          }
+        });
+
+        // Set a consistent update interval
+        await recordingInstance.setProgressUpdateInterval(100);
+        setRecording(recordingInstance);
         setIsRecording(true);
-      } else {
-        throw new Error("Recording object is undefined");
+        setNoiseThresholdExceeded(false);
+      } catch (error) {
+        console.error("Error preparing recorder:", error);
+        Alert.alert("Error", "Failed to prepare audio recorder");
       }
     } catch (err) {
       console.error("Failed to start recording", err);
+      Alert.alert("Error", "Failed to start recording");
     }
   };
 
@@ -87,7 +128,7 @@ const SnitchModeScreen: React.FC = () => {
   };
 
   const handleCallSecurity = () => {
-    const phoneNumber = "+41123456789";
+    const phoneNumber = "911";
 
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -122,35 +163,12 @@ const SnitchModeScreen: React.FC = () => {
     }
   };
 
-  const renderMeteringBars = () => {
-    if (metering === null) return null;
-
-    return (
-      <View style={styles.meteringContainer}>
-        {Array(20)
-          .fill(0)
-          .map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.meteringBar,
-                { height: Math.max(10, (metering + 60) * (i / 20) * 2) },
-                noiseThresholdExceeded && styles.meteringBarExceeded,
-              ]}
-            />
-          ))}
-      </View>
-    );
-  };
-
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Reset all states
     setRecording(null);
     setIsRecording(false);
     setMetering(null);
     setNoiseThresholdExceeded(false);
-
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
@@ -184,7 +202,13 @@ const SnitchModeScreen: React.FC = () => {
           </View>
 
           <View style={styles.recorderContainer}>
-            {renderMeteringBars()}
+            {(isRecording || noiseThresholdExceeded) && (
+              <WaveformVisualizer
+                metering={metering}
+                isRecording={isRecording}
+                noiseThresholdExceeded={noiseThresholdExceeded}
+              />
+            )}
 
             <TouchableOpacity
               testID="record-button"
@@ -198,12 +222,10 @@ const SnitchModeScreen: React.FC = () => {
               />
             </TouchableOpacity>
 
-            {(isRecording || metering !== null) && (
+            {(isRecording || noiseThresholdExceeded) && (
               <>
                 {isRecording ? (
-                  <Text style={styles.statusText}>
-                    Wait till the maximum is reached
-                  </Text>
+                  <Text style={styles.statusText}>Recording...</Text>
                 ) : noiseThresholdExceeded ? (
                   <Text style={styles.statusText}>
                     The level of noise is higher than the limit
@@ -231,41 +253,23 @@ const SnitchModeScreen: React.FC = () => {
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   recorderContainer: {
     flex: 1,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
-    marginTop: -350,
-  },
-  meteringContainer: {
-    flexDirection: "row" as const,
-    alignItems: "flex-end" as const,
-    height: 150,
-    marginVertical: 20,
-    paddingBottom: 40,
+    marginTop: '-50%',
   },
   recordButton: {
     width: 120,
     height: 120,
     borderRadius: 60,
     backgroundColor: "#2F4F4F",
-    justifyContent: "center" as const,
-    alignItems: "center" as const,
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
     elevation: Platform.OS === "android" ? 5 : 0,
-  },
-  meteringBar: {
-    width: 8,
-    backgroundColor: "#2F4F4F",
-    marginHorizontal: 2,
-    borderRadius: 3,
-    elevation: Platform.OS === "android" ? 2 : 0,
-    maxHeight: 100,
-  },
-  meteringBarExceeded: {
-    backgroundColor: "#FF4444",
   },
   callSecurityButton: {
     backgroundColor: "#2F4F4F",
@@ -288,7 +292,6 @@ const styles = {
   disabledButton: {
     opacity: 0.5,
   },
-};
+});
 
 export default SnitchModeScreen;
-

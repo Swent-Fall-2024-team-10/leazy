@@ -8,6 +8,7 @@ import SharedElementsScreen from '../screens/tenant/SharedElementsScreen';
 import SubrentScreen from '../screens/tenant/SubrentScreen';
 import SettingsScreen from '../screens/tenant/SettingsScreen';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
+import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
 import { Color, appStyles } from '../../styles/styles';
 
 const Drawer = createDrawerNavigator();
@@ -37,6 +38,7 @@ const TenantHomeDrawerNavigator = () => {
             <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
             <Drawer.Screen name="Subrent" component={SubrentScreen} />
             <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
+            <Drawer.Screen name="Newsfeed" component={ViewNewsfeedScreen} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
         </Drawer.Navigator>
     );

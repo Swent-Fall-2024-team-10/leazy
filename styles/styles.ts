@@ -176,8 +176,8 @@ export const Color = {
 
 export const appStyles = StyleSheet.create({
   residenceAddressText: {
-    fontSize: 12,
-    color: '#666666',
+    fontSize: FontSizes.TextInputText,
+    color: Color.GrayText,
     marginTop: 2,
   },
   // Sign Up Styles

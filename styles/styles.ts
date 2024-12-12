@@ -280,6 +280,11 @@ export const chatStyles = StyleSheet.create({
 });
 
 export const appStyles = StyleSheet.create({
+  residenceAddressText: {
+    fontSize: FontSizes.TextInputText,
+    color: Color.GrayText,
+    marginTop: 2,
+  },
   // Sign Up Styles
   signUpInputField: {
     width: 246,

@@ -10,6 +10,7 @@ import ResidenceStack from './ResidenceStack';
 import { LandlordProvider } from '../context/LandlordContext';
 import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
 import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
+import IssueStackLandlord from './IssueStackLandlord';
 
 
 const Drawer = createDrawerNavigator();

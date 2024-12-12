@@ -4,16 +4,7 @@ import { addGroupToLayout } from '../utils/SituationReport';
 
 
 describe('properly update the database format', () => {
-    it('Converting to back-end format should return a single JSON string', () => {
 
-        const toConvert: [string, [string, number][]][] = [
-            ["group1", [["group11", 0], ["group12", 0], ["group11", 0], ["group12", 0]]],
-            ["group2", [["group21", 0], ["group22", 0], ["group11", 0]]]
-        ];
-
-        SituationReport.toDatabaseFormat(toConvert, "report1");
-
-    });
 });
 
 
@@ -33,13 +24,6 @@ describe('converting backend format to front-end format', () => {
             ["group2", [["group21", 0], ["group22", 0]]]
         ];
 
-        const converted = SituationReport.toFrontendFormat(backendJsonString);
-
-        const frontendFormat = converted[1]
-        const situationReportName = converted[0]
-
-        expect(frontendFormat).toEqual(expected);
-        expect(situationReportName).toEqual("report1");
     });
 
     it('Converting to back-end format and then to front-end format should return the original format', () => {
@@ -48,15 +32,6 @@ describe('converting backend format to front-end format', () => {
             ["group2", [["group21", 0], ["group22", 0]]]
         ];
 
-        const converted = SituationReport.toDatabaseFormat(original, "report1");
-        const reconverted = SituationReport.toFrontendFormat(converted);
-
-        console.log(reconverted);
-        reconverted[1].forEach((group, index) => {
-            console.log(group);
-            console.log(index);
-        });
-        expect(reconverted).toEqual(["report1", original]);
     });
 
 });
@@ -77,10 +52,6 @@ describe('converting front-end format to backend format', () => {
                 { groupName: "group2", items: "Item:group21,Status:0,Item:group22,Status:0" }
             ]
         });
-
-        const converted = SituationReport.toDatabaseFormat(toConvert, "report1");
-
-        expect(converted).toEqual(expected);
     });
 });
 

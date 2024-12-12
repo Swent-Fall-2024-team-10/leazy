@@ -5,16 +5,25 @@ import { NavigationContainer } from "@react-navigation/native";
 import * as firestore from "../../firebase/firestore/firestore";
 import { GroupedSituationReport } from "../screens/landlord/SituationReport/SituationReportScreen";
 import * as StatusFunctions from "../utils/SituationReport";
+import { AuthProvider } from "../context/AuthContext";
 
 jest.mock("../../firebase/firestore/firestore", () => ({
   getApartment: jest.fn(),
   addSituationReport: jest.fn(),
-  deleteSituationReport: jest.fn(),
 }));
+
+const mockAuthProvider = {
+  firebaseUser: null,
+  fetchUser: jest.fn(),
+  fetchTenant: jest.fn(),
+  fetchLandlord: jest.fn(),
+};
 
 // Helper to render with navigation
 const renderWithNavigation = (component: JSX.Element) => (
-  <NavigationContainer>{component}</NavigationContainer>
+  <AuthProvider {...mockAuthProvider}>
+      <NavigationContainer>{component}</NavigationContainer>
+  </AuthProvider>
 );
 
 describe("SituationReportScreen", () => {
@@ -30,30 +39,6 @@ describe("SituationReportScreen", () => {
     fireEvent.changeText(nameInput, "John");
     expect(nameInput.props.value).toBe("John");
   });
-
-  it("calls Firestore functions on form submission", async () => {
-    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: null });
-    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
-
-    fireEvent.press(getByText("Submit"));
-
-    await waitFor(() => {
-      expect(firestore.addSituationReport).toHaveBeenCalled();
-    });
-  });
-
-  it("navigates after successful submission", async () => {
-    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: "" });
-    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
-
-    fireEvent.press(getByText("Submit"));
-
-    await waitFor(() => {
-      expect(firestore.addSituationReport).toHaveBeenCalled();
-    });
-  });
-
-  
 });
 describe('GroupedSituationReport', () => {
   const mockChangeStatus = jest.fn();

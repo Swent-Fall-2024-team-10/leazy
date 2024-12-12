@@ -3,27 +3,33 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { AuthStackParamList } from '../../../types/types';
+import { AuthStackParamList, TUser } from '../../../types/types';
 import {
   updateUserEmail,
   resetUserPassword,
   emailAndPasswordLogIn,
   deleteAccount,
 } from '../../../firebase/auth/auth';
+import { Dimensions } from 'react-native';
+
+import { getUser, updateUser } from '../../../firebase/firestore/firestore';
+import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../../firebase/firebase';
 import Header from '../../components/Header';
 import SubmitButton from '../../components/buttons/SubmitButton';
 import InputField from '../../components/forms/text_input';
 import CustomPopUp from '../../components/CustomPopUp';
-import { appStyles, Color } from '../../../styles/styles';
+import { appStyles, Color, FontSizes } from '../../../styles/styles';
 import Spacer from '../../components/Spacer';
+import SeparationLine from '../../components/SeparationLine';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
+
+  const screenWidth = Dimensions.get('window').width;
 
   type EditModeField =
     | 'name'
@@ -36,17 +42,55 @@ export default function SettingsScreen() {
     | 'zip'
     | 'country';
 
+  const [isChanged, setIsChanged] = useState(false);
+
+  const { user } = useAuth();
+
+  const [currentPassword, setCurrentPassword] = useState('');
+
   const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'johndoe@example.com',
-    phone: '123-456-7890',
-    street: 'Main St',
-    number: '123',
-    city: 'Anytown',
-    canton: 'Anycanton',
-    zip: '12345',
-    country: 'Anycountry',
+    name: '',
+    email: '',
+    phone: '',
+    street: '',
+    number: '',
+    city: '',
+    canton: '',
+    zip: '',
+    country: '',
   });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      try {
+        const userObj = await getUser(user.uid);
+
+        if (!userObj) {
+          throw new Error('User data not found');
+        }
+
+        setUserData({
+          name: userObj.name,
+          email: userObj.email,
+          phone: userObj.phone,
+          street: userObj.street,
+          number: userObj.number,
+          city: userObj.city,
+          canton: userObj.canton,
+          zip: userObj.zip,
+          country: userObj.country,
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   const [editMode, setEditMode] = useState<Record<EditModeField, boolean>>({
     name: false,
@@ -81,14 +125,23 @@ export default function SettingsScreen() {
   const [popup, setPopup] = useState<{
     visible: boolean;
     text: string;
-    type: string;
-  }>({ visible: false, text: '', type: '' });
+    type: 'error' | 'success' | 'loading';
+  }>({ visible: false, text: '', type: 'loading' });
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   useEffect(() => {
     setTempData(userData);
   }, [userData]);
+
+  useEffect(() => {
+    const hasChanges = Object.keys(userData).some(
+      (key) =>
+        userData[key as keyof typeof userData] !==
+        tempData[key as keyof typeof tempData],
+    );
+    setIsChanged(hasChanges);
+  }, [tempData, userData]);
 
   const toggleEditMode = (field: EditModeField) => {
     setEditMode((prev) => ({ ...prev, [field]: !prev[field] }));
@@ -98,26 +151,42 @@ export default function SettingsScreen() {
     }));
   };
 
-  const saveField = async (field: string) => {
+  const modifyUser = async () => {
+    setPopup({ visible: true, text: 'Saving changes...', type: 'loading' });
     try {
-      if (field === 'email') {
+      if (userData.email !== tempData.email) {
         await updateUserEmail(tempData.email);
       }
 
-      setUserData((prev) => ({
-        ...prev,
-        [field]: tempData[field as keyof typeof userData],
-      }));
-      setEditMode((prev) => ({ ...prev, [field]: false }));
+      const newUser: TUser = {
+        uid: user?.uid || '',
+        type: 'tenant',
+        ...tempData,
+      };
+      await updateUser(user?.uid || '', newUser);
+
+      const updatedUser = await getUser(user?.uid || '');
+      if (updatedUser) {
+        setUserData(updatedUser);
+      }
+
+      setEditMode((prev) =>
+        Object.keys(prev).reduce(
+          (acc, key) => ({ ...acc, [key]: false }),
+          {} as Record<EditModeField, boolean>,
+        ),
+      );
+
       setPopup({
         visible: true,
-        text: `${capitalize(field)} updated successfully.`,
+        text: 'Changes saved successfully!',
         type: 'success',
       });
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error updating user:', error);
       setPopup({
         visible: true,
-        text: `Failed to update ${capitalize(field)}: ${error.message}`,
+        text: 'Failed to save changes. Please try again.',
         type: 'error',
       });
     }
@@ -128,6 +197,11 @@ export default function SettingsScreen() {
       .signOut()
       .then(() => {
         navigation.navigate('SignIn');
+        setPopup({
+          visible: true,
+          text: 'Signed out successfully!',
+          type: 'success',
+        });
       })
       .catch((error) => {
         setPopup({
@@ -138,22 +212,52 @@ export default function SettingsScreen() {
       });
   };
 
-  const handleResetPassword = async () => {
-    if (newPassword !== confirmPassword) {
+  const handleResetPassword = async (currentPassword: string) => {
+    if (!currentPassword) {
       setPopup({
         visible: true,
-        text: `Passwords do not match.`,
+        text: 'Current password is required.',
         type: 'error',
       });
       return;
     }
-    try {
-      await resetUserPassword(newPassword);
+
+    if (!newPassword || !confirmPassword) {
       setPopup({
         visible: true,
-        text: `Password reset successfully.`,
+        text: 'New password and confirmation password cannot be empty.',
+        type: 'error',
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPopup({
+        visible: true,
+        text: 'New password and confirmation password do not match.',
+        type: 'error',
+      });
+      return;
+    }
+
+    try {
+      setPopup({
+        visible: true,
+        text: 'Resetting password...',
+        type: 'loading',
+      });
+
+      // Pass current and new passwords to the resetUserPassword function
+      await resetUserPassword(currentPassword, newPassword);
+
+      setPopup({
+        visible: true,
+        text: 'Password reset successfully!',
         type: 'success',
       });
+
+      // Clear inputs
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
@@ -165,22 +269,25 @@ export default function SettingsScreen() {
     }
   };
 
-
   const handleDeleteAccount = async () => {
     try {
-      const user = await emailAndPasswordLogIn(deleteEmail, deletePassword);
-      if (user) {
+      setPopup({ visible: true, text: 'Deleting account...', type: 'loading' });
+      const deletedUser = await emailAndPasswordLogIn(
+        deleteEmail,
+        deletePassword,
+      );
+      if (deletedUser) {
         await deleteAccount();
         setPopup({
           visible: true,
-          text: `Account deleted successfully.`,
+          text: 'Account deleted successfully.',
           type: 'success',
         });
         navigation.navigate('SignIn');
       } else {
         setPopup({
           visible: true,
-          text: `Invalid email or password.`,
+          text: 'Invalid email or password.',
           type: 'error',
         });
       }
@@ -202,24 +309,41 @@ export default function SettingsScreen() {
         automaticallyAdjustKeyboardInsets={true}
         showsVerticalScrollIndicator={true}
       >
+        {popup.visible && (
+          <CustomPopUp
+            text={popup.text}
+            onPress={() =>
+              setPopup({ visible: false, text: '', type: 'loading' })
+            }
+            testID='popup'
+          />
+        )}
+
         <View
           style={[
             appStyles.scrollContainer,
             { paddingBottom: '90%', marginBottom: '10%' },
           ]}
         >
-          <Text style={styles.title}>Settings & Profile</Text>
+          <Text style={[appStyles.appHeader, { letterSpacing: 1 }]}>
+            Settings & Profile
+          </Text>
           <Spacer height={20} />
+
           <View>
-            <Text style={styles.sectionHeader}>Profile Information</Text>
+            <Text style={appStyles.sectionHeader}>Profile Information</Text>
+            <SeparationLine />
             {Object.keys(userData).map((field) => {
               const typedField = field as EditModeField;
               return (
-                <View key={typedField} style={styles.fieldContainer}>
-                  <Text style={styles.label}>{capitalize(typedField)}</Text>
+                <View key={typedField}>
+                  <Text
+                    style={[appStyles.inputFieldLabel, { marginLeft: '0%' }]}
+                  >
+                    {capitalize(typedField)}
+                  </Text>
                   {editMode[typedField] ? (
                     <InputField
-                      label={capitalize(typedField)}
                       value={tempData[typedField]}
                       setValue={(value: string) =>
                         setTempData((prev) => ({
@@ -231,40 +355,71 @@ export default function SettingsScreen() {
                       testID={`input-${typedField}`}
                     />
                   ) : (
-                    <Text style={styles.value}>{userData[typedField]}</Text>
+                    <Text style={[appStyles.idText, { marginBottom: 5 }]}>
+                      {userData[typedField]}
+                    </Text>
                   )}
                   <TouchableOpacity
                     onPress={() => toggleEditMode(typedField)}
-                    style={styles.modifyButton}
+                    style={{
+                      alignSelf: 'flex-start',
+                      marginBottom: 5,
+                    }}
                   >
-                    <Text style={styles.modifyButtonText}>
+                    <Text
+                      style={{
+                        color: Color.ButtonBackground,
+                        fontSize: FontSizes.ButtonText,
+                      }}
+                    >
                       {editMode[typedField] ? 'Cancel' : 'Modify'}
                     </Text>
                   </TouchableOpacity>
-                  {editMode[typedField] && (
-                    <SubmitButton
-                      disabled={false}
-                      onPress={() => saveField(typedField)}
-                      width={100}
-                      height={40}
-                      label='Save'
-                      testID={`save-${typedField}`}
-                      style={styles.saveButton}
-                    />
-                  )}
+                  <SeparationLine />
                 </View>
               );
             })}
           </View>
 
+          <Spacer height={15} />
+
+          {/* Save Button for the Entire Form */}
+          <SubmitButton
+            disabled={!isChanged}
+            onPress={() => modifyUser()}
+            width={150}
+            height={50}
+            label='Save Changes'
+            testID='button-save-changes'
+            style={[
+              { alignSelf: 'center' },
+              !isChanged && { opacity: 0.5 },
+              { marginTop: 10 },
+            ]}
+          />
+
+          <Spacer height={40} />
+
           {/* Password Reset Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Change Password</Text>
+
+          <View>
+            <Text style={appStyles.sectionHeader}>Change Password</Text>
+            <InputField
+              label='Current Password'
+              value={currentPassword}
+              setValue={setCurrentPassword}
+              placeholder='Enter current password'
+              secureTextEntry
+              testID='input-current-password'
+            />
+
+            {/* New Password Input Fields */}
             <InputField
               label='New Password'
               value={newPassword}
               setValue={setNewPassword}
               placeholder='Enter new password'
+              secureTextEntry
               testID='input-new-password'
             />
             <InputField
@@ -272,54 +427,61 @@ export default function SettingsScreen() {
               value={confirmPassword}
               setValue={setConfirmPassword}
               placeholder='Confirm new password'
+              secureTextEntry
               testID='input-confirm-password'
             />
+
+            <Spacer height={20} />
+
+            {/* Reset Password Button */}
             <SubmitButton
-              disabled={false}
-              onPress={handleResetPassword}
+              disabled={!currentPassword || !newPassword || !confirmPassword}
+              onPress={() => handleResetPassword(currentPassword)}
               width={150}
               height={50}
               label='Reset Password'
               testID='button-reset-password'
-              style={styles.submitButton}
+              style={[{ alignSelf: 'center' }]}
             />
           </View>
+
+          <Spacer height={40} />
 
           {/* Sign Out Button */}
           <SubmitButton
             disabled={false}
             onPress={handleSignOut}
-            width={150}
+            width={0.85 * screenWidth}
             height={50}
             label='Sign Out'
             testID='button-sign-out'
-            style={styles.signOutButton}
+            style={{
+              alignSelf: 'center',
+              backgroundColor: Color.ButtonBackground,
+            }}
           />
 
           {/* Delete Account Button */}
           <SubmitButton
             disabled={false}
             onPress={() => setShowDeleteConfirmation(true)}
-            width={150}
+            width={0.85 * screenWidth}
             height={50}
             label='Delete Account'
             testID='button-delete-account'
-            style={styles.deleteButton}
+            style={{
+              alignSelf: 'center',
+              backgroundColor: Color.CancelColor,
+              marginTop: 20,
+            }}
           />
 
-          {/* CustomPopUp for general messages */}
-          {popup.visible && popup.type !== 'delete' && (
-            <CustomPopUp
-              text={popup.text}
-              onPress={() => setPopup({ visible: false, text: '', type: '' })}
-              testID='popup'
-            />
-          )}
-
-          {/* Delete Account Confirmation */}
           {showDeleteConfirmation && (
-            <View style={styles.deleteConfirmationContainer}>
-              <Text style={styles.sectionHeader}>Confirm Account Deletion</Text>
+            <View style={{ marginTop: 20 }}>
+              <Text style={appStyles.sectionHeader}>
+                Confirm Account Deletion
+              </Text>
+
               <InputField
                 label='Email'
                 value={deleteEmail}
@@ -327,6 +489,7 @@ export default function SettingsScreen() {
                 placeholder='Enter your email'
                 testID='input-delete-email'
               />
+
               <InputField
                 label='Password'
                 value={deletePassword}
@@ -334,24 +497,38 @@ export default function SettingsScreen() {
                 placeholder='Enter your password'
                 testID='input-delete-password'
               />
-              <SubmitButton
-                disabled={false}
-                onPress={handleDeleteAccount}
-                width={150}
-                height={50}
-                label='Delete'
-                testID='button-confirm-delete'
-                style={styles.deleteButton}
-              />
-              <SubmitButton
-                disabled={false}
-                onPress={() => setShowDeleteConfirmation(false)}
-                width={150}
-                height={50}
-                label='Cancel'
-                testID='button-cancel-delete'
-                style={styles.cancelButton}
-              />
+
+              <View style={{ marginTop: 20 }}>
+                <SubmitButton
+                  disabled={!deleteEmail || !deletePassword}
+                  onPress={async () => {
+                    await handleDeleteAccount();
+                    setShowDeleteConfirmation(false); // Hide the confirmation form
+                  }}
+                  width={150}
+                  height={50}
+                  label='Delete'
+                  testID='button-confirm-delete'
+                  style={{
+                    backgroundColor: Color.CancelColor,
+                    marginBottom: 10,
+                    alignSelf: 'center',
+                  }}
+                />
+
+                <SubmitButton
+                  disabled={false}
+                  onPress={() => setShowDeleteConfirmation(false)} // Hide form on cancel
+                  width={150}
+                  height={50}
+                  label='Cancel'
+                  testID='button-cancel-delete'
+                  style={{
+                    backgroundColor: Color.ButtonBackground,
+                    alignSelf: 'center',
+                  }}
+                />
+              </View>
             </View>
           )}
         </View>
@@ -359,84 +536,3 @@ export default function SettingsScreen() {
     </Header>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: Color.IssueTextBackground,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: Color.HeaderText,
-  },
-  section: {
-    marginBottom: 30,
-  },
-  sectionHeader: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 10,
-    color: Color.HeaderText,
-  },
-  fieldContainer: {
-    marginBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: Color.TextInputBorder,
-    paddingBottom: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Color.TextInputText,
-    marginBottom: 5,
-  },
-  value: {
-    fontSize: 16,
-    color: Color.TextInputText,
-    marginBottom: 5,
-  },
-  modifyButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 5,
-  },
-  modifyButtonText: {
-    color: Color.ButtonBackground,
-    fontSize: 14,
-  },
-  saveButton: {
-    backgroundColor: Color.ButtonBackground,
-    marginTop: 5,
-  },
-  submitButton: {
-    backgroundColor: Color.ButtonBackground,
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-  signOutButton: {
-    backgroundColor: Color.ButtonBackground,
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-  deleteButton: {
-    backgroundColor: Color.CancelColor, 
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-  cancelButton: {
-    backgroundColor: Color.CancelColor, 
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-  deleteConfirmationContainer: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: -20, 
-    marginBottom: -20, 
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-  },
-});

@@ -178,7 +178,7 @@ describe("SituationReportScreen", () => {
   });
 
   it("disables the submit button if conditions are not met", () => {
-    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen />));
+    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen enableSubmit/>));
   
     const submitButton = getByTestId('submit');
     

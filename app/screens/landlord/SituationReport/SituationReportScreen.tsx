@@ -303,7 +303,20 @@ function TenantNameGroup({
   );
 }
 
-export default function SituationReportScreen({ test_enabler = true }: { test_enabler?: boolean }) {
+export default function SituationReportScreen({ 
+  enablePickers = false,
+  enableSubmit = false, 
+  testPickerResidence = "residence", 
+  testPickerApartment = "apartment",
+  testPickerLayout = "layout",}
+  : { 
+    enablePickers?: boolean,
+    enableSubmit?: boolean,
+    test_enabler?: boolean, 
+    testPickerResidence?: string,
+    testPickerApartment?: string,
+    testPickerLayout?: string,}) {
+
   const [selectedApartment, setSelectedApartment] = useState('');
   const [selectedResidence, setSelectedResidence] = useState('');
   const [remark, setRemark] = useState('');
@@ -387,14 +400,14 @@ export default function SituationReportScreen({ test_enabler = true }: { test_en
               testID='residence-picker'
               label={'Residence'}
               data={residencesMappedToName}
-              chosed={selectedResidence}
+              chosed={enablePickers ? testPickerResidence : selectedResidence}
               setValue={setSelectedResidence}
             />
             <PickerGroup
               testID='apartment-picker'
               label={'Apartment'}
               data={apartmentMappedToName}
-              chosed={selectedApartment}
+              chosed={enablePickers ? testPickerApartment : selectedApartment}
               setValue={setSelectedApartment}
             />
 
@@ -402,7 +415,7 @@ export default function SituationReportScreen({ test_enabler = true }: { test_en
               testID='layout-picker'
               label={'Situation Report'}
               data={layoutMappedWithName}
-              chosed={layout}
+              chosed={enablePickers ? testPickerLayout : layout}
               setValue={setLayout}
             />
 
@@ -509,7 +522,7 @@ export default function SituationReportScreen({ test_enabler = true }: { test_en
                 testID='submit'
                 width={ButtonDimensions.smallButtonWidth}
                 height={ButtonDimensions.smallButtonHeight}
-                disabled={ test_enabler && (
+                disabled={ enableSubmit && (
                   layout === undefined ||
                   layout.length === 0 )
                 }

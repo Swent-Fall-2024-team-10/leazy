@@ -2,6 +2,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import ManageMachinesScreen from '../screens/laundry_machines/ManageMachinesScreen';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
 import LandlordListIssuesScreen from '../screens/issues_landlord/LandlordListIssuesScreen';
+import IssueStackLandlord from '../Navigators/IssueStackLandlord';
 import SettingsScreen from '../screens/tenant/SettingsScreen';
 import React from 'react';
 import CustomDrawerContent from '../components/drawer/CustomDrawer';
@@ -10,6 +11,7 @@ import ResidenceStack from './ResidenceStack';
 import { LandlordProvider } from '../context/LandlordContext';
 import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
 import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
+import CodeCreationScreen from '../screens/landlord/CreateNewCode';
 
 
 const Drawer = createDrawerNavigator();
@@ -34,6 +36,7 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
         <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
         <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
+        <Drawer.Screen name="CodeCreationScreen" component={CodeCreationScreen}/>
         <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
         <Drawer.Screen name="Situation Report Form" component={SituationReport} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />

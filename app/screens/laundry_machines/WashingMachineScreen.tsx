@@ -278,10 +278,10 @@ const WashingMachineScreen = () => {
                 appStyles.statusBubble,
                 {
                   backgroundColor: !machine.isFunctional
-                    ? Color.underMaintenanceBubble
+                    ? Color.rejected
                     : machine.isAvailable
-                    ? Color.availableBubble
-                    : Color.inUseBubble
+                    ? Color.completed
+                    : Color.inProgress
                 }
               ]}
             >

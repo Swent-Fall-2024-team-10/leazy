@@ -7,142 +7,7 @@ enum SituationReportStatus {
     NW = 2,
     AW = 3,
     NONE = 0,
-}
-
-export async function fetchFromDatabase(
-  situationReportId: string
-): Promise<[string, [string, [string, number][]][]]> {
-  const db = getFirestore();
-
-  const reportRef = doc(db, "situationReports", situationReportId);
-  const reportSnapshot = await getDoc(reportRef);
-
-  if (!reportSnapshot.exists()) {
-    throw new Error(`SituationReport with ID "${situationReportId}" does not exist.`);
-  }
-
-  const reportData = reportSnapshot.data();
-  const reportName = reportData.layout.label;
-  const groups: string[] = reportData.layout.value;
-
-  const groupDocsQuery = query(
-    collection(db, "situationReports", situationReportId, "situationReportGroups"),
-    where("__name__", "in", groups)  
-  );
-
-  const groupDocsSnapshot = await getDocs(groupDocsQuery);
-
-  const groupData = groupDocsSnapshot.docs
-    .map((doc) => ({ id: doc.id, data: doc.data() }))  
-    .sort((a, b) => groups.indexOf(a.id) - groups.indexOf(b.id))  
-    .map((doc) => doc.data);  
-
-  let layoutDatas: [string, [string, number][]][] = [];
-
-  for (const group of groupData) {
-    let groupName = group.label;
-    const singletonRefs = group.value; 
-
-    const singletonDocsQuery = query(
-      collection(db, "situationReports", situationReportId, "situationReportSingletons"),
-      where("__name__", "in", singletonRefs)  
-    );
-
-    const singletonDocsSnapshot = await getDocs(singletonDocsQuery);
-
-    let datas: [string, number][] = [];
-    singletonDocsSnapshot.docs
-      .map((doc) => ({ id: doc.id, data: doc.data() }))  
-      .sort((a, b) => singletonRefs.indexOf(a.id) - singletonRefs.indexOf(b.id))  
-      .map((doc) => {
-        const singleton_data = doc.data;
-        const label: string = singleton_data.label;
-        const value: number = singleton_data.value;
-        datas.push([label, value]);
-        return [label, value];
-      });
-
-    layoutDatas.push([groupName, datas]);
-  }
-
-  return [reportName, layoutDatas];
-}
-  
-
-export async function toDatabase(
-  frontendFormat: [string, [string, number][]][],
-  reportName: string
-): Promise<string> {
-  const db = getFirestore();
-  const BATCH_LIMIT = 500; 
-  const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
-
-  let batch = writeBatch(db);
-  let batchCount = 0;
-
-  const reportRef = await addDoc(collection(db, "situationReports"), {
-    layout: {},
-  });
-
-  const groupCollectionRef = collection(reportRef, "situationReportGroups");
-  const singletonCollectionRef = collection(reportRef, "situationReportSingletons");
-
-  for (const group of frontendFormat) {
-    const groupName = group[0];
-    const items = group[1];
-
-    const singletonRefs: string[] = [];
-
-    for (const item of items) {
-      const singleton: SituationReportSingleton = {
-        label: item[0],
-        value: item[1],
-      };
-
-      const singletonRef = doc(singletonCollectionRef); 
-      batch.set(singletonRef, singleton); 
-      singletonRefs.push(singletonRef.id);
-
-      batchCount++;
-
-      if (batchCount === BATCH_LIMIT) {
-        await batch.commit();
-        batch = writeBatch(db);
-        batchCount = 0;
-      }
-    }
-
-    const groupData = { label: groupName, value: singletonRefs }; 
-    const groupRef = doc(groupCollectionRef);
-    batch.set(groupRef, groupData); 
-
-    groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
-
-    batchCount++;
-
-    if (batchCount === BATCH_LIMIT) {
-      await batch.commit();
-      batch = writeBatch(db);
-      batchCount = 0;
-    }
-  }
-
-  const reportLayout: SituationReportLayout = {
-    label: reportName,
-    value: groupReferences.map((group) => group.groupID),
-  };
-
-  batch.update(reportRef, { layout: reportLayout });
-
-  batchCount++;
-
-  if (batchCount > 0) {
-    await batch.commit();
-  }
-
-  return reportRef.id;
-}
-  
+} 
 
 export function addGroupToLayout(
     currentLayout: [string, [string, number][]][], 
@@ -299,4 +164,140 @@ export async function fetchSituationReportLayout(
         const resolvedLayout = await Promise.all(mappedLayout);
         setLayout(resolvedLayout.filter((layout): layout is LayoutPickerData => layout !== undefined));
     }
+}
+
+
+
+export async function fetchFromDatabase(
+  situationReportId: string
+): Promise<[string, [string, [string, number][]][]]> {
+  const db = getFirestore();
+
+  const reportRef = doc(db, "situationReports", situationReportId);
+  const reportSnapshot = await getDoc(reportRef);
+
+  if (!reportSnapshot.exists()) {
+    throw new Error(`SituationReport with ID "${situationReportId}" does not exist.`);
+  }
+
+  const reportData = reportSnapshot.data();
+  const reportName = reportData.layout.label;
+  const groups: string[] = reportData.layout.value;
+
+  const groupDocsQuery = query(
+    collection(db, "situationReports", situationReportId, "situationReportGroups"),
+    where("__name__", "in", groups)  
+  );
+
+  const groupDocsSnapshot = await getDocs(groupDocsQuery);
+
+  const groupData = groupDocsSnapshot.docs
+    .map((doc) => ({ id: doc.id, data: doc.data() }))  
+    .sort((a, b) => groups.indexOf(a.id) - groups.indexOf(b.id))  
+    .map((doc) => doc.data);  
+
+  let layoutDatas: [string, [string, number][]][] = [];
+
+  for (const group of groupData) {
+    let groupName = group.label;
+    const singletonRefs = group.value; 
+
+    const singletonDocsQuery = query(
+      collection(db, "situationReports", situationReportId, "situationReportSingletons"),
+      where("__name__", "in", singletonRefs)  
+    );
+
+    const singletonDocsSnapshot = await getDocs(singletonDocsQuery);
+
+    let datas: [string, number][] = [];
+    singletonDocsSnapshot.docs
+      .map((doc) => ({ id: doc.id, data: doc.data() }))  
+      .sort((a, b) => singletonRefs.indexOf(a.id) - singletonRefs.indexOf(b.id))  
+      .map((doc) => {
+        const singleton_data = doc.data;
+        const label: string = singleton_data.label;
+        const value: number = singleton_data.value;
+        datas.push([label, value]);
+        return [label, value];
+      });
+
+    layoutDatas.push([groupName, datas]);
+  }
+
+  return [reportName, layoutDatas];
+}
+  
+
+export async function toDatabase(
+  frontendFormat: [string, [string, number][]][],
+  reportName: string
+): Promise<string> {
+  const db = getFirestore();
+  const BATCH_LIMIT = 500; 
+  const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
+
+  let batch = writeBatch(db);
+  let batchCount = 0;
+
+  const reportRef = await addDoc(collection(db, "situationReports"), {
+    layout: {},
+  });
+
+  const groupCollectionRef = collection(reportRef, "situationReportGroups");
+  const singletonCollectionRef = collection(reportRef, "situationReportSingletons");
+
+  for (const group of frontendFormat) {
+    const groupName = group[0];
+    const items = group[1];
+
+    const singletonRefs: string[] = [];
+
+    for (const item of items) {
+      const singleton: SituationReportSingleton = {
+        label: item[0],
+        value: item[1],
+      };
+
+      const singletonRef = doc(singletonCollectionRef); 
+      batch.set(singletonRef, singleton); 
+      singletonRefs.push(singletonRef.id);
+
+      batchCount++;
+
+      if (batchCount === BATCH_LIMIT) {
+        await batch.commit();
+        batch = writeBatch(db);
+        batchCount = 0;
+      }
+    }
+
+    const groupData = { label: groupName, value: singletonRefs }; 
+    const groupRef = doc(groupCollectionRef);
+    batch.set(groupRef, groupData); 
+
+    groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
+
+    batchCount++;
+
+    if (batchCount === BATCH_LIMIT) {
+      await batch.commit();
+      batch = writeBatch(db);
+      batchCount = 0;
+    }
+  }
+
+  const reportLayout: SituationReportLayout = {
+    label: reportName,
+    value: groupReferences.map((group) => group.groupID),
+  };
+
+  batch.update(reportRef, { layout: reportLayout });
+
+  batchCount++;
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  return reportRef.id;
 }

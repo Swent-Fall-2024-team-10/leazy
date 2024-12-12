@@ -361,5 +361,207 @@ describe('adding a single item to a group', () => {
             const newLayout = SituationReport.removeItemFrom(layout, 1, 0);
             expect(newLayout).toEqual(expected);
         });
+
+
     });
 });
+
+// situationReport.test.ts
+
+import { 
+    fetchResidences, 
+    fetchApartmentNames, 
+    fetchSituationReportLayout,
+    fetchFromDatabase,
+    toDatabase
+} from '../utils/SituationReport';
+import { getResidence, getApartment } from '../../firebase/firestore/firestore';
+import { 
+    getFirestore, 
+    collection, 
+    doc, 
+    getDoc, 
+    getDocs, 
+    addDoc, 
+    writeBatch, 
+    query, 
+    where 
+} from 'firebase/firestore';
+import { Apartment, Landlord, Residence } from '../../types/types';
+
+// Mock Firebase
+jest.mock('firebase/firestore');
+jest.mock('../../firebase/firestore/firestore');
+
+jest.mock("firebase/firestore", () => ({
+    getFirestore: jest.fn(),
+    collection: jest.fn(),
+    doc: jest.fn(),
+    getDoc: jest.fn(),
+    getDocs: jest.fn(),
+    writeBatch: jest.fn(),
+    addDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    query: jest.fn((...args) => args),
+    where: jest.fn((field, operator, values) => ({ field, operator, values })),
+  }));
+  
+  describe("SituationReport Async Functions", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+    describe("fetchResidences", () => {
+        it("should fetch and map residences to names", async () => {
+          const mockLandlord = {
+            userId : "landlord1",
+            residenceIds: ["res1", "res2"],
+          };
+      
+          const mockResidences = {
+            res1: { residenceName: "Residence 1" },
+            res2: { residenceName: "Residence 2" },
+          };
+      
+          // Mock getResidence to resolve residence data based on ID
+          (getResidence as jest.Mock).mockImplementation(async (id: string) => mockResidences[id]);
+      
+          // Mock the set function
+          const setResidencesMappedToName = jest.fn();
+      
+          // Call the function
+          await fetchResidences(mockLandlord, setResidencesMappedToName);
+      
+          // Assert the expected call
+          expect(setResidencesMappedToName).toHaveBeenCalledWith([
+            { label: "Residence 1", value: "res1" },
+            { label: "Residence 2", value: "res2" },
+          ]);
+        });
+      });
+      
+  
+    describe("fetchApartmentNames", () => {
+      it("should fetch and map apartment names", async () => {
+        const mockResidence: Residence = {
+          apartments: ["apt1", "apt2"],
+        } as Residence;
+  
+        const mockApartments: Apartment[] = [
+          { apartmentName: "Apartment 1" } as Apartment,
+          { apartmentName: "Apartment 2" } as Apartment,
+        ];
+  
+        (getResidence as jest.Mock).mockResolvedValue(mockResidence);
+        (getApartment as jest.Mock).mockImplementation((id) =>
+          Promise.resolve(mockApartments[parseInt(id.slice(-1)) - 1])
+        );
+  
+        const setApartmentMappedToName = jest.fn();
+  
+        await fetchApartmentNames("res1", setApartmentMappedToName);
+  
+        expect(setApartmentMappedToName).toHaveBeenCalledWith([
+          { label: "Apartment 1", value: "apt1" },
+          { label: "Apartment 2", value: "apt2" },
+        ]);
+      });
+    });
+  
+    describe("fetchFromDatabase", () => {
+      it("should fetch and format situation report data", async () => {
+        const mockReportData = {
+          layout: { label: "Test Report", value: ["group1", "group2"] },
+        };
+    
+        const mockGroupData = [
+          { id: "group1", label: "Group 1", value: ["singleton1", "singleton2"] },
+          { id: "group2", label: "Group 2", value: ["singleton3"] },
+        ];
+    
+        const mockSingletonDataGroup1 = [
+          { id: "singleton1", label: "Item 1", value: 0 },
+          { id: "singleton2", label: "Item 2", value: 1 },
+        ];
+    
+        const mockSingletonDataGroup2 = [
+          { id: "singleton3", label: "Item 3", value: 2 },
+        ];
+    
+        // Mock `getDoc` for the main report document
+        (getDoc as jest.Mock).mockResolvedValue({
+          exists: () => true,
+          data: () => mockReportData,
+        });
+    
+        // Mock `getDocs` for group documents
+        (getDocs as jest.Mock)
+          .mockResolvedValueOnce({
+            docs: mockGroupData.map((group) => ({
+              id: group.id,
+              data: () => ({ label: group.label, value: group.value }),
+            })),
+          })
+          // Mock `getDocs` for singleton documents for Group 1
+          .mockResolvedValueOnce({
+            docs: mockSingletonDataGroup1.map((singleton) => ({
+              id: singleton.id,
+              data: () => ({ label: singleton.label, value: singleton.value }),
+            })),
+          })
+          // Mock `getDocs` for singleton documents for Group 2
+          .mockResolvedValueOnce({
+            docs: mockSingletonDataGroup2.map((singleton) => ({
+              id: singleton.id,
+              data: () => ({ label: singleton.label, value: singleton.value }),
+            })),
+          });
+    
+        const result = await fetchFromDatabase("testId");
+    
+        expect(result).toEqual([
+          "Test Report",
+          [
+            ["Group 1", [["Item 1", 0], ["Item 2", 1]]],
+            ["Group 2", [["Item 3", 2]]],
+          ],
+        ]);
+      });
+    });
+    });
+
+
+    describe("toDatabase", () => {
+      it("should save situation report data to database", async () => {
+        // Mock Firestore methods
+        const mockBatch = {
+          set: jest.fn(),
+          update: jest.fn(),
+          commit: jest.fn(),
+        };
+    
+        (writeBatch as jest.Mock).mockReturnValue(mockBatch);
+        (addDoc as jest.Mock).mockResolvedValue({ id: "newReportId" });
+    
+        const mockDoc = jest.fn((collectionRef) => ({
+          id: `mocked-id-${Math.random().toString(36).substr(2, 9)}`, // Unique mock ID
+          collectionRef,
+        }));
+    
+        (doc as jest.Mock).mockImplementation(mockDoc);
+    
+        const frontendFormat: [string, [string, number][]][] = [
+          ["Group 1", [["Item 1", 0], ["Item 2", 1]]],
+          ["Group 2", [["Item 3", 2]]],
+        ];
+    
+        const reportId = await toDatabase(frontendFormat, "Test Report");
+    
+        // Assertions
+        expect(reportId).toBe("newReportId");
+        expect(addDoc).toHaveBeenCalledTimes(1);
+        expect(mockBatch.set).toHaveBeenCalledTimes(5); // 3 singletons + 1 group
+        expect(mockBatch.update).toHaveBeenCalledTimes(1); // 1 report update
+        expect(mockBatch.commit).toHaveBeenCalledTimes(1); // Commit after operations
+        expect(mockDoc).toHaveBeenCalled();
+      });
+    });

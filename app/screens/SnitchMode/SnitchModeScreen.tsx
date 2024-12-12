@@ -16,7 +16,6 @@ import { Audio } from "expo-av";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 
-
 const SnitchModeScreen: React.FC = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -24,7 +23,7 @@ const SnitchModeScreen: React.FC = () => {
   const [noiseThresholdExceeded, setNoiseThresholdExceeded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const NOISE_THRESHOLD = 80;
+  const NOISE_THRESHOLD = 120;
 
   useEffect(() => {
     return () => {
@@ -52,7 +51,10 @@ const SnitchModeScreen: React.FC = () => {
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
         (status) => {
           if (status.metering !== undefined) {
-            const decibelLevel = Math.max(0, ((status.metering + 160) / 160) * 120);
+            const decibelLevel = Math.max(
+              0,
+              ((status.metering + 160) / 160) * 120
+            );
             setMetering(decibelLevel);
             setNoiseThresholdExceeded(decibelLevel >= NOISE_THRESHOLD);
           }
@@ -167,13 +169,17 @@ const SnitchModeScreen: React.FC = () => {
         <View style={{ flex: 1 }}>
           <View style={appStyles.residenceHeaderContainer}>
             <Text testID="snitch-mode-title" style={appStyles.residenceTitle}>
-              Snitch Mode
+              🤓 Snitch Mode 🤓
             </Text>
             <Text
-              style={[appStyles.flatText, { textAlign: "center", marginTop: 20 }]}
+              style={[
+                appStyles.flatText,
+                { textAlign: "center", marginTop: 20 },
+              ]}
             >
-              If your neighbors are making too much noise (above 80dB), activate the Snitch Mode.
-              When the noise level is too high, you can call security.
+              If your neighbors are making too much noise (above 80dB), activate
+              the Snitch Mode. When the noise level is too high, you can call
+              security.
             </Text>
           </View>
 
@@ -231,7 +237,7 @@ const styles = {
     alignItems: "center" as const,
     justifyContent: "center" as const,
     padding: 20,
-    marginTop: "-60%" as const,
+    marginTop: -350,
   },
   meteringContainer: {
     flexDirection: "row" as const,
@@ -251,12 +257,12 @@ const styles = {
     elevation: Platform.OS === "android" ? 5 : 0,
   },
   meteringBar: {
-    width: "3%",
+    width: 8,
     backgroundColor: "#2F4F4F",
-    marginHorizontal: "0.8%",
-    borderRadius: "10%",
+    marginHorizontal: 2,
+    borderRadius: 3,
     elevation: Platform.OS === "android" ? 2 : 0,
-    maxHeight: "200%",
+    maxHeight: 100,
   },
   meteringBarExceeded: {
     backgroundColor: "#FF4444",
@@ -285,3 +291,4 @@ const styles = {
 };
 
 export default SnitchModeScreen;
+

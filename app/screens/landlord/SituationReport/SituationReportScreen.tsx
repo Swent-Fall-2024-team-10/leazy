@@ -26,14 +26,13 @@ import RNPickerSelect from 'react-native-picker-select';
 import { changeStatus, fetchApartmentNames, fetchResidences, fetchSituationReportLayout, toDatabase } from '../../../utils/SituationReport';
 import {
   addSituationReport,
-  getApartment,
 } from '../../../../firebase/firestore/firestore';
 import { SituationReport } from '../../../../types/types';
 import {
   pickerSelectStyles,
   situationReportStyles,
 } from '../../../../styles/SituationReportStyling';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
 enum enumStatus {
   OC = 1,
@@ -305,8 +304,6 @@ function TenantNameGroup({
 }
 
 export default function SituationReportScreen() {
-  const navigation = useNavigation<NavigationProp<any>>();
-
   const [selectedApartment, setSelectedApartment] = useState('');
   const [selectedResidence, setSelectedResidence] = useState('');
   const [remark, setRemark] = useState('');
@@ -538,19 +535,14 @@ export default function SituationReportScreen() {
                   };
 
                   reset();
-                  const apartment = await getApartment(selectedApartment);
-
-                  if (!apartment) {
-                    console.log('Apartment not found');
-                  }
 
                   try {
                     addSituationReport(report, selectedApartment);
-                  
                     Alert.alert(
                       'Situation Report',
                       'Situation Report has been successfully submitted',
                     );
+
                   } catch (error) {
                     console.error('Error adding document: ', error);
                     Alert.alert(

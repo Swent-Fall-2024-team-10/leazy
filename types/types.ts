@@ -96,7 +96,7 @@ export type Apartment = {
   residenceId: string;
   tenants: string[]; // list of tenant uids
   maintenanceRequests: string[]; // list of maintenance request ids
-  situationReportId: string; 
+  situationReportId: string[]; 
 };
 
 export type LaundryMachine = {

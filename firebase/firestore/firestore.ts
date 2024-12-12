@@ -27,6 +27,7 @@ import {
   TenantCode,
   SituationReport,
 } from "../../types/types";
+import { get } from "http";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
@@ -580,29 +581,18 @@ export async function createMachineNotification(userId: string) {
 export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
   
   const collectionRef = collection(db, "filledReports");
-
   try {
     const docRef = await addDoc(collectionRef, {
       situationReport : situationReport
     });
-    updateApartment(apartmentId, { situationReportId: docRef.id });
+    const apartment = await getApartment(apartmentId);
+    const previousReports = apartment?.situationReportId?? [];
+    const nextReports = [docRef.id].concat(previousReports);
+    updateApartment(apartmentId, { situationReportId: nextReports });
   } catch {
     throw new Error("Error creating situation report.");
   }
 
-}
-
-export async function deleteSituationReport(situationReportId: string) {
-  const situationReportRef = doc(db, "filledReports", situationReportId);
-  const situationReportSnap = await getDoc(situationReportRef);
-
-  if (!situationReportSnap.exists()) {
-    throw new Error("Situation report not found.");
-  }
-  const apartmentId = situationReportSnap.data().apartmentId;
-
-  await deleteDoc(doc(db, "filledReports", situationReportId));
-  await updateApartment(apartmentId, { situationReportId: "" });
 }
 
 /**
@@ -622,7 +612,7 @@ export async function getSituationReport(apartmentId: string) {
   if (!situationReportId) {
     return null;
   }
-  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportRef = doc(db, "situationReports", situationReportId.join('/'));
   const situationReportSnap = await getDoc(situationReportRef);
 
   return situationReportSnap.data() as SituationReport;

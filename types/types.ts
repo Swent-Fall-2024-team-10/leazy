@@ -1,6 +1,5 @@
 import { Timestamp } from "@firebase/firestore-types";
 
-
 // Define the navigation stack types
 export type RootStackParamList = {
   Home: undefined; // No parameters for Home screen
@@ -32,7 +31,9 @@ export type ResidenceStackParamList = {
 export type ReportStackParamList = {
   Issues: undefined;
   Report: undefined;
-  Messaging: undefined;
+  Messaging: {
+    chatID: string;
+  };
 
   CameraScreen: undefined;
   CapturedMedia: { uri: string; type: "photo" | "video" };
@@ -40,6 +41,15 @@ export type ReportStackParamList = {
     requestID: string;
   };
 };
+
+export type LandlordStackParamList = {
+  LandlordDashboard: undefined;
+  Issues: undefined;
+  IssueDetails: {
+    requestID: string;
+  };
+  Messaging: undefined;
+}
 
 // Define types for firestore
 export type TUser = {

@@ -164,9 +164,7 @@ export const Color = {
   completed: "#2ECC71",
   rejected: "#95A5A6",
   default: "#95A5A6",
-  availableBubble: "green",
-  inUseBubble: "orange",
-  underMaintenanceBubble: "red",
+  
 };
 
 export const appStyles = StyleSheet.create({

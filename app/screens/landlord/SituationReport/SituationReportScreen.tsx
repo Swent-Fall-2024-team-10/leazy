@@ -303,7 +303,7 @@ function TenantNameGroup({
   );
 }
 
-export default function SituationReportScreen() {
+export default function SituationReportScreen({ test_enabler = true }: { test_enabler?: boolean }) {
   const [selectedApartment, setSelectedApartment] = useState('');
   const [selectedResidence, setSelectedResidence] = useState('');
   const [remark, setRemark] = useState('');
@@ -503,19 +503,18 @@ export default function SituationReportScreen() {
             </View>
 
             <View style={appStyles.submitContainer}>
+              
               <SubmitButton
                 label='Submit'
                 testID='submit'
                 width={ButtonDimensions.smallButtonWidth}
                 height={ButtonDimensions.smallButtonHeight}
-                disabled={
+                disabled={ test_enabler && (
                   layout === undefined ||
-                  !selectedResidence ||
-                  !selectedApartment ||
-                  layout.length === 0 
+                  layout.length === 0 )
                 }
                 onPress={async () => {
-
+                  console.log("Pressed")
                   const reportForm = await toDatabase(layout, "Situation Report arrival of " + arrivingTenantName + " " + arrivingTenantSurname);
 
                   const report: SituationReport = {

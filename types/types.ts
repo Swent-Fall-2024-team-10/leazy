@@ -31,7 +31,9 @@ export type ResidenceStackParamList = {
 export type ReportStackParamList = {
   Issues: undefined;
   Report: undefined;
-  Messaging: undefined;
+  Messaging: {
+    chatID: string;
+  };
 
   CameraScreen: undefined;
   CapturedMedia: { uri: string; type: "photo" | "video" };

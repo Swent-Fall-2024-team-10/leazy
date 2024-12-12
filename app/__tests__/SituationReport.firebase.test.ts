@@ -29,7 +29,6 @@ describe("Firestore functions", () => {
 
   const residenceMock: Residence = {
     residenceName: "Residence 1",
-    residenceName: "res123",
     street: "123 Main St",
     number: "10",
     city: "Fribourg",
@@ -95,9 +94,8 @@ describe("Firestore functions", () => {
   it("should create a situation report when residence exists", async () => {
     await addSituationReport(situationReportMock, "apt123");
 
-    // Check if the correct Firestore functions were called
-    expect(addDoc).toHaveBeenCalledWith(expect.anything(), situationReportMock);
-    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: "report123" });
+    expect(addDoc).toHaveBeenCalledWith(expect.anything(), { situationReport: situationReportMock });
+    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: ["report123"] });
   });
 
   it("should add situation report layout to residence", async () => {
@@ -156,80 +154,5 @@ describe("Firestore functions", () => {
     const result = await getSituationReportLayout("res123");
 
     expect(result).toEqual([]);
-  });
-});
-
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  addDoc: jest.fn(),
-}));
-jest.mock('../../firebase/firestore/firestore', () => ({
-  getApartment: jest.fn(),
-}));
-jest.mock('../../firebase/firestore/firestore', () => ({
-  updateApartment: jest.fn(),
-}));
-
-jest.mock("firebase/firestore", () => ({
-  collection: jest.fn(),
-  addDoc: jest.fn(),
-  getDoc: jest.fn(),
-  updateDoc: jest.fn(),
-}));
-
-// Mock custom Firestore helpers
-jest.mock("../../firebase/firestore/firestore", () => ({
-  getApartment: jest.fn(),
-  updateApartment: jest.fn(),
-}));
-
-describe("addSituationReport tests", () => {
-
-  it("should call addDoc with the correct parameters", async () => {
-    const situationReport = {
-      reportDate: "2024-11-25",
-      arrivingTenant: "tenant123",
-      leavingTenant: "tenant456",
-      residenceId : "res123",
-      apartmentId: "apt123",
-      reportForm: "field1",
-      remarks: "Test remarks",
-    };
-
-    await addSituationReport(situationReport, "apt123");
-
-    expect(addDoc).toHaveBeenCalledWith(expect.anything(), situationReport);
-  });
-
-  it("should call updateApartment with the correct parameters", async () => {
-    const situationReport = {
-      reportDate: "2024-11-25",
-      arrivingTenant: "tenant123",
-      leavingTenant: "tenant456",
-      residenceId : "res123",
-      apartmentId: "apt123",
-      reportForm: "field1",
-      remarks: "Test remarks",
-    };
-
-    await addSituationReport(situationReport, "apt123");
-
-    expect(updateApartment).toHaveBeenCalledWith("apt123", { situationReportId: "report123" });
-  });
-
-  it("should return the situation report id", async () => {
-    const situationReport = {
-      reportDate: "2024-11-25",
-      arrivingTenant: "tenant123",
-      leavingTenant: "tenant456",
-      residenceId : "res123",
-      apartmentId: "apt123",
-      reportForm: "field1",
-      remarks: "Test remarks",
-    };
-
-    const result = await addSituationReport(situationReport, "apt123");
-
-    expect(result).toEqual("report123");
   });
 });

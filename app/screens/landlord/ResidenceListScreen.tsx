@@ -49,21 +49,21 @@ const mockApartments: Map<string, Apartment[]> = new Map([
       residenceId: 'R1',
       tenants: ['T1', 'T2'],
       maintenanceRequests: ['MR1', 'MR2'],
-      situationReportId: 'none'
+      situationReportId: ['none']
     },
     {
       apartmentName: 'A2',
       residenceId: 'R1',
       tenants: ['T3'],
       maintenanceRequests: [],
-      situationReportId: 'none'
+      situationReportId: ['none']
     },
     {
       apartmentName: 'A3',
       residenceId: 'R1',
       tenants: ['T4', 'T5'],
       maintenanceRequests: ['MR3'],
-      situationReportId: 'none'
+      situationReportId: ['none']
     }
   ]],
   ['R2', [
@@ -72,7 +72,7 @@ const mockApartments: Map<string, Apartment[]> = new Map([
       residenceId: 'R2',
       tenants: ['T6', 'T7'],
       maintenanceRequests: ['MR4'],
-      situationReportId: 'none'
+      situationReportId: ['none']
     }
   ]]
 ]);

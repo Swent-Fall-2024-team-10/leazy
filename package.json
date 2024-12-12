@@ -87,6 +87,7 @@
     "expo-web-browser": "~13.0.3",
     "firebase": "^10.14.1",
     "firebaseui": "^6.1.0",
+    "i": "^0.3.7",
     "lucide-react-native": "^0.462.0",
     "ob1": "^0.81.0",
     "react": "18.2.0",

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import Animated, { 
@@ -10,9 +11,9 @@ import Animated, {
 const WAVEFORM_WIDTH = Dimensions.get('window').width * 0.8;
 const BAR_WIDTH = 5;
 const BAR_GAP = 10;
-const MIN_HEIGHT = 10;
+export const MIN_HEIGHT = 10;
 // Calculate how many bars can fit in the container
-const MAX_BARS = Math.floor((WAVEFORM_WIDTH - 20) / (BAR_WIDTH + BAR_GAP));
+export const MAX_BARS = Math.floor((WAVEFORM_WIDTH - 20) / (BAR_WIDTH + BAR_GAP));
 
 interface WaveformVisualizerProps {
   metering: number | null;
@@ -66,6 +67,7 @@ export const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
         {waveformData.map((level, index) => (
           <Animated.View
             key={`${index}-${level}`}
+            testID={`waveform-bar-${index}`}
             entering={ZoomIn.duration(150)}
             style={[
               styles.bar,

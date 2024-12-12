@@ -80,7 +80,6 @@ const SnitchModeScreen: React.FC = () => {
 
         await recordingInstance.startAsync();
 
-        // In startRecording function
         recordingInstance.setOnRecordingStatusUpdate((status) => {
           if (status.metering !== undefined) {
             setMetering(status.metering);
@@ -259,7 +258,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    marginTop: '-50%',
+    marginTop: "-50%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   recordButton: {
     width: 120,

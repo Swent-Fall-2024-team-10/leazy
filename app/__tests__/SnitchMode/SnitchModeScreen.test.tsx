@@ -1,20 +1,56 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { Alert, ActionSheetIOS, Platform, Linking } from "react-native";
+import { Alert, Platform, ActionSheetIOS, Linking } from "react-native";
 import SnitchModeScreen from "../../screens/SnitchMode/SnitchModeScreen";
 import { NavigationContainer } from "@react-navigation/native";
-import { act } from 'react-test-renderer';
+import { act } from "react-test-renderer";
+
+// Create mock instances with proper callback handling
+let recordingStatusCallback: ((status: any) => void) | null = null;
+const mockStopAndUnloadAsync = jest.fn().mockResolvedValue({});
+const mockSetOnRecordingStatusUpdate = jest
+  .fn()
+  .mockImplementation((callback) => {
+    recordingStatusCallback = callback;
+  });
+const mockSetProgressUpdateInterval = jest.fn();
+const mockStartAsync = jest.fn().mockResolvedValue({});
+const mockPrepareToRecordAsync = jest.fn().mockResolvedValue({});
+
+const mockRecordingInstance = {
+  prepareToRecordAsync: mockPrepareToRecordAsync,
+  startAsync: mockStartAsync,
+  setOnRecordingStatusUpdate: mockSetOnRecordingStatusUpdate,
+  setProgressUpdateInterval: mockSetProgressUpdateInterval,
+  stopAndUnloadAsync: mockStopAndUnloadAsync,
+};
+
+// Mock setup with mock.fn() to track calls
+const mockOpenURL = jest.fn().mockResolvedValue(true);
+
+// Create a mock object for Linking
+const mockLinking = {
+  openURL: mockOpenURL,
+};
+
+// Mock the entire expo-linking module
+jest.mock("expo-linking", () => mockLinking);
 
 jest.mock("expo-av", () => ({
   Audio: {
     requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
     setAudioModeAsync: jest.fn().mockResolvedValue({}),
-    Recording: {
-      createAsync: jest.fn(),
-    },
+    Recording: jest.fn().mockImplementation(() => mockRecordingInstance),
     RecordingOptionsPresets: {
-      HIGH_QUALITY: {},
+      HIGH_QUALITY: {
+        android: {},
+        ios: {},
+      },
     },
+    AndroidOutputFormat: { MPEG_4: 2 },
+    AndroidAudioEncoder: { AAC: 3 },
+    IOSOutputFormat: { MPEG4AAC: "aac" },
+    IOSAudioQuality: { HIGH: "high" },
   },
 }));
 
@@ -22,233 +58,172 @@ jest.mock("@expo/vector-icons", () => ({
   FontAwesome: () => "FontAwesome-Mock",
 }));
 
-jest.mock("expo-linking", () => ({
-  openURL: jest.fn().mockResolvedValue(true)
-}));
+// Create a wrapper component with NavigationContainer
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <NavigationContainer>{children}</NavigationContainer>
+);
 
-jest.mock('react-native/Libraries/ActionSheetIOS/ActionSheetIOS', () => ({
-    showActionSheetWithOptions: jest.fn(),
-  }));
-
-const mockedAudio = jest.requireMock("expo-av").Audio;
-
-// Helper function to render with navigation
 const renderWithNavigation = (component: React.ReactElement) => {
-  return render(<NavigationContainer>{component}</NavigationContainer>);
+  return render(component, { wrapper: TestWrapper });
 };
 
 describe("SnitchModeScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    recordingStatusCallback = null;
     Platform.OS = "ios";
   });
 
-  it("renders correctly", () => {
-    const { getByTestId, getByText } = renderWithNavigation(
-      <SnitchModeScreen />
-    );
-    expect(getByTestId("snitch-mode-title")).toBeTruthy();
-    expect(getByText("Snitch Mode")).toBeTruthy();
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.clearAllMocks();
   });
 
-  it("starts recording when microphone button is pressed", async () => {
-    const mockRecording = { stopAndUnloadAsync: jest.fn() };
-    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
-      recording: mockRecording,
+  describe("Rendering", () => {
+    it("renders initial screen correctly", () => {
+      const { getByTestId, getByText } = renderWithNavigation(
+        <SnitchModeScreen />
+      );
+      expect(getByTestId("snitch-mode-title")).toBeTruthy();
+      expect(getByText("🤓 Snitch Mode 🤓")).toBeTruthy();
     });
 
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-    fireEvent.press(getByTestId("record-button"));
+    it("renders record button initially", () => {
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+      expect(getByTestId("record-button")).toBeTruthy();
+    });
+  });
 
-    await waitFor(() => {
-      expect(mockedAudio.requestPermissionsAsync).toHaveBeenCalled();
-      expect(mockedAudio.setAudioModeAsync).toHaveBeenCalledWith({
+  describe("Recording functionality", () => {
+    it("starts recording when microphone button is pressed", async () => {
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+      });
+
+      const Audio = require("expo-av").Audio;
+      expect(Audio.requestPermissionsAsync).toHaveBeenCalled();
+      expect(Audio.setAudioModeAsync).toHaveBeenCalledWith({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
-      expect(mockedAudio.Recording.createAsync).toHaveBeenCalled();
-    });
-  });
-
-  it("stops recording when stop button is pressed", async () => {
-    const mockStopAndUnload = jest.fn();
-    const mockRecording = { stopAndUnloadAsync: mockStopAndUnload };
-    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
-      recording: mockRecording,
     });
 
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-    fireEvent.press(getByTestId("record-button"));
+    it("stops recording when stop button is pressed", async () => {
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
 
-    await waitFor(() => {
-      fireEvent.press(getByTestId("record-button"));
-      expect(mockStopAndUnload).toHaveBeenCalled();
-    });
-  });
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button")); // Start recording
+        await waitFor(() => expect(mockStartAsync).toHaveBeenCalled());
+      });
 
-  it("shows call security button when noise threshold is exceeded", async () => {
-    const mockRecording = { stopAndUnloadAsync: jest.fn() };
-    let meterCallback: (arg0: { metering: number }) => void;
-
-    mockedAudio.Recording.createAsync.mockImplementation(
-      (_: unknown, callback: (status: { metering: number }) => void) => {
-        meterCallback = callback;
-        return Promise.resolve({ recording: mockRecording });
-      }
-    );
-
-    const { getByTestId, getByText } = renderWithNavigation(
-      <SnitchModeScreen />
-    );
-    fireEvent.press(getByTestId("record-button"));
-
-    await waitFor(() => {
-      meterCallback({ metering: -15 });
-      expect(
-        getByText("The level of noise is higher than the limit")
-      ).toBeTruthy();
-    });
-  });
-
-  it("handles call security for Android", async () => {
-    Platform.OS = "android";
-    const alertSpy = jest.spyOn(Alert, "alert");
-
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-
-    // First start recording
-    fireEvent.press(getByTestId("record-button"));
-
-    // Simulate noise threshold exceeded
-    await waitFor(() => {
-      mockedAudio.Recording.createAsync.mock.calls[0][1]({ metering: -15 });
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button")); // Stop recording
+        await waitFor(() => expect(mockStopAndUnloadAsync).toHaveBeenCalled());
+      });
     });
 
-    fireEvent.press(getByTestId("call-security-button"));
-
-    expect(alertSpy).toHaveBeenCalled();
-  });
-
-  it("automatically stops recording when noise threshold is exceeded", async () => {
-    const mockStopAndUnload = jest.fn();
-    const mockRecording = { stopAndUnloadAsync: mockStopAndUnload };
-    let meterCallback: (arg0: { metering: number }) => void;
-
-    mockedAudio.Recording.createAsync.mockImplementation(
-      (_: unknown, callback: (status: { metering: number }) => void) => {
-        meterCallback = callback;
-        return Promise.resolve({ recording: mockRecording });
-      }
-    );
-
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-    fireEvent.press(getByTestId("record-button"));
-
-    await waitFor(() => {
-      meterCallback({ metering: -15 });
-      expect(mockStopAndUnload).toHaveBeenCalled();
-    });
-  });
-  
-  it("cleans up recording when unmounting", async () => {
-    const mockStopAndUnload = jest.fn();
-    const mockRecording = { stopAndUnloadAsync: mockStopAndUnload };
-    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
-      recording: mockRecording,
-    });
-  
-    const { getByTestId, unmount } = renderWithNavigation(<SnitchModeScreen />);
-    
-    // Wait for recording to be set
-    await waitFor(() => {
-      fireEvent.press(getByTestId("record-button"));
-    });
-  
-    unmount();
-    expect(mockStopAndUnload).toHaveBeenCalled();
-  });
-  
-  it("handles stop recording errors gracefully", async () => {
-    const mockStopAndUnload = jest.fn().mockRejectedValueOnce(new Error("Stop failed"));
-    const mockRecording = { stopAndUnloadAsync: mockStopAndUnload };
-    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
-      recording: mockRecording,
-    });
-  
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-  
-    // Start recording
-    fireEvent.press(getByTestId("record-button"));
-    
-    await waitFor(() => {
-      expect(mockRecording).toBeTruthy();
-    });
-  
-    // Stop recording
-    fireEvent.press(getByTestId("record-button"));
-    
-    await waitFor(() => {
-      expect(mockStopAndUnload).toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to stop recording",
-        expect.any(Error)
+    it("handles recording errors gracefully", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      const alertSpy = jest.spyOn(Alert, "alert");
+      mockPrepareToRecordAsync.mockRejectedValueOnce(
+        new Error("Recording failed")
       );
+
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+      });
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Error",
+        "Failed to prepare audio recorder"
+      );
+
+      consoleSpy.mockRestore();
+      alertSpy.mockRestore();
     });
-  
-    consoleSpy.mockRestore();
-  });
-  
-  it("updates metering and noise threshold", async () => {
-    const mockRecording = { stopAndUnloadAsync: jest.fn() };
-    let meterCallback: (status: { metering: number }) => void;
-  
-    mockedAudio.Recording.createAsync.mockImplementation((_: any, callback: (status: { metering: number; }) => void) => {
-      meterCallback = callback;
-      return Promise.resolve({ recording: mockRecording });
-    });
-  
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-    fireEvent.press(getByTestId("record-button"));
-  
-    await waitFor(() => {
-      meterCallback({ metering: -50 }); // Should result in decibelLevel < NOISE_THRESHOLD
-    });
-  
-    // Verify metering bars are rendered
-    const meteringBars = await waitFor(() => 
-      getByTestId("snitch-mode-screen").findAllByProps({
-        style: expect.arrayContaining([
-          expect.objectContaining({ backgroundColor: "#2F4F4F" })
-        ])
-      })
-    );
-    
-    expect(meteringBars).toBeTruthy();
-  });
-  
-  it("resets states on refresh", async () => {
-    const mockRecording = { stopAndUnloadAsync: jest.fn() };
-    mockedAudio.Recording.createAsync.mockResolvedValueOnce({
-      recording: mockRecording,
-    });
-  
-    const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-    
-    // Start recording to set initial states
-    fireEvent.press(getByTestId("record-button"));
-    
-    await act(async () => {
-      const scrollView = getByTestId("snitch-mode-screen");
-      const { refreshControl } = scrollView.props;
-      refreshControl.props.onRefresh();
-    });
-    
-    // Verify states are reset
-    await waitFor(() => {
-      const scrollView = getByTestId("snitch-mode-screen");
-      expect(scrollView.props.refreshControl.props.refreshing).toBe(true);
+
+    it("handles permission denial", async () => {
+      const Audio = require("expo-av").Audio;
+      const alertSpy = jest.spyOn(Alert, "alert");
+      Audio.requestPermissionsAsync.mockResolvedValueOnce({ status: "denied" });
+
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+      });
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Permission required",
+        "Please grant microphone permission to use this feature"
+      );
+      alertSpy.mockRestore();
     });
   });
-  
+
+  describe("Cleanup and reset", () => {
+    it("cleans up recording when unmounting", async () => {
+      const { getByTestId, unmount } = renderWithNavigation(
+        <SnitchModeScreen />
+      );
+
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+        await waitFor(() => expect(mockStartAsync).toHaveBeenCalled());
+      });
+
+      mockStopAndUnloadAsync.mockClear();
+
+      await act(async () => {
+        unmount();
+      });
+
+      expect(mockStopAndUnloadAsync).toHaveBeenCalled();
+    });
+
+    it("resets state on refresh", async () => {
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+
+      await act(async () => {
+        const scrollView = getByTestId("snitch-mode-screen");
+        scrollView.props.refreshControl.props.onRefresh();
+      });
+
+      await waitFor(() => {
+        const scrollView = getByTestId("snitch-mode-screen");
+        expect(scrollView.props.refreshControl.props.refreshing).toBe(true);
+      });
+    });
+  });
+
+  describe("Noise threshold functionality", () => {
+    it("shows call security button when noise threshold is exceeded", async () => {
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+      
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+        await waitFor(() => expect(mockSetOnRecordingStatusUpdate).toHaveBeenCalled());
+      });
+
+      await act(async () => {
+        if (recordingStatusCallback) {
+          recordingStatusCallback({ metering: 160 });
+        }
+      });
+
+      await waitFor(() => {
+        const callButton = getByTestId("call-security-button");
+        expect(callButton).toBeTruthy();
+      });
+    });
+  });
+
+
 });

@@ -1,0 +1,25 @@
+appId: "com.leazy.swent"
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "emailInput"
+- inputText: "messaging@tenant.com"
+
+- tapOn:
+    id: "passwordInput"
+- inputText: "123456"
+
+- tapOn:
+    id: "signInButton"
+  
+- tapOn: "OK"
+
+- tapOn:
+    point: "7%,6%" # TODO fix drawer
+
+- tapOn: "Maintenance Requests"
+
+- tapOn:
+    id: "arrowButton"

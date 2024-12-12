@@ -21,6 +21,7 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('../components/Header', () => 'MockHeader');
 jest.mock('../components/CustomTextField', () => 'MockCustomTextField');
 jest.mock('../components/CustomButton', () => 'MockCustomButton');
+
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'MockedIonicons',
 }));

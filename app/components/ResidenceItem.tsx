@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
 import { ResidenceWithId, ApartmentWithId, ResidenceStackParamList } from '../../types/types';
@@ -40,6 +40,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   );
 
   const handleAddApartment = async (name: string) => {
+    console.log('Adding apartment:', name);
     setIsSubmitting(true);
     try {
       const newApartment = {
@@ -49,19 +50,20 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         maintenanceRequests: [],
         situationReportId: ''
       };
-
       const apartmentId = await createApartment(newApartment);
-
+      console.log('Apartment added:', apartmentId);
       if (apartmentId) {
         const updatedApartments = [...residence.apartments, apartmentId];
+        console.log('Updated apartments:', updatedApartments);
         await updateResidence(residence.id, {
           apartments: updatedApartments
         });
-        
+        console.log('Residence updated:', residence.id);
         setLocalApartments(prev => [...prev, { ...newApartment, id: apartmentId }]);
       }
     } catch (error) {
-      console.error('Error creating apartment:', error);
+      console.log('Error adding apartment:', error);
+      Alert.alert('Error adding apartment');
     } finally {
       setIsSubmitting(false);
       setShowAddForm(false);
@@ -69,17 +71,20 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   };
 
   const handleDeleteApartment = async (apartmentId: string) => {
+    console.log('Deleting apartment:', apartmentId);
     try {
       await deleteApartment(apartmentId);
-      
+      console.log('Apartment deleted:', apartmentId);
       const updatedApartments = residence.apartments.filter(id => id !== apartmentId);
+      console.log('Updated apartments:', updatedApartments);
       await updateResidence(residence.id, {
         apartments: updatedApartments
       });
       
       setLocalApartments(prev => prev.filter(apt => apt.id !== apartmentId));
     } catch (error) {
-      console.error('Error deleting apartment:', error);    
+      console.log('Error deleting apartment:', error);
+      Alert.alert('Error deleting apartment');  
     }
   };
 

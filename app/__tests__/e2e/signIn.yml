@@ -3,7 +3,6 @@ appId: "com.leazy.swent"
 - launchApp:
     clearState: true
 
-
 - tapOn:
     id: "emailInput"
 - inputText: "test-e2e-landlord@test.com"

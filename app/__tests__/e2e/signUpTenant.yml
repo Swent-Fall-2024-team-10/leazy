@@ -14,14 +14,17 @@ appId: "com.leazy.swent"
 - tapOn:
     id: "emailInput"
 - inputText: "test-e2e-tenant@test.com"
+- hideKeyboard
 
 - tapOn:
     id: "passwordInput"
 - inputText: "test-e2e-tenant"
+- hideKeyboard
 
 - tapOn:
     id: "confirmPasswordInput"
 - inputText: "test-e2e-tenant"
+- hideKeyboard
 
 - tapOn:
     id: "signUpButton"
@@ -29,34 +32,42 @@ appId: "com.leazy.swent"
 - tapOn:
     id: "testFirstNameField"
 - inputText: "Test Tenant"
+- hideKeyboard
 
 - tapOn:
     id: "testLastNameField"
 - inputText: "E2E Tenant"
+- hideKeyboard
 
 - tapOn:
     id: "testAddressField"
 - inputText: "Test Address"
+- hideKeyboard
 
 - tapOn:
     id: "testZipField"
 - inputText: "12345"
+- hideKeyboard
 
 - tapOn:
     id: "testCityField"
 - inputText: "Test City"
+- hideKeyboard
 
 - tapOn:
     id: "testProvinceField"
 - inputText: "Test Province"
+- hideKeyboard
 
 - tapOn:
     id: "testNumberField"
 - inputText: "123"
+- hideKeyboard
 
 - tapOn:
     id: "testPhoneField"
 - inputText: "1234567890"
+- hideKeyboard
 
 - tapOn:
     id: "testGenreField"

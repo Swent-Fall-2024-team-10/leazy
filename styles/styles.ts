@@ -34,19 +34,19 @@ export const residenceManagementListStyles = StyleSheet.create({
     elevation: 5,
   },
   addApartmentText: {
-    color: '#333333',
+    color: "#333333",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 8,
   },
   searchContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 25,
     margin: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
@@ -57,24 +57,24 @@ export const residenceManagementListStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 15,
-    color: '#333333',
+    color: "#333333",
   },
   searchClearButton: {
     padding: 4,
   },
   flatItem: {
-    width: '90%',
+    width: "90%",
     borderRadius: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginVertical: 4,
   },
   noResultsText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 12,
-    color: '#666666',
+    color: "#666666",
     fontSize: 14,
   },
 });
@@ -105,10 +105,10 @@ export const IconDimension = {
 };
 
 export const LayoutPadding = {
-  Header: '8%',
-  LabelTop: '5%',
-  LabelBottom: '5%',
-  InputField: '1.25%',
+  Header: "8%",
+  LabelTop: "5%",
+  LabelBottom: "5%",
+  InputField: "1.25%",
 } as const;
 
 export const FontSizes = {
@@ -152,15 +152,15 @@ export const Color = {
   ButtonBorder: "#7F7F7F",
   ButtonText: "#FFFFFF",
 
-  IssueBorder : "#7F7F7F",
-  IssueBackground : "#EDEDED",
-  ScreenBackground : "#F5F5F5",
-  
-  TextInputPlaceholder : "#7F7F7F",
-  TextInputBackground : "#D6D3F0",
-  TextInputBorder : "#7F7F7F",
-  TextInputText : "#0B3142",
-  TextInputLabel : "#0F5257",
+  IssueBorder: "#7F7F7F",
+  IssueBackground: "#EDEDED",
+  ScreenBackground: "#F5F5F5",
+
+  TextInputPlaceholder: "#7F7F7F",
+  TextInputBackground: "#D6D3F0",
+  TextInputBorder: "#7F7F7F",
+  TextInputText: "#0B3142",
+  TextInputLabel: "#0F5257",
 
   CameraButtonBackground: "#0F5257",
   CameraButtonBorder: "#7F7F7F",
@@ -190,6 +190,9 @@ export const Color = {
   chatBubbleRightText: "#000000",
 
   chatTimeText: "#7F7F7F",
+  availableBubble: "green",
+  inUseBubble: "orange",
+  underMaintenanceBubble: "red",
 };
 
 export const chatStyles = StyleSheet.create({
@@ -303,8 +306,8 @@ export const appStyles = StyleSheet.create({
 
   // Image Related
   expandedImageNextButton: {
-    position: 'absolute',
-    top: '50%',
+    position: "absolute",
+    top: "50%",
     transform: [{ translateY: -12 }],
     zIndex: 1,
     padding: 8,
@@ -316,16 +319,16 @@ export const appStyles = StyleSheet.create({
   },
 
   carouselImageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
-    position: 'relative',
+    position: "relative",
   },
 
   carouselScrollViewContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   smallThumbnailImage: {
@@ -340,7 +343,7 @@ export const appStyles = StyleSheet.create({
     height: 150,
     marginHorizontal: 5,
     borderRadius: 8,
-    borderColor: 'lightgrey',
+    borderColor: "lightgrey",
     borderWidth: 0.5,
   },
 
@@ -348,7 +351,7 @@ export const appStyles = StyleSheet.create({
   date: {
     fontSize: 16,
     marginBottom: 5,
-    textAlign: 'center',
+    textAlign: "center",
     color: Color.DateText,
   },
 
@@ -358,10 +361,10 @@ export const appStyles = StyleSheet.create({
     marginBottom: 2.5,
     fontWeight: '600',
     color: Color.TextInputLabel,
-    marginLeft: '3%',
-    marginRight: '3%',
-    paddingBottom: '1%',
-    paddingTop: '1%',
+    marginLeft: "3%",
+    marginRight: "3%",
+    paddingBottom: "1%",
+    paddingTop: "1%",
   },
 
   // Layout
@@ -371,16 +374,16 @@ export const appStyles = StyleSheet.create({
 
   // Navigation
   backButton: {
-    top: '7.5%',
-    left: '7.5%',
-    position: 'absolute',
+    top: "7.5%",
+    left: "7.5%",
+    position: "absolute",
     borderRadius: 5,
   },
 
   backButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   submitContainer: {
@@ -393,18 +396,44 @@ export const appStyles = StyleSheet.create({
     borderColor: Color.ButtonBorder,
     borderWidth: 1,
     borderRadius: defaultButtonRadius,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 4,
     marginTop: 16,
   },
 
+  statusText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  statusBubble: {
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    marginTop: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  machineCard: {
+    backgroundColor: "#f5f5f5",
+    padding: 15,
+    borderRadius: 25,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+  },
   submitButtonText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: FontSizes.ButtonText,
     color: Color.ButtonText,
-    fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontWeight: "600",
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 
   // Header
@@ -454,10 +483,10 @@ export const appStyles = StyleSheet.create({
   screenHeader: {
     flex: 1,
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: '3%',
-    alignItems: 'center',
-    textAlign: 'center',
+    fontWeight: "bold",
+    marginBottom: "3%",
+    alignItems: "center",
+    textAlign: "center",
     color: Color.ScreenHeader,
   },
 
@@ -473,7 +502,7 @@ export const appStyles = StyleSheet.create({
 
   // Forms
   formContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 20,
     width: '95%',
     alignSelf: 'center',
@@ -481,18 +510,18 @@ export const appStyles = StyleSheet.create({
   },
 
   formRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 
   formFullWidth: {
-    width: '100%',
+    width: "100%",
     marginVertical: 10,
   },
 
   formHalfWidth: {
-    width: '48%',
+    width: "48%",
     marginVertical: 10,
   },
 
@@ -509,27 +538,27 @@ export const appStyles = StyleSheet.create({
   // Upload
   uploadButton: {
     borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#666',
+    borderStyle: "dashed",
+    borderColor: "#666",
     borderRadius: 8,
     padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 20,
-    width: '90%',
+    width: "90%",
     marginTop: 10,
     flexDirection: 'row',
   },
 
   uploadText: {
-    color: '#666',
+    color: "#666",
     marginTop: 8,
     marginLeft: 20,
   },
 
   descriptionInput: {
     height: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
     paddingTop: 10,
   },
 
@@ -541,14 +570,16 @@ export const appStyles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 16,
     paddingTop: 20,
+    paddingBottom: 20,
+    backgroundColor: "#FFFFFF",
   },
   residenceTitle: {
     fontSize: 28,
-    fontWeight: '600',
-    color: '#0F2B46',
+    fontWeight: "600",
+    color: "#0F2B46",
     letterSpacing: 0.3,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-    alignSelf: 'center',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    alignSelf: "center",
   },
 
   residenceScrollView: {
@@ -569,16 +600,16 @@ export const appStyles = StyleSheet.create({
   },
 
   residenceButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -605,15 +636,15 @@ export const appStyles = StyleSheet.create({
 
   residenceText: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#0F2B46',
+    fontWeight: "500",
+    color: "#0F2B46",
     letterSpacing: 0.2,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 
   residenceIconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   residenceEditButton: {
@@ -630,11 +661,11 @@ export const appStyles = StyleSheet.create({
 
   flatText: {
     fontSize: 16,
-    color: '#0F2B46',
+    color: "#0F2B46",
     paddingVertical: 8,
-    fontWeight: '400',
+    fontWeight: "400",
     letterSpacing: 0.2,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     paddingRight: 10,
   },
 
@@ -647,11 +678,11 @@ export const appStyles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: Color.ButtonBackground,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -669,12 +700,12 @@ export const appStyles = StyleSheet.create({
   // Flat Details Styles
   flatCard: {
     margin: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
@@ -687,10 +718,10 @@ export const appStyles = StyleSheet.create({
 
   flatTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
     color: Color.ScreenHeader,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 
   idContainer: {
@@ -703,19 +734,20 @@ export const appStyles = StyleSheet.create({
   idText: {
     color: Color.TextInputText,
     fontSize: 16,
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 
   flatImageContainer: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 16,
   },
 
   flatImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 
   tenantsSection: {
@@ -725,32 +757,32 @@ export const appStyles = StyleSheet.create({
   },
 
   tenantHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
 
   tenantsTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Color.TextInputText,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 
   tenantRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "white",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
   },
 
   tenantNameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
 
@@ -758,12 +790,12 @@ export const appStyles = StyleSheet.create({
     fontSize: 14,
     color: Color.TextInputText,
     marginLeft: 8,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 
   tenantId: {
     color: Color.TextInputPlaceholder,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
   },
 });
 

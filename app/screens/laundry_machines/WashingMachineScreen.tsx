@@ -20,7 +20,7 @@ import { onSnapshot, Timestamp } from "firebase/firestore";
 import { TimerPickerModal } from "react-native-timer-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import SubmitButton from "../../../app/components/buttons/SubmitButton";
-import { appStyles } from "../../../styles/styles";
+import { appStyles, Color } from "../../../styles/styles";
 
 const WashingMachineScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
@@ -65,7 +65,7 @@ const WashingMachineScreen = () => {
       if (timerIntervals[laundryMachineId]) {
         return;
       }
-      
+
       const now = Date.now();
       const remainingTimeMs = estimatedFinishTime.toMillis() - now;
 
@@ -83,7 +83,7 @@ const WashingMachineScreen = () => {
       const minutes = Math.floor((remainingTimeMs / (1000 * 60)) % 60);
       const seconds = Math.floor((remainingTimeMs / 1000) % 60);
       const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
-      
+
       setRemainingTimes((prev) => ({
         ...prev,
         [laundryMachineId]: formattedTime,
@@ -92,7 +92,8 @@ const WashingMachineScreen = () => {
       // Set up the interval to update the remaining time
       const intervalId = setInterval(async () => {
         const currentTime = Date.now();
-        const currentRemainingTimeMs = estimatedFinishTime.toMillis() - currentTime;
+        const currentRemainingTimeMs =
+          estimatedFinishTime.toMillis() - currentTime;
 
         if (currentRemainingTimeMs <= 0) {
           clearInterval(intervalId);
@@ -109,7 +110,6 @@ const WashingMachineScreen = () => {
         }
 
         // Check if remaining time is under 3 minutes and notification hasn't been sent
-        //no entry for a specific machine in notificationStatus acts as a false
         if (
           currentRemainingTimeMs <= 3 * 60 * 1000 &&
           currentRemainingTimeMs >= 2 * 60 * 1000 + 59 * 1000 &&
@@ -128,7 +128,9 @@ const WashingMachineScreen = () => {
         }
 
         // Calculate hours, minutes, and seconds
-        const hours = Math.floor((currentRemainingTimeMs / (1000 * 60 * 60)) % 24);
+        const hours = Math.floor(
+          (currentRemainingTimeMs / (1000 * 60 * 60)) % 24
+        );
         const minutes = Math.floor((currentRemainingTimeMs / (1000 * 60)) % 60);
         const seconds = Math.floor((currentRemainingTimeMs / 1000) % 60);
 
@@ -154,23 +156,26 @@ const WashingMachineScreen = () => {
     setRefreshing(true);
     try {
       const query = getLaundryMachinesQuery(residenceId);
-      
+
       return onSnapshot(query, (querySnapshot) => {
         const updatedMachines: LaundryMachine[] = [];
-        
+
         querySnapshot.forEach((doc) => {
           const machineData = doc.data() as LaundryMachine;
           updatedMachines.push({
             ...machineData,
-            laundryMachineId: doc.id
+            laundryMachineId: doc.id,
           });
         });
-        
+
         setMachines(updatedMachines);
-        
+
         updatedMachines.forEach((machine) => {
           if (machine.estimatedFinishTime && !machine.isAvailable) {
-            calculateTimer(machine.laundryMachineId, machine.estimatedFinishTime);
+            calculateTimer(
+              machine.laundryMachineId,
+              machine.estimatedFinishTime
+            );
           }
         });
       });
@@ -184,11 +189,11 @@ const WashingMachineScreen = () => {
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
-    
+
     const setup = async () => {
       unsubscribe = await fetchMachines();
     };
-    
+
     setup();
 
     return () => {
@@ -216,13 +221,13 @@ const WashingMachineScreen = () => {
 
   const handleSetTimer = (pickedDuration: Date) => {
     if (selectedMachineId) {
-      const startTime = Timestamp.now(); // Current time as Firebase Timestamp
+      const startTime = Timestamp.now();
       const durationMs =
         pickedDuration.getHours() * 3600 * 1000 +
         pickedDuration.getMinutes() * 60 * 1000 +
         pickedDuration.getSeconds() * 1000;
       const estimatedFinishTime = Timestamp.fromMillis(
-        startTime.toMillis() + durationMs // Add duration in milliseconds
+        startTime.toMillis() + durationMs
       );
       syncTimerWithFirestore(
         selectedMachineId,
@@ -250,128 +255,127 @@ const WashingMachineScreen = () => {
     });
   };
 
-  const getStatus = (machine: LaundryMachine) => {
-    if (!machine.isFunctional) {
-      return {
-        statusText: "Under Maintenance",
-        style: styles.underMaintenanceBubble,
-      };
-    }
-    return machine.isAvailable
-      ? { statusText: "Available", style: styles.availableBubble }
-      : { statusText: "In Use", style: styles.inUseBubble };
-  };
-
   const renderMachines = () => {
-    return machines.map((machine) => {
-      const { statusText, style } = getStatus(machine);
+    return machines.map((machine) => (
+      <View key={machine.laundryMachineId} style={appStyles.machineCard}>
+        <View style={{ flexDirection: "row" }}>
+          <Image
+            source={require("../../../assets/images/washing_machine_icon_png.png")}
+            style={{ width: 120, height: 120, marginRight: 20 }}
+          />
+          <View
+            style={{
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={appStyles.flatTitle}>
+              Machine {machine.laundryMachineId}
+            </Text>
+            <View
+              style={[
+                appStyles.statusBubble,
+                {
+                  backgroundColor: !machine.isFunctional
+                    ? Color.underMaintenanceBubble
+                    : machine.isAvailable
+                    ? Color.availableBubble
+                    : Color.inUseBubble
+                }
+              ]}
+            >
+              <Text style={appStyles.statusText}>
+                {!machine.isFunctional
+                  ? "Under Maintenance"
+                  : machine.isAvailable
+                  ? "Available"
+                  : "In Use"}
+              </Text>
+            </View>
 
-      return (
-        <View key={machine.laundryMachineId} style={styles.machineCard}>
-          <View style={{ flexDirection: "row" }}>
-            <Image
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              source={require("../../../assets/images/washing_machine_icon_png.png")}
-              style={{ width: 120, height: 120, marginRight: 20 }}
-            />
             <View
               style={{
-                flexDirection: "column",
+                marginTop: 10,
+                marginBottom: 10,
                 alignItems: "center",
-                justifyContent: "center",
+                gap: 10,
               }}
             >
-              <Text style={styles.machineTitle}>
-                Machine {machine.laundryMachineId}
-              </Text>
-              <View style={[styles.statusBubble, style]}>
-                <Text style={styles.statusText}>{statusText}</Text>
-              </View>
+              {machine.isAvailable && machine.isFunctional && (
+                <SubmitButton
+                  width={200}
+                  height={40}
+                  disabled={false}
+                  textStyle={{ fontSize: 16 }}
+                  style={appStyles.submitButton}
+                  testID="setTimerButton"
+                  label="Set Timer"
+                  onPress={() => {
+                    setSelectedMachineId(machine.laundryMachineId);
+                    setIsTimerModalVisible(true);
+                  }}
+                />
+              )}
+              {!machine.isAvailable && (
+                <Text style={appStyles.flatText}>
+                  {remainingTimes[machine.laundryMachineId] ||
+                    "Calculating..."}
+                </Text>
+              )}
 
-              {/* Placeholder View for consistent layout */}
-              <View
-                style={{
-                  marginTop: 10,
-                  marginBottom: 10,
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                {machine.isAvailable && machine.isFunctional && (
+              {!machine.isAvailable &&
+                remainingTimes[machine.laundryMachineId] ===
+                  "Cycle completed" &&
+                machine.occupiedBy === userId && (
                   <SubmitButton
                     width={200}
                     height={40}
-                    disabled={false}
                     textStyle={{ fontSize: 16 }}
                     style={appStyles.submitButton}
-                    testID="setTimerButton"
-                    label="Set Timer"
-                    onPress={() => {
-                      setSelectedMachineId(machine.laundryMachineId);
-                      setIsTimerModalVisible(true);
-                    }}
+                    testID="unlockButton"
+                    label="Unlock"
+                    onPress={() =>
+                      handleResetMachine(machine.laundryMachineId)
+                    }
+                    disabled={false}
                   />
                 )}
-                {!machine.isAvailable && (
-                  <Text style={appStyles.flatText}>
-                    {remainingTimes[machine.laundryMachineId] ||
-                      "Calculating..."}
-                  </Text>
+
+              {!machine.isAvailable &&
+                machine.occupiedBy === userId &&
+                remainingTimes[machine.laundryMachineId] !==
+                  "Cycle completed" && (
+                  <SubmitButton
+                    width={200}
+                    height={40}
+                    textStyle={{ fontSize: 16 }}
+                    style={appStyles.submitButton}
+                    testID="cancelTimerButton"
+                    label="Cancel Timer"
+                    onPress={() =>
+                      handleResetMachine(machine.laundryMachineId)
+                    }
+                    disabled={false}
+                  />
                 )}
-
-                {/* Reset button, shown only when cycle is complete */}
-                {!machine.isAvailable &&
-                  remainingTimes[machine.laundryMachineId] ===
-                    "Cycle completed" &&
-                  machine.occupiedBy === userId && ( // Only show if the user started the cycle
-                    <SubmitButton
-                      width={200}
-                      height={40}
-                      textStyle={{ fontStyle: 16 }}
-                      style={appStyles.submitButton}
-                      testID="unlockButton"
-                      label="Unlock"
-                      onPress={() =>
-                        handleResetMachine(machine.laundryMachineId)
-                      }
-                      disabled={false}
-                    />
-                  )}
-
-                {/* Cancel Timer button, shown only when the timer is active */}
-                {!machine.isAvailable &&
-                  machine.occupiedBy === userId && // Only show if the user started the timer
-                  remainingTimes[machine.laundryMachineId] !==
-                    "Cycle completed" && (
-                    <SubmitButton
-                      width={200}
-                      height={40}
-                      textStyle={{ fontStyle: 16 }}
-                      style={appStyles.submitButton}
-                      testID="cancelTimerButton"
-                      label="Cancel Timer"
-                      onPress={() =>
-                        handleResetMachine(machine.laundryMachineId)
-                      }
-                      disabled={false}
-                    />
-                  )}
-              </View>
             </View>
           </View>
         </View>
-      );
-    });
+      </View>
+    ));
   };
 
   return (
     <>
       <Header>
         <View testID="washing-machine-screen" style={styles.container}>
-          <Text style={styles.title}>Laundry Machines</Text>
+          <Text style={appStyles.flatTitle}>Laundry Machines</Text>
           <ScrollView
             testID="scroll-view"
-            contentContainerStyle={machines.length === 0 && styles.centeredContent}
+            contentContainerStyle={
+              machines.length === 0 && styles.centeredContent
+            }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -380,7 +384,7 @@ const WashingMachineScreen = () => {
             }
           >
             {machines.length === 0 ? (
-              <Text style={styles.noMachinesText}>
+              <Text style={appStyles.flatText}>
                 No washing machines available
               </Text>
             ) : (
@@ -406,9 +410,6 @@ const WashingMachineScreen = () => {
             onCancel={() => setIsTimerModalVisible(false)}
             closeOnOverlayPress
             LinearGradient={LinearGradient}
-            styles={{
-              theme: "light",
-            }}
           />
         </View>
       </Header>
@@ -421,66 +422,10 @@ const styles = StyleSheet.create({
     flex: 0.69,
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontFamily: "Inter", // Make sure Inter font is loaded in your project
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  remainingTime: {
-    fontSize: 16,
-    color: "#333",
-    marginTop: 5,
-  },
-  machineCard: {
-    backgroundColor: "#f5f5f5",
-    padding: 15,
-    borderRadius: 25,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-  },
-  machineTitle: {
-    fontSize: 25,
-    color: "#0F5257",
-    fontWeight: "600",
-  },
-  statusBubble: {
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 15,
-    marginTop: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  availableBubble: {
-    backgroundColor: "green",
-  },
-  inUseBubble: {
-    backgroundColor: "orange",
-  },
-  underMaintenanceBubble: {
-    backgroundColor: "red",
-  },
   centeredContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  noMachinesText: {
-    fontSize: 18,
-    color: "gray",
-    textAlign: "center",
   },
 });
 

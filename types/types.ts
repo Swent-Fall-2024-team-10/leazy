@@ -1,12 +1,14 @@
-import { Timestamp } from "@firebase/firestore-types";
+import { Timestamp } from "@firebase/firestore";
 
+// WithId type helper
+export type WithId<T> = T & { id: string };
 // Define the navigation stack types
 export type RootStackParamList = {
-  Home: undefined; // No parameters for Home screen
-  Settings: undefined; // No parameters for Settings screen
-  ListIssues: undefined; // No parameters for ListIssues screen
-  WashingMachine: undefined; // No parameters for WashingMachine screen
-  ManageWashingMachine: undefined; // No parameters for CreateWashingMachine screen
+  Home: undefined;
+  Settings: undefined;
+  ListIssues: undefined;
+  WashingMachine: undefined;
+  ManageWashingMachine: undefined;
 };
 
 export type AuthStackParamList = {
@@ -21,27 +23,27 @@ export type AuthStackParamList = {
     password: string;
   };
 };
+
 export type ResidenceStackParamList = {
   ResidenceList: undefined;
   FlatDetails: {
-    apartment: Apartment;
+    apartment: ApartmentWithId;
   };
   CreateResidence: undefined;
 };
+
 export type ReportStackParamList = {
   Issues: undefined;
   Report: undefined;
   Messaging: {
     chatID: string;
   };
-
   CameraScreen: undefined;
   CapturedMedia: { uri: string; type: "photo" | "video" };
   IssueDetails: {
     requestID: string;
   };
 };
-
 export type LandlordStackParamList = {
   LandlordDashboard: undefined;
   Issues: undefined;
@@ -51,9 +53,8 @@ export type LandlordStackParamList = {
   Messaging: undefined;
 }
 
-// Define types for firestore
 export type TUser = {
-  uid: string; // uid of the user for authentication
+  uid: string;
   type: "tenant" | "landlord";
   name: string;
   email: string;
@@ -67,13 +68,13 @@ export type TUser = {
 };
 
 export type Landlord = {
-  userId: string; // uid of the user
-  residenceIds: string[]; // list of residence ids
+  userId: string;
+  residenceIds: string[];
 };
 
 export type Tenant = {
-  userId: string; // uid of the user
-  maintenanceRequests: string[]; // list of maintenance request ids
+  userId: string;
+  maintenanceRequests: string[];
   apartmentId: string;
   residenceId: string;
 };
@@ -86,11 +87,11 @@ export type Residence = {
   canton: string;
   zip: string;
   country: string;
-  landlordId: string; // uid of the landlord
-  tenantIds: string[]; // list of tenant uids
+  landlordId: string;
+  tenantIds: string[];
   laundryMachineIds: string[];
-  apartments: string[]; // list of apartment ids
-  tenantCodesID: string[]; // list of IDs of tenant unique codes
+  apartments: string[];
+  tenantCodesID: string[];
   situationReportLayout: string[];
 };
 
@@ -104,16 +105,16 @@ export type TenantCode = {
 export type Apartment = {
   apartmentName: string;
   residenceId: string;
-  tenants: string[]; // list of tenant uids
-  maintenanceRequests: string[]; // list of maintenance request ids
-  situationReportId: string[]; 
+  tenants: string[];
+  maintenanceRequests: string[];
+  situationReportId: string[];
 };
 
 export type LaundryMachine = {
   laundryMachineId: string;
   isAvailable: boolean;
   isFunctional: boolean;
-  occupiedBy: string; //for a userID
+  occupiedBy: string;
   startTime: Timestamp;
   estimatedFinishTime: Timestamp;
   notificationScheduled: boolean;
@@ -121,14 +122,14 @@ export type LaundryMachine = {
 
 export type MaintenanceRequest = {
   requestID: string;
-  tenantId: string; // uid of the tenant
-  residenceId: string; // id of the residence
-  apartmentId: string; // id of the apartment
+  tenantId: string;
+  residenceId: string;
+  apartmentId: string;
   openedBy: string;
   requestTitle: string;
   requestDate: string;
   requestDescription: string;
-  picture: string[]; // list of picture urls referenced in the database
+  picture: string[];
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 };
 
@@ -155,9 +156,12 @@ export type SituationReport = {
   apartmentId: string;
   reportForm: string; // SituationReportLayout ID
   remarks: string;
-}
+};
 
-export type Person = {
-  name: string;
-  surname: string;
-}
+// Types with IDs
+export type ResidenceWithId = WithId<Residence>;
+export type ApartmentWithId = WithId<Apartment>;
+export type TenantCodeWithId = WithId<TenantCode>;
+export type LaundryMachineWithId = WithId<LaundryMachine>;
+export type MaintenanceRequestWithId = WithId<MaintenanceRequest>;
+export type SituationReportWithId = WithId<SituationReport>;

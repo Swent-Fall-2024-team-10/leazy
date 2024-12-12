@@ -10,6 +10,7 @@ import {
   ScrollView,
   Dimensions,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import TickingBox from '../../../components/forms/TickingBox';
 import Header from '../../../components/Header';
@@ -26,8 +27,6 @@ import { changeStatus, fetchApartmentNames, fetchResidences, fetchSituationRepor
 import {
   addSituationReport,
   getApartment,
-  deleteSituationReport,
-  getResidence,
 } from '../../../../firebase/firestore/firestore';
 import { SituationReport } from '../../../../types/types';
 import {
@@ -75,8 +74,6 @@ export function GroupedSituationReport({
       {layout.map((group, groupIndex) => {
         const groupName = group[0];
         const items = group[1];
-        console.log(items);
-        console.log(groupName);
         if (items.length > 1) {
           // Render group with more than one item inside a purple container
           return (
@@ -343,9 +340,8 @@ export default function SituationReportScreen() {
       fetchResidences(landlord, setResidencesMappedToName);
     }
 
-    if (selectedResidence) {
+    if (selectedResidence !== '' && selectedResidence !== undefined) {
       fetchApartmentNames(selectedResidence, setApartmentMappedToName);
-      
       fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
     }
     
@@ -354,13 +350,15 @@ export default function SituationReportScreen() {
 
 
   function reset() {
-    setSelectedApartment('');
-    setSelectedResidence('');
     setRemark('');
+    setSelectedResidence('');
+    setSelectedApartment('');
+    setLayout([]);
     setArrivingTenantName('');
     setArrivingTenantSurname('');
     setLeavingTenantName('');
     setLeavingTenantSurname('');
+
     setResetState((prev) => !prev);
   }
 
@@ -513,7 +511,12 @@ export default function SituationReportScreen() {
                 testID='submit'
                 width={ButtonDimensions.smallButtonWidth}
                 height={ButtonDimensions.smallButtonHeight}
-                disabled={false}
+                disabled={
+                  layout === undefined ||
+                  !selectedResidence ||
+                  !selectedApartment ||
+                  layout.length === 0 
+                }
                 onPress={async () => {
 
                   const reportForm = await toDatabase(layout, "Situation Report arrival of " + arrivingTenantName + " " + arrivingTenantSurname);
@@ -541,12 +544,20 @@ export default function SituationReportScreen() {
                     console.log('Apartment not found');
                   }
 
-                  if (apartment?.situationReportId) {
-                    await deleteSituationReport(apartment.situationReportId);
+                  try {
+                    addSituationReport(report, selectedApartment);
+                  
+                    Alert.alert(
+                      'Situation Report',
+                      'Situation Report has been successfully submitted',
+                    );
+                  } catch (error) {
+                    console.error('Error adding document: ', error);
+                    Alert.alert(
+                      'Situation Report',
+                      'Failed to submit the situation report please check your connection and try again',
+                    );
                   }
-
-                  addSituationReport(report, selectedApartment);
-                  navigation.navigate('List Issues' as never);
                 }}
                 style={appStyles.submitButton}
               />

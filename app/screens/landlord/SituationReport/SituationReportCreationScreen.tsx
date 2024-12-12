@@ -24,7 +24,6 @@ import {
   removeGroupFromLayout,
   removeItemFrom,
   toDatabase,
-  toDatabaseTest,
 } from '../../../utils/SituationReport';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import InputField from '../../../components/forms/text_input';
@@ -613,21 +612,27 @@ export default function SituationReportCreation() {
                 style={appStyles.submitButton}
                 textStyle={appStyles.submitButtonText}
                 onPress={async () => {
-                  
-                  const layoutRef = await toDatabaseTest(layout, situationReportName);
-                  let nextLayoutList: string[] = [];
-
-                  if (residence) {
-                    nextLayoutList = residence.situationReportLayout
+                  try{
+                    const layoutRef = await toDatabase(layout, situationReportName);
+                    const residence = await getResidence(selectedResidence);
+                    
+                    const layoutList: string[] = residence?.situationReportLayout?? [];
+                    layoutList.push(layoutRef);
+                    
+                    await updateResidence(selectedResidence, { situationReportLayout: layoutList });
+                   
+                    Alert.alert(
+                      'Situation Report Creation',
+                      'Situation Report has been created successfully',
+                    );
+                    resetStates();
+                  } catch (error){
+                    console.log(error);
+                    Alert.alert(
+                      'Situation Report Creation ',
+                      'An error occurred while creating the situation report please verify your connection and try again',
+                    );
                   }
-                  await updateResidence(selectedResidence, { situationReportLayout: [layoutRef] });
-                 
-                  Alert.alert(
-                    'Situation Report Created',
-                    'Situation Report has been created successfully',
-                  );
-                  navigation.navigate('Situation Report Creation' as never);
-                  resetStates();
                 }}
               />
             </View>

@@ -12,6 +12,7 @@ import {
   where,
   getDocs,
   Timestamp,
+  getFirestore,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -577,23 +578,30 @@ export async function createMachineNotification(userId: string) {
 
 
 export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
-  const collectionRef = collection(db, "situationReports");
   
-  const docRef = await addDoc(collectionRef, situationReport);
-  updateApartment(apartmentId, { situationReportId: docRef.id });
+  const collectionRef = collection(db, "filledReports");
+
+  try {
+    const docRef = await addDoc(collectionRef, {
+      situationReport : situationReport
+    });
+    updateApartment(apartmentId, { situationReportId: docRef.id });
+  } catch {
+    throw new Error("Error creating situation report.");
+  }
+
 }
 
 export async function deleteSituationReport(situationReportId: string) {
-  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportRef = doc(db, "filledReports", situationReportId);
   const situationReportSnap = await getDoc(situationReportRef);
 
-  //this should never happen
   if (!situationReportSnap.exists()) {
     throw new Error("Situation report not found.");
   }
   const apartmentId = situationReportSnap.data().apartmentId;
 
-  await deleteDoc(doc(db, "situationReports", situationReportId));
+  await deleteDoc(doc(db, "filledReports", situationReportId));
   await updateApartment(apartmentId, { situationReportId: "" });
 }
 

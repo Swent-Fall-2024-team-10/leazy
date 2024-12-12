@@ -23,8 +23,6 @@ export async function fetchFromDatabase(
 
   const reportData = reportSnapshot.data();
   const reportName = reportData.layout.label;
-
-  const name: string = reportData.layout.label; 
   const groups: string[] = reportData.layout.value;
 
   const groupDocsQuery = query(

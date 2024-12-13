@@ -1,6 +1,6 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { Alert, Platform, ActionSheetIOS, Linking } from "react-native";
+import { Alert, ActionSheetIOS, Linking } from "react-native";
 import SnitchModeScreen from "../../../screens/SnitchMode/SnitchModeScreen";
 import {
   WaveformVisualizer,
@@ -35,15 +35,14 @@ const mockLinking = {
 };
 
 const mockActionSheet = {
-  showActionSheetWithOptions: jest.fn((options, callback) => {
-    callback(1);
-  }),
+  showActionSheetWithOptions: jest.fn((options, callback) => callback(0))
 };
 
 // Keep your existing mock setups
 jest.mock("react-native/Libraries/ActionSheetIOS/ActionSheetIOS", () => ({
-  showActionSheetWithOptions: (options: unknown, callback: unknown) =>
-    mockActionSheet.showActionSheetWithOptions(options, callback),
+  showActionSheetWithOptions: jest.fn((options, callback) => {
+    setTimeout(() => callback(0), 0);
+  })
 }));
 
 jest.mock("expo-linking", () => mockLinking);
@@ -86,11 +85,26 @@ const renderWithNavigation = (component: React.ReactElement) => {
   return render(component, { wrapper: TestWrapper });
 };
 
+// At the top with other imports
+import { Platform } from 'react-native';
+
+// Create a mutable platform configuration
+const platformConfig = {
+  OS: 'ios' as 'ios' | 'android',
+};
+
+// Mock Platform at the top with other mocks
+jest.mock('react-native/Libraries/Utilities/Platform', () => ({
+  get OS() {
+    return platformConfig.OS;
+  },
+  select: (spec: any) => spec[platformConfig.OS],
+}));
+
 describe("SnitchModeScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     recordingStatusCallback = null;
-    Platform.OS = "ios";
   });
 
   afterEach(() => {
@@ -246,7 +260,6 @@ describe("SnitchModeScreen", () => {
     });
   });
 
-  // Add these tests to your existing SnitchModeScreen.test.tsx file
   describe("Error handling", () => {
     it("handles stop recording errors", async () => {
       const consoleSpy = jest
@@ -277,7 +290,6 @@ describe("SnitchModeScreen", () => {
     });
   });
 
-
   describe("Recording status updates", () => {
     it("handles undefined metering gracefully", async () => {
       const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
@@ -293,6 +305,95 @@ describe("SnitchModeScreen", () => {
       expect(getByTestId("record-button")).toBeTruthy();
     });
   });
+
+  describe("Platform-specific behavior", () => {
+    beforeEach(() => {
+      platformConfig.OS = 'ios';
+      mockActionSheet.showActionSheetWithOptions.mockClear();
+    });
+
+    it("uses ActionSheetIOS on iOS", async () => {
+        platformConfig.OS = 'ios';
+        const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+        
+        // Start recording and trigger noise threshold
+        await act(async () => {
+          fireEvent.press(getByTestId("record-button"));
+          // Make sure recording is initialized
+          await waitFor(() => expect(mockStartAsync).toHaveBeenCalled());
+          
+          // Trigger noise threshold
+          if (recordingStatusCallback) {
+            recordingStatusCallback({ metering: 160 });
+          }
+        });
+      
+        // Wait for call security button to appear
+        const callButton = await waitFor(() => getByTestId("call-security-button"));
+        
+        // Press the call security button
+        await act(async () => {
+          fireEvent.press(callButton);
+        });
+      
+        // Verify ActionSheet was shown
+        expect(ActionSheetIOS.showActionSheetWithOptions).toHaveBeenCalledWith(
+          expect.objectContaining({
+            options: ['Cancel', '🐖 Call Security 🐖'],
+            cancelButtonIndex: 0,
+            message: expect.stringContaining('Call 911')
+          }),
+          expect.any(Function)
+        );
+      });
+
+      it("uses different UI on Android", async () => {
+        platformConfig.OS = 'android';  // Override for Android test
+        const alertSpy = jest.spyOn(Alert, 'alert');
+        const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+        
+        // Start recording and trigger noise threshold
+        await act(async () => {
+          fireEvent.press(getByTestId("record-button"));
+          // Make sure recording is initialized
+          await waitFor(() => expect(mockStartAsync).toHaveBeenCalled());
+          
+          // Trigger noise threshold
+          if (recordingStatusCallback) {
+            recordingStatusCallback({ metering: 160 });
+          }
+        });
+      
+        // Wait for call security button to appear
+        const callButton = await waitFor(() => getByTestId("call-security-button"));
+        
+        // Press the call security button
+        await act(async () => {
+          fireEvent.press(callButton);
+        });
+      
+        // Verify Alert was shown with correct options
+        expect(alertSpy).toHaveBeenCalledWith(
+          '🐖 Call Security 🐖',
+          '🐖 Do you want to call security at 911? 🐖',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel'
+            },
+            {
+              text: '🐖 Call 🐖',
+              onPress: expect.any(Function),
+              style: 'default'
+            }
+          ],
+          { cancelable: true }
+        );
+      
+        // Clean up
+        alertSpy.mockRestore();
+      });
+    });
 });
 
 describe("WaveformVisualizer", () => {

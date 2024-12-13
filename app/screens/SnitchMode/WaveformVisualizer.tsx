@@ -6,6 +6,8 @@ import Animated, {
   withTiming,
   ReduceMotion,
 } from 'react-native-reanimated';
+import { Color } from '../../../styles/styles';
+
 const WAVEFORM_WIDTH = Dimensions.get('window').width * 0.8;
 const BAR_WIDTH = 5;
 const BAR_GAP = 10;
@@ -69,7 +71,7 @@ export const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({
               styles.bar,
               {
                 height: level,
-                backgroundColor: noiseThresholdExceeded ? '#FF4444' : '#2F4F4F',
+                backgroundColor: noiseThresholdExceeded ? '#FF4444' : Color.ButtonBackground,
               },
             ]}
           />

@@ -20,20 +20,22 @@ import TickingBox from '../../../components/forms/TickingBox';
 import {
   addGroupToLayout,
   addSingleItemToGroup,
+  fetchResidences,
   removeGroupFromLayout,
   removeItemFrom,
-  toDatabaseFormat,
+  toDatabase,
 } from '../../../utils/SituationReport';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import InputField from '../../../components/forms/text_input';
 import { KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
-  addSituationReportLayout,
   getResidence,
+  updateResidence,
 } from '../../../../firebase/firestore/firestore';
 import { PickerGroup } from './SituationReportScreen';
 import { useAuth } from '../../../context/AuthContext';
+import { Residence } from '@/types/types';
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -361,28 +363,30 @@ export default function SituationReportCreation() {
   >([]);
   const { landlord } = useAuth();
   const [situationReportName, setSituationReportName] = useState('');
-
+  
   const defaultItemName = '';
   const defaultGroupName = '';
+  
+  let residence: Residence | null = null;
 
   useEffect(() => {
-    const fetchResidences = async () => {
+    const fetchData = async () => {
       if (landlord?.residenceIds) {
-        // Map residence IDs to their corresponding names
-        const mappedResidences = await Promise.all(
-          landlord.residenceIds.map(async (id: string) => {
-            const residence = await getResidence(id);
-            return {
-              label: residence?.residenceName ?? 'Unknown',
-              value: id,
-            };
-          }),
-        );
-        setResidencesMappedToName(mappedResidences);
+        fetchResidences(landlord, setResidencesMappedToName);
+      }
+
+      if (selectedResidence !== ''){
+        try{
+          residence = await getResidence(selectedResidence);
+        } catch {
+          
+        }
       }
     };
-    fetchResidences();
-  }, [landlord?.residenceIds]);
+
+    fetchData();
+  }, [landlord?.residenceIds, selectedResidence]);
+
 
   function resetStates() {
     setSelectedResidence('');
@@ -607,18 +611,28 @@ export default function SituationReportCreation() {
                 height={ButtonDimensions.mediumButtonHeight}
                 style={appStyles.submitButton}
                 textStyle={appStyles.submitButtonText}
-                onPress={() => {
-                  const reportLayout = [
-                    toDatabaseFormat(layout, situationReportName),
-                  ];
-                  const residenceId = selectedResidence;
-                  addSituationReportLayout(reportLayout, residenceId);
-                  Alert.alert(
-                    'Situation Report Created',
-                    'Situation Report has been created successfully',
-                  );
-                  navigation.navigate('Situation Report Creation' as never);
-                  resetStates();
+                onPress={async () => {
+                  try{
+                    const layoutRef = await toDatabase(layout, situationReportName);
+                    const residence = await getResidence(selectedResidence);
+                    
+                    const layoutList: string[] = residence?.situationReportLayout?? [];
+                    layoutList.push(layoutRef);
+                    
+                    await updateResidence(selectedResidence, { situationReportLayout: layoutList });
+                   
+                    Alert.alert(
+                      'Situation Report Creation',
+                      'Situation Report has been created successfully',
+                    );
+                    resetStates();
+                  } catch (error){
+                    console.log(error);
+                    Alert.alert(
+                      'Situation Report Creation ',
+                      'An error occurred while creating the situation report please verify your connection and try again',
+                    );
+                  }
                 }}
               />
             </View>

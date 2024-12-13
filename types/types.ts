@@ -107,7 +107,7 @@ export type Apartment = {
   residenceId: string;
   tenants: string[];
   maintenanceRequests: string[];
-  situationReportId: string;
+  situationReportId: string[];
 };
 
 export type LaundryMachine = {
@@ -133,13 +133,28 @@ export type MaintenanceRequest = {
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 };
 
+export type SituationReportGroup = {
+  label: string;
+  value: string[]; // list of SituationReportSingleton's ID
+}
+
+export type SituationReportSingleton = {
+  label: string;
+  value: number;
+}
+
+export type SituationReportLayout = {
+  label: string;
+  value: string[]; // list of SituationReportGroup's ID
+}
+
 export type SituationReport = {
   reportDate: string;
   arrivingTenant: string;
   leavingTenant: string;
   residenceId: string;
   apartmentId: string;
-  reportForm: string;
+  reportForm: string; // SituationReportLayout ID
   remarks: string;
 };
 

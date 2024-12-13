@@ -11,6 +11,7 @@ import { LandlordProvider } from '../context/LandlordContext';
 import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
 import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
 import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
+import ManageNewsfeedScreen from '../screens/newsfeed/ManageNewsfeedScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -33,7 +34,8 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="ListIssues" component={LandlordListIssuesScreen} />
         <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
         <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
-        <Drawer.Screen name="Newsfeed" component={ViewNewsfeedScreen} />
+        <Drawer.Screen name="ManageNewsfeed" component={ManageNewsfeedScreen} />
+        <Drawer.Screen name="ViewNewsfeed" component={ViewNewsfeedScreen} />
         <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
         <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
         <Drawer.Screen name="Situation Report Form" component={SituationReport} />

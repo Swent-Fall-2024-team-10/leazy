@@ -130,6 +130,20 @@ export type MaintenanceRequest = {
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 };
 
+export type News = {
+  maintenanceRequestID: string;
+  SenderID: string;
+  ReceiverID: string;
+  title: string;
+  content: string;
+  isRead: boolean;
+  createdAt: Timestamp;
+  ReadAt: Timestamp;
+  UpdatedAt: Timestamp;
+  type: "urgent" | "informational";
+  images: string[];
+}
+
 export type SituationReport = {
   reportDate: string;
   arrivingTenant: string;

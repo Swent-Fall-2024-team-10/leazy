@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
-import { Dimensions } from "react-native";
-import { Platform } from "react-native";
+import { StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
+import { Platform } from 'react-native';
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -12,8 +12,6 @@ export type RootStackParamList = {
 export const defaultButtonRadius = 100;
 export const textInputHeight = 40;
 
-
-
 export const borderWidth = {
   thin: 0.5,
   thick: 1,
@@ -21,12 +19,12 @@ export const borderWidth = {
 export const residenceManagementListStyles = StyleSheet.create({
   addApartmentButton: {
     height: 36,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
     borderRadius: 50,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    marginTop:2,
+    marginTop: 2,
     width: '80%',
     alignSelf: 'flex-start',
     shadowColor: '#000',
@@ -82,24 +80,23 @@ export const residenceManagementListStyles = StyleSheet.create({
 });
 
 export const ButtonDimensions = {
+  fullWidthButtonWidth: Dimensions.get('window').width * 0.85,
 
-  fullWidthButtonWidth : Dimensions.get('window').width * 0.85,
+  veryLargeButtonWidth: 300,
+  veryLargeButtonHeight: 44,
 
-  veryLargeButtonWidth : 300,
-  veryLargeButtonHeight : 44,
+  largeButtonWidth: 263,
+  largeButtonHeight: 44,
 
-  largeButtonWidth : 263,
-  largeButtonHeight : 44,
-  
-  smallButtonWidth : 170,
-  smallButtonHeight : 44,
+  smallButtonWidth: 170,
+  smallButtonHeight: 44,
 
-  mediumButtonWidth : 200,
-  mediumButtonHeight : 44,
+  mediumButtonWidth: 200,
+  mediumButtonHeight: 44,
 
-  smallerButtonWidth : 90,
-  smallerButtonHeight : 40,
-}
+  smallerButtonWidth: 90,
+  smallerButtonHeight: 40,
+};
 
 export const IconDimension = {
   smallIcon: 24,
@@ -127,51 +124,51 @@ export const FontSizes = {
 } as const;
 
 export const FontWeight = {
-  ScreenHeader: "bold",
-  DateText: "normal",
-  ButtonText: "bold",
-  TextInputText: "normal",
-  TextInputLabel: "bold",
-  label: "bold",
+  ScreenHeader: 'bold',
+  DateText: 'normal',
+  ButtonText: 'bold',
+  TextInputText: 'normal',
+  TextInputLabel: 'bold',
+  label: 'bold',
 } as const;
 
 export const Color = {
   //ScreenBackground: "#FFFFFF",
-  GrayGroupMargin: "#A3A3A3CC",
-  GrayGroupBackground: "#f2f2f2",
+  GrayGroupMargin: '#A3A3A3CC',
+  GrayGroupBackground: '#f2f2f2',
 
-  GrayText: "#666666",
+  GrayText: '#666666',
 
-  IssueTextBackground: "#FFFFFF",
+  IssueTextBackground: '#FFFFFF',
   CancelColor: '#E74C3C',
   ShadowColor: '#171717',
-  HeaderText: "#0f5257",
-  HeaderBackground: "#e9d5ff",
-  ScreenHeader: "#0f5257",
-  DateText: "#7F7F7F",
-  ButtonBackgroundDisabled: "#7F7F7F",
-  ButtonTextDisabled: "#FFFFFF",
-  ButtonBackground: "#0F5257",
-  ButtonBorder: "#7F7F7F",
-  ButtonText: "#FFFFFF",
+  HeaderText: '#0f5257',
+  HeaderBackground: '#e9d5ff',
+  ScreenHeader: '#0f5257',
+  DateText: '#7F7F7F',
+  ButtonBackgroundDisabled: '#7F7F7F',
+  ButtonTextDisabled: '#FFFFFF',
+  ButtonBackground: '#0F5257',
+  ButtonBorder: '#7F7F7F',
+  ButtonText: '#FFFFFF',
 
-  IssueBorder : "#7F7F7F",
-  IssueBackground : "#EDEDED",
-  ScreenBackground : "#F5F5F5",
-  
-  TextInputPlaceholder : "#7F7F7F",
-  TextInputBackground : "#D6D3F0",
-  TextInputBorder : "#7F7F7F",
-  TextInputText : "#0B3142",
-  TextInputLabel : "#0F5257",
+  IssueBorder: '#7F7F7F',
+  IssueBackground: '#EDEDED',
+  ScreenBackground: '#F5F5F5',
 
-  CameraButtonBackground: "#0F5257",
-  CameraButtonBorder: "#7F7F7F",
-  inProgress: "#F39C12",
-  notStarted: "#E74C3C",
-  completed: "#2ECC71",
-  rejected: "#95A5A6",
-  default: "#95A5A6",
+  TextInputPlaceholder: '#7F7F7F',
+  TextInputBackground: '#D6D3F0',
+  TextInputBorder: '#7F7F7F',
+  TextInputText: '#0B3142',
+  TextInputLabel: '#0F5257',
+
+  CameraButtonBackground: '#0F5257',
+  CameraButtonBorder: '#7F7F7F',
+  inProgress: '#F39C12',
+  notStarted: '#E74C3C',
+  completed: '#2ECC71',
+  rejected: '#95A5A6',
+  default: '#95A5A6',
 };
 
 export const appStyles = StyleSheet.create({
@@ -184,13 +181,13 @@ export const appStyles = StyleSheet.create({
   grayGroupBackground: {
     backgroundColor: Color.GrayGroupBackground,
     borderWidth: 0.5,
-    borderColor: Color.GrayGroupMargin, /* Purple border */
-    borderRadius: 15, /* Rounded corners */
-    justifyContent: "center",
-    padding: "2%",
-    marginBottom: "3%",
+    borderColor: Color.GrayGroupMargin /* Purple border */,
+    borderRadius: 15 /* Rounded corners */,
+    justifyContent: 'center',
+    padding: '5%',
+    marginBottom: '3%',
   },
-  tickingBox : {
+  tickingBox: {
     borderRadius: 5,
   },
 
@@ -204,7 +201,7 @@ export const appStyles = StyleSheet.create({
   },
 
   smallCaptionText: {
-    fontFamily: "Inter-Regular",
+    fontFamily: 'Inter-Regular',
     fontSize: FontSizes.legend,
   },
 
@@ -249,7 +246,7 @@ export const appStyles = StyleSheet.create({
   inputFieldLabel: {
     fontSize: 16,
     marginBottom: 2.5,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Color.TextInputLabel,
     marginLeft: '3%',
     marginRight: '3%',
@@ -277,7 +274,7 @@ export const appStyles = StyleSheet.create({
   },
 
   submitContainer: {
-    flex  : 1,
+    flex: 1,
     alignSelf: 'center',
   },
   // Buttons
@@ -303,18 +300,18 @@ export const appStyles = StyleSheet.create({
   // Header
   appHeader: {
     fontSize: 26,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 7.6,
-    fontFamily: "Inter-Bold",
-    color: "#0f5257",
+    fontFamily: 'Inter-Bold',
+    color: '#0f5257',
     flex: 1,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
   // General Screen
   screenContainer: {
     flex: 1,
-    padding : '6%'
+    padding: '6%',
   },
 
   emptyListText: {
@@ -328,7 +325,7 @@ export const appStyles = StyleSheet.create({
   buttonCancel: {
     backgroundColor: Color.CancelColor,
     borderColor: Color.ButtonBorder,
-    marginRight: "5%",
+    marginRight: '5%',
   },
 
   buttonAccept: {
@@ -349,10 +346,10 @@ export const appStyles = StyleSheet.create({
   // Drawer
   drawerLabel: {
     fontSize: 15,
-    fontWeight: "800",
-    fontFamily: "Inter-Bold",
+    fontWeight: '800',
+    fontFamily: 'Inter-Bold',
     color: Color.ScreenHeader,
-    alignItems: "center",
+    alignItems: 'center',
     borderColor: Color.ScreenHeader,
   },
 
@@ -362,7 +359,7 @@ export const appStyles = StyleSheet.create({
     paddingVertical: 20,
     width: '95%',
     alignSelf: 'center',
-    marginBottom: 500
+    marginBottom: 500,
   },
 
   formRow: {
@@ -403,14 +400,13 @@ export const appStyles = StyleSheet.create({
     marginBottom: 20,
     width: '90%',
     marginTop: 10,
-    flexDirection:'row'
-
+    flexDirection: 'row',
   },
 
   uploadText: {
     color: '#666',
     marginTop: 8,
-    marginLeft:20
+    marginLeft: 20,
   },
 
   descriptionInput: {
@@ -506,7 +502,7 @@ export const appStyles = StyleSheet.create({
 
   flatsContainer: {
     backgroundColor: Color.TextInputBackground,
-    paddingHorizontal:20,
+    paddingHorizontal: 20,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
   },
@@ -653,41 +649,41 @@ export const appStyles = StyleSheet.create({
 
 export const stylesForNonHeaderScreens = StyleSheet.create({
   approvedText: {
-    color: "#3AB700",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#3AB700',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 40,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 48,
     letterSpacing: 0.4,
     marginBottom: 23,
   },
   title: {
     color: Color.TextInputText,
-    textAlign: "center",
-    fontFamily: "Inter",
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 40,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 40,
     letterSpacing: 0.4,
     marginBottom: 24,
   },
   text: {
     color: Color.TextInputText,
-    textAlign: "center",
-    fontFamily: "Inter",
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 24,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 23,
   },
   errorText: {
-    color: "#FF0004",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#FF0004',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 16,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 16,
     letterSpacing: 0.16,
     marginBottom: 20,
@@ -699,46 +695,46 @@ export const stylesForNonHeaderScreens = StyleSheet.create({
 export const stylesForHeaderScreens = StyleSheet.create({
   titleContainer: {
     marginTop: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    alignSelf: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    textAlign: "center",
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
   },
   text: {
-    color: "#0B3142",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#0B3142',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 24,
-    fontStyle: "normal",
-    fontWeight: "400",
+    fontStyle: 'normal',
+    fontWeight: '400',
     lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 23,
   },
   CodeText: {
-    color: "#00ff88",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#00ff88',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 24,
-    fontStyle: "normal",
-    fontWeight: "400",
+    fontStyle: 'normal',
+    fontWeight: '400',
     lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 25,
   },
   errorText: {
-    color: "#FF0004",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#FF0004',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
+    fontStyle: 'normal',
+    fontWeight: '400',
     lineHeight: 16,
     letterSpacing: 0.16,
     marginBottom: 20,
@@ -747,5 +743,5 @@ export const stylesForHeaderScreens = StyleSheet.create({
   },
   tickingBox: {
     borderRadius: 5,
-  }
+  },
 });

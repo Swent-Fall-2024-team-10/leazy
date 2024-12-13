@@ -224,18 +224,18 @@ const NewsfeedManagementScreen = () => {
       <View style={styles.container}>
         <Text style={appStyles.flatTitle}>Newsfeed management</Text>
 
-        <TouchableOpacity
-          style={[appStyles.submitButton, styles.addNewsButton]}
+        <SubmitButton
+          testID='add-news-button'
+          label='+ Add News'
           onPress={() => {
             setEditingNews(undefined);
             setModalVisible(true);
           }}
-        >
-          <View style={styles.buttonContent}>
-            <Plus size={20} color='white' style={styles.buttonIcon} />
-            <Text style={appStyles.submitButtonText}>Add News</Text>
-          </View>
-        </TouchableOpacity>
+          disabled={false}
+          width={380}
+          height={44}
+          style={[appStyles.submitButton, styles.addNewsButton]}
+        />
 
         <View style={[appStyles.grayGroupBackground, styles.newsContainer]}>
           <Text style={styles.sectionTitle}>Currently active news</Text>
@@ -355,8 +355,7 @@ const styles = StyleSheet.create({
   },
   addNewsButton: {
     marginVertical: 15,
-    height: 44,
-    width: '100%',
+    alignSelf: 'center',
   },
   buttonContent: {
     flexDirection: 'row',
@@ -367,7 +366,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   newsContainer: {
-    flex: 1,
+    flex: 0.68,
   },
   mainContainer: {
     flex: 1,

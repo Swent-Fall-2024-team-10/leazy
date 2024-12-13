@@ -22,7 +22,7 @@ import {
 } from '../../../firebase/firestore/firestore';
 import SubmitButton from '../../components/buttons/SubmitButton';
 import CustomTextField from '../../components/CustomTextField';
-
+import Close from '../../components/buttons/Close';
 interface NewsModalProps {
   visible: boolean;
   onClose: () => void;
@@ -80,32 +80,33 @@ const NewsModal: React.FC<NewsModalProps> = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalFormContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+            <View style={appStyles.modalHeader}>
+              <Text style={appStyles.modalTitle}>
                 Add to the residence Newsfeed
               </Text>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <TouchableOpacity onPress={onClose} style={{ padding: 5 }}>
                 <X size={24} color={Color.TextInputText} />
               </TouchableOpacity>
             </View>
+            <View style={styles.inputFields}>
+              <CustomTextField
+                testID='title-input'
+                placeholder='Enter title'
+                value={title}
+                onChangeText={setTitle}
+                style={appStyles.inputFieldLabel}
+              />
 
-            <CustomTextField
-              testID='title-input'
-              placeholder='Enter title'
-              value={title}
-              onChangeText={setTitle}
-              style={styles.titleInput}
-            />
+              <CustomTextField
+                testID='content-input'
+                placeholder='What would you like to announce?'
+                value={content}
+                onChangeText={setContent}
+                style={appStyles.inputFieldLabel}
+              />
+            </View>
 
-            <CustomTextField
-              testID='content-input'
-              placeholder='What would you like to announce?'
-              value={content}
-              onChangeText={setContent}
-              style={styles.textInput}
-            />
-
-            <Text style={styles.subtitleText}>
+            <Text style={appStyles.flatText}>
               How would you like the post to appear for tenants?
             </Text>
 
@@ -238,39 +239,42 @@ const NewsfeedManagementScreen = () => {
         />
 
         <View style={[appStyles.grayGroupBackground, styles.newsContainer]}>
-          <Text style={styles.sectionTitle}>Currently active news</Text>
+          <Text style={appStyles.sectionTitle}>Currently active news</Text>
 
-          <ScrollView style={styles.newsList}>
+          <ScrollView style={{ flex: 1 }}>
             {news.map((item) => (
               <View key={item.maintenanceRequestID} style={styles.newsItem}>
                 <NewsIcon type={item.type} />
                 <View style={styles.newsContent}>
                   <View style={styles.newsHeader}>
-                    <Text style={styles.newsTitle}>{item.title}</Text>
-                    <Text style={styles.newsDate}>
-                      {item.createdAt.toDate().toLocaleDateString()}
-                    </Text>
+                    <Text style={appStyles.tenantsTitle}>{item.title}</Text>
+                    <Text>{item.createdAt.toDate().toLocaleDateString()}</Text>
                   </View>
-                  <Text style={styles.newsText}>{item.content}</Text>
+                  <Text style={appStyles.flatText}>{item.content}</Text>
                   <View style={styles.actionButtons}>
-                    <TouchableOpacity
+                    <SubmitButton
+                      testID='edit-news-button'
+                      label='Edit'
                       onPress={() => {
                         setEditingNews(item);
                         setModalVisible(true);
                       }}
+                      disabled={false}
+                      width={100}
+                      height={40}
                       style={styles.editButton}
-                    >
-                      <Text style={styles.editButtonText}>Edit</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
+                    />
+                    <SubmitButton
+                      testID='delete-news-button'
+                      label='Delete'
                       onPress={() =>
                         handleDeleteNews(item.maintenanceRequestID)
                       }
+                      disabled={false}
+                      width={100}
+                      height={40}
                       style={styles.deleteButton}
-                    >
-                      <Text style={styles.deleteButtonText}>Delete</Text>
-                    </TouchableOpacity>
+                    />
                   </View>
                 </View>
               </View>
@@ -293,6 +297,11 @@ const NewsfeedManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  inputFields: {
+    marginTop: 10,
+    marginBottom: 10,
+    gap: 10,
+  },
   newsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -305,11 +314,6 @@ const styles = StyleSheet.create({
     color: Color.TextInputText,
     flex: 1,
   },
-  newsDate: {
-    fontSize: 12,
-    color: Color.GrayText,
-    marginLeft: 8,
-  },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -317,7 +321,6 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: '#FFA500', // Orange color for Edit button
-    width: 100,
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -380,13 +383,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-    color: Color.HeaderText,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-  },
+
   newsList: {
     flex: 1,
   },
@@ -430,9 +427,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 25,
     padding: 20,
-    justifyContent: 'space-between', // Add this to create space between content
     minHeight: 400, // Add minimum height to ensure proper spacing
+    flexDirection: 'column',
+    justifyContent: 'space-between', // Add this to create space between content
     display: 'flex', // Ensure flex layout
+  },
+  modalFormContent: {
+    flex: 1, // Take up available space
   },
 
   submitButton: {
@@ -443,23 +444,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 'auto', // Push button to bottom
   },
-  modalFormContent: {
-    flex: 1, // Take up available space
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Color.TextInputText,
-  },
-  closeButton: {
-    padding: 5,
-  },
+
   textInput: {
     borderWidth: 1,
     borderColor: Color.TextInputBorder,
@@ -479,7 +464,6 @@ const styles = StyleSheet.create({
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-
     gap: 10,
   },
   typeButton: {

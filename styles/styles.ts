@@ -234,6 +234,26 @@ export const appStyles = StyleSheet.create({
     borderWidth: 0.5,
   },
 
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Color.TextInputText,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+    color: Color.HeaderText,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
   // Date and Time
   date: {
     fontSize: 16,

@@ -154,7 +154,13 @@ const SnitchModeScreen: React.FC = () => {
           },
           {
             text: "🐖 Call 🐖",
-            onPress: () => Linking.openURL(`tel:${phoneNumber}`),
+            onPress: async () => {
+              try {
+                await Linking.openURL(`tel:${phoneNumber}`);
+              } catch (error) {
+                console.error('Error opening phone dialer:', error);
+              }
+            },
             style: "default",
           },
         ],

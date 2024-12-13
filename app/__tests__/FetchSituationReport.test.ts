@@ -2,16 +2,12 @@ import { fetchSituationReportLayout } from '../utils/SituationReport';
 import { getResidence } from "../../firebase/firestore/firestore";
 import { ResidenceWithId } from "../../types/types";
 import { 
-    DocumentSnapshot, 
-    DocumentData, 
-    getFirestore, 
     getDoc, 
     getDocs,
     doc,
     collection,
     query,
     where,
-    QuerySnapshot
 } from "firebase/firestore";
 
 // Mock Firebase

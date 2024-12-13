@@ -233,7 +233,6 @@ export async function toDatabase(
   reportName: string
 ): Promise<string> {
   const db = getFirestore();
-  const BATCH_LIMIT = 500; 
   const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
 
   let batch = writeBatch(db);
@@ -263,12 +262,6 @@ export async function toDatabase(
       singletonRefs.push(singletonRef.id);
 
       batchCount++;
-
-      if (batchCount === BATCH_LIMIT) {
-        await batch.commit();
-        batch = writeBatch(db);
-        batchCount = 0;
-      }
     }
 
     const groupData = { label: groupName, value: singletonRefs }; 
@@ -276,14 +269,6 @@ export async function toDatabase(
     batch.set(groupRef, groupData); 
 
     groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
-
-    batchCount++;
-
-    if (batchCount === BATCH_LIMIT) {
-      await batch.commit();
-      batch = writeBatch(db);
-      batchCount = 0;
-    }
   }
 
   const reportLayout: SituationReportLayout = {

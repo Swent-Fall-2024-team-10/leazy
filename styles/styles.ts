@@ -859,3 +859,50 @@ export const stylesForHeaderScreens = StyleSheet.create({
     borderRadius: 5,
   }
 });
+
+export const stylesForSnitchMode = StyleSheet.create({
+  recorderContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Dimensions.get('window').width * 0.05,
+    marginTop: "-50%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  recordButton: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Color.ButtonBackground,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Dimensions.get('window').width * 0.05,
+    elevation: Platform.OS === "android" ? 5 : 0,
+  },
+  callSecurityButton: {
+    backgroundColor: Color.ButtonBackground,
+    paddingHorizontal: Dimensions.get('window').width * 0.05,
+    paddingVertical: Dimensions.get('window').width * 0.025,
+    borderRadius: 25,
+    elevation: Platform.OS === "android" ? 3 : 0,
+  },
+  callSecurityText: {
+    color: "white",
+    fontSize: 16,
+    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
+  },
+  statusText: {
+    marginBottom: 40,
+    fontSize: 16,
+    textAlign: "center",
+    color: '#0F2B46',
+    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+});

@@ -1,94 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { appStyles } from '../../../styles/styles';
-import { Residence, ResidenceStackParamList, Apartment } from '../../../types/types';
+import { ResidenceStackParamList, ResidenceWithId } from '../../../types/types';
 import Header from '../../components/Header';
 import ApartmentItem from '../../components/ApartmentItem';
 import ResidenceItem from '../../components/ResidenceItem';
-
-// Mock Data
-const mockResidences = new Map<string, Residence>([
-  ['R1', {
-    residenceName: 'R1',
-    street: 'Maple Avenue',
-    number: '123',
-    city: 'Springfield',
-    canton: 'VD',
-    zip: '1000',
-    country: 'Switzerland',
-    landlordId: 'L123',
-    tenantIds: ['T1', 'T2', 'T3', 'T4', 'T5'],
-    laundryMachineIds: ['LM1', 'LM2'],
-    apartments: ['A1', 'A2', 'A3'],
-    tenantCodesID: ['TC1', 'TC2', 'TC3'],
-    situationReportLayout: []
-  }],
-  ['R2', {
-    residenceName: 'R2',
-    street: 'Oak Street',
-    number: '456',
-    city: 'Springfield',
-    canton: 'VD',
-    zip: '1000',
-    country: 'Switzerland',
-    landlordId: 'L123',
-    tenantIds: ['T6', 'T7', 'T8', 'T9'],
-    laundryMachineIds: ['LM3', 'LM4'],
-    apartments: ['A4', 'A5'],
-    tenantCodesID: ['TC4', 'TC5'],
-    situationReportLayout: []
-  }]
-]);
-
-const mockApartments: Map<string, Apartment[]> = new Map([
-  ['R1', [
-    {
-      apartmentName: 'A1',
-      residenceId: 'R1',
-      tenants: ['T1', 'T2'],
-      maintenanceRequests: ['MR1', 'MR2'],
-      situationReportId: 'none'
-    },
-    {
-      apartmentName: 'A2',
-      residenceId: 'R1',
-      tenants: ['T3'],
-      maintenanceRequests: [],
-      situationReportId: 'none'
-    },
-    {
-      apartmentName: 'A3',
-      residenceId: 'R1',
-      tenants: ['T4', 'T5'],
-      maintenanceRequests: ['MR3'],
-      situationReportId: 'none'
-    }
-  ]],
-  ['R2', [
-    {
-      apartmentName: 'A4',
-      residenceId: 'R2',
-      tenants: ['T6', 'T7'],
-      maintenanceRequests: ['MR4'],
-      situationReportId: 'none'
-    }
-  ]]
-]);
+import { useProperty } from '../../context/LandlordContext';
 
 const ResidencesListScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const [expandedResidence, setExpandedResidence] = useState<string | null>(null);
+  const { residences, residenceMap, isLoading, error } = useProperty();
 
-  const residenceElements = Array.from(mockResidences.entries()).map(([residenceId, residence]) => (
+  // This useEffect will trigger whenever the data from useProperty changes
+  useEffect(() => {
+    // If residenceMap changes and the currently expanded residence no longer exists,
+    // reset the expanded state
+    if (expandedResidence && !residences.find(r => r.id === expandedResidence)) {
+      setExpandedResidence(null);
+    }
+  }, [residences, residenceMap, isLoading, error, expandedResidence]);
+
+  if (isLoading) {
+    return (
+      <Header>
+        <View style={appStyles.screenContainer}>
+          <Text>Loading...</Text>
+        </View>
+      </Header>
+    );
+  }
+
+  if (error) {
+    return (
+      <Header>
+        <View style={appStyles.screenContainer}>
+          <Text>Error: {error.message}</Text>
+        </View>
+      </Header>
+    );
+  }
+
+  const residenceElements = residences.map((residence: ResidenceWithId) => (
     <ResidenceItem
-      key={residenceId}
+      key={residence.id}
       residence={residence}
-      apartments={mockApartments.get(residenceId) || []}
-      isExpanded={expandedResidence === residenceId}
+      apartments={residenceMap.get(residence) || []}
+      isExpanded={expandedResidence === residence.id}
       onPress={() => setExpandedResidence(
-        expandedResidence === residenceId ? null : residenceId
+        expandedResidence === residence.id ? null : residence.id
       )}
       navigation={navigation}
     />
@@ -102,7 +64,6 @@ const ResidencesListScreen: React.FC = () => {
             Your Residences
           </Text>
         </View>
-        
         <ScrollView
           testID="residences-scroll-view"
           style={appStyles.residenceScrollView}
@@ -111,7 +72,6 @@ const ResidencesListScreen: React.FC = () => {
         >
           {residenceElements}
         </ScrollView>
-
         <Pressable
           testID="add-residence-button"
           style={({ pressed }) => [
@@ -127,5 +87,4 @@ const ResidencesListScreen: React.FC = () => {
   );
 };
 
-export { ApartmentItem, ResidenceItem };
 export default ResidencesListScreen;

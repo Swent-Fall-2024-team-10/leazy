@@ -13,6 +13,7 @@ import SituationReport from '../screens/landlord/SituationReport/SituationReport
 import IssueStackLandlord from './IssueStackLandlord';
 
 
+
 const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {
@@ -37,7 +38,7 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
         <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
         <Drawer.Screen name="Situation Report Form" component={SituationReport} />
-        <Drawer.Screen name="Settings" component={SettingsScreen} />
+        <Drawer.Screen name="Settings" component={SettingsScreen} />  
       </Drawer.Navigator>
     </LandlordProvider>
   );

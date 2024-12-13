@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import Header from "../../components/Header";
+import React, { useState, useEffect } from 'react';
+import Header from '../../components/Header';
 import {
   View,
   Text,
@@ -11,13 +11,13 @@ import {
   RefreshControl,
   Pressable,
   StyleSheet,
-} from "react-native";
-import { appStyles } from "../../../styles/styles";
-import { Audio } from "expo-av";
-import { FontAwesome } from "@expo/vector-icons";
-import * as Linking from "expo-linking";
-import { WaveformVisualizer } from "./WaveformVisualizer";
-import { stylesForSnitchMode } from "../../../styles/styles";
+} from 'react-native';
+import { appStyles } from '../../../styles/styles';
+import { Audio } from 'expo-av';
+import { FontAwesome } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
+import { WaveformVisualizer } from './WaveformVisualizer';
+import { stylesForSnitchMode } from '../../../styles/styles';
 
 const SnitchModeScreen: React.FC = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -39,10 +39,10 @@ const SnitchModeScreen: React.FC = () => {
   const startRecording = async () => {
     try {
       const permission = await Audio.requestPermissionsAsync();
-      if (permission.status !== "granted") {
+      if (permission.status !== 'granted') {
         Alert.alert(
-          "Permission required",
-          "Please grant microphone permission to use this feature"
+          'Permission required',
+          'Please grant microphone permission to use this feature',
         );
         return;
       }
@@ -58,7 +58,7 @@ const SnitchModeScreen: React.FC = () => {
           ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
           android: {
             ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
-            extension: ".m4a",
+            extension: '.m4a',
             outputFormat: Audio.AndroidOutputFormat.MPEG_4,
             audioEncoder: Audio.AndroidAudioEncoder.AAC,
             sampleRate: 44100,
@@ -67,7 +67,7 @@ const SnitchModeScreen: React.FC = () => {
           },
           ios: {
             ...Audio.RecordingOptionsPresets.HIGH_QUALITY.ios,
-            extension: ".m4a",
+            extension: '.m4a',
             outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
             audioQuality: Audio.IOSAudioQuality.HIGH,
             sampleRate: 44100,
@@ -87,7 +87,7 @@ const SnitchModeScreen: React.FC = () => {
 
             const decibelLevel = Math.max(
               0,
-              ((status.metering + 160) / 160) * 120
+              ((status.metering + 160) / 160) * 120,
             );
 
             if (decibelLevel >= NOISE_THRESHOLD) {
@@ -104,12 +104,12 @@ const SnitchModeScreen: React.FC = () => {
         setIsRecording(true);
         setNoiseThresholdExceeded(false);
       } catch (error) {
-        console.error("Error preparing recorder:", error);
-        Alert.alert("Error", "Failed to prepare audio recorder");
+        console.error('Error preparing recorder:', error);
+        Alert.alert('Error', 'Failed to prepare audio recorder');
       }
     } catch (err) {
-      console.error("Failed to start recording", err);
-      Alert.alert("Error", "Failed to start recording");
+      console.error('Failed to start recording', err);
+      Alert.alert('Error', 'Failed to start recording');
     }
   };
 
@@ -121,19 +121,19 @@ const SnitchModeScreen: React.FC = () => {
       setIsRecording(false);
       await recordingToStop.stopAndUnloadAsync();
     } catch (err) {
-      console.error("Failed to stop recording", err);
+      console.error('Failed to stop recording', err);
       setRecording(null);
       setIsRecording(false);
     }
   };
 
   const handleCallSecurity = () => {
-    const phoneNumber = "911";
+    const phoneNumber = '911';
 
-    if (Platform.OS === "ios") {
+    if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["Cancel", "🐖 Call Security 🐖"],
+          options: ['Cancel', '🐖 Call Security 🐖'],
           cancelButtonIndex: 0,
           message: `🐖 Call ${phoneNumber} 🐖`,
         },
@@ -141,30 +141,32 @@ const SnitchModeScreen: React.FC = () => {
           if (buttonIndex === 1) {
             Linking.openURL(`tel:${phoneNumber}`);
           }
-        }
+        },
       );
     } else {
       Alert.alert(
-        "🐖 Call Security 🐖",
+        '🐖 Call Security 🐖',
         `🐖 Do you want to call security at ${phoneNumber}? 🐖`,
         [
           {
-            text: "Cancel",
-            style: "cancel",
+            text: 'Cancel',
+            style: 'cancel',
           },
           {
-            text: "🐖 Call 🐖",
-            onPress: async () => {
-              try {
-                await Linking.openURL(`tel:${phoneNumber}`);
-              } catch (error) {
-                console.error('Error opening phone dialer:', error);
-              }
+            text: '🐖 Call 🐖',
+            onPress: () => {
+              void (async () => {
+                try {
+                  await Linking.openURL(`tel:${phoneNumber}`);
+                } catch (error) {
+                  console.error('Error opening phone dialer:', error);
+                }
+              })();
             },
-            style: "default",
+            style: 'default',
           },
         ],
-        { cancelable: true }
+        { cancelable: true },
       );
     }
   };
@@ -183,7 +185,7 @@ const SnitchModeScreen: React.FC = () => {
   return (
     <Header>
       <ScrollView
-        testID="snitch-mode-screen"
+        testID='snitch-mode-screen'
         style={appStyles.screenContainer}
         contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={
@@ -192,13 +194,13 @@ const SnitchModeScreen: React.FC = () => {
       >
         <View style={{ flex: 1 }}>
           <View style={appStyles.residenceHeaderContainer}>
-            <Text testID="snitch-mode-title" style={appStyles.residenceTitle}>
+            <Text testID='snitch-mode-title' style={appStyles.residenceTitle}>
               🤓 Snitch Mode 🤓
             </Text>
             <Text
               style={[
                 appStyles.flatText,
-                { textAlign: "center", marginTop: 20 },
+                { textAlign: 'center', marginTop: 20 },
               ]}
             >
               If your neighbors are making too much noise (above 100dB),
@@ -217,14 +219,14 @@ const SnitchModeScreen: React.FC = () => {
             )}
 
             <TouchableOpacity
-              testID="record-button"
+              testID='record-button'
               style={stylesForSnitchMode.recordButton}
               onPress={isRecording ? stopRecording : startRecording}
             >
               <FontAwesome
-                name={isRecording ? "stop-circle" : "microphone"}
+                name={isRecording ? 'stop-circle' : 'microphone'}
                 size={24}
-                color="white"
+                color='white'
               />
             </TouchableOpacity>
 
@@ -232,8 +234,8 @@ const SnitchModeScreen: React.FC = () => {
               <>
                 {isRecording ? (
                   <Text style={stylesForSnitchMode.statusText}>
-                    {" "}
-                    Wait till the noise level reaches the acceptable limit{" "}
+                    {' '}
+                    Wait till the noise level reaches the acceptable limit{' '}
                   </Text>
                 ) : noiseThresholdExceeded ? (
                   <Text style={stylesForSnitchMode.statusText}>
@@ -242,7 +244,7 @@ const SnitchModeScreen: React.FC = () => {
                 ) : null}
 
                 <Pressable
-                  testID="call-security-button"
+                  testID='call-security-button'
                   style={[
                     stylesForSnitchMode.callSecurityButton,
                     !noiseThresholdExceeded &&
@@ -250,9 +252,9 @@ const SnitchModeScreen: React.FC = () => {
                   ]}
                   onPress={handleCallSecurity}
                   disabled={!noiseThresholdExceeded}
-                  android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+                  android_ripple={{ color: 'rgba(255, 255, 255, 0.3)' }}
                 >
-                  <Text style={stylesForSnitchMode.callSecurityText}>    🐖     </Text>
+                  <Text style={stylesForSnitchMode.callSecurityText}> 🐖 </Text>
                 </Pressable>
               </>
             )}

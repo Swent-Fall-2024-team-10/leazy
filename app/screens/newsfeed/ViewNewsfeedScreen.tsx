@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,11 @@ import { Bell, Info, ChevronDown, ChevronUp } from 'lucide-react-native';
 import Header from '../../../app/components/Header';
 import { appStyles, Color } from '../../../styles/styles';
 import { Timestamp } from 'firebase/firestore';
-import 'react-native-gesture-handler';
 import { News } from '../../../types/types';
+import {
+  getNewsByReceiver,
+  markNewsAsRead,
+} from '../../../firebase/firestore/firestore';
 
 interface NewsfeedSectionProps {
   title: string;
@@ -30,7 +33,27 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
   isExpandable = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const displayedNews = isExpandable ? (isExpanded ? news : news.slice(0, 2)) : news;
+
+  // Enhanced sorting logic: urgent first, then unread, then by date
+  const sortedNews = [...news].sort((a, b) => {
+    // First sort by urgent status
+    if (a.type === 'urgent' && b.type !== 'urgent') return -1;
+    if (a.type !== 'urgent' && b.type === 'urgent') return 1;
+
+    // Within same type (urgent/non-urgent), sort by read status
+    if (a.isRead !== b.isRead) {
+      return a.isRead ? 1 : -1;
+    }
+
+    // Finally sort by date within each group
+    return b.createdAt.seconds - a.createdAt.seconds;
+  });
+
+  const displayedNews = isExpandable
+    ? isExpanded
+      ? sortedNews
+      : sortedNews.slice(0, 2)
+    : sortedNews;
 
   const formatDate = (timestamp: Timestamp) => {
     const date = timestamp.toDate();
@@ -42,6 +65,13 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
     });
   };
 
+  const NewsIcon = ({ type }: { type: News['type'] }) => {
+    if (type === 'urgent') {
+      return <Bell size={24} color='#FF6B6B' style={styles.icon} />;
+    }
+    return <Info size={24} color={Color.HeaderText} style={styles.icon} />;
+  };
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -49,13 +79,20 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
         {displayedNews.map((item) => (
           <TouchableOpacity
             key={item.maintenanceRequestID}
-            style={[styles.postCard, item.isRead && styles.viewedPost]}
+            style={[
+              styles.postCard,
+              item.isRead && styles.viewedPost,
+              !item.isRead && styles.unreadPost,
+            ]}
             onPress={() => onNewsPress(item)}
           >
             <View style={styles.postContent}>
-              <Info size={24} color={Color.HeaderText} style={styles.icon} />
+              <NewsIcon type={item.type} />
               <View style={styles.postTextContainer}>
-                <Text style={styles.postTitle}>{item.title}</Text>
+                <View style={styles.titleContainer}>
+                  <Text style={[styles.postTitle]}>{item.title}</Text>
+                  {!item.isRead && <View style={styles.unreadDot} />}
+                </View>
                 <Text style={styles.postText}>{item.content}</Text>
                 <Text style={styles.timestamp}>
                   {formatDate(item.createdAt as Timestamp)}
@@ -63,8 +100,8 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
               </View>
             </View>
             {item.images && item.images.length > 0 && (
-              <ScrollView 
-                horizontal 
+              <ScrollView
+                horizontal
                 style={styles.imageScroll}
                 showsHorizontalScrollIndicator={false}
               >
@@ -98,156 +135,116 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
 
 const NewsfeedScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const [generalNews, setGeneralNews] = useState<News[]>([
-    {
-      maintenanceRequestID: '1',
-      SenderID: 'admin',
-      ReceiverID: 'all',
-      title: 'Maintenance Notice',
-      content: 'Washing machine 3 will be in maintenance on July 14th from 9am to 1pm',
-      isRead: false,
-      createdAt: Timestamp.now(),
-      ReadAt: Timestamp.now(),
-      UpdatedAt: Timestamp.now(),
-      type: "urgent",
-      images: [],
-    },
-    {
-      maintenanceRequestID: '2',
-      SenderID: 'admin',
-      ReceiverID: 'all',
-      title: 'Fiber Installation',
-      content: 'Fiber optic cable will be installed on May 29th in the morning. Please use the south entrance instead.',
-      isRead: false,
-      createdAt: Timestamp.now(),
-      ReadAt: Timestamp.now(),
-      UpdatedAt: Timestamp.now(),
-      images: [],
-      type: "informational",
-    },
-    {
-      maintenanceRequestID: '3',
-      SenderID: 'admin',
-      ReceiverID: 'all',
-      title: 'General Inspection',
-      content: 'Remember that general inspections take place tomorrow afternoon.',
-      isRead: false,
-      createdAt: Timestamp.now(),
-      ReadAt: Timestamp.now(),
-      UpdatedAt: Timestamp.now(),
-      images: [],
-      type: "informational",
-    },
-  ]);
+  const [generalNews, setGeneralNews] = useState<News[]>([]);
+  const [personalNews, setPersonalNews] = useState<News[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const [personalNews, setPersonalNews] = useState<News[]>([
-    {
-      maintenanceRequestID: '4',
-      SenderID: 'system',
-      ReceiverID: 'user123',
-      title: 'Laundry Notification',
-      content: 'Your washing machine cycle is completed',
-      isRead: false,
-      createdAt: Timestamp.now(),
-      ReadAt: Timestamp.now(),
-      UpdatedAt: Timestamp.now(),
-      images: [],
-      type: "informational",
-    },
-    {
-      maintenanceRequestID: '5',
-      SenderID: 'system',
-      ReceiverID: 'user123',
-      title: 'Maintenance Update',
-      content: 'Your maintenance request for the radiator has been updated to "in progress"',
-      isRead: false,
-      createdAt: Timestamp.now(),
-      ReadAt: Timestamp.now(),
-      UpdatedAt: Timestamp.now(),
-      images: [],
-      type: "informational",
-    },
-    {
-      maintenanceRequestID: '6',
-      SenderID: 'system',
-      ReceiverID: 'user123',
-      title: 'Issue Resolution',
-      content: 'The maintenance team has resolved your reported issue with the kitchen sink.',
-      isRead: false,
-      createdAt: Timestamp.now(),
-      ReadAt: Timestamp.now(),
-      UpdatedAt: Timestamp.now(),
-      images: [],
-      type: "informational",
-    },
-  ]);
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      const [generalNewsItems, personalNewsItems] = await Promise.all([
+        getNewsByReceiver('all'),
+        getNewsByReceiver('currentUserId'), // Replace with actual user ID
+      ]);
+
+      setGeneralNews(generalNewsItems);
+      setPersonalNews(personalNewsItems);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Add fetch logic here
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+    fetchNews().finally(() => setRefreshing(false));
   }, []);
 
   const handleNewsPress = async (news: News) => {
-    // Update read status in local state
-    if (news.ReceiverID === 'all') {
-      setGeneralNews(prev =>
-        prev.map(item =>
-          item.maintenanceRequestID === news.maintenanceRequestID
-            ? { ...item, isRead: true }
-            : item
-        )
-      );
-    } else {
-      setPersonalNews(prev =>
-        prev.map(item =>
-          item.maintenanceRequestID === news.maintenanceRequestID
-            ? { ...item, isRead: true }
-            : item
-        )
-      );
-    }
+    // Prevent multiple rapid presses
+    if (isUpdating) return;
 
-    // TODO: Update in Firestore
+    try {
+      setIsUpdating(true);
+
+      // Update in Firestore first
+      await markNewsAsRead(news.maintenanceRequestID);
+
+      // After successful Firestore update, update local state
+      if (news.ReceiverID === 'all') {
+        setGeneralNews((prev) =>
+          prev.map((item) =>
+            item.maintenanceRequestID === news.maintenanceRequestID
+              ? {
+                  ...item,
+                  isRead: true,
+                  ReadAt: Timestamp.now(),
+                }
+              : item,
+          ),
+        );
+      } else {
+        setPersonalNews((prev) =>
+          prev.map((item) =>
+            item.maintenanceRequestID === news.maintenanceRequestID
+              ? {
+                  ...item,
+                  isRead: true,
+                  ReadAt: Timestamp.now(),
+                }
+              : item,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error('Error marking news as read:', error);
+      // Optionally show an error message to the user
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
     <Header>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollViewContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <Text style={appStyles.flatTitle}>Newsfeed</Text>
-        
-        <NewsfeedSection
-          title="Important information regarding your residence"
-          news={generalNews}
-          onNewsPress={handleNewsPress}
-          isExpandable={true}
-        />
+      <View style={styles.container}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <Text style={appStyles.flatTitle}>Newsfeed</Text>
 
-        <NewsfeedSection
-          title="Updates for you"
-          news={personalNews}
-          onNewsPress={handleNewsPress}
-        />
-        
-        <View style={styles.bottomPadding} />
-      </ScrollView>
+          <NewsfeedSection
+            title='Important information regarding your residence'
+            news={generalNews}
+            onNewsPress={handleNewsPress}
+            isExpandable={true}
+          />
+
+          <NewsfeedSection
+            title='Updates for you'
+            news={personalNews}
+            onNewsPress={handleNewsPress}
+          />
+
+          <View style={styles.bottomPadding} />
+        </ScrollView>
+      </View>
     </Header>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
-    backgroundColor: Color.ScreenBackground,
   },
   scrollViewContent: {
     padding: 20,
@@ -263,12 +260,12 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
   postsContainer: {
-    borderRadius: 15,
+    borderRadius: 25,
     padding: 10,
   },
   postCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 25,
     padding: 15,
     marginBottom: 10,
     ...Platform.select({
@@ -283,8 +280,23 @@ const styles = StyleSheet.create({
       },
     }),
   },
+
+  unreadPost: {
+    backgroundColor: '#F8F9FA', // Slightly different background for unread posts
+  },
   viewedPost: {
-    opacity: 0.6,
+    opacity: 0.4,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Color.ButtonBackground,
   },
   postContent: {
     flexDirection: 'row',

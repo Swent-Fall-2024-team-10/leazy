@@ -371,21 +371,16 @@ describe('adding a single item to a group', () => {
 import { 
     fetchResidences, 
     fetchApartmentNames, 
-    fetchSituationReportLayout,
     fetchFromDatabase,
     toDatabase
 } from '../utils/SituationReport';
 import { getResidence, getApartment } from '../../firebase/firestore/firestore';
 import { 
-    getFirestore, 
-    collection, 
     doc, 
     getDoc, 
     getDocs, 
     addDoc, 
     writeBatch, 
-    query, 
-    where 
 } from 'firebase/firestore';
 import { Apartment, Landlord, Residence } from '../../types/types';
 
@@ -565,3 +560,4 @@ jest.mock("firebase/firestore", () => ({
         expect(mockDoc).toHaveBeenCalled();
       });
     });
+

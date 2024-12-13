@@ -213,12 +213,11 @@ export async function fetchFromDatabase(
     singletonDocsSnapshot.docs
       .map((doc) => ({ id: doc.id, data: doc.data() }))  
       .sort((a, b) => singletonRefs.indexOf(a.id) - singletonRefs.indexOf(b.id))  
-      .map((doc) => {
+      .forEach((doc) => {
         const singleton_data = doc.data;
         const label: string = singleton_data.label;
         const value: number = singleton_data.value;
         datas.push([label, value]);
-        return [label, value];
       });
 
     layoutDatas.push([groupName, datas]);

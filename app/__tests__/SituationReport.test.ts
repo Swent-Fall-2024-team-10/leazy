@@ -554,9 +554,9 @@ jest.mock("firebase/firestore", () => ({
         // Assertions
         expect(reportId).toBe("newReportId");
         expect(addDoc).toHaveBeenCalledTimes(1);
-        expect(mockBatch.set).toHaveBeenCalledTimes(5); // 3 singletons + 1 group
-        expect(mockBatch.update).toHaveBeenCalledTimes(1); // 1 report update
-        expect(mockBatch.commit).toHaveBeenCalledTimes(1); // Commit after operations
+        expect(mockBatch.set).toHaveBeenCalledTimes(5); 
+        expect(mockBatch.update).toHaveBeenCalledTimes(1);
+        expect(mockBatch.commit).toHaveBeenCalledTimes(1); 
         expect(mockDoc).toHaveBeenCalled();
       });
     });

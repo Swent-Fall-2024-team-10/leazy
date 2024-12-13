@@ -18,6 +18,7 @@ jest.mock('expo-linear-gradient', () => ({
     getPermissionsAsync: jest.fn(),
     requestPermissionsAsync: jest.fn(),
     scheduleNotificationAsync: jest.fn(),
+    setNotificationHandler: jest.fn(),
   }));
 
 jest.mock('../../firebase/firestore/firestore', () => ({

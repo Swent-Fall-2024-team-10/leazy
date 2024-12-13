@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import Animated, { 
@@ -7,7 +6,6 @@ import Animated, {
   withTiming,
   ReduceMotion,
 } from 'react-native-reanimated';
-
 const WAVEFORM_WIDTH = Dimensions.get('window').width * 0.8;
 const BAR_WIDTH = 5;
 const BAR_GAP = 10;

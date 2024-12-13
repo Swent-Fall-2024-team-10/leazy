@@ -2,10 +2,14 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { Alert, Platform, ActionSheetIOS, Linking } from "react-native";
 import SnitchModeScreen from "../../screens/SnitchMode/SnitchModeScreen";
+import {
+  WaveformVisualizer,
+  MAX_BARS,
+} from "../../screens/SnitchMode/WaveformVisualizer";
 import { NavigationContainer } from "@react-navigation/native";
 import { act } from "react-test-renderer";
 
-// Create mock instances with proper callback handling
+// Keep your existing mocks
 let recordingStatusCallback: ((status: any) => void) | null = null;
 const mockStopAndUnloadAsync = jest.fn().mockResolvedValue({});
 const mockSetOnRecordingStatusUpdate = jest
@@ -25,15 +29,23 @@ const mockRecordingInstance = {
   stopAndUnloadAsync: mockStopAndUnloadAsync,
 };
 
-// Mock setup with mock.fn() to track calls
 const mockOpenURL = jest.fn().mockResolvedValue(true);
-
-// Create a mock object for Linking
 const mockLinking = {
   openURL: mockOpenURL,
 };
 
-// Mock the entire expo-linking module
+const mockActionSheet = {
+  showActionSheetWithOptions: jest.fn((options, callback) => {
+    callback(1);
+  }),
+};
+
+// Keep your existing mock setups
+jest.mock("react-native/Libraries/ActionSheetIOS/ActionSheetIOS", () => ({
+  showActionSheetWithOptions: (options: unknown, callback: unknown) =>
+    mockActionSheet.showActionSheetWithOptions(options, callback),
+}));
+
 jest.mock("expo-linking", () => mockLinking);
 
 jest.mock("expo-av", () => ({
@@ -58,7 +70,14 @@ jest.mock("@expo/vector-icons", () => ({
   FontAwesome: () => "FontAwesome-Mock",
 }));
 
-// Create a wrapper component with NavigationContainer
+// Add react-native-reanimated mock
+jest.mock("react-native-reanimated", () => ({
+  ...jest.requireActual("react-native-reanimated/mock"),
+  ZoomIn: {
+    duration: () => ({ duration: 150 }),
+  },
+}));
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <NavigationContainer>{children}</NavigationContainer>
 );
@@ -206,10 +225,12 @@ describe("SnitchModeScreen", () => {
   describe("Noise threshold functionality", () => {
     it("shows call security button when noise threshold is exceeded", async () => {
       const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
-      
+
       await act(async () => {
         fireEvent.press(getByTestId("record-button"));
-        await waitFor(() => expect(mockSetOnRecordingStatusUpdate).toHaveBeenCalled());
+        await waitFor(() =>
+          expect(mockSetOnRecordingStatusUpdate).toHaveBeenCalled()
+        );
       });
 
       await act(async () => {
@@ -225,5 +246,163 @@ describe("SnitchModeScreen", () => {
     });
   });
 
+  // Add these tests to your existing SnitchModeScreen.test.tsx file
+  describe("Error handling", () => {
+    it("handles stop recording errors", async () => {
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      mockStopAndUnloadAsync.mockRejectedValueOnce(new Error("Stop failed"));
 
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+
+      // Start recording
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+        await waitFor(() => expect(mockStartAsync).toHaveBeenCalled());
+      });
+
+      // Stop recording
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+      });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Failed to stop recording",
+        expect.any(Error)
+      );
+      expect(mockStopAndUnloadAsync).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+
+  describe("Recording status updates", () => {
+    it("handles undefined metering gracefully", async () => {
+      const { getByTestId } = renderWithNavigation(<SnitchModeScreen />);
+
+      await act(async () => {
+        fireEvent.press(getByTestId("record-button"));
+        if (recordingStatusCallback) {
+          recordingStatusCallback({});
+        }
+      });
+
+      // Verify that no errors occurred
+      expect(getByTestId("record-button")).toBeTruthy();
+    });
+  });
+});
+
+describe("WaveformVisualizer", () => {
+  it("initializes with minimum height bars", () => {
+    const { getAllByTestId } = render(
+      <WaveformVisualizer
+        metering={null}
+        isRecording={false}
+        noiseThresholdExceeded={false}
+      />
+    );
+
+    const bars = getAllByTestId(/waveform-bar-/);
+    expect(bars.length).toBeGreaterThan(0);
+    bars.forEach((bar) => {
+      expect(bar.props.style).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            height: 10, // MIN_HEIGHT
+          }),
+        ])
+      );
+    });
+  });
+
+  it("updates waveform data when recording", async () => {
+    const { getAllByTestId, rerender } = render(
+      <WaveformVisualizer
+        metering={-40}
+        isRecording={true}
+        noiseThresholdExceeded={false}
+      />
+    );
+
+    // Rerender with different metering values
+    for (let i = 0; i < 5; i++) {
+      await act(async () => {
+        rerender(
+          <WaveformVisualizer
+            metering={-20 + i * 10}
+            isRecording={true}
+            noiseThresholdExceeded={false}
+          />
+        );
+      });
+    }
+
+    const bars = getAllByTestId(/waveform-bar-/);
+    expect(bars.length).toBeGreaterThan(0);
+
+    // Verify that at least some bars have updated heights
+    const barHeights = bars.map(
+      (bar) =>
+        bar.props.style.find((style: any) => style.height !== undefined)?.height
+    );
+    expect(barHeights.some((height) => height > 10)).toBe(true);
+  });
+
+  it("changes bar color when noise threshold is exceeded", () => {
+    const { getAllByTestId } = render(
+      <WaveformVisualizer
+        metering={-40}
+        isRecording={true}
+        noiseThresholdExceeded={true}
+      />
+    );
+
+    const bars = getAllByTestId(/waveform-bar-/);
+    bars.forEach((bar) => {
+      expect(bar.props.style).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            backgroundColor: "#FF4444",
+          }),
+        ])
+      );
+    });
+  });
+
+  it("stops updating when noiseThresholdExceeded is true", async () => {
+    const { getAllByTestId, rerender } = render(
+      <WaveformVisualizer
+        metering={-40}
+        isRecording={true}
+        noiseThresholdExceeded={true}
+      />
+    );
+
+    const initialBars = getAllByTestId(/waveform-bar-/);
+    const initialHeights = initialBars.map(
+      (bar) =>
+        bar.props.style.find((style: any) => style.height !== undefined)?.height
+    );
+
+    // Attempt to update with new metering value
+    rerender(
+      <WaveformVisualizer
+        metering={0}
+        isRecording={true}
+        noiseThresholdExceeded={true}
+      />
+    );
+
+    const updatedBars = getAllByTestId(/waveform-bar-/);
+    const updatedHeights = updatedBars.map(
+      (bar) =>
+        bar.props.style.find((style: any) => style.height !== undefined)?.height
+    );
+
+    // Heights should remain the same
+    expect(updatedHeights).toEqual(initialHeights);
+  });
 });

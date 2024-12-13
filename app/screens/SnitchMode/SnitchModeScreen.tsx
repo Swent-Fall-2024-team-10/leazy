@@ -25,7 +25,7 @@ const SnitchModeScreen: React.FC = () => {
   const [noiseThresholdExceeded, setNoiseThresholdExceeded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const NOISE_THRESHOLD = 120;
+  const NOISE_THRESHOLD = 80;
 
   useEffect(() => {
     return () => {
@@ -132,9 +132,9 @@ const SnitchModeScreen: React.FC = () => {
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["Cancel", "Call Security"],
+          options: ["Cancel", "🐖 Call Security 🐖"],
           cancelButtonIndex: 0,
-          message: `Call ${phoneNumber}`,
+          message: `🐖 Call ${phoneNumber} 🐖`,
         },
         (buttonIndex) => {
           if (buttonIndex === 1) {
@@ -144,15 +144,15 @@ const SnitchModeScreen: React.FC = () => {
       );
     } else {
       Alert.alert(
-        "Call Security",
-        `Do you want to call security at ${phoneNumber}?`,
+        "🐖 Call Security 🐖",
+        `🐖 Do you want to call security at ${phoneNumber}? 🐖`,
         [
           {
             text: "Cancel",
             style: "cancel",
           },
           {
-            text: "Call",
+            text: "🐖 Call 🐖",
             onPress: () => Linking.openURL(`tel:${phoneNumber}`),
             style: "default",
           },
@@ -241,7 +241,7 @@ const SnitchModeScreen: React.FC = () => {
                   disabled={!noiseThresholdExceeded}
                   android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 >
-                  <Text style={styles.callSecurityText}>Call security</Text>
+                  <Text style={styles.callSecurityText}>    🐖    </Text>
                 </Pressable>
               </>
             )}

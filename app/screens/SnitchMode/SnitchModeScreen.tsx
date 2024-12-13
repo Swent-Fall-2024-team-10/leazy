@@ -85,6 +85,11 @@ const SnitchModeScreen: React.FC = () => {
           if (status.metering !== undefined) {
             setMetering(status.metering);
 
+            // Convert metering value to decibels (dB):
+            // - Metering values from the API typically range from -160 to 0
+            // - Add 160 to normalize the range to 0-160
+            // - Divide by 160 to get a value between 0-1
+            // - Multiply by 120 to scale to a typical dB range (0-120dB)
             const decibelLevel = Math.max(
               0,
               ((status.metering + 160) / 160) * 120,
@@ -109,7 +114,10 @@ const SnitchModeScreen: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to start recording', err);
-      Alert.alert('Error', 'Failed to start recording');
+      Alert.alert(
+        'Recording Failed',
+        'Please check your microphone settings and try again. Make sure no other apps are using your microphone.'
+      );
     }
   };
 
@@ -133,9 +141,9 @@ const SnitchModeScreen: React.FC = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancel', '🐖 Call Security 🐖'],
+          options: ['Cancel', 'Call Security'],
           cancelButtonIndex: 0,
-          message: `🐖 Call ${phoneNumber} 🐖`,
+          message: ` Call ${phoneNumber} `,
         },
         (buttonIndex) => {
           if (buttonIndex === 1) {
@@ -145,15 +153,15 @@ const SnitchModeScreen: React.FC = () => {
       );
     } else {
       Alert.alert(
-        '🐖 Call Security 🐖',
-        `🐖 Do you want to call security at ${phoneNumber}? 🐖`,
+        'Call Security',
+        `Do you want to call security at ${phoneNumber}?`,
         [
           {
             text: 'Cancel',
             style: 'cancel',
           },
           {
-            text: '🐖 Call 🐖',
+            text: ' Call Security',
             onPress: () => {
               void (async () => {
                 try {
@@ -254,7 +262,10 @@ const SnitchModeScreen: React.FC = () => {
                   disabled={!noiseThresholdExceeded}
                   android_ripple={{ color: 'rgba(255, 255, 255, 0.3)' }}
                 >
-                  <Text style={stylesForSnitchMode.callSecurityText}> 🐖 </Text>
+                  <Text style={stylesForSnitchMode.callSecurityText}>
+                    {' '}
+                    Call Security{' '}
+                  </Text>
                 </Pressable>
               </>
             )}

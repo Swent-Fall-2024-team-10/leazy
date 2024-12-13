@@ -26,7 +26,7 @@ const SnitchModeScreen: React.FC = () => {
   const [noiseThresholdExceeded, setNoiseThresholdExceeded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const NOISE_THRESHOLD = 80;
+  const NOISE_THRESHOLD = 100;
 
   useEffect(() => {
     return () => {

@@ -128,6 +128,8 @@ export type MaintenanceRequest = {
   requestDescription: string;
   picture: string[]; // list of picture urls referenced in the database
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
+  _isPending?: boolean;  // Add these optional properties
+  _localId?: string;     // for offline support
 };
 
 export type SituationReport = {

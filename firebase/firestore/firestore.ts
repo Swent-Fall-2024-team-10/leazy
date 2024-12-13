@@ -12,6 +12,10 @@ import {
   where,
   getDocs,
   Timestamp,
+  getDocFromServer,
+  getDocFromCache,
+  getDocsFromServer,
+  getDocsFromCache,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -26,9 +30,47 @@ import {
   TenantCode,
   SituationReport,
 } from "../../types/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
+
+// Generic function to get a document with offline support
+async function getDocumentWithOfflineSupport<T>(
+  path: string,
+  id: string
+): Promise<T | null> {
+  try {
+    try {
+      const docRef = doc(db, path, id);
+      const docSnapshot = await getDocFromServer(docRef);
+      return docSnapshot.exists() ? { ...docSnapshot.data() } as T : null;
+    } catch (serverError) {
+      const docRef = doc(db, path, id);
+      const docSnapshot = await getDocFromCache(docRef);
+      return docSnapshot.exists() ? { ...docSnapshot.data() } as T : null;
+    }
+  } catch (e) {
+    console.error(`Error fetching document from ${path}:`, e);
+    throw e;
+  }
+}
+
+// Generic function to get documents from a query with offline support
+async function getDocsWithOfflineSupport<T>(queryToExecute: any): Promise<T[]> {
+  try {
+    try {
+      const querySnapshot = await getDocsFromServer(queryToExecute);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Record<string, any> }) as T);
+    } catch (serverError) {
+      const querySnapshot = await getDocsFromCache(queryToExecute);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Record<string, any> }) as T);
+    }
+  } catch (e) {
+    console.error("Error fetching documents:", e);
+    throw e;
+  }
+}
 
 /**
  * Creates a new user document in Firestore.
@@ -49,10 +91,9 @@ export async function createUser(user: TUser) {
  * @param uid - The unique identifier stored in the `uid` field of the user document.
  * @returns An object containing the user data and the document ID, or null if no user is found.
  */
-export async function getUser(userUID: string): Promise<TUser | null> {
-  const usersRef = doc(db, "users", userUID);
-  const docSnap = await getDoc(usersRef);
-  return docSnap.exists() ? (docSnap.data() as TUser) : null;
+
+export async function getUser(uid: string): Promise<TUser | null> {
+  return getDocumentWithOfflineSupport<TUser>("users", uid);
 }
 
 /**
@@ -92,12 +133,7 @@ export async function createLandlord(landlord: Landlord) {
  * @returns The landlord data or null if no landlord is found.
  */
 export async function getLandlord(userId: string): Promise<Landlord | null> {
-  if (!userId || typeof userId !== "string") {
-    throw new Error("Invalid userId");
-  }
-  const landlordsRef = doc(db, "landlords", userId);
-  const docSnap = await getDoc(landlordsRef);
-  return docSnap.exists() ? (docSnap.data() as Landlord) : null;
+  return getDocumentWithOfflineSupport<Landlord>("landlords", userId);
 }
 
 /**
@@ -148,9 +184,7 @@ export async function createTenant(tenant: Tenant) {
  * @returns An object containing the tenant data and its Firestore document ID, or null if no tenant is found.
  */
 export async function getTenant(userId: string): Promise<Tenant | null> {
-  const tenantsRef = doc(db, "tenants", userId);
-  const docSnap = await getDoc(tenantsRef);
-  return docSnap.exists() ? (docSnap.data() as Tenant) : null;
+  return getDocumentWithOfflineSupport<Tenant>("tenants", userId);
 }
 
 /**
@@ -193,12 +227,9 @@ export async function createResidence(residence: Residence): Promise<string> {
  * @param residenceId - The unique identifier of the residence.
  * @returns The residence data or null if no residence is found.
  */
-export async function getResidence(
-  residenceId: string
-): Promise<Residence | null> {
-  const docRef = doc(db, "residences", residenceId);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? (docSnap.data() as Residence) : null;
+
+export async function getResidence(residenceId: string): Promise<Residence | null> {
+  return getDocumentWithOfflineSupport<Residence>("residences", residenceId);
 }
 
 /**
@@ -241,15 +272,8 @@ export async function createApartment(apartment: Apartment) {
  * @param apartmentId - The unique identifier of the apartment.
  * @returns The apartment data or null if no apartment is found.
  */
-export async function getApartment(
-  apartmentId: string
-): Promise<Apartment | null> {
-  if (!apartmentId || typeof apartmentId !== "string") {
-    throw new Error("Invalid apartmentId");
-  }
-  const docRef = doc(db, "apartments", apartmentId);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? (docSnap.data() as Apartment) : null;
+export async function getApartment(apartmentId: string): Promise<Apartment | null> {
+  return getDocumentWithOfflineSupport<Apartment>("apartments", apartmentId);
 }
 
 /**
@@ -274,13 +298,55 @@ export async function deleteApartment(apartmentId: string) {
   await deleteDoc(docRef);
 }
 
+// Helper function to get pending requests
+export async function getPendingRequests(): Promise<MaintenanceRequest[]> {
+  try {
+    const pending = await AsyncStorage.getItem('pendingMaintenanceRequests');
+    return pending ? JSON.parse(pending) : [];
+  } catch (error) {
+    console.error('Error getting pending requests:', error);
+    return [];
+  }
+}
+
 /**
  * Creates a new maintenance request document in Firestore.
  * @param request - The maintenance request object to be added to the 'maintenanceRequests' collection.
  */
+// Modified to handle both online and offline states
 export async function createMaintenanceRequest(request: MaintenanceRequest) {
-  const docRef = doc(db, "maintenanceRequests", request.requestID);
-  await setDoc(docRef, request);
+  console.log("coucou");
+  try {
+    console.log("in try");
+    // Try to add to Firestore first
+    const requestID = await addDoc(collection(db, "maintenanceRequests"), request);
+    await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+    return requestID.id;
+  } catch (error) {
+    // If offline or error, save locally
+    const pendingRequest = {
+      ...request,
+      _isPending: true, // Add flag to identify pending requests
+      _localId: `pending_${Date.now()}`, // Add local ID for tracking
+      requestID: `pending_${Date.now()}` // Temporary ID
+    };
+    await savePendingRequest(pendingRequest);
+    return pendingRequest.requestID;
+  }
+}
+
+// Helper function to save pending request
+async function savePendingRequest(request: MaintenanceRequest) {
+  try {
+    const pendingRequests = await getPendingRequests();
+    await AsyncStorage.setItem(
+      'pendingMaintenanceRequests',
+      JSON.stringify([...pendingRequests, request])
+    );
+  } catch (error) {
+    console.error('Error saving pending request:', error);
+    throw error;
+  }
 }
 
 /**
@@ -288,13 +354,10 @@ export async function createMaintenanceRequest(request: MaintenanceRequest) {
  * @param requestID - The unique identifier of the maintenance request.
  * @returns The maintenance request data or null if no request is found.
  */
-export async function getMaintenanceRequest(
-  requestID: string
-): Promise<MaintenanceRequest | null> {
-  const docRef = doc(db, "maintenanceRequests", requestID);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? (docSnap.data() as MaintenanceRequest) : null;
+export async function getMaintenanceRequest(requestId: string): Promise<MaintenanceRequest | null> {
+  return getDocumentWithOfflineSupport<MaintenanceRequest>("maintenanceRequests", requestId);
 }
+
 
 /**
  * Returns a Firestore query for maintenance requests by tenantId.
@@ -303,15 +366,40 @@ export async function getMaintenanceRequest(
  * @returns A Firestore query for the maintenance requests collection.
  */
 export async function getMaintenanceRequestsQuery(userID: string) {
-  // Construct a query based on the tenantId
-  const user = await getUser(userID);
-
-  return query(
+  const q = query(
     collection(db, "maintenanceRequests"),
-    where("tenantId", "==", user?.uid)
+    where("tenantId", "==", userID)
   );
+  
+  return q; // Return query for onSnapshot usage
 }
 
+// New function to sync pending requests when online
+export async function syncPendingRequests() {
+  try {
+    const pendingRequests = await getPendingRequests();
+    if (pendingRequests.length === 0) return;
+
+    for (const request of pendingRequests) {
+      const { _isPending, _localId, ...cleanRequest } = request;
+      const docRef = await addDoc(collection(db, "maintenanceRequests"), cleanRequest);
+      await updateMaintenanceRequest(docRef.id, { requestID: docRef.id });
+      // Update the tenant's maintenanceRequests array
+      const tenant = await getTenant(request.tenantId);
+      if (tenant) {
+        await updateTenant(tenant.userId, {
+          maintenanceRequests: [...tenant.maintenanceRequests, docRef.id]
+        });
+      }
+    }
+
+    // Clear pending requests after successful sync
+    await AsyncStorage.setItem('pendingMaintenanceRequests', JSON.stringify([]));
+  } catch (error) {
+    console.error('Error syncing pending requests:', error);
+    throw error;
+  }
+}
 /**
  * Updates an existing maintenance request document in Firestore by request ID.
  * @param requestID - The unique identifier of the maintenance request to update.
@@ -361,17 +449,10 @@ export async function getLaundryMachine(
   residenceId: string,
   machineId: string
 ): Promise<LaundryMachine | null> {
-  if (!residenceId || !machineId) {
-    throw new Error("Invalid laundry machine data");
-  }
-
-  const docRef = doc(
-    db,
+  return getDocumentWithOfflineSupport<LaundryMachine>(
     `residences/${residenceId}/laundryMachines`,
     machineId
   );
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? (docSnap.data() as LaundryMachine) : null;
 }
 
 /**
@@ -453,48 +534,34 @@ export async function generate_unique_code(
  * @param inputCode - The tenant code to validate.
  * @returns An object containing residenceId, apartmentId, and the document ID of the tenant code if valid and unused; null otherwise.
  */
-export async function validateTenantCode(inputCode: string): Promise<{
-  residenceId: string;
-  apartmentId: string;
-  tenantCodeUID: string;
-}> {
-  // fetch the UID of TenantCode who has this unique code: inputCode
-  const tenantCodesRef = collection(db, "tenantCodes");
-  const q = query(tenantCodesRef, where("tenantCode", "==", inputCode));
+export async function validateTenantCode(inputCode: string) {
+  try {
+    const tenantCodesRef = collection(db, "tenantCodes");
+    const q = query(tenantCodesRef, where("tenantCode", "==", inputCode));
+    
+    const codes = await getDocsWithOfflineSupport<TenantCode>(q);
+    if (codes.length === 0) {
+      throw new Error("Code not found");
+    }
+    
+    const data = codes[0];
+    if (data.used) {
+      throw new Error("Code already used");
+    }
 
-  const querySnapshot = await getDocs(q);
+    if (!data.residenceId || !data.apartmentId) {
+      throw new Error("Invalid code configuration");
+    }
 
-  if (querySnapshot.empty) {
-    throw new Error("Code not found");
+    return {
+      residenceId: data.residenceId,
+      apartmentId: data.apartmentId,
+      tenantCodeUID: data.tenantCode
+    };
+  } catch (e) {
+    console.error("Error validating tenant code:", e);
+    throw e;
   }
-  const tenantCodeDoc = querySnapshot.docs[0];
-  const data = tenantCodeDoc.data() as TenantCode;
-
-  // Check if the code has already been used
-  if (data.used) {
-    throw new Error("Code already used");
-  }
-
-  if (!data.residenceId) {
-    throw new Error(
-      "This code doesn't reference a residence. Please contact your landlord."
-    );
-  }
-
-  if (!data.apartmentId) {
-    throw new Error(
-      "This code doesn't reference an apartment. Please contact your landlord."
-    );
-  }
-
-  const tenantCodeRef = doc(db, "tenantCodes", tenantCodeDoc.id);
-  await updateDoc(tenantCodeRef, { used: true });
-
-  return {
-    residenceId: data.residenceId,
-    apartmentId: data.apartmentId,
-    tenantCodeUID: tenantCodeDoc.id,
-  };
 }
 
 /**
@@ -517,15 +584,7 @@ export async function deleteUsedTenantCodes(): Promise<number> {
     throw error;
   }
 }
-/*
- * Returns a Firestore query for washing machines by residenceId.
- * This query can be used with onSnapshot to listen for real-time updates.
- * @param residenceId - The unique identifier of the residence.
- * @returns A Firestore query for the washing machines collection.
- */
-export function getWashingMachinesQuery(residenceId: string) {
-  return query(collection(db, `residences/${residenceId}/laundryMachines`));
-}
+
 /*
  * Returns a Firestore query for washing machines by residenceId.
  * This query can be used with onSnapshot to listen for real-time updates.
@@ -542,34 +601,14 @@ export function getLaundryMachinesQuery(residenceId: string) {
  * @returns An array of laundry machine objects.
  */
 export async function getAllLaundryMachines(residenceId: string) {
-  if (!residenceId || typeof residenceId !== "string") {
-    throw new Error("Invalid residence ID");
+  try {
+    const q = query(collection(db, `residences/${residenceId}/laundryMachines`));
+    return getDocsWithOfflineSupport<LaundryMachine>(q);
+  } catch (e) {
+    console.error("Error fetching laundry machines:", e);
+    throw e;
   }
-
-  const querySnapshot = await getDocs(
-    collection(db, `residences/${residenceId}/laundryMachines`)
-  );
-  const machines: LaundryMachine[] = [];
-  querySnapshot.forEach((doc) => {
-    machines.push(doc.data() as LaundryMachine);
-  });
-  return machines;
 }
-
-/**
- * Creates a notification document for a specific laundry machine.
- * @param machineId - The unique identifier of the laundry machine.
- * @param userId - The unique identifier of the user to be notified.
- * @returns A promise that resolves when the notification document is created.
- */
-export async function createMachineNotification(userId: string) {
-  const docRef = doc(db, "notifications", userId); // Creates a reference to the document in 'notifications' collection
-  await setDoc(docRef, {
-    userId: userId,
-    scheduledTime: Timestamp.now(), // The scheduled notification time
-  });
-}
-
 
 export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
   const collectionRef = collection(db, "situationReports");
@@ -603,16 +642,22 @@ export async function addSituationReportLayout(situationReportLayout: string[], 
 }
 
 export async function getSituationReport(apartmentId: string) {
-  const apartment = await getApartment(apartmentId);
-  const situationReportId = apartment?.situationReportId;
+  try {
+    const apartment = await getApartment(apartmentId);
+    const situationReportId = apartment?.situationReportId;
 
-  if (!situationReportId) {
-    return null;
+    if (!situationReportId) {
+      return null;
+    }
+
+    return getDocumentWithOfflineSupport<SituationReport>(
+      "situationReports",
+      situationReportId
+    );
+  } catch (e) {
+    console.error("Error fetching situation report:", e);
+    throw e;
   }
-  const situationReportRef = doc(db, "situationReports", situationReportId);
-  const situationReportSnap = await getDoc(situationReportRef);
-
-  return situationReportSnap.data() as SituationReport;
 }
 
 /**

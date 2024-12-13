@@ -14,6 +14,8 @@ import { ReportStackParamList, MaintenanceRequest } from "../../../types/types";
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
+  syncPendingRequests,
+  getPendingRequests
 } from "../../../firebase/firestore/firestore"; // Firestore functions
 import { getAuth } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
@@ -23,6 +25,8 @@ import {
 } from "../../utils/StatusHelper";
 import { appStyles, Color, IconDimension } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from '@react-native-community/netinfo';
 
 interface IssueItemProps {
   issue: MaintenanceRequest;
@@ -48,8 +52,8 @@ const IssueItem: React.FC<IssueItemProps> = ({
           <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
         </View >
 
-        <View style={[styles.statusTextContainer, {backgroundColor: getIssueStatusColor(status)}]}>
-           <Text style={styles.statusText}>Status: {getIssueStatusText(status)}</Text>
+        <View style={[styles.statusTextContainer, {backgroundColor: issue._isPending ? '#FFA500' : getIssueStatusColor(status)}]}>
+           <Text style={styles.statusText}>Status: {issue._isPending ? 'Waiting to Sync' : getIssueStatusText(status)}</Text>
         </View>
       </View>
       
@@ -76,39 +80,63 @@ const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [showArchived, setShowArchived] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const auth = getAuth();
   const user = auth.currentUser;
   const userId = user ? user.uid : null;
 
+
   useEffect(() => {
-    const fetchTenantRequests = async () => {
+    if (!userId) return;
+
+    // Set up network listener
+    const unsubscribeNetInfo = NetInfo.addEventListener(state => {
+      setIsOnline(!!state.isConnected);
+      if (state.isConnected) {
+        syncPendingRequests().catch(console.error);
+      }
+    });
+
+    // Set up Firestore listener and merge with pending requests
+    const fetchIssues = async () => {
       try {
-        if (!userId) {
-          console.error("User is not logged in");
-          return;
-        }
-
-        // Get the Firestore query asynchronously
         const query = await getMaintenanceRequestsQuery(userId);
+        
+        // Set up real-time listener for Firestore
+        const unsubscribe = onSnapshot(query, 
+          async (querySnapshot) => {
+            const firestoreIssues = querySnapshot.docs.map(doc => ({
+              ...doc.data(),
+              requestID: doc.id
+            })) as MaintenanceRequest[];
 
-        // Set up the Firestore real-time listener
-        const unsubscribe = onSnapshot(query, (querySnapshot) => {
-          const updatedIssues: MaintenanceRequest[] = [];
-          querySnapshot.forEach((doc) => {
-            updatedIssues.push(doc.data() as MaintenanceRequest);
-          });
-          setIssues(updatedIssues);
-        });
+            // Get pending requests
+            const pendingRequests = await getPendingRequests();
+            
+            // Merge and set all issues
+            setIssues([...firestoreIssues, ...pendingRequests]);
+          },
+          (error) => {
+            console.error("Firestore error:", error);
+            // On error, just load pending requests
+            getPendingRequests().then(setIssues);
+          }
+        );
 
-        // Cleanup listener on unmount
-        return unsubscribe;
+        return () => {
+          unsubscribe();
+          unsubscribeNetInfo();
+        };
       } catch (error) {
-        console.error("Error fetching tenant requests:", error);
+        console.error("Error setting up listeners:", error);
+        // If initial setup fails, load pending requests
+        const pendingRequests = await getPendingRequests();
+        setIssues(pendingRequests);
       }
     };
 
-    fetchTenantRequests();
+    fetchIssues();
   }, [userId]);
 
   const archiveIssue = (requestID: string) => {

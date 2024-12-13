@@ -10,7 +10,6 @@ import {
 import Header from "../../../app/components/Header";
 import { LaundryMachine } from "../../../types/types";
 import {
-  createMachineNotification,
   getLaundryMachine,
   getLaundryMachinesQuery,
   updateLaundryMachine,

@@ -17,6 +17,7 @@ import { Audio } from "expo-av";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 import { WaveformVisualizer } from "./WaveformVisualizer";
+import { stylesForSnitchMode } from "../../../styles/styles";
 
 const SnitchModeScreen: React.FC = () => {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -194,13 +195,13 @@ const SnitchModeScreen: React.FC = () => {
                 { textAlign: "center", marginTop: 20 },
               ]}
             >
-              If your neighbors are making too much noise (above 80dB), activate
-              the Snitch Mode. When the noise level is too high, you can call
-              security.
+              If your neighbors are making too much noise (above 100dB),
+              activate the Snitch Mode. When the noise level is too high, you
+              can call security.
             </Text>
           </View>
 
-          <View style={styles.recorderContainer}>
+          <View style={stylesForSnitchMode.recorderContainer}>
             {(isRecording || noiseThresholdExceeded) && (
               <WaveformVisualizer
                 metering={metering}
@@ -211,7 +212,7 @@ const SnitchModeScreen: React.FC = () => {
 
             <TouchableOpacity
               testID="record-button"
-              style={styles.recordButton}
+              style={stylesForSnitchMode.recordButton}
               onPress={isRecording ? stopRecording : startRecording}
             >
               <FontAwesome
@@ -224,9 +225,12 @@ const SnitchModeScreen: React.FC = () => {
             {(isRecording || noiseThresholdExceeded) && (
               <>
                 {isRecording ? (
-                  <Text style={styles.statusText}>Recording...</Text>
+                  <Text style={stylesForSnitchMode.statusText}>
+                    {" "}
+                    Wait till the noise level reaches the acceptable limit{" "}
+                  </Text>
                 ) : noiseThresholdExceeded ? (
-                  <Text style={styles.statusText}>
+                  <Text style={stylesForSnitchMode.statusText}>
                     The level of noise is higher than the limit
                   </Text>
                 ) : null}
@@ -234,14 +238,15 @@ const SnitchModeScreen: React.FC = () => {
                 <Pressable
                   testID="call-security-button"
                   style={[
-                    styles.callSecurityButton,
-                    !noiseThresholdExceeded && styles.disabledButton,
+                    stylesForSnitchMode.callSecurityButton,
+                    !noiseThresholdExceeded &&
+                      stylesForSnitchMode.disabledButton,
                   ]}
                   onPress={handleCallSecurity}
                   disabled={!noiseThresholdExceeded}
                   android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 >
-                  <Text style={styles.callSecurityText}>    🐖    </Text>
+                  <Text style={stylesForSnitchMode.callSecurityText}>    🐖     </Text>
                 </Pressable>
               </>
             )}
@@ -251,51 +256,4 @@ const SnitchModeScreen: React.FC = () => {
     </Header>
   );
 };
-
-const styles = StyleSheet.create({
-  recorderContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-    marginTop: "-50%",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  recordButton: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#2F4F4F",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-    elevation: Platform.OS === "android" ? 5 : 0,
-  },
-  callSecurityButton: {
-    backgroundColor: "#2F4F4F",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 25,
-    elevation: Platform.OS === "android" ? 3 : 0,
-  },
-  callSecurityText: {
-    color: "white",
-    fontSize: 16,
-    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
-  },
-  statusText: {
-    marginBottom: 40,
-    fontSize: 16,
-    color: "#2F4F4F",
-    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-});
-
 export default SnitchModeScreen;

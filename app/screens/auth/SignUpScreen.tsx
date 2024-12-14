@@ -30,6 +30,12 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const MGS_PWD_RQRD = 'Password is required';
+  const MGS_PWD_SHORT = 'Password must be at least 6 characters';
+  const MGS_PWD_MATCH = 'Passwords do not match';
+  const MGS_EMAIL_RQRD = 'Email is required';
+  const MGS_EMAIL_INVALID = 'Invalid email address';
+  const MSG_CONFIRM = 'Please confirm your password';
 
   interface Errors {
     firstName?: string;
@@ -44,15 +50,12 @@ export default function SignUpScreen() {
 
   const validateForm = () => {
     let newErrors: Errors = {};
-    if (!email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6)
-      newErrors.password = 'Password must be at least 6 characters';
-    if (!confirmPassword)
-      newErrors.confirmPassword = 'Please confirm your password';
-    if (password !== confirmPassword)
-      newErrors.confirmPassword = 'Passwords do not match';
+    if (!email) newErrors.email = MGS_EMAIL_RQRD;
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = MGS_EMAIL_INVALID;
+    if (!password) newErrors.password = MGS_PWD_RQRD;
+    else if (password.length < 6) newErrors.password = MGS_PWD_SHORT;
+    if (!confirmPassword) newErrors.confirmPassword = MSG_CONFIRM;
+    if (password !== confirmPassword) newErrors.confirmPassword = MGS_PWD_MATCH;
     return newErrors;
   };
 
@@ -81,6 +84,7 @@ export default function SignUpScreen() {
             onRequestClose={() => setPopup(false)}
           >
             <CustomPopUp
+            title='Error'
               testID='signUpPopup'
               text='An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
               onPress={() => setPopup(false)}

@@ -81,7 +81,6 @@ export default function SignUpScreen() {
             onRequestClose={() => setPopup(false)}
           >
             <CustomPopUp
-              title='Error'
               testID='signUpPopup'
               text='An error occurred while signing up. Please make sure you are connected to the internet and that your email is not already used by another account.'
               onPress={() => setPopup(false)}

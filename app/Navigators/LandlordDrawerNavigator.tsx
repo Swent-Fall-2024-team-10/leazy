@@ -12,6 +12,7 @@ import SituationReport from '../screens/landlord/SituationReport/SituationReport
 import IssueStackLandlord from './IssueStackLandlord';
 import SettingsScreen from '../screens/auth/SettingsScreen';
 
+
 const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {

@@ -10,6 +10,7 @@ import {
   ScrollView,
   Dimensions,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import TickingBox from '../../../components/forms/TickingBox';
 import Header from '../../../components/Header';
@@ -22,17 +23,16 @@ import InputField from '../../../components/forms/text_input';
 import StraightLine from '../../../components/SeparationLine';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import RNPickerSelect from 'react-native-picker-select';
-import { changeStatus, toDatabaseFormat } from '../../../utils/SituationReport';
+import { changeStatus, fetchApartmentNames, fetchResidences, fetchSituationReportLayout, toDatabase } from '../../../utils/SituationReport';
 import {
   addSituationReport,
-  getApartment,
-  deleteSituationReport,
 } from '../../../../firebase/firestore/firestore';
 import { SituationReport } from '../../../../types/types';
 import {
   pickerSelectStyles,
   situationReportStyles,
 } from '../../../../styles/SituationReportStyling';
+import { useAuth } from '../../../context/AuthContext';
 
 enum enumStatus {
   OC = 1,
@@ -43,50 +43,8 @@ enum enumStatus {
 
 type PickerItem = {
   label: string;
-  value: string | number;
+  value: string | number | [string, [string, number][]][];
 };
-
-// ============== Temporary constant to be able to display and test the screen without the backend being completed ================
-
-const originalLayout: [string, [string, number][]][] = [
-  ['Floor', [['floor', 0]]],
-  ['Wall', [['wall', 0]]],
-  ['Ceiling', [['ceiling', 0]]],
-  ['Window', [['window', 0]]],
-  [
-    'Bed',
-    [
-      ['Bedframe', 0],
-      ['Mattress', 0],
-      ['Pillow', 0],
-      ['Bedding', 0],
-    ],
-  ],
-  [
-    'Kitchen',
-    [
-      ['Fridge', 0],
-      ['Stove', 0],
-      ['Microwave', 0],
-      ['Sink', 0],
-      ['Countertop', 0],
-    ],
-  ],
-];
-
-let newLayout = originalLayout;
-
-const residences = [
-  { label: 'Vortex', value: 'Vortex' },
-  { label: 'Triaude', value: 'Triaude' },
-  { label: 'Estudiantine', value: 'Estudiantine' },
-];
-
-const apartments = Array.from({ length: 10 }, (_, i) => ({
-  label: `${i + 1}`,
-  value: `${i + 1}`,
-}));
-
 
 type GroupedSituationReportProps = {
   layout: [string, [string, number][]][]; // Layout containing groups and items
@@ -115,7 +73,6 @@ export function GroupedSituationReport({
       {layout.map((group, groupIndex) => {
         const groupName = group[0];
         const items = group[1];
-
         if (items.length > 1) {
           // Render group with more than one item inside a purple container
           return (
@@ -134,6 +91,7 @@ export function GroupedSituationReport({
                       label={`${itemNumber}: ${item[0]}`} // Label with item number
                       groupIndex={groupIndex}
                       itemIndex={itemIndex}
+                      layout={layout}
                       currentStatus={item[1]} // Current status value
                       changeStatus={changeStatus}
                       resetState={resetState}
@@ -156,6 +114,7 @@ export function GroupedSituationReport({
                 label={`${itemNumber}: ${items[0][0]}`} // Label with item number
                 groupIndex={groupIndex}
                 itemIndex={0}
+                layout={layout}
                 currentStatus={items[0][1]} // Current status value
                 changeStatus={changeStatus}
                 resetState={resetState}
@@ -180,8 +139,8 @@ export function PickerGroup({
   testID: string;
   label: string;
   data: PickerItem[];
-  chosed: string;
-  setValue: (value: string) => void;
+  chosed: any;
+  setValue: (value: any) => void;
 }) {
   return (
     <View
@@ -211,6 +170,7 @@ type SituationReportItemProps = {
   itemIndex: number; // Index of the item within the group
   currentStatus: number; // Current status (0 = OC, 1 = NW, 2 = AW)
   resetState: boolean;
+  layout: [string, [string, number][]][];
   setReset: (value: boolean) => void;
   changeStatus: (
     layout: [string, [string, number][]][],
@@ -225,10 +185,11 @@ const STATUS_MAPPING = ['NONE', 'OC', 'NW', 'AW'];
 function SituationReportItem({
   label,
   groupIndex,
-  itemIndex,
   currentStatus,
-  changeStatus,
+  itemIndex,
+  layout,
   resetState,
+  changeStatus,
   setReset,
 }: SituationReportItemProps) {
   const [checked, setChecked] = useState<number>(currentStatus);
@@ -244,14 +205,14 @@ function SituationReportItem({
     if (checked === newStatus) {
       setChecked(0);
       changeStatus(
-        newLayout,
+        layout,
         groupIndex,
         itemIndex,
         STATUS_MAPPING[enumStatus.NONE],
       );
     } else {
       setChecked(newStatus);
-      changeStatus(newLayout, groupIndex, itemIndex, STATUS_MAPPING[newStatus]);
+      changeStatus(layout, groupIndex, itemIndex, STATUS_MAPPING[newStatus]);
     }
   }
 
@@ -342,12 +303,37 @@ function TenantNameGroup({
   );
 }
 
-export default function SituationReportScreen() {
-  const navigation = useNavigation<NavigationProp<any>>();
+export default function SituationReportScreen({ 
+  enablePickers = false,
+  enableSubmit = false, 
+  testPickerResidence = "residence", 
+  testPickerApartment = "apartment",
+  testPickerLayout = "layout",}
+  : { 
+    enablePickers?: boolean,
+    enableSubmit?: boolean,
+    test_enabler?: boolean, 
+    testPickerResidence?: string,
+    testPickerApartment?: string,
+    testPickerLayout?: string,}) {
 
   const [selectedApartment, setSelectedApartment] = useState('');
   const [selectedResidence, setSelectedResidence] = useState('');
   const [remark, setRemark] = useState('');
+
+  const [residencesMappedToName, setResidencesMappedToName] = useState<
+    { label: string; value: string }[]
+  >([]);
+
+  const [apartmentMappedToName, setApartmentMappedToName] = useState<
+    { label: string; value: string }[]
+  >([]);
+
+  const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
+
+  const [layoutMappedWithName, setLayoutMappedWithName] = useState<
+    { label: string; value: [string, [string, number][]][] }[]
+  >([]);
 
   const [arrivingTenantName, setArrivingTenantName] = useState('');
   const [arrivingTenantSurname, setArrivingTenantSurname] = useState('');
@@ -357,14 +343,32 @@ export default function SituationReportScreen() {
 
   const [resetState, setResetState] = useState(false);
 
+  const { landlord } = useAuth();
+
+  useEffect(() => {
+    if (landlord) {
+      fetchResidences(landlord, setResidencesMappedToName);
+    }
+
+    if (selectedResidence !== '' && selectedResidence !== undefined) {
+      fetchApartmentNames(selectedResidence, setApartmentMappedToName);
+      fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
+    }
+    
+  }, [landlord?.residenceIds, selectedResidence]);
+
+
+
   function reset() {
-    setSelectedApartment('');
-    setSelectedResidence('');
     setRemark('');
+    setSelectedResidence('');
+    setSelectedApartment('');
+    setLayout([]);
     setArrivingTenantName('');
     setArrivingTenantSurname('');
     setLeavingTenantName('');
     setLeavingTenantSurname('');
+
     setResetState((prev) => !prev);
   }
 
@@ -395,16 +399,24 @@ export default function SituationReportScreen() {
             <PickerGroup
               testID='residence-picker'
               label={'Residence'}
-              data={residences}
-              chosed={selectedResidence}
+              data={residencesMappedToName}
+              chosed={enablePickers ? testPickerResidence : selectedResidence}
               setValue={setSelectedResidence}
             />
             <PickerGroup
               testID='apartment-picker'
               label={'Apartment'}
-              data={apartments}
-              chosed={selectedApartment}
+              data={apartmentMappedToName}
+              chosed={enablePickers ? testPickerApartment : selectedApartment}
               setValue={setSelectedApartment}
+            />
+
+            <PickerGroup
+              testID='layout-picker'
+              label={'Situation Report'}
+              data={layoutMappedWithName}
+              chosed={enablePickers ? testPickerLayout : layout}
+              setValue={setLayout}
             />
 
             <TenantNameGroup
@@ -465,13 +477,24 @@ export default function SituationReportScreen() {
 
               <StraightLine />
             </View>
+              
 
-            <GroupedSituationReport
-              layout={newLayout}
-              changeStatus={changeStatus}
-              resetState={resetState}
-              setReset={() => setResetState(false)}
-            />
+
+
+            { layout?.length > 0 ? (
+
+              <GroupedSituationReport
+                layout={layout}
+                changeStatus={changeStatus}
+                resetState={resetState}
+                setReset={() => setResetState(false)}
+              />
+            ) : (
+
+              <Text style={appStyles.emptyListText}>
+                Please select a residence and a situation report layout
+              </Text>
+            )}
 
             <View style={situationReportStyles.lineContainer}>
               <Text style={situationReportStyles.remark}> Remark :</Text>
@@ -491,19 +514,26 @@ export default function SituationReportScreen() {
                 style={{ marginTop: '5%' }}
               />
             </View>
+
             <View style={appStyles.submitContainer}>
+              
               <SubmitButton
                 label='Submit'
                 testID='submit'
                 width={ButtonDimensions.smallButtonWidth}
                 height={ButtonDimensions.smallButtonHeight}
-                disabled={false}
+                disabled={ enableSubmit && (
+                  layout === undefined ||
+                  layout.length === 0 )
+                }
                 onPress={async () => {
-                  // Hardcoded value for the apartmentId since residence and apartment
+                  console.log("Pressed")
+                  const reportForm = await toDatabase(layout, "Situation Report arrival of " + arrivingTenantName + " " + arrivingTenantSurname);
+
                   const report: SituationReport = {
                     reportDate: new Date().toISOString(),
                     residenceId: selectedResidence,
-                    apartmentId: 'damH2jH7NRxIVZa0cZgL',
+                    apartmentId: selectedApartment,
                     arrivingTenant: JSON.stringify({
                       name: arrivingTenantName,
                       surname: arrivingTenantSurname,
@@ -513,26 +543,25 @@ export default function SituationReportScreen() {
                       surname: leavingTenantSurname,
                     }),
                     remarks: remark,
-                    reportForm: toDatabaseFormat(
-                      newLayout,
-                      arrivingTenantName + ' Situation Report',
-                    ),
+                    reportForm: reportForm,
                   };
 
-                  console.log(report);
                   reset();
 
-                  const apartment = await getApartment('damH2jH7NRxIVZa0cZgL');
-                  if (!apartment) {
-                    console.log('Apartment not found');
-                  }
+                  try {
+                    addSituationReport(report, selectedApartment);
+                    Alert.alert(
+                      'Situation Report',
+                      'Situation Report has been successfully submitted',
+                    );
 
-                  if (apartment?.situationReportId) {
-                    await deleteSituationReport(apartment.situationReportId);
+                  } catch (error) {
+                    console.error('Error adding document: ', error);
+                    Alert.alert(
+                      'Situation Report',
+                      'Failed to submit the situation report please check your connection and try again',
+                    );
                   }
-
-                  addSituationReport(report, 'damH2jH7NRxIVZa0cZgL');
-                  navigation.navigate('List Issues' as never);
                 }}
                 style={appStyles.submitButton}
               />

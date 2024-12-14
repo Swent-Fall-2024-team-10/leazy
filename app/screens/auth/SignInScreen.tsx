@@ -6,7 +6,11 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../types/types';
 import CustomPopUp from '../../components/CustomPopUp';
 import SubmitButton from '../../components/buttons/SubmitButton';
-import { appStyles, stylesForNonHeaderScreens, ButtonDimensions } from '../../../styles/styles';
+import {
+  appStyles,
+  stylesForNonHeaderScreens,
+  ButtonDimensions,
+} from '../../../styles/styles';
 
 interface FormErrors {
   email?: string;
@@ -14,7 +18,7 @@ interface FormErrors {
 }
 
 export default function SignInScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>(); 
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -36,13 +40,15 @@ export default function SignInScreen() {
       return;
     }
 
-    emailAndPasswordLogIn(email, password).then((user) => {
-      if (user) {
-        Alert.alert('Success', 'You have successfully signed in!');
-      }
-    }).catch((error) => {
-      setPopup(true);
-    });
+    emailAndPasswordLogIn(email, password)
+      .then((user) => {
+        if (user) {
+          Alert.alert('Success', 'You have successfully signed in!');
+        }
+      })
+      .catch((error) => {
+        setPopup(true);
+      });
   };
 
   const handleSignUpPress = () => {
@@ -51,49 +57,66 @@ export default function SignInScreen() {
 
   return (
     <View style={styles.container}>
-      <View>{popup && (
-      <Modal
-      transparent={true}
-      animationType="fade"
-      visible={popup}
-      onRequestClose={() => setPopup(false)}
-      >
-      < CustomPopUp
-        testID="signInPopup"
-        text = "An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct."
-        onPress = {() => setPopup(false)}
-      />
-      </Modal>)}</View>
+      <View>
+        {popup && (
+          <Modal
+            transparent={true}
+            animationType='fade'
+            visible={popup}
+            onRequestClose={() => setPopup(false)}
+          >
+            <CustomPopUp
+              testID='signInPopup'
+              title='Error'
+              text='An error occurred while signing in. Please make sure you are connected to the internet and that your email and password are correct.'
+              onPress={() => setPopup(false)}
+            />
+          </Modal>
+        )}
+      </View>
 
-      <Text style={[appStyles.screenHeader, { fontSize: 40 ,flex: 0, paddingBottom: '10%'}]}>Welcome back to Leazy</Text>
-      
+      <Text
+        style={[
+          appStyles.screenHeader,
+          { fontSize: 40, flex: 0, paddingBottom: '10%' },
+        ]}
+      >
+        Welcome back to Leazy
+      </Text>
+
       <CustomTextField
-        testID="emailInput"
-        placeholder="Email"
+        testID='emailInput'
+        placeholder='Email'
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
+        keyboardType='email-address'
+        autoCapitalize='none'
         style={appStyles.signUpInputField}
       />
-      {errors.email && <Text style={stylesForNonHeaderScreens.errorText}>{errors.email}</Text>}
-      
+      {errors.email && (
+        <Text style={stylesForNonHeaderScreens.errorText}>{errors.email}</Text>
+      )}
+
       <CustomTextField
-        testID="passwordInput"
-        placeholder="Password"
+        testID='passwordInput'
+        placeholder='Password'
         value={password}
         onChangeText={setPassword}
         style={appStyles.signUpInputField}
         secureTextEntry
       />
-      
-      {errors.password && <Text style={stylesForNonHeaderScreens.errorText}>{errors.password}</Text>}
-      <SubmitButton 
-        disabled={false} 
-        onPress={handleSignIn} 
-        width={ButtonDimensions.largeButtonWidth} 
-        height={ButtonDimensions.largeButtonHeight} 
-        label="Sign in" 
+
+      {errors.password && (
+        <Text style={stylesForNonHeaderScreens.errorText}>
+          {errors.password}
+        </Text>
+      )}
+      <SubmitButton
+        disabled={false}
+        onPress={handleSignIn}
+        width={ButtonDimensions.largeButtonWidth}
+        height={ButtonDimensions.largeButtonHeight}
+        label='Sign in'
         testID='signInButton'
         style={appStyles.submitButton}
         textStyle={appStyles.submitButtonText}
@@ -101,14 +124,16 @@ export default function SignInScreen() {
 
       <Text style={stylesForNonHeaderScreens.text}>or</Text>
       <View style={styles.horizontalLine} />
-      <Text style={stylesForNonHeaderScreens.text}>Don't have an account yet?</Text>
-      
-      <SubmitButton 
-        disabled={false} 
-        onPress={handleSignUpPress} 
-        width={ButtonDimensions.largeButtonWidth} 
-        height={ButtonDimensions.largeButtonHeight} 
-        label="Sign up" 
+      <Text style={stylesForNonHeaderScreens.text}>
+        Don't have an account yet?
+      </Text>
+
+      <SubmitButton
+        disabled={false}
+        onPress={handleSignUpPress}
+        width={ButtonDimensions.largeButtonWidth}
+        height={ButtonDimensions.largeButtonHeight}
+        label='Sign up'
         testID='signUpButton'
         style={appStyles.submitButton}
         textStyle={appStyles.submitButtonText}

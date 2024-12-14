@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { AuthStackParamList, TUser } from '../../../types/types';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { TUser } from '../../../types/types';
 import {
   updateUserEmail,
   resetUserPassword,
@@ -27,8 +21,6 @@ import Spacer from '../../components/Spacer';
 import SeparationLine from '../../components/SeparationLine';
 
 export default function SettingsScreen() {
-  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
-
   const screenWidth = Dimensions.get('window').width;
 
   type EditModeField =
@@ -41,6 +33,18 @@ export default function SettingsScreen() {
     | 'canton'
     | 'zip'
     | 'country';
+
+  const orderedFields: EditModeField[] = [
+    'name',
+    'email',
+    'phone',
+    'street',
+    'number',
+    'city',
+    'canton',
+    'zip',
+    'country',
+  ];
 
   const [isChanged, setIsChanged] = useState(false);
 
@@ -193,23 +197,13 @@ export default function SettingsScreen() {
   };
 
   const handleSignOut = () => {
-    auth
-      .signOut()
-      .then(() => {
-        navigation.navigate('SignIn');
-        setPopup({
-          visible: true,
-          text: 'Signed out successfully!',
-          type: 'success',
-        });
-      })
-      .catch((error) => {
-        setPopup({
-          visible: true,
-          text: `Error signing out: ${error.message}`,
-          type: 'error',
-        });
+    auth.signOut().catch((error) => {
+      setPopup({
+        visible: true,
+        text: `Error signing out: ${error.message}`,
+        type: 'error',
       });
+    });
   };
 
   const handleResetPassword = async (currentPassword: string) => {
@@ -283,7 +277,6 @@ export default function SettingsScreen() {
           text: 'Account deleted successfully.',
           type: 'success',
         });
-        navigation.navigate('SignIn');
       } else {
         setPopup({
           visible: true,
@@ -311,6 +304,7 @@ export default function SettingsScreen() {
       >
         {popup.visible && (
           <CustomPopUp
+            title={popup.type}
             text={popup.text}
             onPress={() =>
               setPopup({ visible: false, text: '', type: 'loading' })
@@ -333,38 +327,32 @@ export default function SettingsScreen() {
           <View>
             <Text style={appStyles.sectionHeader}>Profile Information</Text>
             <SeparationLine />
-            {Object.keys(userData).map((field) => {
-              const typedField = field as EditModeField;
+
+            {orderedFields.map((field) => {
               return (
-                <View key={typedField}>
+                <View key={field}>
                   <Text
                     style={[appStyles.inputFieldLabel, { marginLeft: '0%' }]}
                   >
-                    {capitalize(typedField)}
+                    {capitalize(field)}
                   </Text>
-                  {editMode[typedField] ? (
+                  {editMode[field] ? (
                     <InputField
-                      value={tempData[typedField]}
+                      testID='input-field'
+                      value={tempData[field]}
                       setValue={(value: string) =>
-                        setTempData((prev) => ({
-                          ...prev,
-                          [typedField]: value,
-                        }))
+                        setTempData((prev) => ({ ...prev, [field]: value }))
                       }
-                      placeholder={`Enter your ${typedField}`}
-                      testID={`input-${typedField}`}
+                      placeholder={`Enter your ${field}`}
                     />
                   ) : (
                     <Text style={[appStyles.idText, { marginBottom: 5 }]}>
-                      {userData[typedField]}
+                      {userData[field]}
                     </Text>
                   )}
                   <TouchableOpacity
-                    onPress={() => toggleEditMode(typedField)}
-                    style={{
-                      alignSelf: 'flex-start',
-                      marginBottom: 5,
-                    }}
+                    onPress={() => toggleEditMode(field)}
+                    style={{ alignSelf: 'flex-start', marginBottom: 5 }}
                   >
                     <Text
                       style={{
@@ -372,7 +360,7 @@ export default function SettingsScreen() {
                         fontSize: FontSizes.ButtonText,
                       }}
                     >
-                      {editMode[typedField] ? 'Cancel' : 'Modify'}
+                      {editMode[field] ? 'Cancel' : 'Modify'}
                     </Text>
                   </TouchableOpacity>
                   <SeparationLine />

@@ -6,9 +6,9 @@ import IssueStackNavigator from '../Navigators/IssueStackNavigator';
 import MyRentScreen from '../screens/tenant/MyRentScreen';
 import SharedElementsScreen from '../screens/tenant/SharedElementsScreen';
 import SubrentScreen from '../screens/tenant/SubrentScreen';
-import SettingsScreen from '../screens/tenant/SettingsScreen';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
 import { Color, appStyles } from '../../styles/styles';
+import SettingsScreen from '../screens/auth/SettingsScreen';
 
 const Drawer = createDrawerNavigator();
 

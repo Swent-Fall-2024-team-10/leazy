@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Text,
-  Alert,
-  Modal,
-} from 'react-native';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Modal } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,11 +12,7 @@ import CustomTextField from '../../components/CustomTextField';
 import CustomButton from '../../components/CustomButton';
 import Header from '../../components/Header';
 import { useAuth } from '../../context/AuthContext';
-import {
-  createApartment,
-  createResidence,
-  updateResidence,
-} from '../../../firebase/firestore/firestore';
+import { createApartment, createResidence, updateResidence } from '../../../firebase/firestore/firestore';
 import CustomPopUp from '../../components/CustomPopUp';
 
 interface ResidenceFormData {
@@ -50,29 +39,28 @@ interface FormErrors {
 const ALLOWED_EXTENSIONS = {
   excel: ['.xlsx', '.xls'],
   pdf: ['.pdf'],
-  images: ['.jpg', '.jpeg', '.png'],
+  images: ['.jpg', '.jpeg', '.png']
 };
 
 const validateEmail = (email: string): boolean => {
   // If email is too long, reject it immediately to prevent DoS
   if (email.length > 254) return false;
-
+  
   // RFC 5322 compliant regex, optimized to prevent catastrophic backtracking
-  const emailRegex =
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  
   try {
     // Use a timeout to prevent long-running regex operations
     const timeoutMs = 100;
     const startTime = Date.now();
-
+    
     const result = emailRegex.test(email);
-
+    
     if (Date.now() - startTime > timeoutMs) {
       console.warn('Email validation took longer than expected');
       return false;
     }
-
+    
     return result;
   } catch (error) {
     console.error('Email validation error:', error);
@@ -94,7 +82,7 @@ function ResidenceCreationScreen() {
     description: '',
     website: '',
     email: '',
-    pictures: [],
+    pictures: []
   });
   const [apartments, setApartments] = useState<string[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -104,18 +92,15 @@ function ResidenceCreationScreen() {
   const parseExcelFile = async (fileUri: string) => {
     try {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: FileSystem.EncodingType.Base64
       });
 
       const buffer = Buffer.from(fileContent, 'base64');
       const workbook = XLSX.read(buffer, { type: 'buffer' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json<any[]>(firstSheet, { header: 1 });
-
-      const apartmentNames = rows
-        .slice(1)
-        .map((row) => row[0])
-        .filter(Boolean);
+      
+      const apartmentNames = rows.slice(1).map(row => row[0]).filter(Boolean);
       setApartments(apartmentNames);
       Alert.alert('Success', `Parsed ${apartmentNames.length} apartments`);
     } catch (error) {
@@ -124,18 +109,12 @@ function ResidenceCreationScreen() {
     }
   };
 
-  const handleFilePicker = async (
-    fileType: 'excel' | 'pdf' | 'images',
-    field: keyof ResidenceFormData,
-  ) => {
+  const handleFilePicker = async (fileType: 'excel' | 'pdf' | 'images', field: keyof ResidenceFormData) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type:
-          fileType === 'images'
-            ? 'image/*'
-            : fileType === 'excel'
-              ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-              : 'application/pdf',
+        type: fileType === 'images' ? 'image/*' : 
+              fileType === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
+              'application/pdf'
       });
 
       if (result.canceled) return;
@@ -145,10 +124,7 @@ function ResidenceCreationScreen() {
       const allowedExts = ALLOWED_EXTENSIONS[fileType];
 
       if (!allowedExts.includes(`.${extension}`)) {
-        Alert.alert(
-          'Invalid file type',
-          `Please select a ${allowedExts.join(' or ')} file`,
-        );
+        Alert.alert('Invalid file type', `Please select a ${allowedExts.join(' or ')} file`);
         return;
       }
 
@@ -157,14 +133,13 @@ function ResidenceCreationScreen() {
         return;
       }
 
-      const directory =
-        FileSystem.cacheDirectory + `residence/${formData.name}/`;
+      const directory = FileSystem.cacheDirectory + `residence/${formData.name}/`;
       await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
 
       const newPath = directory + file.name;
       await FileSystem.copyAsync({
         from: file.uri,
-        to: newPath,
+        to: newPath
       });
 
       if (field === 'tenantsFile') {
@@ -172,14 +147,14 @@ function ResidenceCreationScreen() {
       }
 
       if (field === 'pictures') {
-        setFormData((prev) => ({
+        setFormData(prev => ({
           ...prev,
-          pictures: [...prev.pictures, newPath],
+          pictures: [...prev.pictures, newPath]
         }));
       } else {
-        setFormData((prev) => ({
+        setFormData(prev => ({
           ...prev,
-          [field]: newPath,
+          [field]: newPath
         }));
       }
     } catch (error) {
@@ -198,21 +173,21 @@ function ResidenceCreationScreen() {
   };
 
   const handleChange = (field: keyof ResidenceFormData) => (text: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [field]: text,
+      [field]: text
     }));
 
     if (errors[field as keyof FormErrors]) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
-        [field]: undefined,
+        [field]: undefined
       }));
     }
   };
 
   const validateForm = (): boolean => {
-    console.log('validate');
+    console.log("validate")
     const newErrors: FormErrors = {};
 
     if (formData.website && !validateWebsite(formData.website)) {
@@ -242,11 +217,11 @@ function ResidenceCreationScreen() {
         laundryMachineIds: [],
         apartments: [],
         tenantCodesID: [],
-        situationReportLayout: [],
+        situationReportLayout: []
       };
-
+  
       const newResidenceId = await createResidence(newResidence);
-
+      
       if (!newResidenceId) {
         setFirebaseError(true);
         setFirebaseErrorText('Failed to create residence');
@@ -254,212 +229,185 @@ function ResidenceCreationScreen() {
         try {
           // Use Promise.all with map instead of forEach
           const newApartments = await Promise.all(
-            apartments.map(async (apartmentName) => {
+            apartments.map(async apartmentName => {
               const newApartment: Apartment = {
                 apartmentName: apartmentName,
                 residenceId: newResidenceId,
                 tenants: [],
                 maintenanceRequests: [],
-                situationReportId: '',
+                situationReportId: [''],
               };
-
+              
               const newApartmentId = await createApartment(newApartment);
               if (!newApartmentId) {
                 setFirebaseError(true);
-                setFirebaseErrorText(
-                  `Failed to create apartment ${apartmentName}`,
-                );
+                setFirebaseErrorText(`Failed to create apartment ${apartmentName}`);
                 return null;
               }
-              console.log('s: ' + newApartmentId);
+              console.log("s: " + newApartmentId);
               return newApartmentId;
-            }),
+            })
           );
-
+  
           // Filter out any null values from failed creations
-          const successfulApartments = newApartments.filter(
-            (id) => id !== null,
-          );
-
+          const successfulApartments = newApartments.filter(id => id !== null);
+          
           newResidence.apartments = successfulApartments;
-          console.log('New Residence Apps' + newResidence.apartments);
+          console.log("New Residence Apps" + newResidence.apartments);
           await updateResidence(newResidenceId, newResidence);
         } catch (error) {
           setFirebaseError(true);
           setFirebaseErrorText('Failed to create apartments');
         }
       }
-      navigation.navigate('ResidenceList');
+      navigation.navigate("ResidenceList");
     }
   };
 
-  const ErrorText = ({ error }: { error?: string }) =>
-    error ? (
-      <Text style={{ color: 'red', marginTop: 5, marginBottom: 10 }}>
-        {error}
-      </Text>
-    ) : null;
+  const ErrorText = ({ error }: { error?: string }) => (
+    error ? <Text style={{ color: 'red', marginTop: 5, marginBottom: 10 }}>{error}</Text> : null
+  );
 
   return (
     <Header>
-      <ScrollView
-        style={[
-          appStyles.scrollContainer,
-          { paddingBottom: 200, paddingHorizontal: 20 },
-        ]}
-      >
-        <Text
-          testID='screen-title'
-          style={[appStyles.residenceTitle, { marginTop: 20 }]}
-        >
-          Create Your Residence
-        </Text>
+      <ScrollView style={[appStyles.scrollContainer, {paddingBottom: 200, paddingHorizontal: 20}]}>
+      <Text testID="screen-title" style={[appStyles.residenceTitle, {marginTop: 20}]}>
+            Create Your Residence
+          </Text>
         <View style={appStyles.formContainer}>
-          <View>
-            {firebaseError && (
+          <View>{firebaseError && (
               <Modal>
-                <CustomPopUp
-                  testID='FirebaseErrorModal'
-                  title='Error'
-                  text={firebaseErrorText}
-                  onPress={() => setFirebaseError(false)}
-                />
-              </Modal>
-            )}
+              <CustomPopUp title='Error' testID='FirebaseErrorModal' text={firebaseErrorText} onPress={() => setFirebaseError(false)}/>
+            </Modal>)}
           </View>
           <CustomTextField
-            testID='residence-name'
+            testID="residence-name"
             value={formData.name}
             onChangeText={handleChange('name')}
-            placeholder='Residence Name'
+            placeholder="Residence Name"
             style={appStyles.formFullWidth}
           />
 
           <CustomTextField
-            testID='email'
+            testID="email"
             value={formData.email}
             onChangeText={handleChange('email')}
-            placeholder='Email'
+            placeholder="Email"
             style={appStyles.formFullWidth}
-            autoCapitalize='none'
-            keyboardType='email-address'
+            autoCapitalize="none"
+            keyboardType="email-address"
           />
           <ErrorText error={errors.email} />
 
           <CustomTextField
-            testID='address'
+            testID="address"
             value={formData.address}
             onChangeText={handleChange('address')}
-            placeholder='Address'
+            placeholder="Address"
             style={appStyles.formFullWidth}
           />
 
           <View style={appStyles.formRow}>
             <CustomTextField
-              testID='number'
+              testID="number"
               value={formData.number}
               onChangeText={handleChange('number')}
-              placeholder='Street no'
+              placeholder="Street no"
               style={appStyles.formZipCode}
-              keyboardType='numeric'
+              keyboardType="numeric"
             />
 
             <CustomTextField
-              testID='zip-code'
+              testID="zip-code"
               value={formData.zipCode}
               onChangeText={handleChange('zipCode')}
-              placeholder='Zip Code'
+              placeholder="Zip Code"
               style={appStyles.formZipCode}
             />
           </View>
 
           <CustomTextField
-            testID='city'
+            testID="city"
             value={formData.city}
             onChangeText={handleChange('city')}
-            placeholder='City'
+            placeholder="City"
             style={appStyles.formFullWidth}
           />
 
           <CustomTextField
-            testID='province-state'
+            testID="province-state"
             value={formData.provinceState}
             onChangeText={handleChange('provinceState')}
-            placeholder='Province/State'
+            placeholder="Province/State"
             style={appStyles.formFullWidth}
           />
 
           <CustomTextField
-            testID='country'
+            testID="country"
             value={formData.country}
             onChangeText={handleChange('country')}
-            placeholder='Country'
+            placeholder="Country"
             style={appStyles.formFullWidth}
           />
 
           <CustomTextField
-            testID='description'
+            testID="description"
             value={formData.description}
             onChangeText={handleChange('description')}
-            placeholder='Description'
+            placeholder="Description"
             style={[appStyles.formFullWidth, appStyles.descriptionInput]}
           />
 
           <CustomTextField
-            testID='website'
+            testID="website"
             value={formData.website}
             onChangeText={handleChange('website')}
-            placeholder='Website (e.g., https://example.com)'
+            placeholder="Website (e.g., https://example.com)"
             style={appStyles.formFullWidth}
-            autoCapitalize='none'
+            autoCapitalize="none"
           />
           <ErrorText error={errors.website} />
 
-          <TouchableOpacity
+          <TouchableOpacity 
             style={appStyles.uploadButton}
             onPress={() => handleFilePicker('excel', 'tenantsFile')}
           >
-            <Ionicons name='cloud-upload-outline' size={24} color='#666' />
+            <Ionicons name="cloud-upload-outline" size={24} color="#666" />
             <Text style={appStyles.uploadText}>
-              {apartments.length > 0
-                ? `${apartments.length} apartments loaded`
+              {apartments.length > 0 
+                ? `${apartments.length} apartments loaded` 
                 : 'List of Apartments (.xlsx)'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          <TouchableOpacity 
             style={appStyles.uploadButton}
             onPress={() => handleFilePicker('pdf', 'ownershipProof')}
           >
-            <Ionicons name='cloud-upload-outline' size={24} color='#666' />
+            <Ionicons name="cloud-upload-outline" size={24} color="#666" />
             <Text style={appStyles.uploadText}>
-              {formData.ownershipProof
-                ? 'Proof uploaded'
-                : 'Proof of Ownership'}
+              {formData.ownershipProof ? 'Proof uploaded' : 'Proof of Ownership'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          <TouchableOpacity 
             style={appStyles.uploadButton}
             onPress={() => handleFilePicker('images', 'pictures')}
           >
-            <Ionicons name='cloud-upload-outline' size={24} color='#666' />
+            <Ionicons name="cloud-upload-outline" size={24} color="#666" />
             <Text style={appStyles.uploadText}>
-              {formData.pictures.length > 0
-                ? `${formData.pictures.length} pictures uploaded`
+              {formData.pictures.length > 0 
+                ? `${formData.pictures.length} pictures uploaded` 
                 : 'Pictures of residence'}
             </Text>
           </TouchableOpacity>
 
           <CustomButton
-            testID='next-button'
-            title='Next'
+            testID="next-button"
+            title="Next"
             onPress={handleSubmit}
-            size='medium'
-            style={[
-              appStyles.submitButton,
-              { width: ButtonDimensions.mediumButtonWidth },
-            ]}
+            size="medium"
+            style={[appStyles.submitButton, { width: ButtonDimensions.mediumButtonWidth}]}
           />
         </View>
       </ScrollView>

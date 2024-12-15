@@ -3,7 +3,7 @@ import {
   emailAndPasswordLogIn,
   deleteAccount,
   signOutUser,
-  resetUserPassword,
+  changeUserPassword,
   updateUserEmail,
   UserType,
 } from '../../firebase/auth/auth';
@@ -192,7 +192,7 @@ describe('Authentication Functions', () => {
       );
       (updatePassword as jest.Mock).mockResolvedValueOnce(undefined);
 
-      await resetUserPassword('currentPassword123', 'newPassword123');
+      await changeUserPassword('currentPassword123', 'newPassword123');
 
       expect(EmailAuthProvider.credential).toHaveBeenCalledWith(
         'test@example.com',
@@ -207,7 +207,7 @@ describe('Authentication Functions', () => {
 
     it('should throw an error when no user is logged in', async () => {
       await expect(
-        resetUserPassword('currentPassword123', 'newPassword123'),
+        changeUserPassword('currentPassword123', 'newPassword123'),
       ).rejects.toThrow('No authenticated user found.');
 
       expect(updatePassword).not.toHaveBeenCalled();

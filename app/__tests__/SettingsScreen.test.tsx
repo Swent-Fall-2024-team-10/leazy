@@ -5,10 +5,10 @@ import SettingsScreen from '../screens/auth/SettingsScreen';
 import { useAuth } from '../context/AuthContext';
 import { getUser, updateUser } from '../../firebase/firestore/firestore';
 import {
-  updateUserEmail,
-  resetUserPassword,
+  changeUserPassword,
   emailAndPasswordLogIn,
   deleteAccount,
+  updateUserEmailAuth,
 } from '../../firebase/auth/auth';
 import { auth } from '../../firebase/firebase';
 
@@ -42,8 +42,8 @@ describe('SettingsScreen', () => {
     (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
     (getUser as jest.Mock).mockResolvedValue(mockUserData);
     (updateUser as jest.Mock).mockResolvedValue(undefined);
-    (updateUserEmail as jest.Mock).mockResolvedValue(undefined);
-    (resetUserPassword as jest.Mock).mockResolvedValue(undefined);
+    (updateUserEmailAuth as jest.Mock).mockResolvedValue(undefined);
+    (changeUserPassword as jest.Mock).mockResolvedValue(undefined);
     (emailAndPasswordLogIn as jest.Mock).mockResolvedValue({ uid: 'test-uid' });
     (deleteAccount as jest.Mock).mockResolvedValue(undefined);
     (auth.signOut as jest.Mock).mockResolvedValue(undefined);
@@ -59,7 +59,6 @@ describe('SettingsScreen', () => {
     await waitFor(() => {
       expect(getByText('Settings & Profile')).toBeTruthy();
       expect(getByText('John Doe')).toBeTruthy();
-      expect(getByText('john.doe@example.com')).toBeTruthy();
       expect(getByText('1234567890')).toBeTruthy();
       expect(getByText('Main St')).toBeTruthy();
       expect(getByText('42')).toBeTruthy();
@@ -92,51 +91,53 @@ describe('SettingsScreen', () => {
     expect(updatedModifyButtons.length).toBe(modifyButtons.length);
   });
 
-  it('should update user email when saving changes', async () => {
-    const { findByText, getAllByText, getByTestId } = renderWithNavigation(
+  it('should update user email when pressing confirm', async () => {
+    (emailAndPasswordLogIn as jest.Mock).mockResolvedValueOnce({
+      uid: 'test-uid',
+    });
+
+    const { getByTestId, findByText } = renderWithNavigation(
       <SettingsScreen />,
     );
 
-    await waitFor(() => findByText('john.doe@example.com'));
+    const newEmailInput = getByTestId('input-new-email');
+    const emailPasswordInput = getByTestId('input-email-password');
+    const confirmButton = getByTestId('button-confirm-change-email');
 
-    const modifyButtons = getAllByText('Modify');
-    fireEvent.press(modifyButtons[1]);
+    fireEvent.changeText(newEmailInput, 'new.email@example.com');
+    fireEvent.changeText(emailPasswordInput, 'currentPass123');
 
-    const emailInput = getByTestId('input-field');
-    fireEvent.changeText(emailInput, 'new.email@example.com');
+    fireEvent.press(confirmButton);
 
-    const saveButton = getByTestId('button-save-changes');
-    fireEvent.press(saveButton);
-
-    await waitFor(() => {
-      expect(updateUserEmail).toHaveBeenCalledWith('new.email@example.com');
-      expect(updateUser).toHaveBeenCalled();
-    });
+    // Wait for the success popup message
+    const successMessage = await findByText('Email changed successfully!');
+    expect(successMessage).toBeTruthy();
   });
 
-  it('should show error popup if update fails', async () => {
-    (updateUser as jest.Mock).mockRejectedValueOnce(new Error('Update failed'));
+  it('should show an error modal if update fails', async () => {
+    // Correctly mock the updateUserEmailAuth to reject
+    (updateUserEmailAuth as jest.Mock).mockRejectedValueOnce(
+      new Error('Failed to change email'),
+    );
 
-    const { findByText, getByTestId, getAllByText, getByText } =
-      renderWithNavigation(<SettingsScreen />);
+    const { getByTestId, findByText } = renderWithNavigation(
+      <SettingsScreen />,
+    );
 
-    await waitFor(() => findByText('john.doe@example.com'));
+    const newEmailInput = getByTestId('input-new-email');
+    const emailPasswordInput = getByTestId('input-email-password');
+    const confirmButton = getByTestId('button-confirm-change-email');
 
-    const modifyButtons = getAllByText('Modify');
-    const emailModifyButton = modifyButtons[1];
-    fireEvent.press(emailModifyButton);
+    fireEvent.changeText(newEmailInput, 'new.email@example.com');
+    fireEvent.changeText(emailPasswordInput, 'wrongPass');
 
-    const emailInput = getByTestId('input-field');
-    fireEvent.changeText(emailInput, 'failing.email@example.com');
+    fireEvent.press(confirmButton);
 
-    const saveButton = getByTestId('button-save-changes');
-    fireEvent.press(saveButton);
-
-    await waitFor(() => {
-      expect(
-        getByText('Failed to save changes. Please try again.'),
-      ).toBeTruthy();
-    });
+    // Wait for the error popup message
+    const errorMessage = await findByText(
+      'Failed to change email: Failed to change email',
+    );
+    expect(errorMessage).toBeTruthy();
   });
 
   it('should reset password successfully', async () => {
@@ -158,11 +159,11 @@ describe('SettingsScreen', () => {
     fireEvent.press(resetButton);
 
     await waitFor(() => {
-      expect(resetUserPassword).toHaveBeenCalledWith(
+      expect(changeUserPassword).toHaveBeenCalledWith(
         'currentPass123',
         'newPass123',
       );
-      expect(getByText('Password reset successfully!')).toBeTruthy();
+      expect(getByText('Password changed successfully!')).toBeTruthy();
     });
   });
 

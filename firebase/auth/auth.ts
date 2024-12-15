@@ -9,6 +9,7 @@ import {
   reauthenticateWithCredential,
   updatePassword,
   EmailAuthProvider,
+  verifyBeforeUpdateEmail,
 } from 'firebase/auth';
 
 export enum UserType {
@@ -77,7 +78,10 @@ export async function signOutUser(
   }
 }
 
-export async function resetUserPassword(currentPassword: string, newPassword: string) {
+export async function changeUserPassword(
+  currentPassword: string,
+  newPassword: string,
+) {
   if (auth.currentUser !== null) {
     try {
       const email = auth.currentUser.email;
@@ -100,5 +104,27 @@ export async function resetUserPassword(currentPassword: string, newPassword: st
 export async function updateUserEmail(newEmail: string) {
   if (auth.currentUser !== null) {
     await updateEmail(auth.currentUser, newEmail);
+  }
+}
+
+export async function updateUserEmailAuth(password: string, newEmail: string) {
+  if (auth.currentUser !== null) {
+    try {
+      const email = auth.currentUser.email;
+      if (!email) throw new Error('User email not found.');
+
+      if (!password) throw new Error('Reauthentication cancelled.');
+
+      const credential = EmailAuthProvider.credential(email, password);
+      await reauthenticateWithCredential(auth.currentUser, credential);
+
+      // Use verifyBeforeUpdateEmail instead of updateEmail
+      await verifyBeforeUpdateEmail(auth.currentUser, newEmail);
+    } catch (error) {
+      console.log('Error while updating user email: ', error);
+      throw error;
+    }
+  } else {
+    throw new Error('No authenticated user found.');
   }
 }

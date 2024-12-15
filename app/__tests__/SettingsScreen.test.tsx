@@ -19,6 +19,12 @@ jest.mock('../../firebase/firebase', () => ({
   auth: { signOut: jest.fn() },
 }));
 
+const waitForModalText = async (getByText: Function, text: string) => {
+  await waitFor(() => {
+    expect(getByText(text)).toBeTruthy();
+  });
+};
+
 const mockUser = { uid: 'test-uid' };
 const mockUserData = {
   name: 'John Doe',
@@ -232,5 +238,196 @@ describe('SettingsScreen', () => {
 
     fireEvent.changeText(getByTestId('input-delete-password'), 'password123');
     expect(deleteButton.props.accessibilityState.disabled).toBe(false);
+  });
+
+  it('should show an error modal if resetting password fails', async () => {
+    // Mock the changeUserPassword to reject with an error
+    (changeUserPassword as jest.Mock).mockRejectedValueOnce(
+      new Error('Incorrect current password'),
+    );
+
+    const { getByTestId, findByText } = renderWithNavigation(
+      <SettingsScreen />,
+    );
+
+    // Wait for the "Change Password" section to be available
+    await waitFor(() => findByText('Change Password'));
+
+    const currentPasswordInput = getByTestId('input-current-password');
+    const newPasswordInput = getByTestId('input-new-password');
+    const confirmPasswordInput = getByTestId('input-confirm-password');
+
+    // Enter the current password, new password, and confirm password
+    fireEvent.changeText(currentPasswordInput, 'wrongCurrentPass');
+    fireEvent.changeText(newPasswordInput, 'newPass123');
+    fireEvent.changeText(confirmPasswordInput, 'newPass123');
+
+    const resetButton = getByTestId('button-reset-password');
+    fireEvent.press(resetButton);
+
+    // Wait for the error popup message to appear
+    const errorMessage = await findByText(
+      'Failed to change password: Incorrect current password',
+    );
+    expect(errorMessage).toBeTruthy();
+  });
+
+  it('should show an error modal if sign out fails', async () => {
+    // Mock the signOut function to reject with an error
+    (auth.signOut as jest.Mock).mockRejectedValueOnce(
+      new Error('Network error'),
+    );
+
+    const { getByTestId, findByText } = renderWithNavigation(
+      <SettingsScreen />,
+    );
+
+    // Wait for the "Sign Out" button to be available
+    await waitFor(() => findByText('Sign Out'));
+
+    const signOutButton = getByTestId('button-sign-out');
+    fireEvent.press(signOutButton);
+
+    // Wait for the error popup message to appear
+    const errorMessage = await findByText('Error signing out: Network error');
+    expect(errorMessage).toBeTruthy();
+  });
+
+  it('should show an error modal if deleting account fails', async () => {
+    // Mock the emailAndPasswordLogIn to resolve successfully
+    (emailAndPasswordLogIn as jest.Mock).mockResolvedValueOnce({
+      uid: 'test-uid',
+    });
+
+    // Mock the deleteAccount function to reject with an error
+    (deleteAccount as jest.Mock).mockRejectedValueOnce(
+      new Error('Failed to delete account'),
+    );
+
+    const { getByTestId, findByText } = renderWithNavigation(
+      <SettingsScreen />,
+    );
+
+    // Press the 'Delete Account' button to show the confirmation form
+    fireEvent.press(getByTestId('button-delete-account'));
+
+    // Enter email and password
+    fireEvent.changeText(
+      getByTestId('input-delete-email'),
+      'john.doe@example.com',
+    );
+    fireEvent.changeText(getByTestId('input-delete-password'), 'password123');
+
+    // Press the 'Delete' button to attempt account deletion
+    fireEvent.press(getByTestId('button-confirm-delete'));
+
+    // Wait for the error popup message to appear
+    const errorMessage = await findByText(
+      'Failed to delete account: Failed to delete account',
+    );
+    expect(errorMessage).toBeTruthy();
+  });
+
+  it('should execute fetchUserData from useEffect', async () => {
+    // Mock useAuth to return a valid user
+    (useAuth as jest.Mock).mockReturnValueOnce({ user: { uid: 'test-uid' } });
+
+    // Mock getUser to return mock user data
+    (getUser as jest.Mock).mockResolvedValueOnce(mockUserData);
+
+    // Render the component
+    renderWithNavigation(<SettingsScreen />);
+
+    // Use waitFor to ensure useEffect runs
+    await waitFor(() => {
+      expect(getUser).toHaveBeenCalledWith('test-uid');
+    });
+  });
+
+  it('should disable the reset password button when current password is empty', () => {
+    const { getByTestId } = renderWithNavigation(<SettingsScreen />);
+
+    // Set new password and confirm password, but leave current password empty
+    fireEvent.changeText(getByTestId('input-new-password'), 'newPass123');
+    fireEvent.changeText(getByTestId('input-confirm-password'), 'newPass123');
+
+    const resetButton = getByTestId('button-reset-password');
+
+    // Check if the button is disabled
+    expect(resetButton.props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('should disable the reset password button when new password or confirm password is empty', () => {
+    const { getByTestId } = renderWithNavigation(<SettingsScreen />);
+
+    // Set current password but leave new password and confirm password empty
+    fireEvent.changeText(
+      getByTestId('input-current-password'),
+      'currentPass123',
+    );
+    fireEvent.changeText(getByTestId('input-new-password'), '');
+    fireEvent.changeText(getByTestId('input-confirm-password'), '');
+
+    const resetButton = getByTestId('button-reset-password');
+
+    // Check if the button is disabled
+    expect(resetButton.props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('should handle error when user is not found during email update', async () => {
+    // Mock useAuth to return user initially but then null
+    (useAuth as jest.Mock).mockReturnValue({
+      user: { ...mockUser, email: 'current@example.com' },
+    });
+
+    (updateUserEmailAuth as jest.Mock).mockResolvedValue(undefined);
+    (updateUser as jest.Mock).mockRejectedValue(
+      new Error('Error updating user in Firestore'),
+    );
+
+    const { getByTestId, getByText } = renderWithNavigation(<SettingsScreen />);
+
+    // Fill in the form
+    fireEvent.changeText(getByTestId('input-new-email'), 'new@example.com');
+    fireEvent.changeText(getByTestId('input-email-password'), 'password123');
+
+    // Submit form
+    fireEvent.press(getByTestId('button-confirm-change-email'));
+
+    // Wait for the error message in the modal
+    await waitForModalText(
+      getByText,
+      'Failed to change email: Error updating user in Firestore',
+    );
+  });
+
+  it('should handle error when getUser fails after update', async () => {
+    // Mock successful update but failed getUser
+    (updateUser as jest.Mock).mockResolvedValue(undefined);
+    (getUser as jest.Mock).mockRejectedValue(
+      new Error('Failed to fetch updated user'),
+    );
+
+    const { getAllByText, getByTestId, getByText } = renderWithNavigation(
+      <SettingsScreen />,
+    );
+
+    // Enter edit mode
+    const modifyButtons = getAllByText('Modify');
+    fireEvent.press(modifyButtons[0]);
+
+    // Change the value
+    const nameInput = getByTestId('input-field');
+    fireEvent.changeText(nameInput, 'New Name');
+
+    // Try to save changes
+    const saveButton = getByTestId('button-save-changes');
+    fireEvent.press(saveButton);
+
+    // Wait for error message in modal
+    await waitForModalText(
+      getByText,
+      'Failed to save changes. Please try again.',
+    );
   });
 });

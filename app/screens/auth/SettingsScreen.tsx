@@ -97,7 +97,7 @@ export default function SettingsScreen() {
           country: userObj.country,
         });
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        return error;
       }
     };
 
@@ -190,7 +190,6 @@ export default function SettingsScreen() {
         type: 'success',
       });
     } catch (error) {
-      console.error('Error updating user:', error);
       setPopup({
         visible: true,
         text: 'Failed to save changes. Please try again.',

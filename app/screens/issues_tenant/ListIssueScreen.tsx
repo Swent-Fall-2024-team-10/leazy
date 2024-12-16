@@ -126,31 +126,20 @@ const MaintenanceIssues = () => {
   // Add a ref to track recent updates
   const recentUpdatesRef = React.useRef<Record<string, number>>({});
 
-  const hasRecentlyUpdated = (requestId: string, oldStatus: string, newStatus: string) => {
-    const key = `${requestId}_${oldStatus}_${newStatus}`;
+  const hasRecentlyUpdated = (requestId: string, status: string) => {
+    const key = `${requestId}_${status}`;
     const lastUpdate = recentUpdatesRef.current[key];
     const now = Date.now();
     
-    console.log('Checking recent updates:', {
-      key,
-      lastUpdate,
-      now,
-      timeDiff: lastUpdate ? now - lastUpdate : 'no previous update'
-    });
-    
-    if (lastUpdate && now - lastUpdate < 2000) {
-      console.log('Preventing duplicate update');
+    if (lastUpdate && now - lastUpdate < 2000) { // 2 second window
       return true;
     }
     
-    console.log('Allowing update and setting timestamp');
     recentUpdatesRef.current[key] = now;
     return false;
   };
 
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-
     const fetchTenantRequests = async () => {
       try {
         if (!userId) {
@@ -159,8 +148,9 @@ const MaintenanceIssues = () => {
         }
 
         const query = await getMaintenanceRequestsQuery(userId);
-        unsubscribe = onSnapshot(query, (querySnapshot) => {
-          const updatedIssues: MaintenanceRequest[] = [...issues];
+
+        const unsubscribe = onSnapshot(query, (querySnapshot) => {
+          const updatedIssues: MaintenanceRequest[] = [];
 
           querySnapshot.docChanges().forEach((change) => {
             const newData = change.doc.data() as MaintenanceRequest;
@@ -169,47 +159,41 @@ const MaintenanceIssues = () => {
               const oldStatus = statusTrackingRef.current[newData.requestID];
               const newStatus = newData.requestStatus;
               
-              console.log('Status change detected:', {
-                requestId: newData.requestID,
+              console.log('Status check:', {
+                requestID: newData.requestID,
                 oldStatus,
                 newStatus,
-                currentTracking: statusTrackingRef.current
+                isDifferent: oldStatus !== newStatus
               });
-              
+
               if (oldStatus && 
                   oldStatus !== newStatus && 
-                  !hasRecentlyUpdated(newData.requestID, oldStatus, newStatus)) {
-                console.log('Creating news item for status change');
-                createStatusChangeNews(newData, userId).catch(error => {
-                  console.error('Error creating news item:', error);
-                });
+                  !hasRecentlyUpdated(newData.requestID, newStatus)) {
+                console.log('Creating news for status change');
+                createStatusChangeNews(newData, userId);
               }
               
               statusTrackingRef.current[newData.requestID] = newStatus;
-              const index = updatedIssues.findIndex(issue => issue.requestID === newData.requestID);
-              if (index !== -1) {
-                updatedIssues[index] = newData;
-              }
-            } else if (change.type === 'added') {
-              updatedIssues.push(newData);
+            } else if (change.type === 'added' && newData.requestID) {
+              statusTrackingRef.current[newData.requestID] = newData.requestStatus;
             }
+          });
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data() as MaintenanceRequest;
+            updatedIssues.push(data);
           });
 
           setIssues(updatedIssues);
         });
+
+        return unsubscribe;
       } catch (error) {
         console.error('Error setting up maintenance requests listener:', error);
       }
     };
 
     fetchTenantRequests();
-    
-    // Cleanup function
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
   }, [userId]);
 
   const createStatusChangeNews = async (

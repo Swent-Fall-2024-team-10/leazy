@@ -138,7 +138,7 @@ export type News = {
   content: string;
   isRead: boolean;
   createdAt: Timestamp;
-  ReadAt: Timestamp;
+  ReadAt: Timestamp | null;
   UpdatedAt: Timestamp;
   type: "urgent" | "informational";
   images: string[];

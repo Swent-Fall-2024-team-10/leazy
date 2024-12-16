@@ -10,12 +10,16 @@ import {
 import { Feather } from '@expo/vector-icons';
 import Header from '../../components/Header';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { ReportStackParamList, MaintenanceRequest, News } from '../../../types/types'; // Assuming this also includes navigation types
+import {
+  ReportStackParamList,
+  MaintenanceRequest,
+  News,
+} from '../../../types/types';
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
   createNews,
-} from '../../../firebase/firestore/firestore'; // Firestore functions
+} from '../../../firebase/firestore/firestore';
 import { getAuth } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
 import {
@@ -96,10 +100,43 @@ const getStatusUpdateMessage = (title: string, newStatus: string) => {
       return `Work has begun on your maintenance request "${title}"`;
     case 'completed':
       return `Your maintenance request "${title}" has been completed`;
-    case 'cancelled':
-      return `Your maintenance request "${title}" has been cancelled`;
+    case 'rejected':
+      return `Your maintenance request "${title}" has been rejected`;
+    case 'notStarted':
+      return `Your maintenance request "${title}" has been opened`;
     default:
       return `Your maintenance request "${title}" has been updated to status: ${newStatus}`;
+  }
+};
+
+const createStatusNews = async (
+  request: MaintenanceRequest,
+  previousStatus: string | null,
+  currentStatus: string,
+  userId: string
+) => {
+  // Don't create news if there's no status change
+  if (previousStatus === currentStatus) return;
+
+  const newsItem: News = {
+    maintenanceRequestID: `news_${request.requestID}_${Date.now()}`,
+    title: 'Maintenance Request Status Update',
+    content: getStatusUpdateMessage(request.requestTitle, currentStatus),
+    type: currentStatus === 'rejected' ? 'urgent' : 'informational',
+    isRead: false,
+    createdAt: Timestamp.now(),
+    UpdatedAt: Timestamp.now(),
+    ReadAt: null,
+    images: request.picture || [],
+    ReceiverID: userId,
+    SenderID: 'system'
+  };
+
+  try {
+    await createNews(newsItem);
+    console.log('News item created for status change:', newsItem);
+  } catch (error) {
+    console.error('Error creating news item:', error);
   }
 };
 
@@ -107,6 +144,9 @@ const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [showArchived, setShowArchived] = useState(false);
+  const [statusChangeTracking, setStatusChangeTracking] = useState<
+    Record<string, string>
+  >({});
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -124,41 +164,37 @@ const MaintenanceIssues = () => {
 
         const unsubscribe = onSnapshot(query, (querySnapshot) => {
           const updatedIssues: MaintenanceRequest[] = [];
-          
-          // Track changes for news creation
+
           querySnapshot.docChanges().forEach((change) => {
             const newData = change.doc.data() as MaintenanceRequest;
             
-            // If this is a modification and the status has changed
+            // Handle status changes and news creation
             if (change.type === 'modified') {
-              const oldIssue = issues.find(issue => issue.requestID === newData.requestID);
-              if (oldIssue && oldIssue.requestStatus !== newData.requestStatus) {
-                // Create a news item for the status change
-                const newsItem = {
-                  maintenanceRequestID: `news_${Date.now()}`,
-                  title: `Maintenance Request Status Update`,
-                  content: getStatusUpdateMessage(newData.requestTitle, newData.requestStatus),
-                  type: 'informational',
-                  isRead: false,
-                  createdAt: Timestamp.now(),
-                  UpdatedAt: Timestamp.now(),
-                  ReadAt: Timestamp.now(),
-                  images: newData.picture || [],
-                  ReceiverID: userId,
-                  SenderID: 'system'
-                };
-                
-                createNews(newsItem as News).catch(error => {
-                  console.error('Error creating news item:', error);
-                });
-              }
+              const previousStatus = statusChangeTracking[newData.requestID];
+              const currentStatus = newData.requestStatus;
+              
+              // Create news item for status changes
+              createStatusNews(newData, previousStatus, currentStatus, userId);
+            }
+
+            // For new documents, create initial news
+            if (change.type === 'added') {
+              createStatusNews(newData, null, newData.requestStatus, userId);
             }
           });
 
-          // Update the issues state as before
+          // Update issues state and status tracking
           querySnapshot.forEach((doc) => {
-            updatedIssues.push(doc.data() as MaintenanceRequest);
+            const data = doc.data() as MaintenanceRequest;
+            updatedIssues.push(data);
+
+            // Update status tracking
+            setStatusChangeTracking((prev) => ({
+              ...prev,
+              [data.requestID]: data.requestStatus,
+            }));
           });
+
           setIssues(updatedIssues);
         });
 
@@ -169,17 +205,24 @@ const MaintenanceIssues = () => {
     };
 
     fetchTenantRequests();
-  }, [userId, issues]);
+  }, [userId]);
 
-  const archiveIssue = (requestID: string) => {
-    setIssues(
-      issues.map((issue) =>
-        issue.requestID === requestID
-          ? { ...issue, requestStatus: 'completed' }
-          : issue,
-      ),
-    );
-    updateMaintenanceRequest(requestID, { requestStatus: 'completed' });
+  const archiveIssue = async (requestID: string) => {
+    if (!userId) return;
+
+    try {
+      await updateMaintenanceRequest(requestID, { requestStatus: 'completed' });
+
+      setIssues(
+        issues.map((issue) =>
+          issue.requestID === requestID
+            ? { ...issue, requestStatus: 'completed' }
+            : issue,
+        ),
+      );
+    } catch (error) {
+      console.error('Error archiving issue:', error);
+    }
   };
 
   const filteredIssues = issues.filter(
@@ -196,7 +239,7 @@ const MaintenanceIssues = () => {
             </View>
 
             <View style={styles.switchContainer}>
-              <Text> Archived Issues</Text>
+              <Text>Archived Issues</Text>
               <Switch
                 style={[
                   { marginLeft: 8 },
@@ -246,7 +289,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   statusTextContainer: {
     borderRadius: 25,
     paddingVertical: 5,
@@ -254,7 +296,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: '8%',
   },
-
   titleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -270,7 +311,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: '6%',
   },
-
   issueItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -289,7 +329,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-
   issueTextContainer: {
     width: '100%',
     height: 32,
@@ -332,7 +371,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 1,
   },
-
   viewBoxContainer: {
     marginBottom: 80,
     paddingBottom: 80,

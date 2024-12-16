@@ -234,7 +234,7 @@ const NewsfeedManagementScreen = () => {
             setModalVisible(true);
           }}
           disabled={false}
-          width={380}
+          width={200}
           height={44}
           style={[appStyles.submitButton, styles.addNewsButton]}
         />

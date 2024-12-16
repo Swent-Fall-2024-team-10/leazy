@@ -18,6 +18,7 @@ import {
   getNewsByReceiver,
   markNewsAsRead,
 } from '../../../firebase/firestore/firestore';
+import { useAuth } from '../../context/AuthContext';
 
 interface NewsfeedSectionProps {
   title: string;
@@ -26,14 +27,14 @@ interface NewsfeedSectionProps {
   isExpandable?: boolean;
 }
 
-const ONE_HOUR_IN_SECONDS = 3600;
+const TEN_MINUTES_IN_SECONDS = 600;
 
 const isPostVisible = (news: News) => {
   if (!news.isRead || !news.ReadAt) return true;
-  
+
   const readAtSeconds = news.ReadAt.seconds;
   const currentSeconds = Timestamp.now().seconds;
-  return currentSeconds - readAtSeconds < ONE_HOUR_IN_SECONDS;
+  return currentSeconds - readAtSeconds < TEN_MINUTES_IN_SECONDS;
 };
 
 const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
@@ -157,6 +158,7 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
 };
 
 const NewsfeedScreen = () => {
+  const { tenant } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [generalNews, setGeneralNews] = useState<News[]>([]);
   const [personalNews, setPersonalNews] = useState<News[]>([]);
@@ -165,8 +167,8 @@ const NewsfeedScreen = () => {
   // Add an effect to periodically check for expired posts
   useEffect(() => {
     const checkExpiredPosts = () => {
-      setGeneralNews(prev => [...prev]); // Force re-render to update visibility
-      setPersonalNews(prev => [...prev]);
+      setGeneralNews((prev) => [...prev]); // Force re-render to update visibility
+      setPersonalNews((prev) => [...prev]);
     };
 
     const interval = setInterval(checkExpiredPosts, 60000); // Check every minute
@@ -174,14 +176,18 @@ const NewsfeedScreen = () => {
   }, []);
 
   useEffect(() => {
-    fetchNews();
-  }, []);
+    if (tenant) {
+      fetchNews();
+    }
+  }, [tenant]);
 
   const fetchNews = async () => {
+    if (!tenant) return;
+
     try {
       const [generalNewsItems, personalNewsItems] = await Promise.all([
         getNewsByReceiver('all'),
-        getNewsByReceiver('currentUserId'), // Replace with actual user ID
+        getNewsByReceiver(tenant.userId), // Use tenant's userId from context
       ]);
 
       setGeneralNews(generalNewsItems);
@@ -194,10 +200,10 @@ const NewsfeedScreen = () => {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     fetchNews().finally(() => setRefreshing(false));
-  }, []);
+  }, [tenant]);
 
   const handleNewsPress = async (news: News) => {
-    if (isUpdating) return;
+    if (isUpdating || !tenant) return;
 
     try {
       setIsUpdating(true);
@@ -211,7 +217,7 @@ const NewsfeedScreen = () => {
                 isRead: true,
                 ReadAt: Timestamp.now(),
               }
-            : item
+            : item,
         );
 
       if (news.ReceiverID === 'all') {
@@ -225,6 +231,17 @@ const NewsfeedScreen = () => {
       setIsUpdating(false);
     }
   };
+
+  // Handle loading state
+  if (!tenant) {
+    return (
+      <Header>
+        <View style={styles.container}>
+          <Text style={appStyles.flatText}>Loading...</Text>
+        </View>
+      </Header>
+    );
+  }
 
   return (
     <Header>
@@ -261,13 +278,14 @@ const NewsfeedScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0.7,
   },
   scrollView: {
     flex: 1,
   },
   scrollViewContent: {
     padding: 20,
+    flexGrow: 1,
   },
   section: {
     marginBottom: 20,

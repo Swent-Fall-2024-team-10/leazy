@@ -149,7 +149,7 @@ const useTimerManagement = (residenceId: string, userId?: string) => {
         }));
 
         // Schedule 3-minute notification if not already done
-        const timerRef = timerRefsRef.current[laundryMachineId];
+        const timerRef = timerRefsRef.current[laundryMachineId] || {};
         if (!timerRef.notificationId && remainingTimeMs > 3 * 60 * 1000) {
           try {
             const notificationId = await scheduleFinishNotification(

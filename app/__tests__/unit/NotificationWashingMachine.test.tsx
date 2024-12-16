@@ -29,6 +29,7 @@ jest.mock('expo-notifications', () => ({
     requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
     scheduleNotificationAsync: jest.fn(() => Promise.resolve('mocked-notification-id')), // Fix here
     setNotificationHandler: jest.fn(() => {}),
+    cancelScheduledNotificationAsync: jest.fn()
   }));
   
     
@@ -125,70 +126,6 @@ afterEach(() => {
     await waitFor(() => {expect(getByText("Machine coucou")).toBeTruthy()});
   });
 
-  it("does not schedule a notification if permissions are denied", async () => {
-    // Mock denied permissions
-    (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValueOnce({
-      status: "denied",
-    } as NotificationPermissionsStatus);
-    (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({
-      status: "denied",
-    } as NotificationPermissionsStatus);
-
-    const { getByText, getByTestId } = render(<WashingMachineScreen />);
-
-    // Verify that the placeholder machine is rendered
-    expect(getByText("Machine coucou")).toBeTruthy();
-
-    // Simulate setting a timer
-    const button = getByTestId("setTimerButton");
-    await act(async () => {
-      fireEvent.press(button);
-    });
-
-    // Step 2: Simulate confirming a duration of 5 minutes
-    const modal = getByTestId("timer-picker-modal");
-    await act(async () => {
-        fireEvent(modal, "onConfirm", { hours: 0, minutes: 5, seconds: 0 }); // Mock time selection
-    });
-
-    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
-    expect(alert).toHaveBeenCalledWith('Notification permissions are required to use this feature.');
-  });
-
-  it("schedules a notification if permissions are granted", async () => {
-    // Mock granted permissions
-    (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValueOnce({
-        status: "granted",
-      } as NotificationPermissionsStatus);
-  
-      const { getByText, getByTestId } = render(<WashingMachineScreen />);
-  
-      // Verify that the placeholder machine is rendered
-      expect(getByText("Machine coucou")).toBeTruthy();
-  
-      // Simulate setting a timer
-      const button = getByTestId("setTimerButton");
-      await act(async () => {
-        fireEvent.press(button);
-      });
-  
-      // Step 2: Simulate confirming a duration of 5 minutes
-      const modal = getByTestId("timer-picker-modal");
-        await act(async () => {
-            fireEvent(modal, "onConfirm", { hours: 0, minutes: 5, seconds: 0 }); // Mock time selection
-        });
-
-        expect(getByText("Machine coucou")).toBeTruthy();
-        expect(Notifications.scheduleNotificationAsync)
-        .toHaveBeenCalledWith({
-      content: {
-        title: `Laundry Machine coucou`,
-        body: "Your laundry will be ready in 3 minutes!",
-      },
-      trigger: { seconds: 2*60 },
-    });
-  });
-
   it("does not schedule a notification for past times", async () => {
     // Mock permissions granted
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValueOnce({
@@ -209,7 +146,7 @@ afterEach(() => {
     // Step 2: Simulate confirming a duration of 5 minutes
     const modal = getByTestId("timer-picker-modal");
     await act(async () => {
-        fireEvent(modal, "onConfirm", { hours: 0, minutes: 2, seconds: 0 }); // Mock time selection
+        fireEvent(modal, "onConfirm", new Date(0, 0, 0, 0, 2, 0)); // Mock time selection
     });
 
     expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalledWith(

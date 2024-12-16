@@ -154,7 +154,7 @@ describe('WashingMachineScreen', () => {
       isFunctional: true,
       occupiedBy: 'test-user-id',
       estimatedFinishTime: {
-        toMillis: () => Date.now() - 1000
+        toMillis: () => Date.now() + 1000
       }
     };
     

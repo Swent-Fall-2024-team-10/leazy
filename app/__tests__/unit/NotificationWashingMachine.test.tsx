@@ -25,10 +25,10 @@ jest.mock("../../../firebase/firestore/firestore", () => ({
 }));
 
 jest.mock('expo-notifications', () => ({
-    ...jest.requireActual('expo-notifications'),
     getPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
     requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
     scheduleNotificationAsync: jest.fn(() => Promise.resolve('mocked-notification-id')), // Fix here
+    setNotificationHandler: jest.fn(() => {}),
   }));
   
     
@@ -95,12 +95,6 @@ return {
     }),
   }));
   
-  // Mock expo-notifications
-  jest.mock("expo-notifications", () => ({
-    getPermissionsAsync: jest.fn(),
-    requestPermissionsAsync: jest.fn(),
-    scheduleNotificationAsync: jest.fn(),
-  }));
 
 describe("WashingMachineScreen - Notifications", () => {
   beforeEach(() => {
@@ -134,6 +128,9 @@ afterEach(() => {
   it("does not schedule a notification if permissions are denied", async () => {
     // Mock denied permissions
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+      status: "denied",
+    } as NotificationPermissionsStatus);
+    (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValueOnce({
       status: "denied",
     } as NotificationPermissionsStatus);
 

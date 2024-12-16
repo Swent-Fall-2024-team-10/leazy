@@ -26,6 +26,16 @@ interface NewsfeedSectionProps {
   isExpandable?: boolean;
 }
 
+const ONE_HOUR_IN_SECONDS = 3600;
+
+const isPostVisible = (news: News) => {
+  if (!news.isRead || !news.ReadAt) return true;
+  
+  const readAtSeconds = news.ReadAt.seconds;
+  const currentSeconds = Timestamp.now().seconds;
+  return currentSeconds - readAtSeconds < ONE_HOUR_IN_SECONDS;
+};
+
 const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
   title,
   news,
@@ -34,8 +44,11 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Filter out posts that were read more than an hour ago
+  const visibleNews = news.filter(isPostVisible);
+
   // Enhanced sorting logic: urgent first, then unread, then by date
-  const sortedNews = [...news].sort((a, b) => {
+  const sortedNews = [...visibleNews].sort((a, b) => {
     // First sort by urgent status
     if (a.type === 'urgent' && b.type !== 'urgent') return -1;
     if (a.type !== 'urgent' && b.type === 'urgent') return 1;
@@ -71,6 +84,16 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
     }
     return <Info size={24} color={Color.HeaderText} style={styles.icon} />;
   };
+
+  // Say there are no news
+  if (visibleNews.length === 0) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={appStyles.flatText}>Nothing new to show</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.section}>
@@ -116,7 +139,7 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
             )}
           </TouchableOpacity>
         ))}
-        {isExpandable && news.length > 2 && (
+        {isExpandable && visibleNews.length > 2 && (
           <TouchableOpacity
             style={styles.expandButton}
             onPress={() => setIsExpanded(!isExpanded)}
@@ -138,6 +161,17 @@ const NewsfeedScreen = () => {
   const [generalNews, setGeneralNews] = useState<News[]>([]);
   const [personalNews, setPersonalNews] = useState<News[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Add an effect to periodically check for expired posts
+  useEffect(() => {
+    const checkExpiredPosts = () => {
+      setGeneralNews(prev => [...prev]); // Force re-render to update visibility
+      setPersonalNews(prev => [...prev]);
+    };
+
+    const interval = setInterval(checkExpiredPosts, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetchNews();
@@ -163,44 +197,30 @@ const NewsfeedScreen = () => {
   }, []);
 
   const handleNewsPress = async (news: News) => {
-    // Prevent multiple rapid presses
     if (isUpdating) return;
 
     try {
       setIsUpdating(true);
-
-      // Update in Firestore first
       await markNewsAsRead(news.maintenanceRequestID);
 
-      // After successful Firestore update, update local state
+      const updateNews = (prev: News[]) =>
+        prev.map((item) =>
+          item.maintenanceRequestID === news.maintenanceRequestID
+            ? {
+                ...item,
+                isRead: true,
+                ReadAt: Timestamp.now(),
+              }
+            : item
+        );
+
       if (news.ReceiverID === 'all') {
-        setGeneralNews((prev) =>
-          prev.map((item) =>
-            item.maintenanceRequestID === news.maintenanceRequestID
-              ? {
-                  ...item,
-                  isRead: true,
-                  ReadAt: Timestamp.now(),
-                }
-              : item,
-          ),
-        );
+        setGeneralNews(updateNews);
       } else {
-        setPersonalNews((prev) =>
-          prev.map((item) =>
-            item.maintenanceRequestID === news.maintenanceRequestID
-              ? {
-                  ...item,
-                  isRead: true,
-                  ReadAt: Timestamp.now(),
-                }
-              : item,
-          ),
-        );
+        setPersonalNews(updateNews);
       }
     } catch (error) {
       console.error('Error marking news as read:', error);
-      // Optionally show an error message to the user
     } finally {
       setIsUpdating(false);
     }

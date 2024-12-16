@@ -23,6 +23,7 @@ import {
 import SubmitButton from '../../components/buttons/SubmitButton';
 import CustomTextField from '../../components/CustomTextField';
 import Close from '../../components/buttons/Close';
+
 interface NewsModalProps {
   visible: boolean;
   onClose: () => void;

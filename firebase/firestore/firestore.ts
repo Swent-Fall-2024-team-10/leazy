@@ -202,6 +202,11 @@ export async function createResidence(residence: Residence): Promise<string> {
 export async function getResidence(
   residenceId: string
 ): Promise<Residence | null> {
+
+  if (!residenceId || typeof residenceId !== "string") {
+    throw new Error("Invalid residence ID");
+  }
+
   const docRef = doc(db, "residences", residenceId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Residence) : null;
@@ -578,24 +583,20 @@ export async function createMachineNotification(userId: string) {
 
 
 export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
-  const collectionRef = collection(db, "situationReports");
   
-  const docRef = await addDoc(collectionRef, situationReport);
-  updateApartment(apartmentId, { situationReportId: docRef.id });
-}
-
-export async function deleteSituationReport(situationReportId: string) {
-  const situationReportRef = doc(db, "situationReports", situationReportId);
-  const situationReportSnap = await getDoc(situationReportRef);
-
-  //this should never happen
-  if (!situationReportSnap.exists()) {
-    throw new Error("Situation report not found.");
+  const collectionRef = collection(db, "filledReports");
+  try {
+    const docRef = await addDoc(collectionRef, {
+      situationReport : situationReport
+    });
+    const apartment = await getApartment(apartmentId);
+    const previousReports = apartment?.situationReportId?? [];
+    const nextReports = [docRef.id].concat(previousReports);
+    updateApartment(apartmentId, { situationReportId: nextReports });
+  } catch {
+    throw new Error("Error creating situation report.");
   }
-  const apartmentId = situationReportSnap.data().apartmentId;
 
-  await deleteDoc(doc(db, "situationReports", situationReportId));
-  await updateApartment(apartmentId, { situationReportId: "" });
 }
 
 /**
@@ -615,7 +616,7 @@ export async function getSituationReport(apartmentId: string) {
   if (!situationReportId) {
     return null;
   }
-  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportRef = doc(db, "situationReports", situationReportId.join('/'));
   const situationReportSnap = await getDoc(situationReportRef);
 
   return situationReportSnap.data() as SituationReport;

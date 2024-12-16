@@ -235,7 +235,7 @@ function ResidenceCreationScreen() {
                 residenceId: newResidenceId,
                 tenants: [],
                 maintenanceRequests: [],
-                situationReportId: ''
+                situationReportId: [''],
               };
               
               const newApartmentId = await createApartment(newApartment);
@@ -277,7 +277,7 @@ function ResidenceCreationScreen() {
         <View style={appStyles.formContainer}>
           <View>{firebaseError && (
               <Modal>
-              <CustomPopUp testID='FirebaseErrorModal' text={firebaseErrorText} onPress={() => setFirebaseError(false)}/>
+              <CustomPopUp title='Error' testID='FirebaseErrorModal' text={firebaseErrorText} onPress={() => setFirebaseError(false)}/>
             </Modal>)}
           </View>
           <CustomTextField

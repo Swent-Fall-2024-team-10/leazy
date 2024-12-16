@@ -1,116 +1,82 @@
 import React, { useState } from "react";
 import { View, Text, Share, ActivityIndicator } from "react-native";
+import * as Clipboard from 'expo-clipboard'; 
 import SubmitButton from "../../../app/components/buttons/SubmitButton";
-import InputField from "../../../app/components/forms/text_input";
 import Header from "../../..//app/components/Header";
 import { generate_unique_code } from "../../../firebase/firestore/firestore";
 import { stylesForHeaderScreens, appStyles } from "../../../styles/styles";
-import ClipBoard from "@react-native-clipboard/clipboard";
 import { Alert } from "react-native";
 import { db } from "../../../firebase/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { Residence, Apartment } from "../../../types/types";
+import { Residence, Apartment, ResidenceWithId, ApartmentWithId } from "../../../types/types";
+import {  pickerSelectStyles} from "../../../styles/SituationReportStyling";
+import RNPickerSelect from 'react-native-picker-select';
+import { useProperty } from "../../context/LandlordContext";
 
-// This screen is for the landlord to create a new code for a new tenant
-// The code will be used by the tenant to access the app for a specific residence
+
 export default function CodeCreationScreen() {
+  const { residences, apartments } = useProperty();
   const [code, setCode] = useState("");
-  const [residenceId, setResidenceId] = useState("");
-  const [apartmentNumber, setApartmentNumber] = useState("");
+  const [selectedResidenceId, setSelectedResidenceId] = useState<string>("");
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const createCode = async () => {
-    if (!residenceId || !apartmentNumber) {
+    if (!selectedResidenceId || !selectedApartmentId) {
       Alert.alert("Please enter both residence number and apartment number.");
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
 
-    // Check if the residence exists and retrieve its UID
-    const residencesRef = collection(db, "residences");
-    const residenceQuery = query(
-      residencesRef,
-      where("residenceId", "==", residenceId)
-    );
-    const residenceSnapshot = await getDocs(residenceQuery);
-    // I am not sure about this line
-    if (residenceSnapshot.empty) {
-      throw new Error(
-        "No matching residence found for the given residence ID."
-      );
-    }
-    const residenceDoc = residenceSnapshot.docs[0];
-    const residenceUID = residenceDoc.id;
-    const residenceData = residenceDoc.data() as Residence;
-
-    // Check if the apartment exists, belongs to the residence and retrieve its UID
-    const apartmentsRef = collection(db, "apartments");
-    const apartmentQuery = query(
-      apartmentsRef,
-      where("apartmentId", "==", apartmentNumber)
-    );
-    const apartmentSnapshot = await getDocs(apartmentQuery);
-    if (apartmentSnapshot.empty) {
-      throw new Error(
-        "No matching apartment found for the given apartment ID."
-      );
-    }
-
-    const apartmentDoc = apartmentSnapshot.docs[0];
-    const apartmentUID = apartmentDoc.id;
-    const apartmentData = apartmentDoc.data() as Apartment;
-
-    if (!residenceData.apartments.includes(apartmentUID)) {
-      console.log(
-        `Apartment ID ${apartmentUID} is not associated with residence ID ${residenceUID}.`
-      );
-      throw new Error(
-        `Apartment ID ${apartmentNumber} is not associated with residence ID ${residenceId}.`
-      );
-    }
-
-    // Generate the new code
     try {
-      // Assuming generateCode is an asynchronous function that takes residenceId and apartmentNumber as parameters
       const generatedCode = await generate_unique_code(
-        residenceUID,
-        apartmentUID
+        selectedResidenceId,
+        selectedApartmentId
       );
-      setCode(generatedCode); // Set the generated code
+      setCode(generatedCode);
     } catch (error: any) {
       if (error instanceof Error) {
-        Alert.alert(error.message); // Backend-provided error messages
+        Alert.alert(error.message);
       } else {
-        Alert.alert("An unexpected error occurred. Please try again."); // Fallback for non-Error objects
+        Alert.alert("An unexpected error occurred. Please try again.");
       }
     } finally {
-      setLoading(false); // End loading
+      setLoading(false);
     }
   };
 
-  const copyToClipboard = () => {
-    ClipBoard.setString(code);
+  const copyToClipboard = async () => {
+     await Clipboard.setStringAsync(code);
     Alert.alert("Code copied to clipboard!");
   };
 
   const shareCode = async () => {
     try {
-      await Share.share({
-        message: `Here is your code: ${code}`,
-      });
+      await Clipboard.setStringAsync(code);
     } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-      } else {
-        Alert.alert("An unknown error occurred");
-      }
+      Alert.alert("Failed to copy code to clipboard");
+      return;
     }
   };
 
+  // Create residence picker items from available residences
+  const residenceItems = residences.map(residence => ({
+    label: residence.residenceName,
+    value: residence.id
+  }));
+
+  // Filter apartments based on selected residence
+  const apartmentItems = apartments
+    .filter(apartment => apartment.residenceId === selectedResidenceId)
+    .map(apartment => ({
+      label: apartment.apartmentName,
+      value: apartment.id
+    }));
+
   return (
     <Header>
-      <View style={appStyles.screenContainer}>
+      <View style={[appStyles.screenContainer, {alignItems: 'center', width: '100%'}]}>
         <View style={stylesForHeaderScreens.titleContainer}>
           <Text style={stylesForHeaderScreens.title}>
             Create a new code for a new tenant
@@ -119,34 +85,30 @@ export default function CodeCreationScreen() {
         <View
           style={{
             padding: 20,
+            width: "100%",
+            alignItems: "center",
           }}
         >
-          <View style={{ marginBottom: 25 }}>
-            <Text style={stylesForHeaderScreens.text}>
-              Enter the Residence ID
-            </Text>
-
-            <InputField
-              testID="Residence ID"
-              value={residenceId}
-              setValue={setResidenceId}
-              placeholder="Enter residence ID"
-              height={40}
-              style={{ flex: 0 }}
+          <View style={{ marginBottom: 20, borderWidth:1, borderRadius: 50, width: '80%'}}>
+            <RNPickerSelect 
+              style={pickerSelectStyles} 
+              placeholder={{ label: "Select a residence", value: null }}
+              items={residenceItems}
+              onValueChange={(value) => {
+                setSelectedResidenceId(value);
+                setSelectedApartmentId(""); // Reset apartment when residence changes
+              }}
+              value={selectedResidenceId}
             />
           </View>
-          <View style={{ marginBottom: 10 }}>
-            <Text style={stylesForHeaderScreens.text}>
-              Enter the Apartment ID
-            </Text>
-
-            <InputField
-              testID="Apartment ID"
-              value={apartmentNumber}
-              setValue={setApartmentNumber}
-              placeholder="Enter apartment ID"
-              height={40}
-              style={{ flex: 0 }}
+          <View style={{ marginBottom: 10, borderWidth:1, borderRadius: 50, width: '80%'}}>
+            <RNPickerSelect 
+              style={pickerSelectStyles} 
+              placeholder={{ label: "Select an apartment", value: null }}
+              items={apartmentItems}
+              onValueChange={(value) => setSelectedApartmentId(value)}
+              value={selectedApartmentId}
+              disabled={!selectedResidenceId}
             />
           </View>
         </View>
@@ -159,10 +121,9 @@ export default function CodeCreationScreen() {
           width={180}
           height={50}
           label="Create Code"
-          style={{ marginBottom: 20 }}
+          style={[appStyles.submitButton, {marginBottom: 20}]}
         />
 
-        {/* Only display the following if a code is created */}
         {loading ? (
           <ActivityIndicator size="large" color="#00ff88" />
         ) : code ? (
@@ -177,15 +138,16 @@ export default function CodeCreationScreen() {
               {code}
             </Text>
             <SubmitButton
-              testID="share-code-button"
               style={appStyles.submitButton}
               textStyle={appStyles.submitButtonText}
               onPress={shareCode}
-              disabled={loading}
-              label="Share Code"
               width={180}
               height={50}
+              label="Share Code"
+              disabled={loading}
+              testID="share-code-button"
             />
+
           </>
         ) : (
           <Text style={stylesForHeaderScreens.text}>******</Text>

@@ -25,7 +25,7 @@
       "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(@react-native|expo-notifications|react-native-parsed-text|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|react-native-gifted-chat|uuid|react-native-get-random-values|@react-native-firebase|react-native-feather|@react-native-async-storage|expo-linear-gradient|react-native-timer-picker|react-native-picker-select|@react-native-picker/picker)/)"
+      "node_modules/(?!(@react-native|expo-notifications|react-native-parsed-text|react-native-vector-icons|react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|expo-modules-core|expo|@expo/vector-icons|@react-native/polyfills|@firebase|firebase|react-native-elements|react-native-size-matters|react-native-ratings|react-native-gifted-chat|uuid|react-native-get-random-values|@react-native-firebase|react-native-feather|@react-native-async-storage|expo-linear-gradient|react-native-timer-picker|react-native-picker-select|@react-native-picker/picker|react-native-svg)/)"
     ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [
@@ -56,7 +56,6 @@
     "@expo/ngrok": "^4.1.0",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "^1.24.0",
-    "@react-native-clipboard/clipboard": "^1.15.0",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-firebase/auth": "^21.0.0",
@@ -71,6 +70,7 @@
     "expo-auth-session": "~5.5.2",
     "expo-av": "^14.0.7",
     "expo-camera": "~15.0.16",
+    "expo-clipboard": "~6.0.3",
     "expo-constants": "~16.0.2",
     "expo-crypto": "~13.0.2",
     "expo-dev-client": "~4.0.28",

@@ -48,7 +48,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         residenceId: residence.id,
         tenants: [],
         maintenanceRequests: [],
-        situationReportId: ''
+        situationReportId: []
       };
       const apartmentId = await createApartment(newApartment);
       console.log('Apartment added:', apartmentId);

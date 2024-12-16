@@ -10,13 +10,6 @@ export default function CustomDrawerContent(props: any){
   return (
     <DrawerContentScrollView {...props}>
       <View style={styles.headerContainer} testID='header-container'>
-
-        <TouchableOpacity style={styles.settingsIcon} 
-        onPress={() => props.navigation.navigate('Settings')}
-        testID='settings-button'>
-          <Ionicons name="settings-outline" size={24} color="#000" />
-        </TouchableOpacity>
-
         <Text style={appStyles.appHeader}>Leazy</Text>
       </View>
       <View style={styles.paddingBelowTitle} />

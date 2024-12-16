@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,25 +6,30 @@ import {
   StyleSheet,
   TouchableOpacity,
   Switch,
-} from "react-native";
-import { Feather } from "@expo/vector-icons";
-import Header from "../../components/Header";
+} from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import Header from '../../components/Header';
 import {
-  getLandlord,
-  getResidence,
   getTenant,
   getMaintenanceRequest,
-} from "../../../firebase/firestore/firestore";
+} from '../../../firebase/firestore/firestore';
 
 import {
   MaintenanceRequest,
-  Landlord,
   Residence,
   Tenant,
   RootStackParamList,
-} from "../../../types/types";
-import { getAuth } from "firebase/auth";
-import { useAuth } from "../../context/AuthContext";
+} from '../../../types/types';
+import { getAuth } from 'firebase/auth';
+import { useAuth } from '../../context/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
+import { useProperty } from '../../context/LandlordContext';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { Color } from '../../..//styles/styles';
+import {
+  getIssueStatusColor,
+  getIssueStatusText,
+} from '../../../app/utils/StatusHelper';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -35,86 +40,80 @@ const LandlordListIssuesScreen: React.FC = () => {
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [expandedResidences, setExpandedResidences] = useState<string[]>([]);
   const [filterVisible, setFilterVisible] = useState(false);
-  const [residences, setResidences] = useState<ResidenceWithId[]>([]);
   const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>(
-    {}
+    {},
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedResidenceId, setSelectedResidenceId] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedResidenceId, setSelectedResidenceId] = useState<string>('all');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const { user } = useAuth();
+  const { residences } = useProperty();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
   if (!user) {
-    throw new Error("User not found.");
+    throw new Error('User not found.');
   }
-  const landlordId = user.uid;
+
+  const refreshIssues = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   useEffect(() => {
     const fetchIssues = async () => {
       try {
         setIsLoading(true);
+        const residenceTenants: { [residenceId: string]: Tenant[] } = {};
+        const allIssues: MaintenanceRequest[] = [];
 
-        const landlord = await getLandlord(landlordId);
-        if (!landlord) {
-          throw new Error("Landlord not found");
-        }
+        for (const residence of residences) {
+          const tenantsForResidence = await Promise.all(
+            residence.tenantIds.map(async (tenantId) => {
+              const tenant = await getTenant(tenantId);
+              return tenant;
+            }),
+          );
 
-        if (landlord.residenceIds.length > 0) {
-          const fetchedResidences: ResidenceWithId[] = [];
-          const residenceTenants: { [residenceId: string]: Tenant[] } = {};
-          const allIssues: MaintenanceRequest[] = [];
+          residenceTenants[residence.id] = tenantsForResidence.filter(
+            (tenant): tenant is Tenant => tenant !== null,
+          );
 
-          for (const residenceId of landlord.residenceIds) {
-            const residence = await getResidence(residenceId);
-            if (residence) {
-              fetchedResidences.push({
-                ...residence,
-                id: residenceId,
-              });
+          for (const tenant of residenceTenants[residence.id]) {
+            const requests = await Promise.all(
+              tenant.maintenanceRequests.map(async (requestId) => {
+                const request = await getMaintenanceRequest(requestId);
+                if (request) {
+                  return request;
+                }
+                return null;
+              }),
+            );
 
-              const tenantsForResidence = await Promise.all(
-                residence.tenantIds.map(async (tenantId) => {
-                  const tenant = await getTenant(tenantId);
-                  return tenant;
-                })
-              );
-
-              residenceTenants[residenceId] = tenantsForResidence.filter(
-                (tenant): tenant is Tenant => tenant !== null
-              );
-
-              for (const tenant of residenceTenants[residenceId]) {
-                const requests = await Promise.all(
-                  tenant.maintenanceRequests.map(async (requestId) => {
-                    const request = await getMaintenanceRequest(requestId);
-                    if (request) {
-                      return request;
-                    }
-                    return null;
-                  })
-                );
-
-                const validRequests = requests.filter(
-                  (request): request is MaintenanceRequest => request !== null
-                );
-                allIssues.push(...validRequests);
-              }
-            }
+            const validRequests = requests.filter(
+              (request): request is MaintenanceRequest => request !== null,
+            );
+            allIssues.push(...validRequests);
           }
-
-          setResidences(fetchedResidences);
-          setTenants(residenceTenants);
-          setIssues(allIssues);
         }
+
+        setTenants(residenceTenants);
+        setIssues(allIssues);
       } catch (error) {
-        console.error("Error fetching landlord data:", error);
+        console.error('Error fetching issues data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchIssues();
-  }, [landlordId]);
+  }, [residences, refreshTrigger]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshIssues();
+    }, []),
+  );
 
   const toggleFilter = () => {
     setFilterVisible(!filterVisible);
@@ -124,25 +123,25 @@ const LandlordListIssuesScreen: React.FC = () => {
     setExpandedResidences((prevExpanded) =>
       prevExpanded.includes(residenceId)
         ? prevExpanded.filter((id) => id !== residenceId)
-        : [...prevExpanded, residenceId]
+        : [...prevExpanded, residenceId],
     );
   };
 
   const filterOptions = {
-    status: ["all", "notStarted", "inProgress", "completed"],
+    status: ['all', 'notStarted', 'inProgress', 'completed'],
   };
 
   const filteredIssues = issues.filter((issue) => {
-    if (!showArchived && issue.requestStatus === "completed") {
+    if (!showArchived && issue.requestStatus === 'completed') {
       return false;
     }
 
-    if (selectedStatus !== "all" && issue.requestStatus !== selectedStatus) {
+    if (selectedStatus !== 'all' && issue.requestStatus !== selectedStatus) {
       return false;
     }
 
     if (
-      selectedResidenceId !== "all" &&
+      selectedResidenceId !== 'all' &&
       issue.residenceId !== selectedResidenceId
     ) {
       return false;
@@ -150,6 +149,12 @@ const LandlordListIssuesScreen: React.FC = () => {
 
     return true;
   });
+
+  // Filter residences based on selection
+  const displayedResidences =
+    selectedResidenceId === 'all'
+      ? residences
+      : residences.filter((residence) => residence.id === selectedResidenceId);
 
   return (
     <View style={styles.container}>
@@ -165,14 +170,14 @@ const LandlordListIssuesScreen: React.FC = () => {
               style={styles.switch}
               value={showArchived}
               onValueChange={setShowArchived}
-              testID="archivedSwitch"
+              testID='archivedSwitch'
             />
             <TouchableOpacity
               onPress={toggleFilter}
               style={styles.filterButton}
-              testID="filterSection"
+              testID='filterSection'
             >
-              <Feather name="filter" size={24} color="black" />
+              <Feather name='filter' size={24} color='black' />
               <Text style={styles.filterText}>Filter</Text>
             </TouchableOpacity>
           </View>
@@ -192,6 +197,7 @@ const LandlordListIssuesScreen: React.FC = () => {
                         selectedStatus === status && styles.filterChipSelected,
                       ]}
                       onPress={() => setSelectedStatus(status)}
+                      testID={`filter-status-${status}`}
                     >
                       <Text
                         style={[
@@ -200,7 +206,7 @@ const LandlordListIssuesScreen: React.FC = () => {
                             styles.filterChipTextSelected,
                         ]}
                       >
-                        {status === "all" ? "All" : status}
+                        {status === 'all' ? 'All' : status}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -213,19 +219,19 @@ const LandlordListIssuesScreen: React.FC = () => {
                   <TouchableOpacity
                     style={[
                       styles.filterChip,
-                      selectedResidenceId === "all" &&
+                      selectedResidenceId === 'all' &&
                         styles.filterChipSelected,
                     ]}
-                    onPress={() => setSelectedResidenceId("all")}
+                    onPress={() => setSelectedResidenceId('all')}
                   >
                     <Text
                       style={[
                         styles.filterChipText,
-                        selectedResidenceId === "all" &&
+                        selectedResidenceId === 'all' &&
                           styles.filterChipTextSelected,
                       ]}
                     >
-                      All
+                      All Residences
                     </Text>
                   </TouchableOpacity>
                   {residences.map((residence) => (
@@ -237,6 +243,7 @@ const LandlordListIssuesScreen: React.FC = () => {
                           styles.filterChipSelected,
                       ]}
                       onPress={() => setSelectedResidenceId(residence.id)}
+                      testID={`filter-residence-${residence.id}`}
                     >
                       <Text
                         style={[
@@ -255,8 +262,8 @@ const LandlordListIssuesScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.resetButton}
                 onPress={() => {
-                  setSelectedStatus("all");
-                  setSelectedResidenceId("all");
+                  setSelectedStatus('all');
+                  setSelectedResidenceId('all');
                   setFilterVisible(false);
                 }}
               >
@@ -266,52 +273,75 @@ const LandlordListIssuesScreen: React.FC = () => {
           )}
 
           <View style={styles.residenceList}>
-            {residences.map((residence) => (
+            {displayedResidences.map((residence) => (
               <View key={residence.id}>
                 <TouchableOpacity
-                  style={styles.residenceItem}
+                  style={styles.residenceHeader}
                   onPress={() => toggleResidenceExpansion(residence.id)}
-                  testID="residenceButton"
+                  testID='residenceButton'
                 >
-                  <Text style={styles.residenceText}>
-                    Residence {residence.street}
+                  <Text style={styles.residenceName}>
+                    {residence.residenceName}
                   </Text>
                   <Feather
                     name={
                       expandedResidences.includes(residence.id)
-                        ? "chevron-up"
-                        : "chevron-down"
+                        ? 'chevron-up'
+                        : 'chevron-down'
                     }
                     size={24}
-                    color="black"
+                    color='black'
                   />
                 </TouchableOpacity>
 
                 {expandedResidences.includes(residence.id) && (
-                  <View style={styles.issueList}>
+                  <View style={styles.issuesContainer}>
                     {filteredIssues
                       .filter((issue) => issue.residenceId === residence.id)
                       .map((issue) => (
-                        <View key={issue.requestID} style={styles.issueItem}>
-                          <Text>{issue.requestTitle}</Text>
-                          <View
-                            style={[
-                              styles.statusBadge,
-                              {
-                                backgroundColor:
-                                  issue.requestStatus === "inProgress"
-                                    ? "#F39C12"
-                                    : issue.requestStatus === "notStarted"
-                                    ? "#E74C3C"
-                                    : "#2ECC71",
-                              },
-                            ]}
-                          >
-                            <Text style={styles.statusText}>
-                              Status: {issue.requestStatus}
-                            </Text>
+                        <TouchableOpacity
+                          key={issue.requestID}
+                          style={styles.issueItem}
+                          onPress={() =>
+                            navigation.navigate('IssueDetails', {
+                              requestID: issue.requestID,
+                              source: 'LandlordListIssues',
+                            })
+                          }
+                          testID={`issue-${issue.requestID}`}
+                        >
+                          <View style={styles.issueContent}>
+                            <View style={styles.issueTextContainer}>
+                              <Text style={styles.issueText} numberOfLines={1}>
+                                {issue.requestTitle}
+                              </Text>
+                            </View>
+
+                            <View
+                              style={[
+                                styles.statusTextContainer,
+                                {
+                                  backgroundColor: getIssueStatusColor(
+                                    issue.requestStatus,
+                                  ),
+                                },
+                              ]}
+                            >
+                              <Text style={styles.statusText}>
+                                Status:{' '}
+                                {getIssueStatusText(issue.requestStatus)}
+                              </Text>
+                            </View>
                           </View>
-                        </View>
+
+                          <View style={styles.arrowButton}>
+                            <Feather
+                              name='chevron-right'
+                              size={24}
+                              color='black'
+                            />
+                          </View>
+                        </TouchableOpacity>
                       ))}
                   </View>
                 )}
@@ -333,21 +363,21 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    alignSelf: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    textAlign: "center",
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
   },
   switchContainer: {
-    flexDirection: "row",
-    alignSelf: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignSelf: 'center',
+    alignItems: 'center',
   },
   switch: {
     marginLeft: 8,
@@ -356,79 +386,101 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginVertical: 10,
   },
   filterText: {
     marginLeft: 8,
     fontSize: 16,
-    color: "#2C3E50",
+    color: '#2C3E50',
   },
   filterOptions: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
     borderRadius: 8,
     marginBottom: 10,
   },
   applyButton: {
     marginTop: 10,
-    textAlign: "center",
-    color: "#2C3E50",
+    textAlign: 'center',
+    color: '#2C3E50',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   residenceList: {
     paddingHorizontal: 16,
   },
-  residenceItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#EDEDED",
+  residenceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#EDEDED',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
   },
-  residenceText: {
+  residenceName: {
     fontSize: 18,
-    color: "#2C3E50",
+    color: '#2C3E50',
   },
-  issueList: {
+  issuesContainer: {
     paddingLeft: 16,
     marginTop: 8,
   },
   issueItem: {
-    backgroundColor: "#f9f9f9",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: Color.IssueBackground,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: Color.IssueBorder,
+    width: 340,
+    height: 110,
+    marginBottom: '2%',
+    padding: '4%',
   },
-  statusBadge: {
-    borderRadius: 16,
+  issueContent: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flex: 1,
+  },
+  issueTextContainer: {
+    width: '100%',
+    height: 32,
+    borderRadius: 25,
+    backgroundColor: Color.IssueTextBackground,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  issueText: {
+    fontSize: 16,
+    color: Color.TextInputText,
+  },
+  statusTextContainer: {
+    borderRadius: 25,
     paddingVertical: 5,
     paddingHorizontal: 8,
-    alignSelf: "flex-start",
-    marginTop: 8,
+    alignSelf: 'flex-start',
+    marginTop: '8%',
   },
   statusText: {
-    color: "#fff",
+    color: 'white',
     fontSize: 12,
-    fontWeight: "500",
+  },
+  arrowButton: {
+    marginLeft: '4%',
+    width: '15%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   filterTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 12,
   },
   filterSection: {
@@ -439,31 +491,31 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   filterChip: {
-    backgroundColor: "#EDEDED",
+    backgroundColor: '#EDEDED',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
   },
   filterChipSelected: {
-    backgroundColor: "#2C3E50",
+    backgroundColor: '#2C3E50',
   },
   filterChipText: {
-    color: "#2C3E50",
+    color: '#2C3E50',
   },
   filterChipTextSelected: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   resetButton: {
-    backgroundColor: "#E74C3C",
+    backgroundColor: '#E74C3C',
     padding: 12,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 8,
   },
   resetButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });
 

@@ -109,37 +109,6 @@ const getStatusUpdateMessage = (title: string, newStatus: string) => {
   }
 };
 
-const createStatusNews = async (
-  request: MaintenanceRequest,
-  previousStatus: string | null,
-  currentStatus: string,
-  userId: string
-) => {
-  // Don't create news if there's no status change
-  if (previousStatus === currentStatus) return;
-
-  const newsItem: News = {
-    maintenanceRequestID: `news_${request.requestID}_${Date.now()}`,
-    title: 'Maintenance Request Status Update',
-    content: getStatusUpdateMessage(request.requestTitle, currentStatus),
-    type: currentStatus === 'rejected' ? 'urgent' : 'informational',
-    isRead: false,
-    createdAt: Timestamp.now(),
-    UpdatedAt: Timestamp.now(),
-    ReadAt: null,
-    images: request.picture || [],
-    ReceiverID: userId,
-    SenderID: 'system'
-  };
-
-  try {
-    await createNews(newsItem);
-    console.log('News item created for status change:', newsItem);
-  } catch (error) {
-    console.error('Error creating news item:', error);
-  }
-};
-
 const MaintenanceIssues = () => {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
@@ -152,7 +121,36 @@ const MaintenanceIssues = () => {
   const user = auth.currentUser;
   const userId = user ? user.uid : null;
 
+  // Keep status tracking in a ref to ensure it's always current
+  const statusTrackingRef = React.useRef<Record<string, string>>({});
+  // Add a ref to track recent updates
+  const recentUpdatesRef = React.useRef<Record<string, number>>({});
+
+  const hasRecentlyUpdated = (requestId: string, oldStatus: string, newStatus: string) => {
+    const key = `${requestId}_${oldStatus}_${newStatus}`;
+    const lastUpdate = recentUpdatesRef.current[key];
+    const now = Date.now();
+    
+    console.log('Checking recent updates:', {
+      key,
+      lastUpdate,
+      now,
+      timeDiff: lastUpdate ? now - lastUpdate : 'no previous update'
+    });
+    
+    if (lastUpdate && now - lastUpdate < 2000) {
+      console.log('Preventing duplicate update');
+      return true;
+    }
+    
+    console.log('Allowing update and setting timestamp');
+    recentUpdatesRef.current[key] = now;
+    return false;
+  };
+
   useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
     const fetchTenantRequests = async () => {
       try {
         if (!userId) {
@@ -161,57 +159,110 @@ const MaintenanceIssues = () => {
         }
 
         const query = await getMaintenanceRequestsQuery(userId);
-
-        const unsubscribe = onSnapshot(query, (querySnapshot) => {
-          const updatedIssues: MaintenanceRequest[] = [];
+        unsubscribe = onSnapshot(query, (querySnapshot) => {
+          const updatedIssues: MaintenanceRequest[] = [...issues];
 
           querySnapshot.docChanges().forEach((change) => {
             const newData = change.doc.data() as MaintenanceRequest;
             
-            // Handle status changes and news creation
-            if (change.type === 'modified') {
-              const previousStatus = statusChangeTracking[newData.requestID];
-              const currentStatus = newData.requestStatus;
+            if (change.type === 'modified' && newData.requestID) {
+              const oldStatus = statusTrackingRef.current[newData.requestID];
+              const newStatus = newData.requestStatus;
               
-              // Create news item for status changes
-              createStatusNews(newData, previousStatus, currentStatus, userId);
+              console.log('Status change detected:', {
+                requestId: newData.requestID,
+                oldStatus,
+                newStatus,
+                currentTracking: statusTrackingRef.current
+              });
+              
+              if (oldStatus && 
+                  oldStatus !== newStatus && 
+                  !hasRecentlyUpdated(newData.requestID, oldStatus, newStatus)) {
+                console.log('Creating news item for status change');
+                createStatusChangeNews(newData, userId).catch(error => {
+                  console.error('Error creating news item:', error);
+                });
+              }
+              
+              statusTrackingRef.current[newData.requestID] = newStatus;
+              const index = updatedIssues.findIndex(issue => issue.requestID === newData.requestID);
+              if (index !== -1) {
+                updatedIssues[index] = newData;
+              }
+            } else if (change.type === 'added') {
+              updatedIssues.push(newData);
             }
-
-            // For new documents, create initial news
-            if (change.type === 'added') {
-              createStatusNews(newData, null, newData.requestStatus, userId);
-            }
-          });
-
-          // Update issues state and status tracking
-          querySnapshot.forEach((doc) => {
-            const data = doc.data() as MaintenanceRequest;
-            updatedIssues.push(data);
-
-            // Update status tracking
-            setStatusChangeTracking((prev) => ({
-              ...prev,
-              [data.requestID]: data.requestStatus,
-            }));
           });
 
           setIssues(updatedIssues);
         });
-
-        return unsubscribe;
       } catch (error) {
         console.error('Error setting up maintenance requests listener:', error);
       }
     };
 
     fetchTenantRequests();
+    
+    // Cleanup function
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [userId]);
+
+  const createStatusChangeNews = async (
+    request: MaintenanceRequest,
+    userId: string,
+  ) => {
+    try {
+      console.log('Creating news item for request:', request.requestID);
+      const newsItem = {
+        maintenanceRequestID: `news_${request.requestID}_${Date.now()}`,
+        title: 'Maintenance Request Status Update',
+        content: getStatusUpdateMessage(
+          request.requestTitle,
+          request.requestStatus,
+        ),
+        type: request.requestStatus === 'rejected' ? 'urgent' : 'informational',
+        isRead: false,
+        createdAt: Timestamp.now(),
+        UpdatedAt: Timestamp.now(),
+        ReadAt: null,
+        images: request.picture || [],
+        ReceiverID: userId,
+        SenderID: 'system',
+      } as const;
+
+      await createNews(newsItem);
+      console.log('Successfully created news item');
+    } catch (error) {
+      console.error('Error creating status change news:', error);
+    }
+  };
+
+  const handleStatusChange = async (
+    requestID: string,
+    newStatus: MaintenanceRequest['requestStatus'],
+    title: string,
+  ) => {
+    if (!userId) return;
+    try {
+      await updateMaintenanceRequest(requestID, { requestStatus: newStatus });
+    } catch (error) {
+      console.error('Error updating issue status:', error);
+    }
+  };
 
   const archiveIssue = async (requestID: string) => {
     if (!userId) return;
 
     try {
-      await updateMaintenanceRequest(requestID, { requestStatus: 'completed' });
+      const issue = issues.find((issue) => issue.requestID === requestID);
+      if (!issue) return;
+
+      await handleStatusChange(requestID, 'completed', issue.requestTitle);
 
       setIssues(
         issues.map((issue) =>
@@ -259,9 +310,11 @@ const MaintenanceIssues = () => {
                   key={issue.requestID}
                   issue={issue}
                   onStatusChange={(newStatus) =>
-                    updateMaintenanceRequest(issue.requestID, {
-                      requestStatus: newStatus,
-                    })
+                    handleStatusChange(
+                      issue.requestID,
+                      newStatus,
+                      issue.requestTitle,
+                    )
                   }
                   onArchive={() => archiveIssue(issue.requestID)}
                   isArchived={issue.requestStatus === 'completed'}

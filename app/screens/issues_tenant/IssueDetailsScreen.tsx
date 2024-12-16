@@ -32,6 +32,7 @@ import {
 import { Icon } from "react-native-elements";
 import SubmitButton from "../../components/buttons/SubmitButton";
 
+
 // portions of this code were generated with chatGPT as an AI assistant
 
 // for the first adaptive button, upon click, go to the messaging screen (replace the onPressFunction)
@@ -175,45 +176,32 @@ const IssueDetailsScreen: React.FC = () => {
             </Text>
             <StatusBadge status={status} />
           </View>
-          <AdaptiveButton
-            title="Open chat about this subject"
-            onPress={() => navigation.navigate("Messaging")}
-            icon={
-              <MessageSquare
-                stroke="white"
-                width={IconDimension.smallIcon}
-                height={IconDimension.smallIcon}
-              />
+            <AdaptiveButton title = 'Open chat about this subject' 
+              onPress = { () => {
+                navigation.navigate('Messaging', {chatID: requestID})
+              }
             }
-            iconPosition={"right"}
-            style={appStyles.submitButton}
-          ></AdaptiveButton>
+              icon = {<MessageSquare stroke="white" width={IconDimension.smallIcon} height={IconDimension.smallIcon} />}
+              iconPosition= {'right'}
+              style = {appStyles.submitButton}
+            ></AdaptiveButton>
+            
+            <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
+            <View style={appStyles.carouselImageContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={appStyles.carouselScrollViewContainer}
+                testID='scrollview'
+              >
+                {issue.picture.map((image, index) => (
+                  <TouchableOpacity key={index} onPress={() => {openFullScreen(index)}} testID={`imageItem-${index}`}>
+                    <Image key={index} source={{ uri: image }} style={appStyles.mediumThumbnailImage} />
+                  </TouchableOpacity>
 
-          <Text style={appStyles.inputFieldLabel}>Images submitted</Text>
-          <View style={appStyles.carouselImageContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={appStyles.carouselScrollViewContainer}
-              testID="scrollview"
-            >
-              {issue.picture.map((image, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    openFullScreen(index);
-                  }}
-                  testID={`imageItem-${index}`}
-                >
-                  <Image
-                    key={index}
-                    source={{ uri: image }}
-                    style={appStyles.mediumThumbnailImage}
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+                ))}
+              </ScrollView>
+            </View>
           <View style={styles.imagesTextView}>
             <Text style={appStyles.smallCaptionText}>
               Click on an image to expand it

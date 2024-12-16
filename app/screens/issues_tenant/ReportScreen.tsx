@@ -36,6 +36,7 @@ import {
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
+
   const { user } = useAuth();
 
   const [room, setRoom] = useState("");
@@ -51,7 +52,6 @@ export default function ReportScreen() {
   const hours = currentDay.getHours().toString().padStart(2, "0");
   const minutes = currentDay.getMinutes().toString().padStart(2, "0");
   const { pictureList, resetPictureList } = usePictureContext();
-  const { removePicture } = usePictureContext();
 
   async function resetStates() {
     setRoom("");
@@ -121,29 +121,31 @@ export default function ReportScreen() {
         picture: pictureURLs,
         requestStatus: "notStarted",
       };
-      console.log("before");
-      // Use the createMaintenanceRequest method that handles offline
-      await createMaintenanceRequest(newRequest);
-      console.log("after");
-      
-      // Don't update tenant's maintenanceRequests array here - it will be handled when syncing
-  
-      Alert.alert(
-        "Success",
-        "Your maintenance request has been submitted.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              resetStates();
-              const nextScreen = tick ? "Messaging" : "Issues";
-              setTick(false);
-              navigation.navigate(nextScreen);
-            }
-          }
-        ]
+
+      //this should be changed when the database function are updated
+      //this is not respecting the model view model pattern for now but this is a temporary solution
+      const requestID = await addDoc(
+        collection(db, "maintenanceRequests"),
+        newRequest
       );
-  
+      await updateTenant(tenant.userId, {
+        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
+      });
+
+      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+
+      Alert.alert("Success", "Your maintenance request has been submitted.");
+
+      resetStates();
+
+      if (tick) {
+        setTick(false);
+        navigation.navigate("Messaging", {chatID: requestID.id});
+      } else {
+        setTick(false);
+        navigation.navigate("Issues");
+      }
+    
     } catch (error) {
       console.log("huh");
       Alert.alert(

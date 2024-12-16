@@ -54,7 +54,6 @@ global.clearInterval = jest.fn();
 // Import the mocked functions
 import { 
   getLaundryMachinesQuery,
-  createMachineNotification 
 } from '../../firebase/firestore/firestore';
 
 const renderWithNavigation = (ui: React.ReactElement) => {

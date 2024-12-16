@@ -99,7 +99,7 @@ describe('PropertyContext', () => {
         id: mockApartment.apartmentId,
         data: () => mockApartment
       }],
-      forEach: function(callback) {
+      forEach: function(callback: (value: { id: string; data: () => { apartmentId: string; residenceId: string; number: string; }; }, index: number, array: { id: string; data: () => { apartmentId: string; residenceId: string; number: string; }; }[]) => void) {
         this.docs.forEach(callback);
       }
     };

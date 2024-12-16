@@ -167,7 +167,6 @@ const LandlordListIssuesScreen: React.FC = () => {
               onValueChange={setShowArchived}
               testID="archivedSwitch"
             />
-
             <TouchableOpacity
               onPress={toggleFilter}
               style={styles.filterButton}

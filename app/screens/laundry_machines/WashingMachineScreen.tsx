@@ -10,7 +10,6 @@ import {
 import Header from "../../../app/components/Header";
 import { LaundryMachine } from "../../../types/types";
 import {
-  createMachineNotification,
   getLaundryMachine,
   getLaundryMachinesQuery,
   updateLaundryMachine,
@@ -33,17 +32,21 @@ const useTimerManagement = (residenceId: string, userId?: string) => {
   const timerRefsRef = useRef<{
     [key: string]: {
       intervalId?: NodeJS.Timeout;
-      notificationScheduled?: boolean;
-    }
+      notificationId?: string;  // NEW - Stores notification ID instead of boolean
+          }
   }>({});
 
-  const cleanupTimer = useCallback((machineId: string) => {
+  const cleanupTimer = useCallback(async (machineId: string) => {
     const timerRefs = timerRefsRef.current;
     
     if (timerRefs[machineId]?.intervalId) {
       clearInterval(timerRefs[machineId].intervalId);
       
-      // Completely remove the reference
+      // NEW - Added notification cancellation
+      if (timerRefs[machineId].notificationId) {
+        await Notifications.cancelScheduledNotificationAsync(timerRefs[machineId].notificationId);
+      }
+      
       delete timerRefs[machineId];
     }
 
@@ -76,7 +79,7 @@ const useTimerManagement = (residenceId: string, userId?: string) => {
     }
     
     if (delayS >= 0) {
-      await Notifications.scheduleNotificationAsync({
+      const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title: `Laundry Machine ${machineId}`,
           body: `Your laundry will be ready in 3 minutes!`,
@@ -84,8 +87,10 @@ const useTimerManagement = (residenceId: string, userId?: string) => {
         trigger: { seconds: delayS },
       });
       console.log(`Notification scheduled for ${delayS} seconds from now.`);
+      return notificationId;  // NEW - Return the notification ID
     } else {
       console.warn('Notification time is in the past. Not scheduling.');
+      return null;
     }
   };
 
@@ -145,24 +150,19 @@ const useTimerManagement = (residenceId: string, userId?: string) => {
 
         // Schedule 3-minute notification if not already done
         const timerRef = timerRefsRef.current[laundryMachineId];
-      if (!timerRef.notificationScheduled) {
-        try {
-          if (remainingTimeMs > 3 * 60 * 1000) {
-            await scheduleFinishNotification(
+        if (!timerRef.notificationId && remainingTimeMs > 3 * 60 * 1000) {
+          try {
+            const notificationId = await scheduleFinishNotification(
               laundryMachineId, 
               (remainingTimeMs - 3 * 60 * 1000) / 1000
             );
             
-            // Mark notification as scheduled
-            timerRef.notificationScheduled = true;
-            
-            // Optional callback for Firestore update
-            await onNotificationScheduled?.();
-          } else {
-            // For short timers, just mark as notification not needed
-            timerRef.notificationScheduled = false;
+            if (notificationId) {
+              timerRef.notificationId = notificationId;
+              await onNotificationScheduled?.();
+            }
           }
-        } catch (error) {
+        catch (error) {
           console.error(`Notification scheduling failed for ${laundryMachineId}`, error);
         }
       }
@@ -279,21 +279,28 @@ const WashingMachineScreen = () => {
         startTime.toMillis() + durationMs
       );
       
-      // Pass an optional callback to update Firestore
+      // First update Firebase with the machine status
+    const updateMachine = async () => {
+      await updateLaundryMachine(residenceId, selectedMachineId, {
+        occupiedBy: userId,
+        isAvailable: false,
+        startTime,
+        estimatedFinishTime
+      });
+    };
+
       calculateTimer(
         selectedMachineId, 
         estimatedFinishTime,
         async () => {
-          // Update Firestore with notificationScheduled flag
-          await updateLaundryMachine(residenceId, selectedMachineId, {
-            occupiedBy: userId,
-            isAvailable: false,
-            startTime,
-            estimatedFinishTime,
-            notificationScheduled: true
-          });
-        }
+        // Only update the notification flag if a notification was actually scheduled
+        await updateLaundryMachine(residenceId, selectedMachineId, {
+          notificationScheduled: true
+        });
+      }
       );
+      // Update Firebase immediately
+    updateMachine();
     }
     setIsTimerModalVisible(false);
     setSelectedMachineId(null);

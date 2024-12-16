@@ -1,4 +1,4 @@
-import { Timestamp } from "@firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 
 // WithId type helper
 export type WithId<T> = T & { id: string };

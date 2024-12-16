@@ -159,7 +159,7 @@ const LandlordListIssuesScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Header>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: '85%' }}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Maintenance issues</Text>
           </View>
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   resetButton: {
-    backgroundColor: '#E74C3C',
+    backgroundColor: Color.ButtonBackground,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',

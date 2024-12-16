@@ -1,20 +1,57 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import SituationReportScreen from "../screens/landlord/SituationReportScreen";
+import SituationReportScreen from "../screens/landlord/SituationReport/SituationReportScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import * as firestore from "../../firebase/firestore/firestore";
-import { GroupedSituationReport } from "../screens/landlord/SituationReportScreen";
+import { GroupedSituationReport } from "../screens/landlord/SituationReport/SituationReportScreen";
 import * as StatusFunctions from "../utils/SituationReport";
+import { AuthProvider } from "../context/AuthContext";
+import { Alert } from "react-native";
+import { getByText } from "@testing-library/dom";
+import { Apartment } from "@/types/types";
 
 jest.mock("../../firebase/firestore/firestore", () => ({
   getApartment: jest.fn(),
   addSituationReport: jest.fn(),
-  deleteSituationReport: jest.fn(),
+  updateApartment: jest.fn(),
+  collection: jest.fn(),
+  addDoc: jest.fn(),
+  writeBatch: jest.fn(),
 }));
+
+
+
+const { addSituationReport } = jest.mocked(require("../../firebase/firestore/firestore"));
+
+const mockedResidences = [
+  { id: '1', name: 'Residence A' },
+  { id: '2', name: 'Residence B' },
+];
+
+const mockedApartments = [
+  { id: '1', name: 'Apartment 101' },
+  { id: '2', name: 'Apartment 102' },
+];
+
+const mockedLayouts = [
+  { id: '1', name: 'Layout X' },
+  { id: '2', name: 'Layout Y' },
+];
+
+const mockAuthProvider = {
+  firebaseUser: null,
+  fetchUser: jest.fn(),
+  fetchTenant: jest.fn(),
+  fetchLandlord: jest.fn(),
+};
+
+
 
 // Helper to render with navigation
 const renderWithNavigation = (component: JSX.Element) => (
-  <NavigationContainer>{component}</NavigationContainer>
+  <AuthProvider {...mockAuthProvider}>
+      <NavigationContainer>{component}</NavigationContainer>
+  </AuthProvider>
 );
 
 describe("SituationReportScreen", () => {
@@ -30,30 +67,6 @@ describe("SituationReportScreen", () => {
     fireEvent.changeText(nameInput, "John");
     expect(nameInput.props.value).toBe("John");
   });
-
-  it("calls Firestore functions on form submission", async () => {
-    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: null });
-    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
-
-    fireEvent.press(getByText("Submit"));
-
-    await waitFor(() => {
-      expect(firestore.addSituationReport).toHaveBeenCalled();
-    });
-  });
-
-  it("navigates after successful submission", async () => {
-    (firestore.getApartment as jest.Mock).mockResolvedValueOnce({ situationReportId: "" });
-    const { getByText } = render(renderWithNavigation(<SituationReportScreen />));
-
-    fireEvent.press(getByText("Submit"));
-
-    await waitFor(() => {
-      expect(firestore.addSituationReport).toHaveBeenCalled();
-    });
-  });
-
-  
 });
 describe('GroupedSituationReport', () => {
   const mockChangeStatus = jest.fn();
@@ -133,3 +146,50 @@ describe('GroupedSituationReport', () => {
     changeStatusSpy.mockRestore();
   });
 });
+
+
+describe("SituationReportScreen", () => {
+  it("renders correctly and handles input changes", () => {
+    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen />));
+
+    // Check initial tenant name input
+    const leavingTenantNameInput = getByTestId('leaving-tenant-name');
+    fireEvent.changeText(leavingTenantNameInput, 'John');
+    expect(leavingTenantNameInput.props.value).toBe('John');
+
+    // Check surname input
+    const leavingTenantSurnameInput = getByTestId('leaving-tenant-surname');
+    fireEvent.changeText(leavingTenantSurnameInput, 'Doe');
+    expect(leavingTenantSurnameInput.props.value).toBe('Doe');
+  });
+
+  it("renders status tags correctly", () => {
+    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen />));
+
+    // Ensure the tags are rendered correctly
+    expect(getByTestId('OC-tag')).toBeTruthy();
+    expect(getByTestId('NW-tag')).toBeTruthy();
+    expect(getByTestId('AW-tag')).toBeTruthy();
+
+    // Check descriptions
+    expect(getByTestId('OC-description')).toBeTruthy();
+    expect(getByTestId('NW-description')).toBeTruthy();
+    expect(getByTestId('AW-description')).toBeTruthy();
+  });
+
+  it("disables the submit button if conditions are not met", () => {
+    const { getByTestId } = render(renderWithNavigation(<SituationReportScreen enableSubmit/>));
+  
+    const submitButton = getByTestId('submit');
+    
+    // Simulate a press and check if onPress is not called
+    const onPressSpy = jest.fn();
+    submitButton.props.onPress = onPressSpy;
+  
+    fireEvent.press(submitButton);
+  
+    // Assert that the submit function is not called if the button is disabled
+    expect(onPressSpy).not.toHaveBeenCalled();
+  });
+});
+

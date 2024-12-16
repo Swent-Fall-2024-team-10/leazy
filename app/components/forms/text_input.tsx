@@ -1,12 +1,20 @@
-import React from "react";
-import { View, Text, TextInput, StyleSheet, StyleProp, ViewStyle } from "react-native";
-import { appStyles, Color } from "../../../styles/styles";
+import React from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
+import { appStyles, Color } from '../../../styles/styles';
 
 interface InputFieldProps {
   label?: string;
   value: string;
   setValue: (value: string) => void;
   placeholder?: string;
+  secureTextEntry?: boolean;
   height?: number;
   width?: number;
   radius?: number;
@@ -24,8 +32,9 @@ export default function InputField({
   height,
   width,
   radius,
+  secureTextEntry = false,
   backgroundColor,
-  style
+  style,
 }: InputFieldProps) {
   const inputFieldStyles = [
     styles.inputField,
@@ -40,6 +49,7 @@ export default function InputField({
     <TextInput
       style={inputFieldStyles}
       placeholder={placeholder}
+      secureTextEntry={secureTextEntry}
       value={value}
       onChangeText={setValue}
       multiline={true}
@@ -75,5 +85,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginHorizontal: 5,
   },
-
 });

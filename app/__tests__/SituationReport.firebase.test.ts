@@ -1,5 +1,5 @@
 import { collection, addDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
-import { addSituationReport, deleteSituationReport, getSituationReport ,addSituationReportLayout, getSituationReportLayout } from "../../firebase/firestore/firestore"; // Import your functions
+import { addSituationReport,  getSituationReport ,addSituationReportLayout, getSituationReportLayout, getApartment, updateApartment } from "../../firebase/firestore/firestore"; // Import your functions
 import { Apartment, Residence, SituationReport } from "../../types/types";
 
 // Mocking the Firestore functions
@@ -28,7 +28,7 @@ describe("Firestore functions", () => {
   });
 
   const residenceMock: Residence = {
-    residenceId: "res123",
+    residenceName: "Residence 1",
     street: "123 Main St",
     number: "10",
     city: "Fribourg",
@@ -44,19 +44,20 @@ describe("Firestore functions", () => {
   };
 
   const apartmentMock: Apartment = {
-    apartmentId: "apt123",
+    apartmentName: "apt123",
     residenceId: "res123",
     tenants: ["tenant123"],
     maintenanceRequests: ["request123"],
-    situationReportId: "report123",
+    situationReportId: ["report123"],
   };
 
   const situationReportMock: SituationReport = {
     reportDate: "2024-11-25",
     arrivingTenant: "tenant123",
     leavingTenant: "tenant456",
+    residenceId : "res123",
     apartmentId: "apt123",
-    reportForm: ["field1"],
+    reportForm: "field1",
     remarks: "Test remarks",
   };
 
@@ -93,17 +94,8 @@ describe("Firestore functions", () => {
   it("should create a situation report when residence exists", async () => {
     await addSituationReport(situationReportMock, "apt123");
 
-    // Check if the correct Firestore functions were called
-    expect(addDoc).toHaveBeenCalledWith(expect.anything(), situationReportMock);
-    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: "report123" });
-  });
-
-  it("should remove a situation report", async () => {
-    const situationReportId = "report123";
-    await deleteSituationReport(situationReportId);
-
-    expect(deleteDoc).toHaveBeenCalledWith(expect.anything());
-    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: "" });
+    expect(addDoc).toHaveBeenCalledWith(expect.anything(), { situationReport: situationReportMock });
+    expect(updateDoc).toHaveBeenCalledWith(expect.anything(), { situationReportId: ["report123"] });
   });
 
   it("should add situation report layout to residence", async () => {

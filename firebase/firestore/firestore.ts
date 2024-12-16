@@ -12,6 +12,9 @@ import {
   where,
   getDocs,
   Timestamp,
+  onSnapshot,
+  serverTimestamp,
+  orderBy,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -27,6 +30,9 @@ import {
   SituationReport,
   News,
 } from "../../types/types";
+
+import { auth } from "../../firebase/firebase";
+import { IMessage } from "react-native-gifted-chat";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
@@ -197,6 +203,11 @@ export async function createResidence(residence: Residence): Promise<string> {
 export async function getResidence(
   residenceId: string
 ): Promise<Residence | null> {
+
+  if (!residenceId || typeof residenceId !== "string") {
+    throw new Error("Invalid residence ID");
+  }
+
   const docRef = doc(db, "residences", residenceId);
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? (docSnap.data() as Residence) : null;
@@ -573,24 +584,20 @@ export async function createMachineNotification(userId: string) {
 
 
 export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
-  const collectionRef = collection(db, "situationReports");
   
-  const docRef = await addDoc(collectionRef, situationReport);
-  updateApartment(apartmentId, { situationReportId: docRef.id });
-}
-
-export async function deleteSituationReport(situationReportId: string) {
-  const situationReportRef = doc(db, "situationReports", situationReportId);
-  const situationReportSnap = await getDoc(situationReportRef);
-
-  //this should never happen
-  if (!situationReportSnap.exists()) {
-    throw new Error("Situation report not found.");
+  const collectionRef = collection(db, "filledReports");
+  try {
+    const docRef = await addDoc(collectionRef, {
+      situationReport : situationReport
+    });
+    const apartment = await getApartment(apartmentId);
+    const previousReports = apartment?.situationReportId?? [];
+    const nextReports = [docRef.id].concat(previousReports);
+    updateApartment(apartmentId, { situationReportId: nextReports });
+  } catch {
+    throw new Error("Error creating situation report.");
   }
-  const apartmentId = situationReportSnap.data().apartmentId;
 
-  await deleteDoc(doc(db, "situationReports", situationReportId));
-  await updateApartment(apartmentId, { situationReportId: "" });
 }
 
 /**
@@ -610,7 +617,7 @@ export async function getSituationReport(apartmentId: string) {
   if (!situationReportId) {
     return null;
   }
-  const situationReportRef = doc(db, "situationReports", situationReportId);
+  const situationReportRef = doc(db, "situationReports", situationReportId.join('/'));
   const situationReportSnap = await getDoc(situationReportRef);
 
   return situationReportSnap.data() as SituationReport;
@@ -627,8 +634,6 @@ export async function getSituationReportLayout(residenceId: string) {
   const situationReportLayout = residence?.situationReportLayout;
   return situationReportLayout ? situationReportLayout : [];
 }
-
-
 
 /**
  * Creates a new news document in Firestore.
@@ -768,3 +773,78 @@ export async function getUnreadNewsByReceiver(receiverID: string): Promise<News[
 
   return news;
 }
+
+export async function sendMessage(chatId: string, content: string): Promise<void> {
+  if (!auth.currentUser) {
+    throw new Error('User must be logged in');
+  }
+
+  const user = await getUser(auth.currentUser.uid)
+
+  const chatRef = doc(db, 'chats', chatId);
+  const chat = await getDoc(chatRef);
+
+  if (!chat.exists()) {
+    throw new Error('Chat not found');
+  }
+
+  await addDoc(collection(db, 'chats', chatId, 'messages'), {
+    content: content,
+    sentBy: user?.uid,
+    sentOn: Date.now()
+  });
+}
+
+// Subscribe to messages in a chat
+export function subscribeToMessages(
+requestId: string,
+onMessagesUpdate: (messages: IMessage[]) => void
+): () => void {
+const chatRef = doc(db, 'chats', requestId);
+const messagesRef = collection(chatRef, 'messages');
+const q = query(messagesRef, orderBy('sentOn', 'desc'));
+
+// Subscribe to the query
+const unsub = onSnapshot(q, (querySnapshot) => {
+  const messages = querySnapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      _id: doc.id,
+      text: data["content"],
+      createdAt: data["sentOn"],
+      user: {
+        _id: data["sentBy"],
+      },
+    } as IMessage;
+  });
+
+  // Update the messages state in the View
+  onMessagesUpdate(messages);
+});
+
+// Return the unsubscribe function
+return unsub;
+}
+
+export async function createChatIfNotPresent(requestId: string): Promise<void> {
+  if (!auth.currentUser) {
+    throw new Error('User must be logged in');
+  }
+
+  const chatRef = collection(db, 'chats');
+  const chatDocRef = doc(chatRef, requestId); // Create a reference with requestId as the document ID
+
+  // Check if a chat with the given requestId already exists
+  const existingChat = await getDoc(chatDocRef);
+  if (existingChat.exists()) {
+    console.log('Chat already exists');
+    return;
+  }
+
+  // If no matching chat exists, create a new one with requestId as the document ID
+  console.log('Creating new chat');
+  await setDoc(chatDocRef, {
+    createdAt: serverTimestamp(),
+  });
+}
+

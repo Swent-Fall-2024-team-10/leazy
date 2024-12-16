@@ -29,7 +29,7 @@ export default function CloseConfirmation({
             title="Yes, cancel"
             titleStyle={styles.buttonText}
             onPress={onPressYes}
-            buttonStyle={[styles.buttonYes, styles.buttons, styles.shadow]}
+            buttonStyle={[appStyles.buttonCancel, styles.buttons, styles.shadow]}
           />
 
           <Button
@@ -37,7 +37,7 @@ export default function CloseConfirmation({
             title="No, Go back"
             titleStyle={styles.buttonText}
             onPress={onPressNo}
-            buttonStyle={[styles.buttonNo, styles.buttons, styles.shadow]}
+            buttonStyle={[appStyles.buttonAccept, styles.buttons, styles.shadow]}
           />
         </View>
       </View>

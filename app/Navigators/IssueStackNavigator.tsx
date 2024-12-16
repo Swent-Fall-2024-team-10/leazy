@@ -11,7 +11,7 @@ const Stack = createStackNavigator();
 
 const IssueStackNavigator = () => {
     return (
-        <Stack.Navigator>
+            <Stack.Navigator>
             <Stack.Screen
                 name="Issues"
                 component={ListIssueScreen}
@@ -36,11 +36,6 @@ const IssueStackNavigator = () => {
                 name="CapturedMedia"
                 component={CapturedMediaScreen}
                 options={{ headerShown: true }}
-            />
-            <Stack.Screen
-                name="Messaging"
-                component={MessagingScreen}
-                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     );

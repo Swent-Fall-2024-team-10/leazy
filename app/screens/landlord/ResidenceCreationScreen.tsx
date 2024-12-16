@@ -207,7 +207,7 @@ function ResidenceCreationScreen() {
       const newResidence: Residence = {
         residenceName: formData.name,
         street: formData.address,
-        number: formData.zipCode,
+        number: formData.number,
         city: formData.city,
         canton: formData.provinceState,
         zip: formData.zipCode,

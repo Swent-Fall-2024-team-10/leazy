@@ -474,6 +474,18 @@ function ResidenceCreationScreen() {
               { width: ButtonDimensions.mediumButtonWidth },
             ]}
           />
+
+          {/* Go back button */}
+          <CustomButton
+            testID='go-back-button'
+            title='Go Back'
+            onPress={() => navigation.goBack()}
+            size='medium'
+            style={[
+              appStyles.submitButton,
+              { width: ButtonDimensions.mediumButtonWidth },
+            ]}
+          />
         </View>
       </ScrollView>
     </Header>

@@ -1,4 +1,4 @@
-import { Timestamp } from "@firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 
 // WithId type helper
 export type WithId<T> = T & { id: string };
@@ -131,6 +131,8 @@ export type MaintenanceRequest = {
   requestDescription: string;
   picture: string[];
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
+  _isPending?: boolean;  // Add these optional properties
+  _localId?: string;     // for offline support
 };
 
 export type SituationReportGroup = {

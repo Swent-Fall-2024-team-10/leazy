@@ -27,6 +27,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getFileBlob, clearFiles } from "../../utils/cache";
 import {
   getTenant,
+  updateApartment,
   updateMaintenanceRequest,
   updateTenant,
 } from "../../../firebase/firestore/firestore";
@@ -134,6 +135,11 @@ export default function ReportScreen() {
         newRequest
       );
       await updateTenant(tenant.userId, {
+        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
+      });
+
+      // update the appartements maintenanceRequests array with the new request id
+      await updateApartment(tenant.apartmentId, {
         maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
       });
 

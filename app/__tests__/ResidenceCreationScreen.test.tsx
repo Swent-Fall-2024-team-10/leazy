@@ -6,7 +6,7 @@ import * as FileSystem from 'expo-file-system';
 import * as XLSX from 'xlsx';
 import ResidenceCreationScreen from '../screens/landlord/ResidenceCreationScreen';
 import { AuthContext } from '../context/AuthContext';
-import { createApartment, createResidence, updateResidence } from '../../firebase/firestore/firestore';
+import { createApartment, createResidence, updateResidence, getLandlord, updateLandlord } from '../../firebase/firestore/firestore';
 
 // Mock navigation
 const mockNavigate = jest.fn();
@@ -53,6 +53,8 @@ jest.mock('../../firebase/firestore/firestore', () => ({
   createResidence: jest.fn(),
   createApartment: jest.fn(),
   updateResidence: jest.fn(),
+  getLandlord: jest.fn(),
+  updateLandlord: jest.fn(),
 }));
 
 jest.spyOn(Alert, 'alert');
@@ -64,9 +66,13 @@ const mockUser = {
 
 const mockAuthContext = {
   user: mockUser,
+  firebaseUser: null,
+  tenant: null,
+  landlord: null,
   signIn: jest.fn(),
   signOut: jest.fn(),
   loading: false,
+  isLoading: false
 };
 
 const renderWithAuth = (component: React.ReactElement) => {
@@ -165,7 +171,14 @@ describe('ResidenceCreationScreen', () => {
 
     it('accepts valid form submission', async () => {
       const mockResidenceId = 'test-residence-id';
+      const mockLandlordData = {
+        userId: 'test-user-id',
+        residenceIds: ['existing-residence-id']
+      };
+
       (createResidence as jest.Mock).mockResolvedValueOnce(mockResidenceId);
+      (getLandlord as jest.Mock).mockResolvedValueOnce(mockLandlordData);
+      (updateLandlord as jest.Mock).mockResolvedValueOnce(undefined);
       
       const { getByTestId } = renderWithAuth(<ResidenceCreationScreen />);
       
@@ -177,6 +190,11 @@ describe('ResidenceCreationScreen', () => {
       
       await waitFor(() => {
         expect(createResidence).toHaveBeenCalled();
+        expect(getLandlord).toHaveBeenCalledWith('test-user-id');
+        expect(updateLandlord).toHaveBeenCalledWith('test-user-id', {
+          userId: 'test-user-id',
+          residenceIds: ['existing-residence-id', mockResidenceId]
+        });
         expect(mockNavigate).toHaveBeenCalledWith('ResidenceList');
       });
     });

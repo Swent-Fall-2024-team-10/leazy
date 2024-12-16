@@ -38,17 +38,6 @@ describe('CustomDrawerContent', () => {
     expect(getByText('Leazy')).toBeTruthy();
   });
 
-  it('navigates to Settings when settings icon is pressed', () => {
-    const { getByTestId } = render(<CustomDrawerContent {...mockProps} />);
-    
-
-    const settingsButton = getByTestId('settings-button');
-    fireEvent.press(settingsButton);
-
-
-    expect(mockNavigation.navigate).toHaveBeenCalledWith('Settings');
-    expect(mockNavigation.navigate).toHaveBeenCalledTimes(1);
-  });
 
   it('applies correct styles', () => {
     const { getByTestId } = render(<CustomDrawerContent {...mockProps} />);

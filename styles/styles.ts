@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
-import { Dimensions } from "react-native";
-import { Platform } from "react-native";
+import { StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
+import { Platform } from 'react-native';
 // portions of this code were generated with chatGPT as an AI assistant
 // Define the navigation stack types
 export type RootStackParamList = {
@@ -19,6 +19,7 @@ export const borderWidth = {
 export const residenceManagementListStyles = StyleSheet.create({
   addApartmentButton: {
     height: 36,
+
     backgroundColor: "white",
     borderRadius: 50,
     flexDirection: "row",
@@ -28,6 +29,7 @@ export const residenceManagementListStyles = StyleSheet.create({
     width: "80%",
     alignSelf: "flex-start",
     shadowColor: "#000",
+
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -80,7 +82,9 @@ export const residenceManagementListStyles = StyleSheet.create({
 });
 
 export const ButtonDimensions = {
+
   fullWidthButtonWidth: Dimensions.get("window").width * 0.85,
+
 
   veryLargeButtonWidth: 300,
   veryLargeButtonHeight: 44,
@@ -93,6 +97,11 @@ export const ButtonDimensions = {
 
   mediumButtonWidth: 200,
   mediumButtonHeight: 44,
+
+
+  smallerButtonWidth: 90,
+  smallerButtonHeight: 40,
+
 };
 
 export const IconDimension = {
@@ -121,22 +130,30 @@ export const FontSizes = {
 } as const;
 
 export const FontWeight = {
-  ScreenHeader: "bold",
-  DateText: "normal",
-  ButtonText: "bold",
-  TextInputText: "normal",
-  TextInputLabel: "bold",
-  label: "bold",
+  ScreenHeader: 'bold',
+  DateText: 'normal',
+  ButtonText: 'bold',
+  TextInputText: 'normal',
+  TextInputLabel: 'bold',
+  label: 'bold',
 } as const;
 
 export const Color = {
   //ScreenBackground: "#FFFFFF",
-  GrayGroupMargin: "#A3A3A3CC",
-  GrayGroupBackground: "#f2f2f2",
+  GrayGroupMargin: '#A3A3A3CC',
+  GrayGroupBackground: '#f2f2f2',
+
 
   IssueTextBackground: "#FFFFFF",
   CancelColor: "#E74C3C",
   ShadowColor: "#171717",
+
+  GrayText: '#666666',
+
+  IssueTextBackground: '#FFFFFF',
+  CancelColor: '#E74C3C',
+  ShadowColor: '#171717',
+
   HeaderText: "#0f5257",
   HeaderBackground: "#e9d5ff",
   ScreenHeader: "#0f5257",
@@ -164,10 +181,118 @@ export const Color = {
   completed: "#2ECC71",
   rejected: "#95A5A6",
   default: "#95A5A6",
-  
+
+  // Chat
+  chatTitle: "#000000",
+  chatBackground: "#FFFFFF",
+  chatGoBackIcon: "#000000",
+
+  chatInputBackground: "#FFFFFF",
+  chatInputBorder: "#7F7F7F",
+  chatInputText: "#000000",
+  chatSendIcon: "#AAAAAA",
+
+  chatBubbleLeftBackground: "#0F5257",
+  chatBubbleLeftBorder: "#E8E8E8",
+  chatBubbleLeftText: "#FFFFFF",
+
+  chatBubbleRightBackground: "#FFFFFF",
+  chatBubbleRightBorder: "#7F7F7F",
+  chatBubbleRightText: "#000000",
+
+  chatTimeText: "#7F7F7F",
 };
 
+export const chatStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: "5%",
+    marginHorizontal: "5%",
+    justifyContent: "space-between",
+  },
+  // There's a bug here, the title isn't centered since there's a button before it that shifts everything
+  chatTitle: {
+    fontSize: 18,
+    fontWeight: FontWeight.ScreenHeader,
+    color: Color.chatTitle,
+    textAlign: "center",
+    //flex: 1,
+    // How do i Offset the back button width while not giving pixel values
+  },
+  chatContainer: {
+    backgroundColor: Color.chatBackground,
+  },
+  gobackIcon: {
+    color: Color.chatGoBackIcon,
+    flexDirection: "row",
+    alignItems: "center",
+    //flex: 1,
+  },
+
+  // Input toolbar
+  input: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "90%",
+    height: "10%",
+    borderRadius: 25,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatInputBorder,
+    backgroundColor: Color.chatInputBackground,
+    elevation: 4,
+    alignSelf: "center",
+    marginTop: "5%",
+    marginBottom: "10%",
+    paddingLeft: "5%",
+  },
+  textInput: {
+    flex: 1,
+    fontSize: FontSizes.TextInputText,
+    color: Color.chatInputText,
+  },
+  sendButton: {
+    marginHorizontal: "5%",
+  },
+  sendIcon: {
+    color: Color.chatSendIcon,
+  },
+
+
+  // Bubble
+  bubbleLeft: {
+    backgroundColor: Color.chatBubbleLeftBackground,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatBubbleLeftBorder,
+    marginLeft: "5%",
+    elevation: 4,
+  },
+  bubbleRight: {
+    backgroundColor: Color.chatBubbleRightBackground,
+    borderWidth: borderWidth.thick,
+    borderColor: Color.chatBubbleRightBorder,
+    marginRight: "5%",
+    elevation: 4,
+  },
+  bubbleTextLeft: {
+    color: Color.chatBubbleLeftText,
+    fontSize: FontSizes.TextInputText,
+  },
+  bubbleTextRight: {
+    color: Color.chatBubbleRightText,
+    fontSize: FontSizes.TextInputText,
+  },
+  timeText: {
+    color: Color.chatTimeText,
+  },
+});
+
 export const appStyles = StyleSheet.create({
+  residenceAddressText: {
+    fontSize: FontSizes.TextInputText,
+    color: Color.GrayText,
+    marginTop: 2,
+  },
   // Sign Up Styles
   signUpInputField: {
     width: 246,
@@ -179,9 +304,11 @@ export const appStyles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: Color.GrayGroupMargin /* Purple border */,
     borderRadius: 15 /* Rounded corners */,
+
     justifyContent: "center",
     padding: "2%",
     marginBottom: "3%",
+
   },
   tickingBox: {
     borderRadius: 5,
@@ -197,7 +324,7 @@ export const appStyles = StyleSheet.create({
   },
 
   smallCaptionText: {
-    fontFamily: "Inter-Regular",
+    fontFamily: 'Inter-Regular',
     fontSize: FontSizes.legend,
   },
 
@@ -242,7 +369,7 @@ export const appStyles = StyleSheet.create({
   inputFieldLabel: {
     fontSize: 16,
     marginBottom: 2.5,
-    fontWeight: "600",
+    fontWeight: '600',
     color: Color.TextInputLabel,
     marginLeft: "3%",
     marginRight: "3%",
@@ -269,6 +396,10 @@ export const appStyles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  submitContainer: {
+    flex: 1,
+    alignSelf: 'center',
+  },
   // Buttons
   submitButton: {
     backgroundColor: Color.ButtonBackground,
@@ -318,18 +449,48 @@ export const appStyles = StyleSheet.create({
   // Header
   appHeader: {
     fontSize: 26,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 7.6,
-    fontFamily: "Inter-Bold",
-    color: "#0f5257",
+    fontFamily: 'Inter-Bold',
+    color: '#0f5257',
     flex: 1,
-    textAlign: "center",
+    textAlign: 'center',
+  },
+
+  // Section Header in a form
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 10,
+    color: Color.HeaderText,
   },
 
   // General Screen
   screenContainer: {
     flex: 0.75,
+
     paddingVertical: "6%",
+
+    padding : '6%',
+  },
+
+  emptyListText: {
+    color: Color.GrayText,
+    padding: '15%',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+
+  buttonCancel: {
+    backgroundColor: Color.CancelColor,
+    borderColor: Color.ButtonBorder,
+    marginRight: '5%',
+  },
+
+  buttonAccept: {
+    backgroundColor: Color.ButtonBackground,
+    borderColor: Color.ButtonBorder,
   },
 
   screenHeader: {
@@ -345,10 +506,10 @@ export const appStyles = StyleSheet.create({
   // Drawer
   drawerLabel: {
     fontSize: 15,
-    fontWeight: "800",
-    fontFamily: "Inter-Bold",
+    fontWeight: '800',
+    fontFamily: 'Inter-Bold',
     color: Color.ScreenHeader,
-    alignItems: "center",
+    alignItems: 'center',
     borderColor: Color.ScreenHeader,
   },
 
@@ -356,8 +517,10 @@ export const appStyles = StyleSheet.create({
   formContainer: {
     alignItems: "center",
     paddingVertical: 20,
+
     width: "95%",
     alignSelf: "center",
+
     marginBottom: 500,
   },
 
@@ -399,7 +562,9 @@ export const appStyles = StyleSheet.create({
     marginBottom: 20,
     width: "90%",
     marginTop: 10,
+
     flexDirection: "row",
+
   },
 
   uploadText: {
@@ -518,8 +683,10 @@ export const appStyles = StyleSheet.create({
 
   addResidenceButton: {
     zIndex: 2,
+
     position: "absolute",
     bottom: "35%",
+
     right: 24,
     width: 56,
     height: 56,
@@ -581,7 +748,9 @@ export const appStyles = StyleSheet.create({
   idText: {
     color: Color.TextInputText,
     fontSize: 16,
+
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+
   },
 
   flatImageContainer: {
@@ -648,41 +817,41 @@ export const appStyles = StyleSheet.create({
 
 export const stylesForNonHeaderScreens = StyleSheet.create({
   approvedText: {
-    color: "#3AB700",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#3AB700',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 40,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 48,
     letterSpacing: 0.4,
     marginBottom: 23,
   },
   title: {
     color: Color.TextInputText,
-    textAlign: "center",
-    fontFamily: "Inter",
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 40,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 40,
     letterSpacing: 0.4,
     marginBottom: 24,
   },
   text: {
     color: Color.TextInputText,
-    textAlign: "center",
-    fontFamily: "Inter",
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 24,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 23,
   },
   errorText: {
-    color: "#FF0004",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#FF0004',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 16,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 16,
     letterSpacing: 0.16,
     marginBottom: 20,
@@ -694,46 +863,46 @@ export const stylesForNonHeaderScreens = StyleSheet.create({
 export const stylesForHeaderScreens = StyleSheet.create({
   titleContainer: {
     marginTop: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    alignSelf: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    textAlign: "center",
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
   },
   text: {
-    color: "#0B3142",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#0B3142',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 24,
-    fontStyle: "normal",
-    fontWeight: "400",
+    fontStyle: 'normal',
+    fontWeight: '400',
     lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 23,
   },
   CodeText: {
-    color: "#00ff88",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#00ff88',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 24,
-    fontStyle: "normal",
-    fontWeight: "400",
+    fontStyle: 'normal',
+    fontWeight: '400',
     lineHeight: 24,
     letterSpacing: 0.24,
     marginBottom: 25,
   },
   errorText: {
-    color: "#FF0004",
-    textAlign: "center",
-    fontFamily: "Inter",
+    color: '#FF0004',
+    textAlign: 'center',
+    fontFamily: 'Inter',
     fontSize: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
+    fontStyle: 'normal',
+    fontWeight: '400',
     lineHeight: 16,
     letterSpacing: 0.16,
     marginBottom: 20,
@@ -742,5 +911,54 @@ export const stylesForHeaderScreens = StyleSheet.create({
   },
   tickingBox: {
     borderRadius: 5,
+
+  }
+});
+
+export const stylesForSnitchMode = StyleSheet.create({
+  recorderContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Dimensions.get('window').width * 0.05,
+    marginTop: "-50%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  recordButton: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Color.ButtonBackground,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Dimensions.get('window').width * 0.05,
+    elevation: Platform.OS === "android" ? 5 : 0,
+  },
+  callSecurityButton: {
+    backgroundColor: Color.ButtonBackground,
+    paddingHorizontal: Dimensions.get('window').width * 0.05,
+    paddingVertical: Dimensions.get('window').width * 0.025,
+    borderRadius: 25,
+    elevation: Platform.OS === "android" ? 3 : 0,
+  },
+  callSecurityText: {
+    color: "white",
+    fontSize: 16,
+    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
+  },
+  statusText: {
+    marginBottom: 40,
+    fontSize: 16,
+    textAlign: "center",
+    color: '#0F2B46',
+    fontFamily: Platform.OS === "android" ? "Roboto" : undefined,
+  },
+  disabledButton: {
+    opacity: 0.5,
+
   },
 });

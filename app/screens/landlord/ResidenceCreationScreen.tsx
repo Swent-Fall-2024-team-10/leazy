@@ -330,7 +330,7 @@ function ResidenceCreationScreen() {
         <View style={appStyles.formContainer}>
           <View>
             {firebaseError && (
-              <Modal>
+              <Modal visible={firebaseError}>
                 <CustomPopUp
                   title='Error'
                   testID='FirebaseErrorModal'

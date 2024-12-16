@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
@@ -29,13 +29,9 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [localApartments, setLocalApartments] = useState<ApartmentWithId[]>(apartments);
 
-  useEffect(() => {
-    setLocalApartments(apartments);
-  }, [apartments]);
-
-  const filteredApartments = localApartments.filter(apt =>
+  // Use apartments prop directly instead of maintaining local state
+  const filteredApartments = apartments.filter(apt =>
     apt.apartmentName.toLowerCase().includes(apartmentSearch.toLowerCase())
   );
 
@@ -59,7 +55,6 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
           apartments: updatedApartments
         });
         console.log('Residence updated:', residence.id);
-        setLocalApartments(prev => [...prev, { ...newApartment, id: apartmentId }]);
       }
     } catch (error) {
       console.log('Error adding apartment:', error);
@@ -80,8 +75,6 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
       await updateResidence(residence.id, {
         apartments: updatedApartments
       });
-      
-      setLocalApartments(prev => prev.filter(apt => apt.id !== apartmentId));
     } catch (error) {
       console.log('Error deleting apartment:', error);
       Alert.alert('Error deleting apartment');  

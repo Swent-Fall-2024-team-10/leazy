@@ -150,10 +150,6 @@ export const Color = {
 
   GrayText: '#666666',
 
-  IssueTextBackground: '#FFFFFF',
-  CancelColor: '#E74C3C',
-  ShadowColor: '#171717',
-
   HeaderText: "#0f5257",
   HeaderBackground: "#e9d5ff",
   ScreenHeader: "#0f5257",
@@ -581,12 +577,15 @@ export const appStyles = StyleSheet.create({
 
   // Residence List Styles
   residenceHeaderContainer: {
-    paddingHorizontal: 24,
+    position: 'relative',
+    alignItems: 'center',  // Centers the title
+    justifyContent: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 16,
     paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: "#FFFFFF",
   },
-
   residenceTitle: {
     fontSize: 28,
     fontWeight: "600",
@@ -605,6 +604,8 @@ export const appStyles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 10,
     paddingBottom: 100,
+    alignItems: 'center',
+    width: '100%',
   },
 
   residenceContainer: {

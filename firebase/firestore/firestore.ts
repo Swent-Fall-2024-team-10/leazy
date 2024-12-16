@@ -15,6 +15,7 @@ import {
   onSnapshot,
   serverTimestamp,
   orderBy,
+  arrayRemove,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -32,6 +33,7 @@ import {
 
 import { auth } from "../../firebase/firebase";
 import { IMessage } from "react-native-gifted-chat";
+import { getAuth } from "firebase/auth";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
@@ -229,10 +231,30 @@ export async function updateResidence(
  * Deletes a residence document from Firestore by residence ID.
  * @param residenceId - The unique identifier of the residence to delete.
  */
-export async function deleteResidence(residenceId: string) {
-  const docRef = doc(db, "residences", residenceId);
-  await deleteDoc(docRef);
-}
+export const deleteResidence = async (residenceId: string) => {
+  try {
+    const auth = getAuth();
+    const userId = auth.currentUser?.uid;
+    
+    if (!userId) {
+      throw new Error('No authenticated user found');
+    }
+
+    // Delete the residence document
+    const residenceRef = doc(db, 'residences', residenceId);
+    await deleteDoc(residenceRef);
+
+    // Update the landlord's residenceIds array
+    const landlordRef = doc(db, 'landlords', userId);
+    await updateDoc(landlordRef, {
+      residenceIds: arrayRemove(residenceId)  // Use arrayRemove to remove the ID
+    });
+
+  } catch (error) {
+    console.error('Error deleting residence:', error);
+    throw error;
+  }
+};
 
 /**
  * Creates a new apartment document in Firestore.

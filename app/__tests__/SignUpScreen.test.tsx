@@ -74,7 +74,7 @@ describe('SignUpScreen', () => {
     fireEvent.changeText(getByTestId('emailInput'), 'invalid-email');
     fireEvent.press(getByTestId('signUpButton'));
 
-    expect(getByText('Email is invalid')).toBeTruthy();
+    expect(getByText('Invalid email address')).toBeTruthy();
   });
 
   it('displays a validation error for mismatched passwords', () => {

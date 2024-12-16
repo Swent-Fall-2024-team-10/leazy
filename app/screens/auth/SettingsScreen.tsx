@@ -453,6 +453,9 @@ export default function SettingsScreen() {
                           setTempData((prev) => ({ ...prev, [field]: value }))
                         }
                         placeholder={`Enter your ${field}`}
+                        width={ButtonDimensions.fullWidthButtonWidth}
+                        height={ButtonDimensions.smallButtonHeight}
+                        backgroundColor={Color.TextInputBackground}
                       />
                     ) : (
                       <Text style={[appStyles.idText, { marginBottom: 5 }]}>
@@ -507,6 +510,9 @@ export default function SettingsScreen() {
                 placeholder='Enter current password'
                 secureTextEntry
                 testID='input-current-password'
+                width={ButtonDimensions.fullWidthButtonWidth}
+                height={ButtonDimensions.smallButtonHeight}
+                backgroundColor={Color.TextInputBackground}
               />
 
               {/* New Password Input Fields */}
@@ -517,6 +523,9 @@ export default function SettingsScreen() {
                 placeholder='Enter new password'
                 secureTextEntry
                 testID='input-new-password'
+                width={ButtonDimensions.fullWidthButtonWidth}
+                height={ButtonDimensions.smallButtonHeight}
+                backgroundColor={Color.TextInputBackground}
               />
               <InputField
                 label='Confirm Password'
@@ -525,6 +534,9 @@ export default function SettingsScreen() {
                 placeholder='Confirm new password'
                 secureTextEntry
                 testID='input-confirm-password'
+                width={ButtonDimensions.fullWidthButtonWidth}
+                height={ButtonDimensions.smallButtonHeight}
+                backgroundColor={Color.TextInputBackground}
               />
 
               <Spacer height={20} />
@@ -551,6 +563,9 @@ export default function SettingsScreen() {
               setValue={setNewEmail}
               placeholder='Enter new email'
               testID='input-new-email'
+              width={ButtonDimensions.fullWidthButtonWidth}
+              height={ButtonDimensions.smallButtonHeight}
+              backgroundColor={Color.TextInputBackground}
             />
 
             <InputField
@@ -560,6 +575,9 @@ export default function SettingsScreen() {
               placeholder='Enter current password'
               secureTextEntry
               testID='input-email-password'
+              width={ButtonDimensions.fullWidthButtonWidth}
+              height={ButtonDimensions.smallButtonHeight}
+              backgroundColor={Color.TextInputBackground}
             />
 
             <View style={{ marginTop: 20 }}>
@@ -621,6 +639,9 @@ export default function SettingsScreen() {
                   setValue={setDeleteEmail}
                   placeholder='Enter your email'
                   testID='input-delete-email'
+                  width={ButtonDimensions.fullWidthButtonWidth}
+                  height={ButtonDimensions.smallButtonHeight}
+                  backgroundColor={Color.TextInputBackground}
                 />
 
                 <InputField
@@ -629,6 +650,9 @@ export default function SettingsScreen() {
                   setValue={setDeletePassword}
                   placeholder='Enter your password'
                   testID='input-delete-password'
+                  width={ButtonDimensions.fullWidthButtonWidth}
+                  height={ButtonDimensions.smallButtonHeight}
+                  backgroundColor={Color.TextInputBackground}
                 />
 
                 <View style={{ marginTop: 20 }}>

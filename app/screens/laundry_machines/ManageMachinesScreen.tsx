@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,23 +7,23 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-} from "react-native";
-import Header from "../../../app/components/Header";
-import { LaundryMachine } from "../../../types/types";
+} from 'react-native';
+import Header from '../../../app/components/Header';
+import { LaundryMachine } from '../../../types/types';
 import {
   createLaundryMachine,
   deleteLaundryMachine,
   updateLaundryMachine,
   getAllLaundryMachines,
-} from "../../../firebase/firestore/firestore";
-import { Timestamp } from "firebase/firestore";
-import { Color } from "../../../styles/styles";
+} from '../../../firebase/firestore/firestore';
+import { Timestamp } from 'firebase/firestore';
+import { Color } from '../../../styles/styles';
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
-  const [newMachineId, setNewMachineId] = useState<string>("");
+  const [newMachineId, setNewMachineId] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const residenceId = "TestResidence1"; // Replace with actual residence ID
+  const residenceId = 'TestResidence1'; // Replace with actual residence ID
 
   useEffect(() => {
     const fetchMachines = async () => {
@@ -35,14 +35,14 @@ const ManageMachinesScreen = () => {
   }, []);
 
   const handleAddMachine = async () => {
-    if (newMachineId.trim() === "") return;
+    if (newMachineId.trim() === '') return;
 
     // Check for existing machine ID
     const idExists = machines.some(
-      (machine) => machine.laundryMachineId === newMachineId
+      (machine) => machine.laundryMachineId === newMachineId,
     );
     if (idExists) {
-      setErrorMessage("A machine with this ID already exists.");
+      setErrorMessage('A machine with this ID already exists.');
       return;
     }
 
@@ -53,7 +53,7 @@ const ManageMachinesScreen = () => {
       laundryMachineId: newMachineId,
       isAvailable: true,
       isFunctional: true,
-      occupiedBy: "none",
+      occupiedBy: 'none',
       startTime: Timestamp.fromMillis(Date.now()),
       estimatedFinishTime: Timestamp.fromMillis(Date.now()),
       notificationScheduled: false,
@@ -61,13 +61,13 @@ const ManageMachinesScreen = () => {
 
     await createLaundryMachine(residenceId, newMachine);
     setMachines((prev) => [...prev, newMachine]);
-    setNewMachineId(""); // Clear input after adding
+    setNewMachineId(''); // Clear input after adding
   };
 
   const handleDeleteMachine = async (machineId: string) => {
     await deleteLaundryMachine(residenceId, machineId);
     setMachines((prev) =>
-      prev.filter((machine) => machine.laundryMachineId !== machineId)
+      prev.filter((machine) => machine.laundryMachineId !== machineId),
     );
   };
 
@@ -78,26 +78,26 @@ const ManageMachinesScreen = () => {
     });
     setMachines((prev) =>
       prev.map((m) =>
-        m.laundryMachineId === machine.laundryMachineId ? updatedMachine : m
-      )
+        m.laundryMachineId === machine.laundryMachineId ? updatedMachine : m,
+      ),
     );
   };
 
   const renderMachineItem = ({ item }: { item: LaundryMachine }) => (
     <View style={styles.machineCard}>
-      <View style={{ alignItems: "center" }}>
+      <View style={{ alignItems: 'center' }}>
         <Text style={styles.machineTitle}>
           Washing machine {item.laundryMachineId}
         </Text>
         <Text style={item.isAvailable ? styles.available : styles.inUse}>
-          {item.isAvailable ? "Available" : "In Use"}
+          {item.isAvailable ? 'Available' : 'In Use'}
         </Text>
         <Text
           style={
             item.isFunctional ? styles.functional : styles.underMaintenance
           }
         >
-          {item.isFunctional ? "Functional" : "Under Maintenance"}
+          {item.isFunctional ? 'Functional' : 'Under Maintenance'}
         </Text>
       </View>
       <TouchableOpacity
@@ -106,8 +106,8 @@ const ManageMachinesScreen = () => {
       >
         <Text style={styles.buttonText}>
           {item.isFunctional
-            ? "Mark as Under Maintenance"
-            : "Mark as Functional"}
+            ? 'Mark as Under Maintenance'
+            : 'Mark as Functional'}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -136,11 +136,11 @@ const ManageMachinesScreen = () => {
                 { backgroundColor: Color.TextInputBackground },
               ]}
               placeholderTextColor={Color.TextInputPlaceholder}
-              placeholder="Enter Machine ID"
+              placeholder='Enter Machine ID'
               value={newMachineId}
               onChangeText={setNewMachineId}
             />
-            <Button title="Add Machine" onPress={handleAddMachine} />
+            <Button title='Add Machine' onPress={handleAddMachine} />
           </View>
 
           {/* List of machines */}
@@ -164,33 +164,33 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 20,
   },
   errorText: {
-    color: "red",
+    color: 'red',
     marginBottom: 10,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
   input: {
     flex: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderWidth: 1,
     padding: 10,
     marginRight: 10,
     borderRadius: 25,
   },
   machineCard: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
     padding: 15,
     borderRadius: 25,
     marginBottom: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -199,29 +199,29 @@ const styles = StyleSheet.create({
   },
   machineTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   available: {
-    color: "green",
-    fontWeight: "bold",
+    color: 'green',
+    fontWeight: 'bold',
   },
   inUse: {
-    color: "orange",
-    fontWeight: "bold",
+    color: 'orange',
+    fontWeight: 'bold',
   },
   functional: {
-    color: "blue",
-    fontWeight: "bold",
+    color: 'blue',
+    fontWeight: 'bold',
   },
   underMaintenance: {
-    color: "red",
-    fontWeight: "bold",
+    color: 'red',
+    fontWeight: 'bold',
   },
   toggleButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: '#007bff',
     padding: 10,
     borderWidth: 1,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -231,11 +231,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   deleteButton: {
-    backgroundColor: "#ff4d4d",
+    backgroundColor: '#ff4d4d',
     padding: 10,
     borderWidth: 1,
     borderRadius: 25,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -244,10 +244,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });
 

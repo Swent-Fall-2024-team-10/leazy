@@ -130,11 +130,12 @@ const MaintenanceIssues = () => {
     const key = `${requestId}_${status}`;
     const lastUpdate = recentUpdatesRef.current[key];
     const now = Date.now();
-    
-    if (lastUpdate && now - lastUpdate < 2000) { // 2 second window
+
+    if (lastUpdate && now - lastUpdate < 2000) {
+      // 2 second window
       return true;
     }
-    
+
     recentUpdatesRef.current[key] = now;
     return false;
   };
@@ -154,28 +155,31 @@ const MaintenanceIssues = () => {
 
           querySnapshot.docChanges().forEach((change) => {
             const newData = change.doc.data() as MaintenanceRequest;
-            
+
             if (change.type === 'modified' && newData.requestID) {
               const oldStatus = statusTrackingRef.current[newData.requestID];
               const newStatus = newData.requestStatus;
-              
+
               console.log('Status check:', {
                 requestID: newData.requestID,
                 oldStatus,
                 newStatus,
-                isDifferent: oldStatus !== newStatus
+                isDifferent: oldStatus !== newStatus,
               });
 
-              if (oldStatus && 
-                  oldStatus !== newStatus && 
-                  !hasRecentlyUpdated(newData.requestID, newStatus)) {
+              if (
+                oldStatus &&
+                oldStatus !== newStatus &&
+                !hasRecentlyUpdated(newData.requestID, newStatus)
+              ) {
                 console.log('Creating news for status change');
                 createStatusChangeNews(newData, userId);
               }
-              
+
               statusTrackingRef.current[newData.requestID] = newStatus;
             } else if (change.type === 'added' && newData.requestID) {
-              statusTrackingRef.current[newData.requestID] = newData.requestStatus;
+              statusTrackingRef.current[newData.requestID] =
+                newData.requestStatus;
             }
           });
 

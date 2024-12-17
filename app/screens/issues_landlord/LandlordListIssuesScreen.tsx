@@ -20,7 +20,6 @@ import {
   Tenant,
   RootStackParamList,
 } from '../../../types/types';
-import { getAuth } from 'firebase/auth';
 import { useAuth } from '../../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useProperty } from '../../context/LandlordContext';

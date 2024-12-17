@@ -240,14 +240,50 @@ export const deleteResidence = async (residenceId: string) => {
       throw new Error('No authenticated user found');
     }
 
-    // Delete the residence document
+    // Get the residence to access its apartments
     const residenceRef = doc(db, 'residences', residenceId);
+    const residenceSnap = await getDoc(residenceRef);
+    
+    if (!residenceSnap.exists()) {
+      throw new Error('Residence not found');
+    }
+
+    const residence = residenceSnap.data() as Residence;
+
+    // Check and delete all apartments
+    for (const apartmentId of residence.apartments) {
+      const apartmentRef = doc(db, 'apartments', apartmentId);
+      const apartmentSnap = await getDoc(apartmentRef);
+      
+      if (apartmentSnap.exists()) {
+        const apartment = apartmentSnap.data() as Apartment;
+        
+        // Check if apartment has tenants
+        if (apartment.tenants && apartment.tenants.length > 0) {
+          // Update each tenant's reference
+          for (const tenantId of apartment.tenants) {
+            const tenant = await getTenant(tenantId);
+            if (tenant) {
+              await updateTenant(tenantId, {
+                apartmentId: '',
+                residenceId: ''
+              });
+            }
+          }
+        }
+        
+        // Delete the apartment
+        await deleteDoc(apartmentRef);
+      }
+    }
+
+    // Delete the residence document
     await deleteDoc(residenceRef);
 
     // Update the landlord's residenceIds array
     const landlordRef = doc(db, 'landlords', userId);
     await updateDoc(landlordRef, {
-      residenceIds: arrayRemove(residenceId)  // Use arrayRemove to remove the ID
+      residenceIds: arrayRemove(residenceId)
     });
 
   } catch (error) {

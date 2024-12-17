@@ -1,5 +1,3 @@
-
-import { Timestamp } from "@firebase/firestore";
 import { NavigatorScreenParams } from "@react-navigation/native";
 import { Timestamp } from "firebase/firestore";
 
@@ -13,6 +11,10 @@ export type RootStackParamList = {
   ListIssues: undefined;
   WashingMachine: undefined;
   ManageWashingMachine: undefined;
+  IssueDetails: {
+    requestID: string;
+    source: string;
+  };
 };
 
 export type AuthStackParamList = {

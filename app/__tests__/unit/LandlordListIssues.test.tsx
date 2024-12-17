@@ -465,6 +465,59 @@ describe('LandlordListIssuesScreen', () => {
         expect(queryByText('Fix heating')).toBeFalsy(); // notStarted issue
       });
     });
+
+    it('correctly filters completed issues when showArchived is false', async () => {
+      const { getByTestId, getAllByTestId, queryByText } = renderWithProviders(
+        <LandlordListIssuesScreen />
+      );
+
+      // Expand first residence
+      await act(async () => {
+        fireEvent.press(getAllByTestId('residenceButton')[0]);
+      });
+
+      // Verify completed issue is not shown by default
+      expect(queryByText('Repair window')).toBeFalsy(); // 'completed' status issue
+
+      // Enable archived issues
+      await act(async () => {
+        fireEvent(getByTestId('archivedSwitch'), 'onValueChange', true);
+      });
+
+      // Verify completed issue is now visible
+      expect(queryByText('Repair window')).toBeTruthy();
+    });
+
+    it('applies multiple filters simultaneously', async () => {
+      const { getByTestId, getAllByTestId, queryByText } = renderWithProviders(
+        <LandlordListIssuesScreen />
+      );
+
+      // Open filters
+      await act(async () => {
+        fireEvent.press(getByTestId('filterSection'));
+      });
+
+      // Apply status filter
+      await act(async () => {
+        fireEvent.press(getByTestId('filter-status-inProgress'));
+      });
+
+      // Apply residence filter
+      await act(async () => {
+        fireEvent.press(getByTestId('filter-residence-residence1'));
+      });
+
+      // Expand residence
+      await act(async () => {
+        fireEvent.press(getAllByTestId('residenceButton')[0]);
+      });
+
+      // Should only show in-progress issues from residence1
+      expect(queryByText('Fix faucet')).toBeTruthy(); // in-progress, residence1
+      expect(queryByText('Fix heating')).toBeFalsy(); // not-started, residence1
+      expect(queryByText('Replace lightbulb')).toBeFalsy(); // in-progress, residence2
+    });
   });
 
   describe('Navigation', () => {
@@ -548,6 +601,29 @@ describe('LandlordListIssuesScreen', () => {
       // Should not show any maintenance requests
       expect(queryByText('Fix faucet')).toBeFalsy();
     });
+
+    it('handles errors during data fetching and continues execution', async () => {
+      // Mock console.error to prevent actual error logging
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Mock getTenant to throw an error
+      (getTenant as jest.Mock).mockRejectedValue(new Error('Fetch error'));
+
+      const { getByText } = renderWithProviders(<LandlordListIssuesScreen />);
+
+      // Wait for the component to render
+      await waitFor(() => {
+        expect(getByText('Maintenance issues')).toBeTruthy();
+      });
+
+      // Verify error was logged
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error fetching issues data:',
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('Data Refresh', () => {
@@ -564,7 +640,6 @@ describe('LandlordListIssuesScreen', () => {
         focusCallback();
       });
 
-      // Verify that data fetching functions were called again
       expect(getTenant).toHaveBeenCalled();
       expect(getMaintenanceRequest).toHaveBeenCalled();
     });
@@ -574,22 +649,18 @@ describe('LandlordListIssuesScreen', () => {
         <LandlordListIssuesScreen />,
       );
 
-      // Open filters
       await act(async () => {
         fireEvent.press(getByTestId('filterSection'));
       });
 
-      // Select inProgress filter using test ID
       await act(async () => {
         fireEvent.press(getByTestId('filter-status-inProgress'));
       });
 
-      // Expand residence
       await act(async () => {
         fireEvent.press(getAllByTestId('residenceButton')[0]);
       });
 
-      // Simulate screen focus
       const focusCallback = (useFocusEffect as jest.Mock).mock.calls[0][0];
       act(() => {
         focusCallback();
@@ -636,7 +707,6 @@ describe('LandlordListIssuesScreen', () => {
     });
 
     it('truncates long issue titles appropriately', async () => {
-      // Mock a maintenance request with a very long title
       const longTitleRequest = {
         ...mockMaintenanceRequests.request1,
         requestTitle:
@@ -658,8 +728,20 @@ describe('LandlordListIssuesScreen', () => {
 
       const issueElement = getByTestId('issue-request1');
       expect(issueElement).toBeTruthy();
-      // Verify the text is contained within its container
-      // Note: Actual truncation testing might require additional DOM checking
+    });
+  });
+
+  describe('User Authentication', () => {
+    it('throws error when user is not found', () => {
+      // Mock useAuth to return null user
+      (useAuth as jest.Mock).mockImplementation(() => ({
+        user: null
+      }));
+
+      // Expect the component to throw an error
+      expect(() => {
+        renderWithProviders(<LandlordListIssuesScreen />);
+      }).toThrow('User not found.');
     });
   });
 

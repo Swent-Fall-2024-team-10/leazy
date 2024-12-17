@@ -10,10 +10,6 @@ export type RootStackParamList = {
   ListIssues: undefined;
   WashingMachine: undefined;
   ManageWashingMachine: undefined;
-  IssueDetails: {
-    requestID: string;
-    source: "ListIssues" | "LandlordListIssues" | "LandlordDashboard";
-  };
 };
 
 export type AuthStackParamList = {

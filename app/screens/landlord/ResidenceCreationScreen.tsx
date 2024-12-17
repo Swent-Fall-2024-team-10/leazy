@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, Alert, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Modal, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
@@ -86,6 +86,25 @@ function ResidenceCreationScreen() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [firebaseError, setFirebaseError] = useState<boolean>(false);
   const [firebaseErrorText, setFirebaseErrorText] = useState<string>('');
+
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const parseExcelFile = async (fileUri: string) => {
     try {
@@ -263,147 +282,150 @@ function ResidenceCreationScreen() {
 
   return (
     <Header>
-      <ScrollView style={[appStyles.scrollContainer, {paddingBottom: 200, paddingHorizontal: 20}]}>
-      <Text testID="screen-title" style={[appStyles.residenceTitle, {marginTop: 20}]}>
-            Create Your Residence
-          </Text>
-        <View style={appStyles.formContainer}>
-          <View>{firebaseError && (
-              <Modal>
-              <CustomPopUp title='Error' testID='FirebaseErrorModal' text={firebaseErrorText} onPress={() => setFirebaseError(false)}/>
-            </Modal>)}
-          </View>
-          <CustomTextField
-            testID="residence-name"
-            value={formData.name}
-            onChangeText={handleChange('name')}
-            placeholder="Residence Name"
-            style={appStyles.formFullWidth}
-          />
+        <KeyboardAvoidingView behavior={Platform.OS == 'ios' ? 'padding' : 'height'} style={[appStyles.screenContainer, {padding:0}]} keyboardVerticalOffset={isKeyboardVisible ? 200 : 0}>
+          <ScrollView style={[appStyles.screenContainer, { paddingHorizontal: 20, paddingBottom:400}]} automaticallyAdjustKeyboardInsets={true}>
+            <Text testID="screen-title" style={[appStyles.residenceTitle, {marginTop: 20}]}>
+                Create Your Residence
+              </Text>
+            <View style={appStyles.formContainer}>
+              <View>{firebaseError && (
+                  <Modal>
+                  <CustomPopUp title='Error' testID='FirebaseErrorModal' text={firebaseErrorText} onPress={() => setFirebaseError(false)}/>
+                </Modal>)}
+              </View>
+              <CustomTextField
+                testID="residence-name"
+                value={formData.name}
+                onChangeText={handleChange('name')}
+                placeholder="Residence Name"
+                style={appStyles.formFullWidth}
+              />
 
-          <CustomTextField
-            testID="email"
-            value={formData.email}
-            onChangeText={handleChange('email')}
-            placeholder="Email"
-            style={appStyles.formFullWidth}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <ErrorText error={errors.email} />
+              <CustomTextField
+                testID="email"
+                value={formData.email}
+                onChangeText={handleChange('email')}
+                placeholder="Email"
+                style={appStyles.formFullWidth}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                
+              />
+              <ErrorText error={errors.email} />
 
-          <CustomTextField
-            testID="address"
-            value={formData.address}
-            onChangeText={handleChange('address')}
-            placeholder="Address"
-            style={appStyles.formFullWidth}
-          />
+              <CustomTextField
+                testID="address"
+                value={formData.address}
+                onChangeText={handleChange('address')}
+                placeholder="Address"
+                style={appStyles.formFullWidth}
+              />
 
-          <View style={appStyles.formRow}>
-            <CustomTextField
-              testID="number"
-              value={formData.number}
-              onChangeText={handleChange('number')}
-              placeholder="Street no"
-              style={appStyles.formZipCode}
-              keyboardType="numeric"
-            />
+              <View style={appStyles.formRow}>
+                <CustomTextField
+                  testID="number"
+                  value={formData.number}
+                  onChangeText={handleChange('number')}
+                  placeholder="Street no"
+                  style={appStyles.formZipCode}
+                  keyboardType="numeric"
+                />
 
-            <CustomTextField
-              testID="zip-code"
-              value={formData.zipCode}
-              onChangeText={handleChange('zipCode')}
-              placeholder="Zip Code"
-              style={appStyles.formZipCode}
-            />
-          </View>
+                <CustomTextField
+                  testID="zip-code"
+                  value={formData.zipCode}
+                  onChangeText={handleChange('zipCode')}
+                  placeholder="Zip Code"
+                  style={appStyles.formZipCode}
+                />
+              </View>
 
-          <CustomTextField
-            testID="city"
-            value={formData.city}
-            onChangeText={handleChange('city')}
-            placeholder="City"
-            style={appStyles.formFullWidth}
-          />
+              <CustomTextField
+                testID="city"
+                value={formData.city}
+                onChangeText={handleChange('city')}
+                placeholder="City"
+                style={appStyles.formFullWidth}
+              />
 
-          <CustomTextField
-            testID="province-state"
-            value={formData.provinceState}
-            onChangeText={handleChange('provinceState')}
-            placeholder="Province/State"
-            style={appStyles.formFullWidth}
-          />
+              <CustomTextField
+                testID="province-state"
+                value={formData.provinceState}
+                onChangeText={handleChange('provinceState')}
+                placeholder="Province/State"
+                style={appStyles.formFullWidth}
+              />
 
-          <CustomTextField
-            testID="country"
-            value={formData.country}
-            onChangeText={handleChange('country')}
-            placeholder="Country"
-            style={appStyles.formFullWidth}
-          />
+              <CustomTextField
+                testID="country"
+                value={formData.country}
+                onChangeText={handleChange('country')}
+                placeholder="Country"
+                style={appStyles.formFullWidth}
+              />
 
-          <CustomTextField
-            testID="description"
-            value={formData.description}
-            onChangeText={handleChange('description')}
-            placeholder="Description"
-            style={[appStyles.formFullWidth, appStyles.descriptionInput]}
-          />
+              <CustomTextField
+                testID="description"
+                value={formData.description}
+                onChangeText={handleChange('description')}
+                placeholder="Description"
+                style={[appStyles.formFullWidth, appStyles.descriptionInput]}
+              />
 
-          <CustomTextField
-            testID="website"
-            value={formData.website}
-            onChangeText={handleChange('website')}
-            placeholder="Website (e.g., https://example.com)"
-            style={appStyles.formFullWidth}
-            autoCapitalize="none"
-          />
-          <ErrorText error={errors.website} />
+              <CustomTextField
+                testID="website"
+                value={formData.website}
+                onChangeText={handleChange('website')}
+                placeholder="Website (e.g., https://example.com)"
+                style={appStyles.formFullWidth}
+                autoCapitalize="none"
+              />
+              <ErrorText error={errors.website} />
 
-          <TouchableOpacity 
-            style={appStyles.uploadButton}
-            onPress={() => handleFilePicker('excel', 'tenantsFile')}
-          >
-            <Ionicons name="cloud-upload-outline" size={24} color="#666" />
-            <Text style={appStyles.uploadText}>
-              {apartments.length > 0 
-                ? `${apartments.length} apartments loaded` 
-                : 'List of Apartments (.xlsx)'}
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity 
+                style={appStyles.uploadButton}
+                onPress={() => handleFilePicker('excel', 'tenantsFile')}
+              >
+                <Ionicons name="cloud-upload-outline" size={24} color="#666" />
+                <Text style={appStyles.uploadText}>
+                  {apartments.length > 0 
+                    ? `${apartments.length} apartments loaded` 
+                    : 'List of Apartments (.xlsx)'}
+                </Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={appStyles.uploadButton}
-            onPress={() => handleFilePicker('pdf', 'ownershipProof')}
-          >
-            <Ionicons name="cloud-upload-outline" size={24} color="#666" />
-            <Text style={appStyles.uploadText}>
-              {formData.ownershipProof ? 'Proof uploaded' : 'Proof of Ownership'}
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity 
+                style={appStyles.uploadButton}
+                onPress={() => handleFilePicker('pdf', 'ownershipProof')}
+              >
+                <Ionicons name="cloud-upload-outline" size={24} color="#666" />
+                <Text style={appStyles.uploadText}>
+                  {formData.ownershipProof ? 'Proof uploaded' : 'Proof of Ownership'}
+                </Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={appStyles.uploadButton}
-            onPress={() => handleFilePicker('images', 'pictures')}
-          >
-            <Ionicons name="cloud-upload-outline" size={24} color="#666" />
-            <Text style={appStyles.uploadText}>
-              {formData.pictures.length > 0 
-                ? `${formData.pictures.length} pictures uploaded` 
-                : 'Pictures of residence'}
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity 
+                style={appStyles.uploadButton}
+                onPress={() => handleFilePicker('images', 'pictures')}
+              >
+                <Ionicons name="cloud-upload-outline" size={24} color="#666" />
+                <Text style={appStyles.uploadText}>
+                  {formData.pictures.length > 0 
+                    ? `${formData.pictures.length} pictures uploaded` 
+                    : 'Pictures of residence'}
+                </Text>
+              </TouchableOpacity>
 
-          <CustomButton
-            testID="next-button"
-            title="Next"
-            onPress={handleSubmit}
-            size="medium"
-            style={[appStyles.submitButton, { width: ButtonDimensions.mediumButtonWidth}]}
-          />
-        </View>
-      </ScrollView>
+              <CustomButton
+                testID="next-button"
+                title="Next"
+                onPress={handleSubmit}
+                size="medium"
+                style={[appStyles.submitButton, { width: ButtonDimensions.mediumButtonWidth}]}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
     </Header>
   );
 }

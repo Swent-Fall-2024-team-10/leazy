@@ -34,34 +34,33 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
     <Pressable
       testID={`apartment-item-${apartment.id}`}
       style={({ pressed }: { pressed: boolean }) => ({
-        width: '100%',
-        opacity: pressed ? 0.6 : 1,
-        backgroundColor: pressed ? '#bdbad4' : '#D6D3F0',
-        borderRadius: 4,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 10,
-        marginVertical: 4
+      width: '100%',
+      opacity: pressed ? 0.6 : 1,
+      backgroundColor: pressed ? '#bdbad4' : '#D6D3F0',
+      borderRadius: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 10,
+      marginVertical: 4
       })}
       onPress={handleMainPress}
     >
       <Text style={appStyles.flatText}>
-        {apartment.apartmentName} ({apartment.tenants.length} tenants)
+      {apartment.apartmentName} ({apartment.tenants.length} tenants)
       </Text>
       <View style={{ flex: 1 }} />
-      {apartment.tenants.length == 0 && <Pressable
-        testID={editMode ? 'delete-button' : 'chevron-button'}
-        onPress={handleActionPress}
-      >
-        <Feather
-          name={editMode ? "trash-2" : "chevron-right"}
-          size={20}
-          color="#666666"
-        />
+      {editMode ? (
+      apartment.tenants.length === 0 && (
+        <Pressable testID={'delete-button'} onPress={handleActionPress}>
+        <Feather name={"trash-2"} size={20} color="#666666" />
+        </Pressable>
+      )
+      ) : (
+      <Pressable testID={'chevron-button'} onPress={handleActionPress}>
+        <Feather name={"chevron-right"} size={20} color="#666666" />
       </Pressable>
-      }
-      
+      )}
     </Pressable>
   );
 };

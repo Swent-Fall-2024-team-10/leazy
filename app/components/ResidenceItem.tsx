@@ -169,7 +169,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
           {filteredApartments.length === 0 && (
             <Text testID="no-apartments-message" style={{
               textAlign: 'center',
-              marginTop: 12,
+              marginVertical: 12,
               color: '#666666',
               fontSize: 14,
             }}>

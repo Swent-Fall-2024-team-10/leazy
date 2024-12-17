@@ -90,7 +90,7 @@ export default function MessagingScreen() {
             onPress={() => {
               console.log("navigating to issues")
               Keyboard.dismiss();
-              navigation.navigate("Issues");
+              navigation.goBack();
             }}
             style={{padding: 10
           }}>

@@ -1,11 +1,40 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import ResidencesListScreen from '../screens/landlord/ResidenceListScreen';
 import { PropertyContext } from '../context/LandlordContext';
 import { deleteResidence } from '../../firebase/firestore/firestore';
 import '@testing-library/jest-native/extend-expect';
 import { Residence, Apartment, ApartmentWithId, ResidenceWithId } from '../../types/types';
+
+// Mock Firebase
+jest.mock('../../firebase/firebase', () => ({
+  db: {},
+  auth: {
+    currentUser: { uid: 'testUid' }
+  }
+}));
+
+// Mock Firebase/Firestore
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
+  getDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  doc: jest.fn(),
+  arrayRemove: (value: any) => value,
+  collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  onSnapshot: jest.fn()
+}));
+
+// Mock Firebase/Auth
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(() => ({
+    currentUser: { uid: 'testUid' }
+  }))
+}));
 
 // Mock navigation
 jest.mock('@react-navigation/native', () => ({
@@ -31,7 +60,38 @@ jest.mock('@expo/vector-icons', () => ({
 
 // Mock firestore function
 jest.mock('../../firebase/firestore/firestore', () => ({
-  deleteResidence: jest.fn()
+  deleteResidence: jest.fn().mockImplementation(async (residenceId) => {
+    const mockResidenceRef = 'mockResidenceRef';
+    mockDoc.mockReturnValue(mockResidenceRef);
+    
+    // First getDoc call for residence
+    await mockGetDoc(mockResidenceRef);
+    
+    // Delete residence and update landlord
+    await mockDeleteDoc(mockResidenceRef);
+    await mockUpdateDoc(mockResidenceRef, {
+      residenceIds: residenceId
+    });
+  })
+}));
+
+// Mock Firestore functions at the top level
+const mockGetDoc = jest.fn();
+const mockDeleteDoc = jest.fn();
+const mockUpdateDoc = jest.fn();
+const mockDoc = jest.fn();
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
+  getDoc: (...args: any[]) => mockGetDoc(...args),
+  deleteDoc: (...args: any[]) => mockDeleteDoc(...args),
+  updateDoc: (...args: any[]) => mockUpdateDoc(...args),
+  doc: (...args: any[]) => mockDoc(...args),
+  arrayRemove: (value: any) => value,
+  collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  onSnapshot: jest.fn()
 }));
 
 const mockResidences = [
@@ -237,6 +297,68 @@ describe('ResidencesListScreen', () => {
       await waitFor(() => {
         // Modal should be closed even if deletion fails
         expect(queryByText('Delete Residence')).toBeNull();
+      });
+    });
+
+    it('deletes residence and its apartments with tenants', async () => {
+      // Setup mock data
+      const mockResidenceData = {
+        apartments: ['apt1', 'apt2'],
+        residenceName: 'Test Residence'
+      };
+      
+      const mockApartment1 = {
+        tenants: ['tenant1', 'tenant2']
+      };
+      
+      const mockApartment2 = {
+        tenants: ['tenant3']
+      };
+
+      // Setup mock responses
+      mockGetDoc
+        .mockResolvedValueOnce({
+          exists: () => true,
+          data: () => mockResidenceData
+        })
+        .mockResolvedValueOnce({
+          exists: () => true,
+          data: () => mockApartment1
+        })
+        .mockResolvedValueOnce({
+          exists: () => true,
+          data: () => mockApartment2
+        });
+
+      mockDoc.mockReturnValue('mockedDocRef');
+      mockDeleteDoc.mockResolvedValue(undefined);
+      mockUpdateDoc.mockResolvedValue(undefined);
+
+      const { getByTestId, getByText } = renderScreen();
+      
+      // Enter edit mode and open modal
+      fireEvent.press(getByTestId('edit-residences-button'));
+      fireEvent.press(getByTestId('delete-residence-button-R1'));
+      
+      // Confirm deletion
+      await act(async () => {
+        fireEvent.press(getByText('Delete'));
+      });
+      
+      await waitFor(() => {
+        // Verify residence document was fetched
+        expect(mockGetDoc).toHaveBeenCalled();
+        
+        // Verify apartments were deleted
+        expect(mockDeleteDoc).toHaveBeenCalled();
+        
+        // Verify landlord document was updated
+        expect(mockUpdateDoc).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            residenceIds: 'R1'
+          })
+        );
       });
     });
   });

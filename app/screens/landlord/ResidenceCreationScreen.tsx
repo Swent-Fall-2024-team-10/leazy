@@ -57,13 +57,11 @@ const validateEmail = (email: string): boolean => {
     const result = emailRegex.test(email);
     
     if (Date.now() - startTime > timeoutMs) {
-      console.warn('Email validation took longer than expected');
       return false;
     }
     
     return result;
   } catch (error) {
-    console.error('Email validation error:', error);
     return false;
   }
 };
@@ -105,7 +103,6 @@ function ResidenceCreationScreen() {
       Alert.alert('Success', `Parsed ${apartmentNames.length} apartments`);
     } catch (error) {
       Alert.alert('Error', 'Failed to parse Excel file');
-      console.error(error);
     }
   };
 
@@ -159,7 +156,6 @@ function ResidenceCreationScreen() {
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to upload file');
-      console.error(error);
     }
   };
 
@@ -187,7 +183,6 @@ function ResidenceCreationScreen() {
   };
 
   const validateForm = (): boolean => {
-    console.log("validate")
     const newErrors: FormErrors = {};
 
     if (formData.website && !validateWebsite(formData.website)) {
@@ -244,7 +239,6 @@ function ResidenceCreationScreen() {
                 setFirebaseErrorText(`Failed to create apartment ${apartmentName}`);
                 return null;
               }
-              console.log("s: " + newApartmentId);
               return newApartmentId;
             })
           );
@@ -253,7 +247,6 @@ function ResidenceCreationScreen() {
           const successfulApartments = newApartments.filter(id => id !== null);
           
           newResidence.apartments = successfulApartments;
-          console.log("New Residence Apps" + newResidence.apartments);
           await updateResidence(newResidenceId, newResidence);
         } catch (error) {
           setFirebaseError(true);

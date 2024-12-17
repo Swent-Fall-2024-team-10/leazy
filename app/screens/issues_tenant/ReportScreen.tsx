@@ -10,7 +10,7 @@ import {
   Color,
   textInputHeight,
 } from "../../../styles/styles";
-import Close from "../..//components/buttons/Close";
+import Close from "../../components/buttons/Close";
 import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
 import { ReportStackParamList } from "../../../types/types"; // Import or define your navigation types
 import CameraButton from "../../components/buttons/CameraButton";
@@ -77,7 +77,8 @@ export default function ReportScreen() {
 
   const handleSubmit = async () => {
     setLoading(true);
-  
+    console.log("bd handle");
+
     try {
       console.log("in handle");
       if (!user) {
@@ -121,18 +122,7 @@ export default function ReportScreen() {
         picture: pictureURLs,
         requestStatus: "notStarted",
       };
-
-      //this should be changed when the database function are updated
-      //this is not respecting the model view model pattern for now but this is a temporary solution
-      const requestID = await addDoc(
-        collection(db, "maintenanceRequests"),
-        newRequest
-      );
-      await updateTenant(tenant.userId, {
-        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
-      });
-
-      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+      const requestID = await createMaintenanceRequest(newRequest);
 
       Alert.alert("Success", "Your maintenance request has been submitted.");
 
@@ -140,7 +130,7 @@ export default function ReportScreen() {
 
       if (tick) {
         setTick(false);
-        navigation.navigate("Messaging", {chatID: requestID.id});
+        navigation.navigate("Messaging", {chatID: requestID});
       } else {
         setTick(false);
         navigation.navigate("Issues");

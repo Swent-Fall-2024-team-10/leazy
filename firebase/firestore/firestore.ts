@@ -77,6 +77,87 @@ async function getDocsWithOfflineSupport<T>(queryToExecute: any): Promise<T[]> {
   }
 }
 
+
+// Generic function to handle offline storage
+async function saveToOfflineStorage(collectionName: string, id: string, data: any) {
+  try {
+    const key = `offline_${collectionName}_${id}`;
+    await AsyncStorage.setItem(key, JSON.stringify({
+      data,
+      timestamp: Date.now(),
+      pendingOperation: 'create'
+    }));
+  } catch (error) {
+    console.error(`Error saving to offline storage (${collectionName}):`, error);
+    throw error;
+  }
+}
+
+// Generic function to get offline data
+async function getFromOfflineStorage(collectionName: string, id: string) {
+  try {
+    const key = `offline_${collectionName}_${id}`;
+    const data = await AsyncStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error(`Error getting from offline storage (${collectionName}):`, error);
+    return null;
+  }
+}
+
+// Function to sync offline data when connection is restored
+export async function syncOfflineData() {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const offlineKeys = keys.filter(key => key.startsWith('offline_'));
+
+    for (const key of offlineKeys) {
+      const [_, collectionName, id] = key.split('_');
+      const offlineData = await getFromOfflineStorage(collectionName, id);
+
+      if (!offlineData) continue;
+
+      try {
+        if (id.startsWith('temp_')) {
+          // Handle temporary IDs for collections that use addDoc
+          const collectionRef = collection(db, collectionName);
+          await addDoc(collectionRef, offlineData.data);
+        } else {
+          // Handle direct document creation
+          const docRef = doc(db, collectionName, id);
+          await setDoc(docRef, offlineData.data);
+        }
+
+        // Remove from offline storage after successful sync
+        await AsyncStorage.removeItem(key);
+      } catch (error) {
+        console.error(`Error syncing offline data for ${collectionName}/${id}:`, error);
+      }
+    }
+  } catch (error) {
+    console.error("Error during offline sync:", error);
+    throw error;
+  }
+}
+
+// Add to the syncOfflineData function to handle pending messages
+async function syncPendingMessages() {
+  const keys = await AsyncStorage.getAllKeys();
+  const messageKeys = keys.filter(key => key.startsWith('offline_pending_messages_'));
+
+  for (const key of messageKeys) {
+    const offlineMessage = await getFromOfflineStorage('pending_messages', key.split('_')[3]);
+    if (!offlineMessage) continue;
+
+    try {
+      const chatRef = doc(db, 'chats', offlineMessage.data.chatId);
+      await addDoc(collection(chatRef, 'messages'), offlineMessage.data.messageData);
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error('Error syncing offline message:', error);
+    }
+  }
+}
 /**
  * Creates a new user document in Firestore.
  * @param user - The user object to be added to the 'users' collection.
@@ -127,9 +208,16 @@ export async function deleteUser(uid: string) {
  * Creates a new landlord document in Firestore.
  * @param landlord - The landlord object to be added to the 'landlords' collection.
  */
+// Enhanced createLandlord with offline support
 export async function createLandlord(landlord: Landlord) {
-  const docRef = doc(db, "landlords", landlord.userId);
-  await setDoc(docRef, landlord);
+  try {
+    const docRef = doc(db, "landlords", landlord.userId);
+    await setDoc(docRef, landlord);
+  } catch (error) {
+    // If offline, save to AsyncStorage
+    await saveToOfflineStorage("landlords", landlord.userId, landlord);
+    throw new Error("Saved offline. Will sync when connection is restored.");
+  }
 }
 
 /**
@@ -174,12 +262,14 @@ export async function deleteLandlord(userId: string) {
  * Creates a new tenant document in Firestore.
  * @param tenant - The tenant object to be added to the 'tenants' collection.
  */
+// Enhanced createTenant with offline support
 export async function createTenant(tenant: Tenant) {
-  const docRef = doc(db, "tenants", tenant.userId);
   try {
+    const docRef = doc(db, "tenants", tenant.userId);
     await setDoc(docRef, tenant);
-  } catch (e) {
-    console.error("Error creating tenant profile:", e);
+  } catch (error) {
+    await saveToOfflineStorage("tenants", tenant.userId, tenant);
+    throw new Error("Saved offline. Will sync when connection is restored.");
   }
 }
 
@@ -216,15 +306,18 @@ export async function deleteTenant(userId: string) {
  * @param residence - The residence object to be added to the 'residences' collection.
  * @returns The generated document ID of the newly created residence.
  */
-export async function createResidence(residence: Residence): Promise<string> {
-  if (!residence.residenceName) {
-    throw new Error("Invalid residence ID.");
-  }
-  const residencesRef = collection(db, "residences");
-  const docRef = await addDoc(residencesRef, residence);
 
-  // Return the auto-generated document ID
-  return docRef.id;
+// Enhanced createResidence with offline support
+export async function createResidence(residence: Residence): Promise<string> {
+  try {
+    const residencesRef = collection(db, "residences");
+    const docRef = await addDoc(residencesRef, residence);
+    return docRef.id;
+  } catch (error) {
+    const tempId = `temp_${Date.now()}`;
+    await saveToOfflineStorage("residences", tempId, residence);
+    return tempId;
+  }
 }
 
 /**
@@ -263,13 +356,18 @@ export async function deleteResidence(residenceId: string) {
  * Creates a new apartment document in Firestore.
  * @param apartment - The apartment object to be added to the 'apartments' collection.
  */
-export async function createApartment(apartment: Apartment) {
-  if (!apartment.apartmentName || !apartment.residenceId) {
-    throw new Error("Invalid apartment data");
+
+// Enhanced createApartment with offline support
+export async function createApartment(apartment: Apartment): Promise<string> {
+  try {
+    const apartmentsRef = collection(db, "apartments");
+    const docRef = await addDoc(apartmentsRef, apartment);
+    return docRef.id;
+  } catch (error) {
+    const tempId = `temp_${Date.now()}`;
+    await saveToOfflineStorage("apartments", tempId, apartment);
+    return tempId;
   }
-  const appartmentsRef = collection(db, "apartments");
-  const docRef = await addDoc(appartmentsRef, apartment);
-  return docRef.id;
 }
 
 /**
@@ -539,16 +637,31 @@ export async function generate_unique_code(
  * @param inputCode - The tenant code to validate.
  * @returns An object containing residenceId, apartmentId, and the document ID of the tenant code if valid and unused; null otherwise.
  */
+// Enhanced validate tenant code with offline support
 export async function validateTenantCode(inputCode: string) {
   try {
     const tenantCodesRef = collection(db, "tenantCodes");
     const q = query(tenantCodesRef, where("tenantCode", "==", inputCode));
-    
     const codes = await getDocsWithOfflineSupport<TenantCode>(q);
+    
     if (codes.length === 0) {
+      // Check offline storage for pending codes
+      const keys = await AsyncStorage.getAllKeys();
+      const codeKeys = keys.filter(key => key.startsWith('offline_tenantCodes_'));
+      
+      for (const key of codeKeys) {
+        const offlineCode = await getFromOfflineStorage('tenantCodes', key.split('_')[2]);
+        if (offlineCode?.data.tenantCode === inputCode && !offlineCode?.data.used) {
+          return {
+            residenceId: offlineCode.data.residenceId,
+            apartmentId: offlineCode.data.apartmentId,
+            tenantCodeUID: offlineCode.data.tenantCode
+          };
+        }
+      }
       throw new Error("Code not found");
     }
-    
+
     const data = codes[0];
     if (data.used) {
       throw new Error("Code already used");
@@ -563,9 +676,9 @@ export async function validateTenantCode(inputCode: string) {
       apartmentId: data.apartmentId,
       tenantCodeUID: data.tenantCode
     };
-  } catch (e) {
-    console.error("Error validating tenant code:", e);
-    throw e;
+  } catch (error) {
+    console.error("Error validating tenant code:", error);
+    throw error;
   }
 }
 
@@ -615,21 +728,28 @@ export async function getAllLaundryMachines(residenceId: string) {
   }
 }
 
+// Enhanced addSituationReport with offline support
 export async function addSituationReport(situationReport: SituationReport, apartmentId: string) {
-  
-  const collectionRef = collection(db, "filledReports");
   try {
+    const collectionRef = collection(db, "filledReports");
     const docRef = await addDoc(collectionRef, {
-      situationReport : situationReport
+      situationReport: situationReport
     });
+    
     const apartment = await getApartment(apartmentId);
-    const previousReports = apartment?.situationReportId?? [];
+    const previousReports = apartment?.situationReportId ?? [];
     const nextReports = [docRef.id].concat(previousReports);
-    updateApartment(apartmentId, { situationReportId: nextReports });
-  } catch {
-    throw new Error("Error creating situation report.");
+    await updateApartment(apartmentId, { situationReportId: nextReports });
+  } catch (error) {
+    // Store report offline
+    const tempId = `temp_${Date.now()}`;
+    await saveToOfflineStorage("filledReports", tempId, {
+      situationReport,
+      apartmentId,
+      pendingOperation: 'create'
+    });
+    throw new Error("Saved offline. Will sync when connection is restored.");
   }
-
 }
 
 /**
@@ -672,25 +792,36 @@ export async function getSituationReportLayout(residenceId: string) {
   return situationReportLayout ? situationReportLayout : [];
 }
 
+// Enhanced sendMessage with offline support
 export async function sendMessage(chatId: string, content: string): Promise<void> {
   if (!auth.currentUser) {
     throw new Error('User must be logged in');
   }
 
-  const user = await getUser(auth.currentUser.uid)
+  const user = await getUser(auth.currentUser.uid);
 
-  const chatRef = doc(db, 'chats', chatId);
-  const chat = await getDoc(chatRef);
+  try {
+    const chatRef = doc(db, 'chats', chatId);
+    const messageData = {
+      content: content,
+      sentBy: user?.uid,
+      sentOn: Date.now()
+    };
 
-  if (!chat.exists()) {
-    throw new Error('Chat not found');
+    await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
+  } catch (error) {
+    // Store message offline
+    const tempId = `temp_${Date.now()}`;
+    await saveToOfflineStorage("pending_messages", tempId, {
+      chatId,
+      messageData: {
+        content,
+        sentBy: user?.uid,
+        sentOn: Date.now()
+      }
+    });
+    throw new Error("Message saved offline. Will sync when connection is restored.");
   }
-
-  await addDoc(collection(db, 'chats', chatId, 'messages'), {
-    content: content,
-    sentBy: user?.uid,
-    sentOn: Date.now()
-  });
 }
 
 // Subscribe to messages in a chat

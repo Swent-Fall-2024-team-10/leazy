@@ -15,14 +15,12 @@ import {
 } from '../../../firebase/firestore/firestore';
 import {
   MaintenanceRequest,
-  Residence,
   Tenant,
   RootStackParamList,
 } from '../../../types/types';
 import { useAuth } from '../../context/AuthContext';
-import { useFocusEffect } from '@react-navigation/native';
 import { useProperty } from '../../context/LandlordContext';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Color } from '../../../styles/styles';
 import {
   getIssueStatusColor,

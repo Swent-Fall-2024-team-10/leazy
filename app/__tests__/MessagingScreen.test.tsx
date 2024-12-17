@@ -34,8 +34,10 @@ jest.mock('../../firebase/firestore/firestore', () => ({
 
 // Mock navigation
 jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
     navigate: jest.fn(),
+    goBack: jest.fn(),
   }),
   useRoute: () => ({
     params: { chatID: 'mockChatID' },
@@ -105,9 +107,10 @@ describe('MessagingScreen', () => {
   });
 
   it('navigates back and dismisses keyboard when pressing the back button', () => {
-    const mockNavigate = jest.fn();
+    const mockGoBack = jest.fn();
     jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
-      navigate: mockNavigate,
+      navigate: jest.fn(),
+      goBack: mockGoBack,
     });
 
     const { getByTestId } = render(<MessagingScreen />);
@@ -115,7 +118,7 @@ describe('MessagingScreen', () => {
     fireEvent.press(backButton);
 
     expect(Keyboard.dismiss).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith('Issues');
+    expect(mockGoBack).toHaveBeenCalled();
   });
 
   /*it('should send message when pressing send button', async () => {

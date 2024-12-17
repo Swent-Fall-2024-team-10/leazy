@@ -39,7 +39,6 @@ interface ResidenceFormData {
   country: string;
   description: string;
   website: string;
-  email: string;
   tenantsFile?: string;
   ownershipProof?: string;
   pictures: string[];
@@ -47,40 +46,12 @@ interface ResidenceFormData {
 
 interface FormErrors {
   website?: string;
-  email?: string;
 }
 
 const ALLOWED_EXTENSIONS = {
   excel: ['.xlsx', '.xls'],
   pdf: ['.pdf'],
   images: ['.jpg', '.jpeg', '.png'],
-};
-
-const validateEmail = (email: string): boolean => {
-  // If email is too long, reject it immediately to prevent DoS
-  if (email.length > 254) return false;
-
-  // RFC 5322 compliant regex, optimized to prevent catastrophic backtracking
-  const emailRegex =
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
-  try {
-    // Use a timeout to prevent long-running regex operations
-    const timeoutMs = 100;
-    const startTime = Date.now();
-
-    const result = emailRegex.test(email);
-
-    if (Date.now() - startTime > timeoutMs) {
-      console.warn('Email validation took longer than expected');
-      return false;
-    }
-
-    return result;
-  } catch (error) {
-    console.error('Email validation error:', error);
-    return false;
-  }
 };
 
 function ResidenceCreationScreen() {
@@ -96,7 +67,6 @@ function ResidenceCreationScreen() {
     country: '',
     description: '',
     website: '',
-    email: '',
     pictures: [],
   });
   const [apartments, setApartments] = useState<string[]>([]);
@@ -215,15 +185,10 @@ function ResidenceCreationScreen() {
   };
 
   const validateForm = (): boolean => {
-    console.log('validate');
     const newErrors: FormErrors = {};
 
     if (formData.website && !validateWebsite(formData.website)) {
       newErrors.website = 'Please enter a valid website URL';
-    }
-
-    if (formData.email && !validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
     }
 
     setErrors(newErrors);
@@ -347,17 +312,6 @@ function ResidenceCreationScreen() {
             placeholder='Residence Name'
             style={appStyles.formFullWidth}
           />
-
-          <CustomTextField
-            testID='email'
-            value={formData.email}
-            onChangeText={handleChange('email')}
-            placeholder='Email'
-            style={appStyles.formFullWidth}
-            autoCapitalize='none'
-            keyboardType='email-address'
-          />
-          <ErrorText error={errors.email} />
 
           <CustomTextField
             testID='address'

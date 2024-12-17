@@ -1,7 +1,12 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import ResidenceItem from '../components/ResidenceItem';
-import { createApartment, updateResidence, deleteApartment } from '../../firebase/firestore/firestore';
+import {
+  createApartment,
+  updateResidence,
+  deleteApartment,
+} from '../../firebase/firestore/firestore';
+import { ResidenceWithId, ApartmentWithId } from '../../types/types';
 
 // Mock the firebase functions
 jest.mock('../../firebase/firestore/firestore', () => ({
@@ -11,7 +16,7 @@ jest.mock('../../firebase/firestore/firestore', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => ({
-    Feather: 'Feather',
+  Feather: 'Feather',
 }));
 
 // Mock navigation
@@ -25,8 +30,17 @@ describe('ResidenceItem', () => {
     residenceName: 'Test Residence',
     street: 'Test Street',
     number: '123',
+    city: 'Test City',
+    canton: 'Test Canton',
+    zip: '12345',
+    country: 'Test Country',
+    landlordId: 'landlord1',
+    tenantIds: [],
+    laundryMachineIds: [],
     apartments: ['apt1', 'apt2'],
-  };
+    tenantCodesID: [],
+    situationReportLayout: [],
+  } as ResidenceWithId;
 
   const mockApartments = [
     {
@@ -35,7 +49,7 @@ describe('ResidenceItem', () => {
       residenceId: 'residence1',
       tenants: [],
       maintenanceRequests: [],
-      situationReportId: '',
+      situationReportId: ['SR1'],
     },
     {
       id: 'apt2',
@@ -43,9 +57,9 @@ describe('ResidenceItem', () => {
       residenceId: 'residence1',
       tenants: [],
       maintenanceRequests: [],
-      situationReportId: '',
+      situationReportId: ['SR2'],
     },
-  ];
+  ] as ApartmentWithId[];
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,7 +73,7 @@ describe('ResidenceItem', () => {
         isExpanded={false}
         navigation={mockNavigation}
         onPress={() => {}}
-      />
+      />,
     );
 
     expect(getByTestId(`residence-item-${mockResidence.id}`)).toBeTruthy();
@@ -75,13 +89,49 @@ describe('ResidenceItem', () => {
         isExpanded={true}
         navigation={mockNavigation}
         onPress={() => {}}
-      />
+      />,
     );
 
     expect(getByTestId(`residence-item-${mockResidence.id}`)).toBeTruthy();
     expect(getByTestId('chevron-down')).toBeTruthy();
     expect(getByTestId('expanded-content')).toBeTruthy();
     expect(getAllByText(/Apartment [12]/)).toHaveLength(2);
+  });
+
+  it('shows trash icon when in edit mode', () => {
+    const { getByTestId, queryByTestId } = render(
+      <ResidenceItem
+        residence={mockResidence}
+        apartments={mockApartments}
+        isExpanded={true}
+        navigation={mockNavigation}
+        onPress={() => {}}
+        isEditMode={true}
+      />,
+    );
+
+    expect(
+      getByTestId(`delete-residence-button-${mockResidence.id}`),
+    ).toBeTruthy();
+    expect(queryByTestId('chevron-down')).toBeNull();
+  });
+
+  it('calls onDelete when trash icon is pressed', () => {
+    const mockOnDelete = jest.fn();
+    const { getByTestId } = render(
+      <ResidenceItem
+        residence={mockResidence}
+        apartments={mockApartments}
+        isExpanded={true}
+        navigation={mockNavigation}
+        onPress={() => {}}
+        isEditMode={true}
+        onDelete={mockOnDelete}
+      />,
+    );
+
+    fireEvent.press(getByTestId(`delete-residence-button-${mockResidence.id}`));
+    expect(mockOnDelete).toHaveBeenCalled();
   });
 
   it('filters apartments based on search input', () => {
@@ -92,7 +142,7 @@ describe('ResidenceItem', () => {
         isExpanded={true}
         navigation={mockNavigation}
         onPress={() => {}}
-      />
+      />,
     );
 
     const searchInput = getByTestId('search-input');
@@ -102,105 +152,162 @@ describe('ResidenceItem', () => {
     expect(queryByText(/Apartment 2/)).toBeNull();
   });
 
-  it('shows add apartment form when in edit mode', () => {
-    const { getByTestId, getByPlaceholderText } = render(
-      <ResidenceItem
-        residence={mockResidence}
-        apartments={mockApartments}
-        isExpanded={true}
-        navigation={mockNavigation}
-        onPress={() => {}}
-      />
-    );
-
-    fireEvent.press(getByTestId('edit-mode-toggle'));
-    fireEvent.press(getByTestId('show-add-form-button'));
-
-    expect(getByPlaceholderText('Apartment name')).toBeTruthy();
-    expect(getByTestId('cancel-add-apartment')).toBeTruthy();
-    expect(getByTestId('confirm-add-apartment')).toBeTruthy();
-  });
-
-  it('successfully adds a new apartment', async () => {
-    const newApartmentId = 'new-apt-id';
-    (createApartment as jest.Mock).mockResolvedValueOnce(newApartmentId);
-
-    const { getByTestId, getByPlaceholderText } = render(
-      <ResidenceItem
-        residence={mockResidence}
-        apartments={mockApartments}
-        isExpanded={true}
-        navigation={mockNavigation}
-        onPress={() => {}}
-      />
-    );
-
-    // Enter edit mode and show add form
-    fireEvent.press(getByTestId('edit-mode-toggle'));
-    fireEvent.press(getByTestId('show-add-form-button'));
-
-    // Fill and submit form
-    const input = getByPlaceholderText('Apartment name');
-    fireEvent.changeText(input, 'New Apartment');
-    fireEvent.press(getByTestId('confirm-add-apartment'));
-
-    await waitFor(() => {
-      expect(createApartment).toHaveBeenCalledWith(expect.objectContaining({
-        apartmentName: 'New Apartment',
-        residenceId: mockResidence.id,
-      }));
-      expect(updateResidence).toHaveBeenCalledWith(
-        mockResidence.id,
-        expect.objectContaining({
-          apartments: [...mockResidence.apartments, newApartmentId],
-        })
-      );
-    });
-  });
-
-  it('successfully deletes an apartment', async () => {
-    const { getByTestId, getAllByTestId } = render(
-      <ResidenceItem
-        residence={mockResidence}
-        apartments={mockApartments}
-        isExpanded={true}
-        navigation={mockNavigation}
-        onPress={() => {}}
-      />
-    );
-
-    // Enter edit mode
-    fireEvent.press(getByTestId('edit-mode-toggle'));
-
-    // Find and press delete button for first apartment
-    const deleteButtons = getAllByTestId('delete-button');
-    fireEvent.press(deleteButtons[0]);
-
-    await waitFor(() => {
-      expect(deleteApartment).toHaveBeenCalledWith('apt1');
-      expect(updateResidence).toHaveBeenCalledWith(
-        mockResidence.id,
-        expect.objectContaining({
-          apartments: expect.not.arrayContaining(['apt1']),
-        })
-      );
-    });
-  });
-
   it('displays no apartments message when filter returns no results', () => {
-    const { getByTestId } = render(
+    const { getByTestId, getByText } = render(
       <ResidenceItem
         residence={mockResidence}
         apartments={mockApartments}
         isExpanded={true}
         navigation={mockNavigation}
         onPress={() => {}}
-      />
+      />,
     );
 
     const searchInput = getByTestId('search-input');
     fireEvent.changeText(searchInput, 'NonexistentApartment');
 
-    expect(getByTestId('no-apartments-message')).toBeTruthy();
+    expect(getByText('No apartments found')).toBeTruthy();
+  });
+
+  it('calls onPress when residence is clicked', () => {
+    const mockOnPress = jest.fn();
+    const { getByTestId } = render(
+      <ResidenceItem
+        residence={mockResidence}
+        apartments={mockApartments}
+        isExpanded={false}
+        navigation={mockNavigation}
+        onPress={mockOnPress}
+      />,
+    );
+
+    fireEvent.press(getByTestId(`residence-button-${mockResidence.id}`));
+    expect(mockOnPress).toHaveBeenCalled();
+  });
+
+  describe('Apartment Management', () => {
+    it('shows add apartment button when in edit mode', () => {
+      const { getByTestId } = render(
+        <ResidenceItem
+          residence={mockResidence}
+          apartments={mockApartments}
+          isExpanded={true}
+          navigation={mockNavigation}
+          onPress={() => {}}
+          isEditMode={true}
+        />,
+      );
+
+      expect(getByTestId('show-add-form-button')).toBeTruthy();
+    });
+
+    it('shows add apartment form when add button is clicked', () => {
+      const { getByTestId, getByPlaceholderText } = render(
+        <ResidenceItem
+          residence={mockResidence}
+          apartments={mockApartments}
+          isExpanded={true}
+          navigation={mockNavigation}
+          onPress={() => {}}
+          isEditMode={true}
+        />,
+      );
+
+      fireEvent.press(getByTestId('show-add-form-button'));
+      expect(getByPlaceholderText('Apartment name')).toBeTruthy();
+    });
+
+    it('successfully adds a new apartment', async () => {
+      const newApartmentId = 'new-apt-id';
+      (createApartment as jest.Mock).mockResolvedValueOnce(newApartmentId);
+      (updateResidence as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const { getByTestId, getByPlaceholderText } = render(
+        <ResidenceItem
+          residence={mockResidence}
+          apartments={mockApartments}
+          isExpanded={true}
+          navigation={mockNavigation}
+          onPress={() => {}}
+          isEditMode={true}
+        />,
+      );
+
+      fireEvent.press(getByTestId('show-add-form-button'));
+      fireEvent.changeText(
+        getByPlaceholderText('Apartment name'),
+        'New Apartment',
+      );
+      fireEvent.press(getByTestId('confirm-add-apartment'));
+
+      await waitFor(() => {
+        expect(createApartment).toHaveBeenCalledWith(
+          expect.objectContaining({
+            apartmentName: 'New Apartment',
+            residenceId: mockResidence.id,
+          }),
+        );
+        expect(updateResidence).toHaveBeenCalledWith(mockResidence.id, {
+          apartments: expect.arrayContaining([
+            ...mockResidence.apartments,
+            newApartmentId,
+          ]),
+        });
+      });
+    });
+
+    it('successfully deletes an apartment', async () => {
+      const { getByTestId, getAllByTestId } = render(
+        <ResidenceItem
+          residence={mockResidence}
+          apartments={mockApartments}
+          isExpanded={true}
+          navigation={mockNavigation}
+          onPress={() => {}}
+          isEditMode={true}
+        />,
+      );
+
+      const deleteButtons = getAllByTestId('delete-button');
+      fireEvent.press(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(deleteApartment).toHaveBeenCalledWith(mockApartments[0].id);
+        expect(updateResidence).toHaveBeenCalledWith(mockResidence.id, {
+          apartments: expect.not.arrayContaining([mockApartments[0].id]),
+        });
+      });
+    });
+    
+    it('handles add apartment error gracefully', async () => {
+      (createApartment as jest.Mock).mockRejectedValueOnce(
+        new Error('Failed to add'),
+      );
+
+      const { getByTestId, getByPlaceholderText } = render(
+        <ResidenceItem
+          residence={mockResidence}
+          apartments={mockApartments}
+          isExpanded={true}
+          navigation={mockNavigation}
+          onPress={() => {}}
+          isEditMode={true}
+        />,
+      );
+
+      fireEvent.press(getByTestId('show-add-form-button'));
+      fireEvent.changeText(
+        getByPlaceholderText('Apartment name'),
+        'New Apartment',
+      );
+
+      await act(async () => {
+        fireEvent.press(getByTestId('confirm-add-apartment'));
+      });
+
+      await waitFor(() => {
+        expect(createApartment).toHaveBeenCalled();
+      });
+    });
   });
 });

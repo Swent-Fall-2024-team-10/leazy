@@ -66,26 +66,17 @@ const ResidencesListScreen: React.FC = () => {
             expandedResidence === residence.id ? null : residence.id
           )}
           navigation={navigation}
-        />
-        {expandedResidence === residence.id && (
-          <View testID={`expanded-residence-${residence.id}`}>
-            {/* Your expanded content */}
-          </View>
-        )}
-      </View>
-      {isEditMode && (
-        <Pressable
-          testID={`delete-residence-button-${residence.id}`}
-          onPress={() => {
+          isEditMode={isEditMode}
+          onDelete={() => {
             setSelectedResidenceId(residence.id);
             setIsModalVisible(true);
           }}
-          style={styles.deleteIconButton}
-          accessibilityLabel={`Delete ${residence.residenceName}`}
-        >
-          <Feather name="trash-2" size={24} color="red" />
-        </Pressable>
-      )}
+        />
+        {expandedResidence === residence.id && (
+          <View testID={`expanded-residence-${residence.id}`}>
+          </View>
+        )}
+      </View>
     </View>
   ));
 
@@ -180,12 +171,6 @@ const styles = StyleSheet.create({
   },
   residenceContent: {
     flex: 1, 
-    marginRight: 8, 
-  },
-  deleteIconButton: {
-    padding: 8,
-    alignSelf: 'flex-start', 
-    marginTop: 8, 
   },
   modalOverlay: {
     flex: 1,

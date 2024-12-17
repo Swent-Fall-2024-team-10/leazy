@@ -46,8 +46,6 @@ const LandlordDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation<NavigationProp<LandlordStackParamList>>();
 
-  //I want to navigate to the residence list screen
-  const navigation_residence = useNavigation<NavigationProp<ResidenceStackParamList>>();
   if (!user) {
     throw new Error("User not found.");
   }
@@ -165,7 +163,9 @@ const LandlordDashboard: React.FC = () => {
   ];
 
   const handleResidencePress = (residence: Residence) => {
-    navigation_residence.navigate("ResidenceList");
+    navigation.navigate("Residence Stack", {
+      screen: "ResidenceList"
+    });
   };
 
   const handleRetry = () => {

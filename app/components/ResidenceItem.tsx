@@ -2,13 +2,21 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
-import { ResidenceWithId, ApartmentWithId, ResidenceStackParamList } from '../../types/types';
+import {
+  ResidenceWithId,
+  ApartmentWithId,
+  ResidenceStackParamList,
+} from '../../types/types';
 import { appStyles } from '../../styles/styles';
 import { residenceManagementListStyles } from '../../styles/styles';
 import SearchBar from './SearchBar';
 import AddApartmentForm from './AddApartmentForm';
 import ApartmentItem from './ApartmentItem';
-import { createApartment, updateResidence, deleteApartment } from '../../firebase/firestore/firestore';
+import {
+  createApartment,
+  updateResidence,
+  deleteApartment,
+} from '../../firebase/firestore/firestore';
 
 interface ResidenceItemProps {
   residence: ResidenceWithId;
@@ -16,6 +24,8 @@ interface ResidenceItemProps {
   isExpanded: boolean;
   navigation: NavigationProp<ResidenceStackParamList>;
   onPress: () => void;
+  isEditMode?: boolean;
+  onDelete?: () => void;
 }
 
 const ResidenceItem: React.FC<ResidenceItemProps> = ({
@@ -23,9 +33,10 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   apartments,
   isExpanded,
   onPress,
-  navigation
+  navigation,
+  isEditMode,
+  onDelete,
 }) => {
-  const [editMode, setEditMode] = useState(false);
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,13 +54,13 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         residenceId: residence.id,
         tenants: [],
         maintenanceRequests: [],
-        situationReportId: []
+        situationReportId: [],
       };
       const apartmentId = await createApartment(newApartment);
       if (apartmentId) {
         const updatedApartments = [...residence.apartments, apartmentId];
         await updateResidence(residence.id, {
-          apartments: updatedApartments
+          apartments: updatedApartments,
         });
       }
     } catch (error) {
@@ -65,7 +76,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
       await deleteApartment(apartmentId);
       const updatedApartments = residence.apartments.filter(id => id !== apartmentId);
       await updateResidence(residence.id, {
-        apartments: updatedApartments
+        apartments: updatedApartments,
       });
     } catch (error) {
       Alert.alert('Error deleting apartment');  
@@ -77,61 +88,64 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   };
 
   return (
-    <View testID={`residence-item-${residence.id}`} style={appStyles.residenceContainer}>
+    <View
+      testID={`residence-item-${residence.id}`}
+      style={appStyles.residenceContainer}
+    >
       <Pressable
         testID={`residence-button-${residence.id}`}
         style={({ pressed }) => [
           appStyles.residenceButton,
           isExpanded && appStyles.expandedResidence,
-          { opacity: pressed ? 0.7 : 1 }
+          { opacity: pressed ? 0.7 : 1 },
         ]}
         onPress={onPress}
       >
         <View>
-          <Text style={appStyles.residenceText}>
-            {residence.residenceName}
-          </Text>
+          <Text style={appStyles.residenceText}>{residence.residenceName}</Text>
           <Text style={appStyles.residenceAddressText}>
             {`${residence.street} ${residence.number}`}
           </Text>
         </View>
         <View style={appStyles.residenceIconContainer}>
-          {isExpanded && (
+          {isEditMode ? (
             <Pressable
-              testID="edit-mode-toggle"
-              onPress={() => setEditMode(!editMode)}
+              testID={`delete-residence-button-${residence.id}`}
+              onPress={onDelete}
               style={appStyles.residenceEditButton}
+              accessibilityLabel={`Delete ${residence.residenceName}`}
             >
-              <Feather name="edit-2" size={20} color="#000000" />
+              <Feather name='trash-2' size={24} color='red' />
             </Pressable>
+          ) : (
+            <Feather
+              testID={`chevron-${isExpanded ? 'down' : 'right'}`}
+              name={isExpanded ? 'chevron-down' : 'chevron-right'}
+              size={24}
+              color='#000000'
+            />
           )}
-          <Feather
-            testID={`chevron-${isExpanded ? 'down' : 'right'}`}
-            name={isExpanded ? 'chevron-down' : 'chevron-right'}
-            size={24}
-            color="#000000"
-          />
         </View>
       </Pressable>
 
       {isExpanded && (
-        <View testID="expanded-content" style={appStyles.flatsContainer}>
+        <View testID='expanded-content' style={appStyles.flatsContainer}>
           <SearchBar
             value={apartmentSearch}
             onChangeText={setApartmentSearch}
             onClear={() => setApartmentSearch('')}
           />
 
-          {editMode && !showAddForm && (
+          {isEditMode && !showAddForm && (
             <Pressable
-              testID="show-add-form-button"
+              testID='show-add-form-button'
               style={residenceManagementListStyles.addApartmentButton}
               onPress={() => setShowAddForm(true)}
             >
               <Text style={residenceManagementListStyles.addApartmentText}>
                 Add an apartment
               </Text>
-              <Feather name="plus" size={14} color="#333333" />
+              <Feather name='plus' size={14} color='#333333' />
             </Pressable>
           )}
 
@@ -141,9 +155,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
                 onSubmit={handleAddApartment}
                 onCancel={handleCancelAdd}
               />
-              {isSubmitting && (
-                <ActivityIndicator style={{ marginTop: 10 }} />
-              )}
+              {isSubmitting && <ActivityIndicator style={{ marginTop: 10 }} />}
             </>
           )}
 
@@ -151,7 +163,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
             <ApartmentItem
               key={apartment.id}
               apartment={apartment}
-              editMode={editMode}
+              editMode={isEditMode || false}
               navigation={navigation}
               onDelete={() => handleDeleteApartment(apartment.id)}
             />

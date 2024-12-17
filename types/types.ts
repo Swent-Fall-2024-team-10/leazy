@@ -1,4 +1,5 @@
 import { Timestamp } from "@firebase/firestore";
+import { NavigatorScreenParams } from "@react-navigation/native";
 
 // WithId type helper
 export type WithId<T> = T & { id: string };
@@ -49,12 +50,14 @@ export type ReportStackParamList = {
   };
 };
 export type LandlordStackParamList = {
+  'Residence Stack': NavigatorScreenParams<ResidenceStackParamList>;
   LandlordDashboard: undefined;
   Issues: undefined;
   IssueDetails: {
     requestID: string;
   };
   Messaging: undefined;
+  ResidenceStack: { screen: string } | undefined;
 }
 
 export type TUser = {

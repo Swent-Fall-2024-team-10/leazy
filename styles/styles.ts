@@ -18,14 +18,14 @@ export const borderWidth = {
 };
 export const residenceManagementListStyles = StyleSheet.create({
   addApartmentButton: {
-    height: 36,
+    height: 40,
     backgroundColor: 'white',
     borderRadius: 50,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     marginTop: 2,
-    width: '80%',
+    width: '90%',
     alignSelf: 'flex-start',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

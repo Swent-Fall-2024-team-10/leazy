@@ -19,7 +19,9 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
   onDelete
 }) => {
   const handleMainPress = () => {
-    navigation?.navigate?.('FlatDetails', { apartment });
+    if(!editMode){
+      navigation?.navigate?.('FlatDetails', { apartment });
+    }
   };
 
   const handleActionPress = () => {
@@ -52,7 +54,7 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
       <View style={{ flex: 1 }} />
       {editMode ? (
       apartment.tenants.length === 0 && (
-        <Pressable testID={'delete-button'} onPress={handleActionPress}>
+      <Pressable testID={'delete-button'} onPress={handleActionPress}>
         <Feather name={"trash-2"} size={20} color="#666666" />
         </Pressable>
       )

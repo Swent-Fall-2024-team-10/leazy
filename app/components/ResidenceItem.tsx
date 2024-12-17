@@ -36,7 +36,6 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   );
 
   const handleAddApartment = async (name: string) => {
-    console.log('Adding apartment:', name);
     setIsSubmitting(true);
     try {
       const newApartment = {
@@ -47,17 +46,13 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         situationReportId: []
       };
       const apartmentId = await createApartment(newApartment);
-      console.log('Apartment added:', apartmentId);
       if (apartmentId) {
         const updatedApartments = [...residence.apartments, apartmentId];
-        console.log('Updated apartments:', updatedApartments);
         await updateResidence(residence.id, {
           apartments: updatedApartments
         });
-        console.log('Residence updated:', residence.id);
       }
     } catch (error) {
-      console.log('Error adding apartment:', error);
       Alert.alert('Error adding apartment');
     } finally {
       setIsSubmitting(false);
@@ -66,17 +61,13 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   };
 
   const handleDeleteApartment = async (apartmentId: string) => {
-    console.log('Deleting apartment:', apartmentId);
     try {
       await deleteApartment(apartmentId);
-      console.log('Apartment deleted:', apartmentId);
       const updatedApartments = residence.apartments.filter(id => id !== apartmentId);
-      console.log('Updated apartments:', updatedApartments);
       await updateResidence(residence.id, {
         apartments: updatedApartments
       });
     } catch (error) {
-      console.log('Error deleting apartment:', error);
       Alert.alert('Error deleting apartment');  
     }
   };
@@ -169,7 +160,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
           {filteredApartments.length === 0 && (
             <Text testID="no-apartments-message" style={{
               textAlign: 'center',
-              marginVertical: 12,
+              marginVertical: 30,
               color: '#666666',
               fontSize: 14,
             }}>

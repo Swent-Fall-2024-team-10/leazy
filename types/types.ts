@@ -1,5 +1,8 @@
+
 import { Timestamp } from "@firebase/firestore";
 import { NavigatorScreenParams } from "@react-navigation/native";
+import { Timestamp } from "firebase/firestore";
+
 
 // WithId type helper
 export type WithId<T> = T & { id: string };
@@ -135,6 +138,19 @@ export type MaintenanceRequest = {
   picture: string[];
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
 };
+
+export type News = {
+  maintenanceRequestID: string;
+  SenderID: string;
+  ReceiverID: string;
+  title: string;
+  content: string;
+  isRead: boolean;
+  createdAt: Timestamp;
+  ReadAt: Timestamp;
+  UpdatedAt: Timestamp;
+  images: string[];
+}
 
 export type SituationReportGroup = {
   label: string;

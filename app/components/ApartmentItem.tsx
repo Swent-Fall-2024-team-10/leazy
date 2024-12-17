@@ -50,7 +50,7 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
         {apartment.apartmentName} ({apartment.tenants.length} tenants)
       </Text>
       <View style={{ flex: 1 }} />
-      <Pressable
+      {apartment.tenants.length == 0 && <Pressable
         testID={editMode ? 'delete-button' : 'chevron-button'}
         onPress={handleActionPress}
       >
@@ -60,6 +60,8 @@ const ApartmentItem: React.FC<ApartmentItemProps> = ({
           color="#666666"
         />
       </Pressable>
+      }
+      
     </Pressable>
   );
 };

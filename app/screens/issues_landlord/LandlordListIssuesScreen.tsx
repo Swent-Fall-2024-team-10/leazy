@@ -13,7 +13,6 @@ import {
   getTenant,
   getMaintenanceRequest,
 } from '../../../firebase/firestore/firestore';
-
 import {
   MaintenanceRequest,
   Residence,
@@ -24,25 +23,97 @@ import { useAuth } from '../../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useProperty } from '../../context/LandlordContext';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { Color } from '../../..//styles/styles';
+import { Color } from '../../../styles/styles';
 import {
   getIssueStatusColor,
   getIssueStatusText,
 } from '../../../app/utils/StatusHelper';
 
-// portions of this code were generated with chatGPT as an AI assistant
+// Shared constants
+const FILTER_OPTIONS = {
+  status: ['all', 'notStarted', 'inProgress', 'completed'],
+};
 
-type ResidenceWithId = Residence & { id: string };
+// Reusable Filter Chip component
+const FilterChip = ({ 
+  label, 
+  selected, 
+  onPress, 
+  testID 
+}: { 
+  label: string; 
+  selected: boolean; 
+  onPress: () => void; 
+  testID?: string;
+}) => (
+  <TouchableOpacity
+    testID={testID}
+    style={[styles.filterChip, selected && styles.filterChipSelected]}
+    onPress={onPress}
+  >
+    <Text style={[styles.filterChipText, selected && styles.filterChipTextSelected]}>
+      {label === 'all' ? 'All' : label}
+    </Text>
+  </TouchableOpacity>
+);
+
+// Reusable Filter Section component
+const FilterSection = ({ 
+  label, 
+  children 
+}: { 
+  label: string; 
+  children: React.ReactNode;
+}) => (
+  <View style={styles.filterSection}>
+    <Text style={styles.filterLabel}>{label}:</Text>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      {children}
+    </ScrollView>
+  </View>
+);
+
+// Issue Item component
+const IssueItem = ({ 
+  issue, 
+  onPress 
+}: { 
+  issue: MaintenanceRequest; 
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    style={styles.issueItem}
+    onPress={onPress}
+    testID={`issue-${issue.requestID}`}
+  >
+    <View style={styles.issueContent}>
+      <View style={styles.issueTextContainer}>
+        <Text style={styles.issueText} numberOfLines={1}>
+          {issue.requestTitle}
+        </Text>
+      </View>
+      <View
+        style={[
+          styles.statusTextContainer,
+          { backgroundColor: getIssueStatusColor(issue.requestStatus) },
+        ]}
+      >
+        <Text style={styles.statusText}>
+          Status: {getIssueStatusText(issue.requestStatus)}
+        </Text>
+      </View>
+    </View>
+    <View style={styles.arrowButton}>
+      <Feather name="chevron-right" size={24} color="black" />
+    </View>
+  </TouchableOpacity>
+);
 
 const LandlordListIssuesScreen: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [expandedResidences, setExpandedResidences] = useState<string[]>([]);
   const [filterVisible, setFilterVisible] = useState(false);
-  const [tenants, setTenants] = useState<{ [residenceId: string]: Tenant[] }>(
-    {},
-  );
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedResidenceId, setSelectedResidenceId] = useState<string>('all');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -55,105 +126,64 @@ const LandlordListIssuesScreen: React.FC = () => {
     throw new Error('User not found.');
   }
 
-  const refreshIssues = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
+  const refreshIssues = () => setRefreshTrigger(prev => prev + 1);
 
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        setIsLoading(true);
-        const residenceTenants: { [residenceId: string]: Tenant[] } = {};
         const allIssues: MaintenanceRequest[] = [];
-
+        
         for (const residence of residences) {
           const tenantsForResidence = await Promise.all(
-            residence.tenantIds.map(async (tenantId) => {
-              const tenant = await getTenant(tenantId);
-              return tenant;
-            }),
+            residence.tenantIds.map(getTenant)
           );
-
-          residenceTenants[residence.id] = tenantsForResidence.filter(
-            (tenant): tenant is Tenant => tenant !== null,
-          );
-
-          for (const tenant of residenceTenants[residence.id]) {
+          
+          const validTenants = tenantsForResidence.filter((tenant): tenant is Tenant => tenant !== null);
+          
+          for (const tenant of validTenants) {
             const requests = await Promise.all(
-              tenant.maintenanceRequests.map(async (requestId) => {
-                const request = await getMaintenanceRequest(requestId);
-                if (request) {
-                  return request;
-                }
-                return null;
-              }),
+              tenant.maintenanceRequests.map(getMaintenanceRequest)
             );
-
-            const validRequests = requests.filter(
-              (request): request is MaintenanceRequest => request !== null,
-            );
-            allIssues.push(...validRequests);
+            
+            allIssues.push(...requests.filter((req): req is MaintenanceRequest => req !== null));
           }
         }
-
-        setTenants(residenceTenants);
+        
         setIssues(allIssues);
       } catch (error) {
         console.error('Error fetching issues data:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchIssues();
   }, [residences, refreshTrigger]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      refreshIssues();
-    }, []),
-  );
+  useFocusEffect(React.useCallback(refreshIssues, []));
 
-  const toggleFilter = () => {
-    setFilterVisible(!filterVisible);
+  const filterIssues = (issue: MaintenanceRequest) => {
+    if (!showArchived && issue.requestStatus === 'completed') return false;
+    if (selectedStatus !== 'all' && issue.requestStatus !== selectedStatus) return false;
+    if (selectedResidenceId !== 'all' && issue.residenceId !== selectedResidenceId) return false;
+    return true;
   };
 
   const toggleResidenceExpansion = (residenceId: string) => {
-    setExpandedResidences((prevExpanded) =>
-      prevExpanded.includes(residenceId)
-        ? prevExpanded.filter((id) => id !== residenceId)
-        : [...prevExpanded, residenceId],
+    setExpandedResidences(prev =>
+      prev.includes(residenceId)
+        ? prev.filter(id => id !== residenceId)
+        : [...prev, residenceId]
     );
   };
 
-  const filterOptions = {
-    status: ['all', 'notStarted', 'inProgress', 'completed'],
+  const displayedResidences = selectedResidenceId === 'all'
+    ? residences
+    : residences.filter(residence => residence.id === selectedResidenceId);
+
+  const resetFilters = () => {
+    setSelectedStatus('all');
+    setSelectedResidenceId('all');
+    setFilterVisible(false);
   };
-
-  const filteredIssues = issues.filter((issue) => {
-    if (!showArchived && issue.requestStatus === 'completed') {
-      return false;
-    }
-
-    if (selectedStatus !== 'all' && issue.requestStatus !== selectedStatus) {
-      return false;
-    }
-
-    if (
-      selectedResidenceId !== 'all' &&
-      issue.residenceId !== selectedResidenceId
-    ) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Filter residences based on selection
-  const displayedResidences =
-    selectedResidenceId === 'all'
-      ? residences
-      : residences.filter((residence) => residence.id === selectedResidenceId);
 
   return (
     <View style={styles.container}>
@@ -169,14 +199,14 @@ const LandlordListIssuesScreen: React.FC = () => {
               style={styles.switch}
               value={showArchived}
               onValueChange={setShowArchived}
-              testID='archivedSwitch'
+              testID="archivedSwitch"
             />
             <TouchableOpacity
-              onPress={toggleFilter}
+              onPress={() => setFilterVisible(!filterVisible)}
               style={styles.filterButton}
-              testID='filterSection'
+              testID="filterSection"
             >
-              <Feather name='filter' size={24} color='black' />
+              <Feather name="filter" size={24} color="black" />
               <Text style={styles.filterText}>Filter</Text>
             </TouchableOpacity>
           </View>
@@ -185,86 +215,38 @@ const LandlordListIssuesScreen: React.FC = () => {
             <View style={styles.filterOptions}>
               <Text style={styles.filterTitle}>Sort by...</Text>
 
-              <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Status:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {filterOptions.status.map((status) => (
-                    <TouchableOpacity
-                      key={status}
-                      style={[
-                        styles.filterChip,
-                        selectedStatus === status && styles.filterChipSelected,
-                      ]}
-                      onPress={() => setSelectedStatus(status)}
-                      testID={`filter-status-${status}`}
-                    >
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          selectedStatus === status &&
-                            styles.filterChipTextSelected,
-                        ]}
-                      >
-                        {status === 'all' ? 'All' : status}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+              <FilterSection label="Status">
+                {FILTER_OPTIONS.status.map(status => (
+                  <FilterChip
+                    key={status}
+                    label={status}
+                    selected={selectedStatus === status}
+                    onPress={() => setSelectedStatus(status)}
+                    testID={`filter-status-${status}`}
+                  />
+                ))}
+              </FilterSection>
 
-              <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Residence:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <TouchableOpacity
-                    style={[
-                      styles.filterChip,
-                      selectedResidenceId === 'all' &&
-                        styles.filterChipSelected,
-                    ]}
-                    onPress={() => setSelectedResidenceId('all')}
-                  >
-                    <Text
-                      style={[
-                        styles.filterChipText,
-                        selectedResidenceId === 'all' &&
-                          styles.filterChipTextSelected,
-                      ]}
-                    >
-                      All Residences
-                    </Text>
-                  </TouchableOpacity>
-                  {residences.map((residence) => (
-                    <TouchableOpacity
-                      key={residence.id}
-                      style={[
-                        styles.filterChip,
-                        selectedResidenceId === residence.id &&
-                          styles.filterChipSelected,
-                      ]}
-                      onPress={() => setSelectedResidenceId(residence.id)}
-                      testID={`filter-residence-${residence.id}`}
-                    >
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          selectedResidenceId === residence.id &&
-                            styles.filterChipTextSelected,
-                        ]}
-                      >
-                        {residence.residenceName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+              <FilterSection label="Residence">
+                <FilterChip
+                  label="All Residences"
+                  selected={selectedResidenceId === 'all'}
+                  onPress={() => setSelectedResidenceId('all')}
+                />
+                {residences.map(residence => (
+                  <FilterChip
+                    key={residence.id}
+                    label={residence.residenceName}
+                    selected={selectedResidenceId === residence.id}
+                    onPress={() => setSelectedResidenceId(residence.id)}
+                    testID={`filter-residence-${residence.id}`}
+                  />
+                ))}
+              </FilterSection>
 
               <TouchableOpacity
                 style={styles.resetButton}
-                onPress={() => {
-                  setSelectedStatus('all');
-                  setSelectedResidenceId('all');
-                  setFilterVisible(false);
-                }}
+                onPress={resetFilters}
               >
                 <Text style={styles.resetButtonText}>Reset Filters</Text>
               </TouchableOpacity>
@@ -272,75 +254,34 @@ const LandlordListIssuesScreen: React.FC = () => {
           )}
 
           <View style={styles.residenceList}>
-            {displayedResidences.map((residence) => (
+            {displayedResidences.map(residence => (
               <View key={residence.id}>
                 <TouchableOpacity
                   style={styles.residenceHeader}
                   onPress={() => toggleResidenceExpansion(residence.id)}
-                  testID='residenceButton'
+                  testID="residenceButton"
                 >
-                  <Text style={styles.residenceName}>
-                    {residence.residenceName}
-                  </Text>
+                  <Text style={styles.residenceName}>{residence.residenceName}</Text>
                   <Feather
-                    name={
-                      expandedResidences.includes(residence.id)
-                        ? 'chevron-up'
-                        : 'chevron-down'
-                    }
+                    name={expandedResidences.includes(residence.id) ? 'chevron-up' : 'chevron-down'}
                     size={24}
-                    color='black'
+                    color="black"
                   />
                 </TouchableOpacity>
 
                 {expandedResidences.includes(residence.id) && (
                   <View style={styles.issuesContainer}>
-                    {filteredIssues
-                      .filter((issue) => issue.residenceId === residence.id)
-                      .map((issue) => (
-                        <TouchableOpacity
+                    {issues
+                      .filter(issue => issue.residenceId === residence.id && filterIssues(issue))
+                      .map(issue => (
+                        <IssueItem
                           key={issue.requestID}
-                          style={styles.issueItem}
-                          onPress={() =>
-                            navigation.navigate('IssueDetails', {
-                              requestID: issue.requestID,
-                              source: 'LandlordListIssues',
-                            })
-                          }
-                          testID={`issue-${issue.requestID}`}
-                        >
-                          <View style={styles.issueContent}>
-                            <View style={styles.issueTextContainer}>
-                              <Text style={styles.issueText} numberOfLines={1}>
-                                {issue.requestTitle}
-                              </Text>
-                            </View>
-
-                            <View
-                              style={[
-                                styles.statusTextContainer,
-                                {
-                                  backgroundColor: getIssueStatusColor(
-                                    issue.requestStatus,
-                                  ),
-                                },
-                              ]}
-                            >
-                              <Text style={styles.statusText}>
-                                Status:{' '}
-                                {getIssueStatusText(issue.requestStatus)}
-                              </Text>
-                            </View>
-                          </View>
-
-                          <View style={styles.arrowButton}>
-                            <Feather
-                              name='chevron-right'
-                              size={24}
-                              color='black'
-                            />
-                          </View>
-                        </TouchableOpacity>
+                          issue={issue}
+                          onPress={() => navigation.navigate('IssueDetails', {
+                            requestID: issue.requestID,
+                            source: 'LandlordListIssues',
+                          })}
+                        />
                       ))}
                   </View>
                 )}

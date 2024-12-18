@@ -13,16 +13,16 @@ import CodeCreationScreen from '../screens/landlord/CreateNewCode';
 import IssueStackLandlord from './IssueStackLandlord';
 import SettingsScreen from '../screens/auth/SettingsScreen';
 
-
 const Drawer = createDrawerNavigator();
 
 const LandlordDrawerNavigator = () => {
   return (
     <LandlordProvider>
       <Drawer.Navigator
-        initialRouteName='ListIssues'
+        testID='landlord-drawer-navigator'
+        initialRouteName='Dashboard'
         screenOptions={{
-          headerShown: false, // This hides the default header
+          headerShown: false,
           drawerStyle: {
             backgroundColor: Color.HeaderBackground,
           },

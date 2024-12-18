@@ -723,31 +723,6 @@ export async function markNewsAsRead(maintenanceRequestID: string) {
 }
 
 /**
- * Adds an image to a news document's `images` array.
- * @param maintenanceRequestID - The unique identifier of the news document.
- * @param imageUrl - The URL of the image to add.
- */
-export async function addNewsImage(
-  maintenanceRequestID: string,
-  imageUrl: string
-) {
-  const docRef = doc(db, "news", maintenanceRequestID);
-  const news = await getNews(maintenanceRequestID);
-
-  if (!news) {
-    throw new Error("News not found");
-  }
-
-  const updatedImages = [...(news.images || []), imageUrl];
-  try {
-    await updateDoc(docRef, { images: updatedImages });
-  } catch (e) {
-    console.error("Error adding image to news:", e);
-    throw e;
-  }
-}
-
-/**
  * Fetches all unread news for a specific `ReceiverID`.
  * @param receiverID - The unique identifier of the news receiver.
  * @returns An array of unread news objects.

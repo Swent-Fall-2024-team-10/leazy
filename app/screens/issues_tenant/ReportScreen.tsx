@@ -146,7 +146,6 @@ export default function ReportScreen() {
         createdAt: Timestamp.now(),
         UpdatedAt: Timestamp.now(),
         ReadAt: null,
-        images: pictureURLs,
         ReceiverID: tenant.userId,
         SenderID: 'system',
       });

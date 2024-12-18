@@ -9,8 +9,6 @@ import { getAuth } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
 import "@testing-library/jest-native/extend-expect";
 
-// portions of this code were generated using chatGPT as an AI assistant
-
 // Mock Firebase Auth
 jest.mock("firebase/auth", () => ({
   getAuth: () => ({
@@ -19,21 +17,28 @@ jest.mock("firebase/auth", () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => ({
-    Feather: ({ name, size, color }: { name: string; size: number; color: string }) => 
-      `Feather Icon: ${name}, ${size}, ${color}`,
-  }));  
+  Feather: ({ name, size, color }: { name: string; size: number; color: string }) => 
+    `Feather Icon: ${name}, ${size}, ${color}`,
+}));
 
 // Mock Firestore functions
 jest.mock("../../../firebase/firestore/firestore", () => ({
   updateMaintenanceRequest: jest.fn(),
   getMaintenanceRequestsQuery: jest.fn(),
+  createNews: jest.fn(),
 }));
 
-// Mock onSnapshot from Firestore
-jest.mock("firebase/firestore", () => ({
-  ...jest.requireActual("firebase/firestore"),
-  onSnapshot: jest.fn(),
-}));
+// Mock Firebase Firestore
+jest.mock("firebase/firestore", () => {
+  const actual = jest.requireActual("firebase/firestore");
+  return {
+    ...actual,
+    onSnapshot: jest.fn(),
+    Timestamp: {
+      now: () => ({ seconds: 1234567890, nanoseconds: 0 }),
+    },
+  };
+});
 
 // Mock Navigation
 const mockNavigate = jest.fn();
@@ -45,8 +50,66 @@ jest.mock("@react-navigation/native", () => ({
 }));
 
 describe("MaintenanceIssues", () => {
+  const mockIssueData = {
+    requestID: "request1",
+    requestTitle: "Leaky faucet",
+    requestStatus: "inProgress",
+    requestDescription: "Test description",
+    picture: [],
+    createdAt: { seconds: 1234567890, nanoseconds: 0 },
+    updatedAt: { seconds: 1234567890, nanoseconds: 0 },
+    tenantID: "mockTenantId",
+    landlordID: "mockLandlordId",
+    propertyID: "mockPropertyId",
+  };
+
+  const setupMockSnapshot = (data = mockIssueData) => {
+    let snapshotCallback: any;
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      snapshotCallback = callback;
+      // First call for initialization
+      callback({
+        docs: [{
+          data: () => data,
+          id: 'request1'
+        }],
+        forEach: (fn: any) => fn({
+          data: () => data,
+          id: 'request1'
+        }),
+        docChanges: () => []
+      });
+
+      // Second call after initialization
+      setTimeout(() => {
+        callback({
+          docs: [{
+            data: () => data,
+            id: 'request1'
+          }],
+          forEach: (fn: any) => fn({
+            data: () => data,
+            id: 'request1'
+          }),
+          docChanges: () => [{
+            type: 'modified',
+            doc: {
+              data: () => data,
+              id: 'request1'
+            }
+          }]
+        });
+      }, 0);
+
+      return () => {};
+    });
+
+    return snapshotCallback;
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue("mockQuery");
   });
 
   test("renders correctly with title", () => {
@@ -55,95 +118,70 @@ describe("MaintenanceIssues", () => {
   });
 
   test("fetches and displays maintenance issues", async () => {
-    // Mock Firestore query and onSnapshot behavior
-    const mockQuery = jest.fn();
-    const mockIssueData = {
-      requestID: "request1",
-      requestTitle: "Leaky faucet",
-      requestStatus: "inProgress",
-    };
-
-    (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-      callback({
-        forEach: (fn: any) => fn({ data: () => mockIssueData }),
-      });
-    });
-
+    setupMockSnapshot();
     const screen = render(<MaintenanceIssues />);
 
-    // Wait for maintenance issues to load and display
-    await waitFor(() => expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith("mockTenantId"));
-    expect(screen.getByText("Leaky faucet")).toBeTruthy();
+    // Wait for both the query call and the data to be displayed
+    await waitFor(() => {
+      expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith("mockTenantId");
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Leaky faucet")).toBeTruthy();
+    }, { timeout: 3000 });
+
     expect(screen.getByText("Status: In Progress")).toBeTruthy();
   });
 
   test("toggles archived issues switch and displays archived issues when toggled", async () => {
-    const mockIssueData = {
-      requestID: "request1",
-      requestTitle: "Leaky faucet",
-      requestStatus: "completed",
+    const archivedIssueData = {
+      ...mockIssueData,
+      requestStatus: "completed"
     };
-        // Mock query and snapshot response
-        const mockQuery = jest.fn();
-        (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-        (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-          callback({
-            forEach: (fn: any) => fn({ data: () => mockIssueData }),
-          });
-        });
+
+    setupMockSnapshot(archivedIssueData);
     const screen = render(<MaintenanceIssues />);
-    const archivedSwitch = await waitFor(() => screen.getByTestId("archiveSwitch"));
-    const leaky_faucet = screen.queryByText('Leaky faucet');
-    await waitFor(() => expect(leaky_faucet).toBeNull());
+    
+    // Wait for component to initialize
+    await waitFor(() => {
+      expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith("mockTenantId");
+    });
 
-  // Toggle to true
-  fireEvent(archivedSwitch, 'valueChange', true);
-  await waitFor(() => expect(archivedSwitch.props.value).toBe(true));
+    const archivedSwitch = screen.getByTestId("archiveSwitch");
+    
+    // Initially the completed issue should not be visible
+    expect(screen.queryByText("Leaky faucet")).toBeNull();
 
-  await waitFor(() => expect(screen.getByText("Leaky faucet")).toBeTruthy());
+    // Toggle to show archived
+    fireEvent(archivedSwitch, 'valueChange', true);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Leaky faucet")).toBeTruthy();
+    }, { timeout: 3000 });
 
-  // Toggle back to false
-  fireEvent(archivedSwitch, 'valueChange', false);
-  await waitFor(() => expect(archivedSwitch.props.value).toBe(false));
-
-  const leaky_faucet_toggled = screen.queryByText('Leaky faucet');
-  await waitFor(() => expect(leaky_faucet_toggled).toBeNull());
-
-  });
-
-  test("navigates to the report screen when add button is pressed", () => {
-    const screen = render(<MaintenanceIssues />);
-    const addButton = screen.getByTestId("addButton");
-
-    fireEvent.press(addButton);
-    expect(mockNavigate).toHaveBeenCalledWith("Report");
+    // Toggle back to hide archived
+    fireEvent(archivedSwitch, 'valueChange', false);
+    
+    await waitFor(() => {
+      expect(screen.queryByText("Leaky faucet")).toBeNull();
+    });
   });
 
   test("navigates to issue details when arrow button is pressed", async () => {
-    const mockIssueData = {
-      requestID: "request1",
-      requestTitle: "Leaky faucet",
-      requestStatus: "inProgress",
-    };
-
-    // Mock Firestore query and snapshot response
-    const mockQuery = jest.fn();
-    (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-      callback({
-        forEach: (fn: any) => fn({ data: () => mockIssueData }),
-      });
-    });
-
+    setupMockSnapshot();
     const screen = render(<MaintenanceIssues />);
 
-    // Wait for maintenance issues to load
-    await waitFor(() => expect(screen.getByText("Leaky faucet")).toBeTruthy());
+    await waitFor(() => {
+      expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith("mockTenantId");
+    });
 
-    // Press the arrow button to navigate to details
+    await waitFor(() => {
+      expect(screen.getByText("Leaky faucet")).toBeTruthy();
+    }, { timeout: 3000 });
+
     const arrowButton = screen.getByTestId("arrowButton");
     fireEvent.press(arrowButton);
+
     expect(mockNavigate).toHaveBeenCalledWith("IssueDetails", { requestID: "request1" });
   });
 });

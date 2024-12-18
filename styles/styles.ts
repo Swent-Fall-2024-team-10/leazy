@@ -140,6 +140,7 @@ export const Color = {
   GrayText: '#666666',
 
   IssueTextBackground: '#FFFFFF',
+  EditColor: '#FFA500',
   CancelColor: '#E74C3C',
   ShadowColor: '#171717',
   HeaderText: '#0f5257',
@@ -251,6 +252,21 @@ export const appStyles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 15,
     color: Color.HeaderText,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  postTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Color.TextInputText,
+    marginBottom: 4,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  timestamp: {
+    fontSize: 12,
+    color: Color.GrayText,
+    marginTop: 4,
     fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
 

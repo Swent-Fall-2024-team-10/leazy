@@ -62,7 +62,6 @@ const NewsModal: React.FC<NewsModalProps> = ({
       createdAt: Timestamp.now(),
       UpdatedAt: Timestamp.now(),
       ReadAt: Timestamp.now(),
-      images: [],
       ReceiverID: 'all', // Public post
     };
     onSubmit(newsData);
@@ -80,7 +79,7 @@ const NewsModal: React.FC<NewsModalProps> = ({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <View style={styles.modalFormContent}>
+          <View style={{ flex: 1 }}>
             <View style={appStyles.modalHeader}>
               <Text style={appStyles.modalTitle}>
                 Add to the residence Newsfeed
@@ -112,45 +111,54 @@ const NewsModal: React.FC<NewsModalProps> = ({
             </Text>
 
             <View style={styles.buttonGroup}>
-              <TouchableOpacity
-                style={[styles.typeButton, isUrgent && styles.selectedButton]}
+              <SubmitButton
+                testID='urgent-button'
+                label='Urgent'
                 onPress={() => setIsUrgent(true)}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    isUrgent && styles.selectedButtonText,
-                  ]}
-                >
-                  Set as urgent
-                </Text>
-              </TouchableOpacity>
+                disabled={false}
+                width={150}
+                height={44}
+                style={[
+                  styles.typeButton,
+                  isUrgent && { backgroundColor: Color.ButtonBackground },
+                  { minHeight: 44, flex: undefined },
+                ]}
+                textStyle={[
+                  { color: Color.ButtonBackground },
+                  isUrgent && { color: Color.ButtonText },
+                ]}
+              />
 
-              <TouchableOpacity
-                style={[styles.typeButton, !isUrgent && styles.selectedButton]}
+              <SubmitButton
+                testID='informational-button'
+                label='Informational'
                 onPress={() => setIsUrgent(false)}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    !isUrgent && styles.selectedButtonText,
-                  ]}
-                >
-                  Set as informational
-                </Text>
-              </TouchableOpacity>
+                disabled={false}
+                width={150}
+                height={44}
+                style={[
+                  styles.typeButton,
+                  !isUrgent && { backgroundColor: Color.ButtonBackground },
+                  { minHeight: 44, flex: undefined },
+                ]}
+                textStyle={[
+                  { color: Color.ButtonBackground },
+                  !isUrgent && { color: Color.ButtonText },
+                ]}
+              />
             </View>
           </View>
 
           <TouchableOpacity
+            testID='submit-button'
             style={[
               styles.submitButton,
-              (!content.trim() || !title.trim()) && styles.submitButtonDisabled,
+              (!content.trim() || !title.trim()) && { opacity: 0.5 },
             ]}
             onPress={handleSubmit}
             disabled={!content.trim() || !title.trim()}
           >
-            <Text style={styles.submitButtonText}>Add to newsfeed</Text>
+            <Text style={appStyles.submitButtonText}>Add to newsfeed</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -239,7 +247,7 @@ const NewsfeedManagementScreen = () => {
           style={[appStyles.submitButton, styles.addNewsButton]}
         />
 
-        <View style={[appStyles.grayGroupBackground, styles.newsContainer]}>
+        <View style={[appStyles.grayGroupBackground, { flex: 0.68 }]}>
           <Text style={appStyles.sectionTitle}>Currently active news</Text>
 
           <ScrollView style={{ flex: 1 }}>
@@ -263,7 +271,12 @@ const NewsfeedManagementScreen = () => {
                       disabled={false}
                       width={100}
                       height={40}
-                      style={styles.editButton}
+                      style={{
+                        paddingVertical: 8,
+                        paddingHorizontal: 20,
+                        backgroundColor: Color.EditColor,
+                        borderRadius: 25,
+                      }}
                     />
                     <SubmitButton
                       testID='delete-news-button'
@@ -274,7 +287,12 @@ const NewsfeedManagementScreen = () => {
                       disabled={false}
                       width={100}
                       height={40}
-                      style={styles.deleteButton}
+                      style={{
+                        paddingVertical: 8,
+                        paddingHorizontal: 20,
+                        backgroundColor: Color.CancelColor,
+                        borderRadius: 25,
+                      }}
                     />
                   </View>
                 </View>
@@ -309,84 +327,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  newsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Color.TextInputText,
-    flex: 1,
-  },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 10,
   },
-  editButton: {
-    backgroundColor: '#FFA500', // Orange color for Edit button
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-  },
-  deleteButton: {
-    backgroundColor: '#FF6B6B', // Red color for Delete button
-    width: 100,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-  },
-  editButtonText: {
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: '500',
-  },
-  deleteButtonText: {
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: '500',
-  },
-
-  titleInput: {
-    borderWidth: 1,
-    borderColor: Color.TextInputBorder,
-    borderRadius: 25,
-    padding: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    color: Color.TextInputText,
-    backgroundColor: 'white',
-  },
-  submitButtonDisabled: {
-    opacity: 0.5,
-  },
   addNewsButton: {
     marginVertical: 15,
     alignSelf: 'center',
   },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonIcon: {
-    marginRight: 8,
-  },
-  newsContainer: {
-    flex: 0.68,
-  },
-  mainContainer: {
-    flex: 1,
-    backgroundColor: Color.ScreenBackground,
-  },
   container: {
     flex: 1,
     padding: 20,
-  },
-  contentContainer: {
-    flex: 1,
-    marginTop: 20,
-  },
-
-  newsList: {
-    flex: 1,
   },
   newsItem: {
     flexDirection: 'row',
@@ -410,19 +362,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
   },
-  newsText: {
-    fontSize: 16,
-    color: Color.TextInputText,
-    marginBottom: 10,
-  },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   modalContent: {
     width: '90%',
     backgroundColor: 'white',
@@ -433,10 +378,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', // Add this to create space between content
     display: 'flex', // Ensure flex layout
   },
-  modalFormContent: {
-    flex: 1, // Take up available space
-  },
-
   submitButton: {
     backgroundColor: Color.ButtonBackground,
     padding: 15,
@@ -446,49 +387,21 @@ const styles = StyleSheet.create({
     marginTop: 'auto', // Push button to bottom
   },
 
-  textInput: {
-    borderWidth: 1,
-    borderColor: Color.TextInputBorder,
-    borderRadius: 25,
-    padding: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    color: Color.TextInputText,
-    backgroundColor: 'white',
-    textAlignVertical: 'top',
-  },
-  subtitleText: {
-    fontSize: 16,
-    color: Color.TextInputText,
-    marginBottom: 15,
-  },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 10,
+    marginTop: 10,
+    marginBottom: 10,
   },
   typeButton: {
-    flex: 1,
     padding: 10,
     borderRadius: 25,
     borderWidth: 1,
     borderColor: Color.ButtonBackground,
     alignItems: 'center',
-  },
-  selectedButton: {
-    backgroundColor: Color.ButtonBackground,
-  },
-  buttonText: {
-    color: Color.ButtonBackground,
-  },
-  selectedButtonText: {
-    color: 'white',
-  },
-
-  submitButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    backgroundColor: 'transparent',
+    height: 44,
   },
 });
 

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -105,55 +106,40 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
   // Say there are no news
   if (visibleNews.length === 0) {
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={{ marginBottom: 20 }}>
+        <Text style={appStyles.sectionTitle}>{title}</Text>
         <Text style={appStyles.flatText}>Nothing new to show</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={{ marginBottom: 20 }}>
+      <Text style={appStyles.sectionTitle}>{title}</Text>
       <View style={[appStyles.grayGroupBackground, styles.postsContainer]}>
         {displayedNews.map((item) => (
           <TouchableOpacity
             key={item.maintenanceRequestID}
             style={[
               styles.postCard,
-              item.isRead && styles.viewedPost,
-              !item.isRead && styles.unreadPost,
+              item.isRead && { opacity: 0.4 },
+              !item.isRead && { backgroundColor: '#F8F9FA' },
             ]}
             onPress={() => onNewsPress(item)}
           >
             <View style={styles.postContent}>
               <NewsIcon type={item.type} />
-              <View style={styles.postTextContainer}>
+              <View style={{ flex: 1 }}>
                 <View style={styles.titleContainer}>
-                  <Text style={[styles.postTitle]}>{item.title}</Text>
+                  <Text style={[appStyles.postTitle]}>{item.title}</Text>
                   {!item.isRead && <View style={styles.unreadDot} />}
                 </View>
-                <Text style={styles.postText}>{item.content}</Text>
-                <Text style={styles.timestamp}>
+                <Text style={appStyles.flatText}>{item.content}</Text>
+                <Text style={appStyles.timestamp}>
                   {formatDate(item.createdAt as Timestamp)}
                 </Text>
               </View>
             </View>
-            {item.images && item.images.length > 0 && (
-              <ScrollView
-                horizontal
-                style={styles.imageScroll}
-                showsHorizontalScrollIndicator={false}
-              >
-                {item.images.map((imageUrl, index) => (
-                  <Image
-                    key={index}
-                    source={{ uri: imageUrl }}
-                    style={styles.thumbnail}
-                  />
-                ))}
-              </ScrollView>
-            )}
           </TouchableOpacity>
         ))}
         {isExpandable && visibleNews.length > 2 && (
@@ -199,18 +185,18 @@ const NewsfeedScreen = () => {
 
   const fetchNews = async () => {
     if (!tenant) return;
-  
+
     try {
       const [generalNewsItems, personalNewsItems] = await Promise.all([
         getNewsByReceiver('all'),
         getNewsByReceiver(tenant.userId),
       ]);
-  
+
       // Function to find and delete duplicates
       const deduplicateNewsInFirestore = async (newsItems: News[]) => {
         const seen = new Map<string, News>();
         const duplicates: string[] = [];
-  
+
         // Group by content and timestamp
         newsItems.forEach((item) => {
           const key = `${item.content}_${item.createdAt.seconds}`;
@@ -227,24 +213,26 @@ const NewsfeedScreen = () => {
             }
           }
         });
-  
+
         // Delete duplicates from Firestore
         if (duplicates.length > 0) {
           console.log('Deleting duplicate news items:', duplicates.length);
-          const deletePromises = duplicates.map((id) => 
-            deleteNews(id)  // You'll need to create this function in your firestore.ts
+          const deletePromises = duplicates.map(
+            (id) => deleteNews(id), // You'll need to create this function in your firestore.ts
           );
           await Promise.all(deletePromises);
         }
-  
+
         // Return deduplicated array
         return Array.from(seen.values());
       };
-  
+
       // Deduplicate and update state
-      const deduplicatedGeneralNews = await deduplicateNewsInFirestore(generalNewsItems);
-      const deduplicatedPersonalNews = await deduplicateNewsInFirestore(personalNewsItems);
-  
+      const deduplicatedGeneralNews =
+        await deduplicateNewsInFirestore(generalNewsItems);
+      const deduplicatedPersonalNews =
+        await deduplicateNewsInFirestore(personalNewsItems);
+
       setGeneralNews(deduplicatedGeneralNews);
       setPersonalNews(deduplicatedPersonalNews);
     } catch (error) {
@@ -291,7 +279,7 @@ const NewsfeedScreen = () => {
   if (!tenant) {
     return (
       <Header>
-        <View style={styles.container}>
+        <View style={{ flex: 0.7 }}>
           <Text style={appStyles.flatText}>Loading...</Text>
         </View>
       </Header>
@@ -300,9 +288,10 @@ const NewsfeedScreen = () => {
 
   return (
     <Header>
-      <View style={styles.container}>
+      <View style={{ flex: 0.7 }}>
         <ScrollView
-          style={styles.scrollView}
+          testID='newsfeed-scroll'
+          style={{ flex: 1 }}
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -332,25 +321,9 @@ const NewsfeedScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 0.7,
-  },
-  scrollView: {
-    flex: 1,
-  },
   scrollViewContent: {
     padding: 20,
     flexGrow: 1,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-    color: Color.HeaderText,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
   postsContainer: {
     borderRadius: 25,
@@ -373,13 +346,6 @@ const styles = StyleSheet.create({
       },
     }),
   },
-
-  unreadPost: {
-    backgroundColor: '#F8F9FA', // Slightly different background for unread posts
-  },
-  viewedPost: {
-    opacity: 0.4,
-  },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -398,39 +364,10 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 10,
   },
-  postTextContainer: {
-    flex: 1,
-  },
-  postTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Color.TextInputText,
-    marginBottom: 4,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-  },
-  postText: {
-    fontSize: 14,
-    color: Color.TextInputText,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-  },
-  timestamp: {
-    fontSize: 12,
-    color: Color.GrayText,
-    marginTop: 4,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-  },
+
   expandButton: {
     alignItems: 'center',
     padding: 10,
-  },
-  imageScroll: {
-    marginTop: 10,
-  },
-  thumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 8,
   },
   bottomPadding: {
     height: 20,

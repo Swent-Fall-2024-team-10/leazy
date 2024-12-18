@@ -141,7 +141,6 @@ export type News = {
   ReadAt: Timestamp | null;
   UpdatedAt: Timestamp;
   type: "urgent" | "informational";
-  images: string[];
 }
 
 export type SituationReport = {

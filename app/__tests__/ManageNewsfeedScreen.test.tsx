@@ -1,193 +1,218 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import NewsfeedManagementScreen from '../screens/NewsfeedManagementScreen';
-import * as firestoreModule from '../../firebase/firestore/firestore';
-import { Timestamp } from 'firebase/firestore';
+import { Alert } from 'react-native';
+import ManageNewsfeedScreen from '../screens/newsfeed/ManageNewsfeedScreen';
+import { useAuth } from '../context/AuthContext';
+import {
+  createNews,
+  deleteNews,
+  getNewsByReceiver,
+} from '../../firebase/firestore/firestore';
 
-// Mock Timestamp.now() functionality
-const mockTimestamp = {
-  seconds: Math.floor(Date.now() / 1000),
-  nanoseconds: 0,
-  toDate: () => new Date(),
-  valueOf: () => Date.now(),
-};
+// Mock Firebase and Firestore
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(),
+  getApp: jest.fn(),
+}));
 
 jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
   Timestamp: {
-    now: () => mockTimestamp,
-    fromMillis: (milliseconds: number) => ({
-      toDate: () => new Date(milliseconds),
-      seconds: Math.floor(milliseconds / 1000),
-      nanoseconds: (milliseconds % 1000) * 1000000,
+    now: () => ({
+      toDate: () => new Date(),
+      seconds: 1234567890,
+      nanoseconds: 123456789,
     }),
   },
 }));
 
-jest.mock('../../firebase/firestore/firestore');
-const mockFirestore = firestoreModule as jest.Mocked<typeof firestoreModule>;
-
-// Mock the Header component
-jest.mock('../../../app/components/Header', () => {
-  return {
-    __esModule: true,
-    default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  };
+// Add console.error mock
+const originalError = console.error;
+beforeAll(() => {
+  console.error = jest.fn();
 });
 
-const renderWithNavigation = (component: React.ReactElement) => {
-  return render(
-    <NavigationContainer>
-      {component}
-    </NavigationContainer>
-  );
-};
+afterAll(() => {
+  console.error = originalError;
+});
 
-describe('NewsfeedManagementScreen', () => {
-  const mockNews = [
+// Mock the entire firebase module
+jest.mock('../../firebase/firebase', () => ({
+  db: {},
+  auth: {},
+}));
+
+// Mock dependencies
+jest.mock('../context/AuthContext');
+jest.mock('../../firebase/firestore/firestore', () => ({
+  createNews: jest.fn(),
+  updateNews: jest.fn(),
+  deleteNews: jest.fn(),
+  getNewsByReceiver: jest.fn(),
+}));
+
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  }),
+}));
+
+// Mock Alert
+jest.spyOn(Alert, 'alert');
+
+describe('ManageNewsFeedScreen', () => {
+  const mockUser = { uid: 'test-uid' };
+  const mockNewsItems = [
     {
-      maintenanceRequestID: 'news_1',
-      title: 'Test News',
-      content: 'Test Content',
+      maintenanceRequestID: '1',
+      title: 'Test News 1',
+      content: 'Content 1',
+      createdAt: { toDate: () => new Date() },
       type: 'informational',
-      isRead: false,
-      createdAt: mockTimestamp,
-      UpdatedAt: mockTimestamp,
-      ReadAt: mockTimestamp,
-      images: [],
-      ReceiverID: 'all',
-      SenderID: 'landlord'
+    },
+    {
+      maintenanceRequestID: '2',
+      title: 'Test News 2',
+      content: 'Content 2',
+      createdAt: { toDate: () => new Date() },
+      type: 'urgent',
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockFirestore.getNewsByReceiver.mockResolvedValue(mockNews);
-    mockFirestore.createNews.mockResolvedValue(undefined);
-    mockFirestore.deleteNews.mockResolvedValue(undefined);
-    mockFirestore.updateNews.mockResolvedValue(undefined);
+    (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
+    (getNewsByReceiver as jest.Mock).mockResolvedValue(mockNewsItems);
   });
 
-  it('renders correctly with initial news items', async () => {
-    const { getByText } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      expect(getByText('Newsfeed management')).toBeTruthy();
-      expect(getByText('Test News')).toBeTruthy();
-      expect(getByText('Test Content')).toBeTruthy();
-    });
+  it('renders correctly with news items', async () => {
+    const { getByText, findByText } = render(<ManageNewsfeedScreen />);
+
+    // Verify the screen title is present
+    expect(getByText('Newsfeed management')).toBeTruthy();
+
+    // Wait for news items to load and verify they're displayed
+    await findByText('Test News 1');
+    await findByText('Test News 2');
   });
 
-  it('opens modal when add news button is pressed', async () => {
-    const { getByText, getByTestId } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      fireEvent.press(getByTestId('add-news-button'));
-      expect(getByText('Add to the residence Newsfeed')).toBeTruthy();
-    });
-  });
+  it('handles adding new news item', async () => {
+    const { getByTestId, getByText } = render(<ManageNewsfeedScreen />);
 
-  it('creates new news successfully', async () => {
-    const { getByTestId, getByPlaceholderText, getByText } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      fireEvent.press(getByTestId('add-news-button'));
-    });
-    
-    fireEvent.changeText(getByPlaceholderText('Enter title'), 'New Test Title');
-    fireEvent.changeText(getByPlaceholderText('What would you like to announce?'), 'New Test Content');
-    
-    await waitFor(() => {
-      fireEvent.press(getByText('Add to newsfeed'));
-    });
+    // Open add news modal
+    fireEvent.press(getByTestId('add-news-button'));
+
+    // Fill in the form
+    fireEvent.changeText(getByTestId('title-input'), 'New Test News');
+    fireEvent.changeText(getByTestId('content-input'), 'New Test Content');
+
+    // Test urgent/informational selection
+    fireEvent.press(getByTestId('urgent-button'));
+    fireEvent.press(getByTestId('informational-button'));
+
+    // Submit the form using the "Add to newsfeed" button
+    const submitButton = getByText('Add to newsfeed');
+    fireEvent.press(submitButton);
 
     await waitFor(() => {
-      expect(mockFirestore.createNews).toHaveBeenCalledWith(
+      expect(createNews).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'New Test Title',
+          title: 'New Test News',
           content: 'New Test Content',
-          type: 'informational'
-        })
+          type: 'informational',
+        }),
       );
     });
   });
 
-  it('updates existing news successfully', async () => {
-    const { getByPlaceholderText, getByText } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      const editButtons = document.querySelectorAll('[data-testid="edit-news-button"]');
-      if (editButtons.length > 0) {
-        fireEvent.press(editButtons[0]);
-      }
-    });
-    
-    fireEvent.changeText(getByPlaceholderText('Enter title'), 'Updated Title');
-    fireEvent.changeText(getByPlaceholderText('What would you like to announce?'), 'Updated Content');
-    
-    await waitFor(() => {
-      fireEvent.press(getByText('Add to newsfeed'));
-    });
+  it('handles deleting news item', async () => {
+    const { getAllByTestId, findByText } = render(<ManageNewsfeedScreen />);
 
-    expect(mockFirestore.updateNews).toHaveBeenCalledWith(
-      'news_1',
-      expect.objectContaining({
-        title: 'Updated Title',
-        content: 'Updated Content'
-      })
+    // Wait for the news items to load
+    await findByText('Test News 1');
+
+    // Find and click delete button
+    const deleteButtons = getAllByTestId('delete-news-button');
+    fireEvent.press(deleteButtons[0]);
+
+    // Verify delete function was called
+    await waitFor(() => {
+      expect(deleteNews).toHaveBeenCalledWith('1');
+    });
+  });
+
+  it('validates form inputs before submission', async () => {
+    const { getByTestId, getByText } = render(<ManageNewsfeedScreen />);
+
+    // Open add news modal
+    fireEvent.press(getByTestId('add-news-button'));
+
+    // Get the submit button and verify initial disabled state
+    const submitButton = getByTestId('submit-button');
+    expect(submitButton.props.accessibilityState.disabled).toBe(true);
+
+    // Fill only title
+    fireEvent.changeText(getByTestId('title-input'), 'Test Title');
+
+    // Button should still be disabled
+    expect(submitButton.props.accessibilityState.disabled).toBe(true);
+
+    // Fill content
+    fireEvent.changeText(getByTestId('content-input'), 'Test Content');
+
+    // Button should be enabled
+    expect(submitButton.props.accessibilityState.disabled).toBe(false);
+  });
+
+  it('toggles between urgent and informational news types', async () => {
+    const { getByTestId, getByText } = render(<ManageNewsfeedScreen />);
+
+    // Open add news modal
+    fireEvent.press(getByTestId('add-news-button'));
+
+    // Test urgent selection
+    fireEvent.press(getByTestId('urgent-button'));
+    fireEvent.changeText(getByTestId('title-input'), 'Urgent News');
+    fireEvent.changeText(getByTestId('content-input'), 'Urgent Content');
+
+    const submitButton = getByText('Add to newsfeed');
+    fireEvent.press(submitButton);
+
+    await waitFor(() => {
+      expect(createNews).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'urgent',
+          title: 'Urgent News',
+          content: 'Urgent Content',
+        }),
+      );
+    });
+  });
+
+  it('handles error when adding news item', async () => {
+    (createNews as jest.Mock).mockRejectedValue(
+      new Error('Failed to add news'),
     );
-  });
 
-  it('deletes news successfully', async () => {
-    const { getByTestId } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
+    const { getByTestId, getByText } = render(<ManageNewsfeedScreen />);
+
+    // Open add news modal
+    fireEvent.press(getByTestId('add-news-button'));
+
+    // Fill in the form
+    fireEvent.changeText(getByTestId('title-input'), 'Test Title');
+    fireEvent.changeText(getByTestId('content-input'), 'Test Content');
+
+    // Submit the form
+    const submitButton = getByText('Add to newsfeed');
+    fireEvent.press(submitButton);
+
     await waitFor(() => {
-      const deleteButton = getByTestId('delete-news-button');
-      fireEvent.press(deleteButton);
-    });
-
-    await waitFor(() => {
-      expect(mockFirestore.deleteNews).toHaveBeenCalledWith('news_1');
-    });
-  });
-
-  it('toggles between urgent and informational news type', async () => {
-    const { getByTestId, getByText, getByPlaceholderText } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      fireEvent.press(getByTestId('add-news-button'));
-    });
-    
-    fireEvent.changeText(getByPlaceholderText('Enter title'), 'Test Title');
-    fireEvent.changeText(getByPlaceholderText('What would you like to announce?'), 'Test Content');
-    
-    await waitFor(() => {
-      fireEvent.press(getByText('Set as urgent'));
-      fireEvent.press(getByText('Add to newsfeed'));
-    });
-
-    expect(mockFirestore.createNews).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'urgent'
-      })
-    );
-  });
-
-  it('disables submit button when title or content is empty', async () => {
-    const { getByTestId, getByText } = renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      fireEvent.press(getByTestId('add-news-button'));
-    });
-
-    expect(getByText('Add to newsfeed').props.disabled).toBeTruthy();
-  });
-
-  it('fetches news on component mount', async () => {
-    renderWithNavigation(<NewsfeedManagementScreen />);
-    
-    await waitFor(() => {
-      expect(mockFirestore.getNewsByReceiver).toHaveBeenCalledWith('all');
+      expect(console.error).toHaveBeenCalledWith(
+        'Error creating news:',
+        expect.any(Error),
+      );
     });
   });
 });

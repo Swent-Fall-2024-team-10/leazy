@@ -1,15 +1,16 @@
 import Header from '@/app/components/Header';
-import { appStyles, ButtonDimensions, Color, IconDimension } from '@/styles/styles';
+import { appStyles, Color, IconDimension } from '@/styles/styles';
 import React, { useEffect, useState } from 'react';
-import { View, Text, Touchable, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { GroupedSituationReport } from './SituationReportScreen';
 import { useAuth } from '../../../context/AuthContext';
-import { getApartment, getSituationReport } from '@/firebase/firestore/firestore';
+import { getSituationReport } from '@/firebase/firestore/firestore';
 import { fetchFromDatabase } from '@/app/utils/SituationReport';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Icon } from 'react-native-elements';
 import { reportConsStyles, situationReportStyles } from '@/styles/SituationReportStyling';
+import { SituationReportLabel } from './SituationReportCreationScreen';
 
 
 export default function SituationReportConsultationScreen() {
@@ -17,6 +18,7 @@ export default function SituationReportConsultationScreen() {
     const { tenant } = useAuth();
     const [reportName, setReportName] = useState("");
     const [layout, setReportLayout] = useState<[string, [string, number][]][]>([]);
+    const [remarks, setRemarks] = useState<string>("");
     
     async function fetchSituationReports() {
         if(!tenant?.apartmentId){
@@ -31,16 +33,10 @@ export default function SituationReportConsultationScreen() {
             console.log("Invalid situation report : ", situationReport);
             return
         }
-        console.log("situation report: ", situationReport.situationReport)
-        console.log("situation report ID: ", situationReport.reportForm)
+        setRemarks(situationReport.remarks);
         const [reportName, reportLayout] = await fetchFromDatabase(situationReport.reportForm)
         setReportName(reportName);
         setReportLayout(reportLayout);
-        console.log("reportName: ", reportName)
-        console.log("reportName: ", reportName)
-        console.log("layout: ", reportLayout)
-        console.log("fecthing done properly")
-        console.log("teststsestet", layout[0][1][0][1])
     }
 
     useEffect(() => {
@@ -66,13 +62,25 @@ export default function SituationReportConsultationScreen() {
 
                 <View style={[appStyles.screenContainer, reportConsStyles.screenContainer]}>
                     <Text style={appStyles.screenHeader}>{reportName}</Text>
-                    <GroupedSituationReport
-                        layout={layout}
-                        setReset={() => {}}
-                        changeStatus={() => {}}
-                        resetState={false}
-                        changeAllowed={false}
-                    />
+                    
+                    <SituationReportLabel/>
+
+                    <View style={situationReportStyles.reportContainer}>
+                        <GroupedSituationReport
+                            layout={layout}
+                            setReset={() => {}}
+                            changeStatus={() => {}}
+                            resetState={false}
+                            changeAllowed={false}
+                        />
+
+                        <View style={situationReportStyles.remarkTextContainer}>
+                            <Text style={situationReportStyles.remarkText}>
+                                {remarks}
+                            </Text>
+                        </View>
+
+                    </View>
                 </View>
             </View>
         </ScrollView>

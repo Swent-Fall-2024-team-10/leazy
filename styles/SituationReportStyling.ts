@@ -55,6 +55,12 @@ export const situationReportStyles = StyleSheet.create({
 
   },
 
+  backButton: {
+    position: "absolute",
+    top: "2%",
+    left: "5%",
+  },
+
   remarkText: {
     color: Color.TextInputText,
     fontSize: FontSizes.TextInputText,
@@ -240,8 +246,9 @@ export const layoutCreationStyles = StyleSheet.create({
 });
 
 export const reportConsStyles = StyleSheet.create({
-  screenContainer: {
-    marginTop : '10%'
-  }
+    reportHeader: {
+      marginLeft: "10%",
+      marginRight: "10%",
+    }
 
 });

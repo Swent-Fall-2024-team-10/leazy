@@ -6,3 +6,19 @@ export const Color = {
 export const appStyles = {
   // Mock the styles you need
 }; 
+
+export const stylesForResidenceList = {
+  residenceContainer: {},
+  residenceContent: {},
+  editButton: {},
+  modalOverlay: {},
+  modalContent: {},
+  modalTitle: {},
+  modalText: {},
+  modalButtons: {},
+  modalButton: {},
+  cancelButton: {},
+  deleteButton: {},
+  buttonText: {},
+  deleteText: {},
+};

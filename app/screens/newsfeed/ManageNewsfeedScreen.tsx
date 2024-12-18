@@ -22,7 +22,8 @@ import {
 } from '../../../firebase/firestore/firestore';
 import SubmitButton from '../../components/buttons/SubmitButton';
 import CustomTextField from '../../components/CustomTextField';
-import Close from '../../components/buttons/Close';
+import { LandlordProvider } from '../../context/LandlordContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface NewsModalProps {
   visible: boolean;
@@ -62,7 +63,7 @@ const NewsModal: React.FC<NewsModalProps> = ({
       createdAt: Timestamp.now(),
       UpdatedAt: Timestamp.now(),
       ReadAt: Timestamp.now(),
-      ReceiverID: 'all', // Public post
+      ReceiverID: 'all',
     };
     onSubmit(newsData);
     setTitle('');
@@ -170,6 +171,8 @@ const NewsfeedManagementScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [news, setNews] = useState<News[]>([]);
   const [editingNews, setEditingNews] = useState<News | undefined>();
+  const { landlord } = useAuth();
+
 
   useEffect(() => {
     fetchNews();
@@ -189,7 +192,7 @@ const NewsfeedManagementScreen = () => {
       const newNews: News = {
         ...newsData,
         maintenanceRequestID: `news_${Date.now()}`,
-        SenderID: 'landlord', // Replace with actual landlord ID
+        SenderID: landlord?.userId || 'landlord',
       } as News;
 
       await createNews(newNews);

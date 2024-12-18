@@ -62,7 +62,7 @@ jest.mock('@react-navigation/native', () => ({
 jest.spyOn(Alert, 'alert');
 
 describe('ManageNewsFeedScreen', () => {
-  const mockUser = { uid: 'test-uid' };
+  const mockLandlord = { userId: 'test-uid' };
   const mockNewsItems = [
     {
       maintenanceRequestID: '1',
@@ -82,7 +82,7 @@ describe('ManageNewsFeedScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
+    (useAuth as jest.Mock).mockReturnValue({ landlord: mockLandlord });
     (getNewsByReceiver as jest.Mock).mockResolvedValue(mockNewsItems);
   });
 
@@ -121,6 +121,7 @@ describe('ManageNewsFeedScreen', () => {
           title: 'New Test News',
           content: 'New Test Content',
           type: 'informational',
+          SenderID: 'test-uid', // Verify the correct sender ID is used
         }),
       );
     });
@@ -185,6 +186,7 @@ describe('ManageNewsFeedScreen', () => {
           type: 'urgent',
           title: 'Urgent News',
           content: 'Urgent Content',
+          SenderID: 'test-uid', // Verify the correct sender ID is used
         }),
       );
     });
@@ -212,6 +214,32 @@ describe('ManageNewsFeedScreen', () => {
       expect(console.error).toHaveBeenCalledWith(
         'Error creating news:',
         expect.any(Error),
+      );
+    });
+  });
+
+  it('handles missing landlord information', async () => {
+    // Mock useAuth to return null landlord
+    (useAuth as jest.Mock).mockReturnValue({ landlord: null });
+
+    const { getByTestId, getByText } = render(<ManageNewsfeedScreen />);
+
+    // Open add news modal
+    fireEvent.press(getByTestId('add-news-button'));
+
+    // Fill in the form
+    fireEvent.changeText(getByTestId('title-input'), 'Test Title');
+    fireEvent.changeText(getByTestId('content-input'), 'Test Content');
+
+    // Submit the form
+    const submitButton = getByText('Add to newsfeed');
+    fireEvent.press(submitButton);
+
+    await waitFor(() => {
+      expect(createNews).toHaveBeenCalledWith(
+        expect.objectContaining({
+          SenderID: 'landlord', // Verify fallback ID is used
+        }),
       );
     });
   });

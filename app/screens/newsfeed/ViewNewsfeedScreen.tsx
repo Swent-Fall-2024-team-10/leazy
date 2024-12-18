@@ -65,7 +65,7 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
     return unique;
   }, []);
 
-  // Enhanced sorting logic: urgent first, then unread, then by date
+  // sorting logic: urgent first, then unread, then by date
   const sortedNews = [...deduplicatedNews].sort((a, b) => {
     // First sort by urgent status
     if (a.type === 'urgent' && b.type !== 'urgent') return -1;
@@ -218,7 +218,7 @@ const NewsfeedScreen = () => {
         if (duplicates.length > 0) {
           console.log('Deleting duplicate news items:', duplicates.length);
           const deletePromises = duplicates.map(
-            (id) => deleteNews(id), // You'll need to create this function in your firestore.ts
+            (id) => deleteNews(id), 
           );
           await Promise.all(deletePromises);
         }

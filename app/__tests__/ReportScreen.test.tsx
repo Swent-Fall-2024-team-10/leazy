@@ -92,6 +92,7 @@ jest.mock('../../firebase/firebase', () => ({
     getTenant: jest.fn(),
     updateTenant: jest.fn(),
     updateMaintenanceRequest: jest.fn(),
+    updateApartment: jest.fn(),
   }));
   
   jest.mock('firebase/firestore', () => ({
@@ -293,29 +294,48 @@ const mockUpdateMaintenanceRequest = FirestoreModule.updateMaintenanceRequest as
   });
   
   it('handles successful submission with pictures', async () => {
+    // Mock all required Firebase functions
     const mockNavigate = jest.fn();
     jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
       navigate: mockNavigate
     });
-  
+
+    // Mock updateApartment function
+    jest.mock('../../firebase/firestore/firestore', () => ({
+      ...jest.requireActual('../../firebase/firestore/firestore'),
+      updateApartment: jest.fn().mockResolvedValue(undefined),
+    }));
+
     const { getByTestId } = render(<ReportScreen />);
     
+    // Fill in form fields
     fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
     fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
-  
+
+    // Mock file blob
     const mockBlob = new Blob(['test'], { type: 'image/jpeg' });
     (CacheUtils.getFileBlob as jest.Mock).mockResolvedValue(mockBlob);
     
+    // Mock Firebase storage operations
+    const mockStorageRef = { toString: () => 'storage-ref' };
+    const mockUploadResult = {};
+    const mockDownloadURL = 'test-url';
+    
+    require('firebase/storage').ref.mockReturnValue(mockStorageRef);
+    require('firebase/storage').uploadBytes.mockResolvedValue(mockUploadResult);
+    require('firebase/storage').getDownloadURL.mockResolvedValue(mockDownloadURL);
+
+    // Mock Firestore operations
     const mockRequest = { id: 'test-id' };
     const mockFirestore = require('firebase/firestore');
-    mockFirestore.addDoc.mockResolvedValueOnce(mockRequest);
+    mockFirestore.addDoc.mockResolvedValue(mockRequest);
     
     await fireEvent.press(getByTestId('testSubmitButton'));
     
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith('Success', 'Your maintenance request has been submitted.');
-    }, { timeout: 3000 });
+    });
   });
 });
 

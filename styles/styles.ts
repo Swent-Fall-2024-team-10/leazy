@@ -143,17 +143,11 @@ export const Color = {
   GrayGroupMargin: '#A3A3A3CC',
   GrayGroupBackground: '#f2f2f2',
 
-
   IssueTextBackground: "#FFFFFF",
   CancelColor: "#E74C3C",
   ShadowColor: "#171717",
 
   GrayText: '#666666',
-
-  IssueTextBackground: '#FFFFFF',
-  CancelColor: '#E74C3C',
-  ShadowColor: '#171717',
-
   HeaderText: "#0f5257",
   HeaderBackground: "#e9d5ff",
   ScreenHeader: "#0f5257",

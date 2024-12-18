@@ -216,7 +216,11 @@ export const layoutCreationStyles = StyleSheet.create({
         marginBottom: "10%",
         marginTop: "10%",
     },
+});
 
-      
+export const reportConsStyles = StyleSheet.create({
+  screenContainer: {
+    marginTop : '10%'
+  }
 
 });

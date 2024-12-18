@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  useNavigation,
-  NavigationProp,
   useFocusEffect,
+  useScrollToTop,
 } from '@react-navigation/native';
 import {
   View,
@@ -133,15 +132,16 @@ export function PickerGroup({
   label,
   data,
   chosed,
-  testID,
   setValue,
 }: {
-  testID: string;
   label: string;
   data: PickerItem[];
   chosed: any;
   setValue: (value: any) => void;
 }) {
+
+  const pickerLabel = 'Select ' + label;
+
   return (
     <View
       style={[
@@ -156,7 +156,7 @@ export function PickerGroup({
           onValueChange={(value) => setValue(value)}
           items={data}
           value={chosed}
-          placeholder={{ label }}
+          placeholder={{label: pickerLabel, value: null}}
           style={pickerSelectStyles}
         />
       </View>
@@ -346,15 +346,17 @@ export default function SituationReportScreen({
   const { landlord } = useAuth();
 
   useEffect(() => {
-    if (landlord) {
-      fetchResidences(landlord, setResidencesMappedToName);
-    }
-
     if (selectedResidence !== '' && selectedResidence !== undefined) {
-      fetchApartmentNames(selectedResidence, setApartmentMappedToName);
-      fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
+        if (landlord) {
+          fetchResidences(landlord, setResidencesMappedToName);
+        }
+        
+        if (selectedResidence !== '' && selectedResidence !== undefined) {
+          fetchApartmentNames(selectedResidence, setApartmentMappedToName);
+          fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
+        }
     }
-    
+      
   }, [landlord?.residenceIds, selectedResidence]);
 
 
@@ -373,6 +375,7 @@ export default function SituationReportScreen({
   }
 
   const scrollViewRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollViewRef);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -393,18 +396,16 @@ export default function SituationReportScreen({
           removeClippedSubviews={true}
           ref={scrollViewRef}
         >
-          <View style={{ marginBottom: '90%', paddingBottom: '30%' }}>
+          <View style={{  paddingBottom: '25%' }}>
             <Text style={appStyles.screenHeader}>Situation Report Form</Text>
 
             <PickerGroup
-              testID='residence-picker'
               label={'Residence'}
               data={residencesMappedToName}
               chosed={enablePickers ? testPickerResidence : selectedResidence}
               setValue={setSelectedResidence}
             />
             <PickerGroup
-              testID='apartment-picker'
               label={'Apartment'}
               data={apartmentMappedToName}
               chosed={enablePickers ? testPickerApartment : selectedApartment}
@@ -412,7 +413,6 @@ export default function SituationReportScreen({
             />
 
             <PickerGroup
-              testID='layout-picker'
               label={'Situation Report'}
               data={layoutMappedWithName}
               chosed={enablePickers ? testPickerLayout : layout}

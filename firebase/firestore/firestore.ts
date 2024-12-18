@@ -613,14 +613,25 @@ export async function addSituationReportLayout(situationReportLayout: string[], 
 export async function getSituationReport(apartmentId: string) {
   const apartment = await getApartment(apartmentId);
   const situationReportId = apartment?.situationReportId;
-
   if (!situationReportId) {
+    console.log("No situation report found for apartment: ", apartmentId);
     return null;
   }
-  const situationReportRef = doc(db, "situationReports", situationReportId.join('/'));
+  const situationReportRef = doc(db, "filledReports", situationReportId[0]);
   const situationReportSnap = await getDoc(situationReportRef);
 
-  return situationReportSnap.data() as SituationReport;
+  console.log("Situation report found: ", situationReportSnap.data());
+
+  const rawData = situationReportSnap.data();
+
+  const situationReport = rawData?.situationReport;
+
+  if (!situationReport) {
+    console.log("No situation report found for apartment: ", apartmentId);
+    return null;
+  }
+
+  return situationReport;
 }
 
 /**

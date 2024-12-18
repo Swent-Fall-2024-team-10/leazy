@@ -166,7 +166,19 @@ export async function fetchSituationReportLayout(
     }
 }
 
-
+export function filterEmptyElements(
+    layout: [string, [string, number][]][]
+  ): [string, [string, number][]][] {
+    return layout.filter((group) => {
+      const filteredItems = group[1].filter(
+        (item) => item[0] !== "" && Array.isArray(item) && item.length > 0
+      );
+      
+      group[1] = filteredItems;
+      
+      return filteredItems.length > 0;
+    });
+  }
 
 export async function fetchFromDatabase(
   situationReportId: string

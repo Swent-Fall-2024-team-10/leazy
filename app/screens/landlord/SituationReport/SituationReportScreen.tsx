@@ -55,6 +55,7 @@ type GroupedSituationReportProps = {
   ) => void;
   resetState: boolean;
   setReset: (value: boolean) => void;
+  changeAllowed?: boolean;
 };
 
 export function GroupedSituationReport({
@@ -62,6 +63,7 @@ export function GroupedSituationReport({
   changeStatus,
   resetState,
   setReset,
+  changeAllowed = true,
 }: GroupedSituationReportProps) {
 
   // Counter for numbering items across the layout
@@ -95,6 +97,7 @@ export function GroupedSituationReport({
                       changeStatus={changeStatus}
                       resetState={resetState}
                       setReset={setReset}
+                      changeAllowed={changeAllowed}
                     />
                   </View>
                 );
@@ -178,6 +181,7 @@ type SituationReportItemProps = {
     itemIndex: number,
     newStatus: string,
   ) => void;
+  changeAllowed?: boolean;
 };
 
 const STATUS_MAPPING = ['NONE', 'OC', 'NW', 'AW'];
@@ -191,6 +195,7 @@ function SituationReportItem({
   resetState,
   changeStatus,
   setReset,
+  changeAllowed,
 }: SituationReportItemProps) {
   const [checked, setChecked] = useState<number>(currentStatus);
 
@@ -202,6 +207,10 @@ function SituationReportItem({
   }, [resetState]);
 
   function handleCheck(newStatus: number) {
+    if (!changeAllowed) {
+      return;
+    }
+
     if (checked === newStatus) {
       setChecked(0);
       changeStatus(

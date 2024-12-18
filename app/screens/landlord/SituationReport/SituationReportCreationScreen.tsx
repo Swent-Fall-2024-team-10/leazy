@@ -145,7 +145,7 @@ export function SituationReportItem({
     [layout, groupIndex, itemIndex, setLayout],
   );
   const [itemNumber, itemText] = label.split(': ');
-
+  console.log("item number ", groupIndex, "item text", itemIndex);
 
 
   return (
@@ -170,9 +170,9 @@ export function SituationReportItem({
           </Text>
         )}
 
-        <TickingBox checked={(layout[groupIndex][1][itemIndex][1] === 1)} onChange={() => {}} />
-        <TickingBox checked={(layout[groupIndex][1][itemIndex][1] === 2)} onChange={() => {}} />
-        <TickingBox checked={(layout[groupIndex][1][itemIndex][1] === 3)} onChange={() => {}} />
+        <TickingBox checked={false} onChange={() => {}} />
+        <TickingBox checked={false} onChange={() => {}} />
+        <TickingBox checked={false} onChange={() => {}} />
       </View>
     </View>
   );

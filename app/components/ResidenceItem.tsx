@@ -80,6 +80,7 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
       });
     } catch (error) {
       Alert.alert('Error deleting apartment');  
+
     }
   };
 

@@ -21,9 +21,9 @@ export const residenceManagementListStyles = StyleSheet.create({
     height: 40,
     backgroundColor: 'white',
     borderRadius: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
     marginTop: 2,
     width: '90%',
     alignSelf: 'flex-start',
@@ -80,7 +80,9 @@ export const residenceManagementListStyles = StyleSheet.create({
 });
 
 export const ButtonDimensions = {
-  fullWidthButtonWidth: Dimensions.get('window').width * 0.85,
+
+  fullWidthButtonWidth: Dimensions.get("window").width * 0.85,
+
 
   veryLargeButtonWidth: 300,
   veryLargeButtonHeight: 44,
@@ -94,8 +96,10 @@ export const ButtonDimensions = {
   mediumButtonWidth: 200,
   mediumButtonHeight: 44,
 
+
   smallerButtonWidth: 90,
   smallerButtonHeight: 40,
+
 };
 
 export const IconDimension = {
@@ -137,11 +141,13 @@ export const Color = {
   GrayGroupMargin: '#A3A3A3CC',
   GrayGroupBackground: '#f2f2f2',
 
+
+  IssueTextBackground: "#FFFFFF",
+  CancelColor: "#E74C3C",
+  ShadowColor: "#171717",
+
   GrayText: '#666666',
 
-  IssueTextBackground: '#FFFFFF',
-  CancelColor: '#E74C3C',
-  ShadowColor: '#171717',
   HeaderText: "#0f5257",
   HeaderBackground: "#e9d5ff",
   ScreenHeader: "#0f5257",
@@ -169,7 +175,6 @@ export const Color = {
   completed: "#2ECC71",
   rejected: "#95A5A6",
   default: "#95A5A6",
-
 
   // Chat
   chatTitle: "#000000",
@@ -296,9 +301,11 @@ export const appStyles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: Color.GrayGroupMargin /* Purple border */,
     borderRadius: 15 /* Rounded corners */,
-    justifyContent: 'center',
-    padding: '2%',
-    marginBottom: '3%',
+
+    justifyContent: "center",
+    padding: "2%",
+    marginBottom: "3%",
+
   },
   tickingBox: {
     borderRadius: 5,
@@ -458,6 +465,9 @@ export const appStyles = StyleSheet.create({
   // General Screen
   screenContainer: {
     flex: 0.75,
+
+    paddingVertical: "6%",
+
     padding : '6%',
   },
 
@@ -504,8 +514,10 @@ export const appStyles = StyleSheet.create({
   formContainer: {
     alignItems: "center",
     paddingVertical: 20,
-    width: '95%',
-    alignSelf: 'center',
+
+    width: "95%",
+    alignSelf: "center",
+
     marginBottom: 500,
   },
 
@@ -547,7 +559,9 @@ export const appStyles = StyleSheet.create({
     marginBottom: 20,
     width: "90%",
     marginTop: 10,
-    flexDirection: 'row',
+
+    flexDirection: "row",
+
   },
 
   uploadText: {
@@ -671,8 +685,10 @@ export const appStyles = StyleSheet.create({
 
   addResidenceButton: {
     zIndex: 2,
-    position: 'absolute',
-    bottom: '10%',
+
+    position: "absolute",
+    bottom: "35%",
+
     right: 24,
     width: 56,
     height: 56,
@@ -734,7 +750,7 @@ export const appStyles = StyleSheet.create({
   idText: {
     color: Color.TextInputText,
     fontSize: 16,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto"
   },
 
   flatImageContainer: {
@@ -895,6 +911,7 @@ export const stylesForHeaderScreens = StyleSheet.create({
   },
   tickingBox: {
     borderRadius: 5,
+
   }
 });
 
@@ -942,6 +959,7 @@ export const stylesForSnitchMode = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.5,
+
   },
 });
 

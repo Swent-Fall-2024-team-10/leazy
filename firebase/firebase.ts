@@ -25,12 +25,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Firestore setup for React Native with persistence
+// Initialize Firestore with memory cache for React Native
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    cacheSizeBytes: CACHE_SIZE_UNLIMITED, // Optional: Unlimited cache size
-  }),
+  localCache: memoryLocalCache(),
+  experimentalForceLongPolling: true,
 });
+
 export const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });

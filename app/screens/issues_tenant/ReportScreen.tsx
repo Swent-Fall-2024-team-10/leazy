@@ -279,7 +279,10 @@ export default function ReportScreen() {
           <View style={appStyles.submitContainer}>
             <SubmitButton
               disabled={room === "" || description === "" || issue === ""}
-              onPress={handleSubmit}
+              onPress={() => {
+                console.log("Button Pressed!");
+                handleSubmit();
+              }}
               width={ButtonDimensions.mediumButtonWidth}
               height={ButtonDimensions.mediumButtonHeight}
               label="Submit"

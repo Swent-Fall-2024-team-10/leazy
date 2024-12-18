@@ -122,6 +122,7 @@ export default function ReportScreen() {
         picture: pictureURLs,
         requestStatus: "notStarted",
       };
+      Alert.alert("coucou");
       const requestID = await createMaintenanceRequest(newRequest);
 
       Alert.alert("Success", "Your maintenance request has been submitted.");

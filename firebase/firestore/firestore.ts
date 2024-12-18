@@ -36,6 +36,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { auth } from "../../firebase/firebase";
 import { IMessage } from "react-native-gifted-chat";
+import { Alert } from "react-native";
+import { useNetworkStore } from "../../app/stores/NetworkStore";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
@@ -418,14 +420,28 @@ export async function getPendingRequests(): Promise<MaintenanceRequest[]> {
  */
 // Modified to handle both online and offline states
 export async function createMaintenanceRequest(request: MaintenanceRequest) {
-  console.log("coucou");
-  try {
-    console.log("in try");
+  const isOnline = useNetworkStore.getState().isOnline;
+
+  if (!isOnline) {
+    Alert.alert("in offline");
+    const pendingRequest = {
+      ...request,
+      _isPending: true,
+      _localId: `pending_${Date.now()}`,
+      requestID: `pending_${Date.now()}`
+    };
+    await savePendingRequest(pendingRequest);
+    return pendingRequest.requestID;
+  }else try {
+  Alert.alert("in try");
     // Try to add to Firestore first
     const requestID = await addDoc(collection(db, "maintenanceRequests"), request);
+    Alert.alert("in try 2");
     await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+    Alert.alert("in try 3");
     return requestID.id;
   } catch (error) {
+    Alert.alert("in offline condition");
     // If offline or error, save locally
     const pendingRequest = {
       ...request,
@@ -433,7 +449,9 @@ export async function createMaintenanceRequest(request: MaintenanceRequest) {
       _localId: `pending_${Date.now()}`, // Add local ID for tracking
       requestID: `pending_${Date.now()}` // Temporary ID
     };
+    Alert.alert("coucou before");
     await savePendingRequest(pendingRequest);
+    Alert.alert("coucou after");
     return pendingRequest.requestID;
   }
 }
@@ -512,8 +530,10 @@ export async function updateMaintenanceRequest(
   requestID: string,
   request: Partial<MaintenanceRequest>
 ) {
+  Alert.alert("update before");
   const docRef = doc(db, "maintenanceRequests", requestID);
   await updateDoc(docRef, request);
+  Alert.alert("update after");
 }
 
 /**

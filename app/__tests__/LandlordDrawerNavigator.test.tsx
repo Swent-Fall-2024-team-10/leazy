@@ -64,7 +64,7 @@ describe('LandlordDrawerNavigator', () => {
         <LandlordDrawerNavigator />
       </TestWrapper>
     );
-    expect(queryByTestId('drawer-navigator')).toBeTruthy();
+    expect(queryByTestId('landlord-drawer-navigator')).toBeTruthy();
   });
 
   it('contains all expected screens', () => {
@@ -98,7 +98,7 @@ describe('LandlordDrawerNavigator', () => {
       </TestWrapper>
     );
 
-    expect(queryByTestId('drawer-navigator')).toBeTruthy();
+    expect(queryByTestId('landlord-drawer-navigator')).toBeTruthy();
   });
 
   it('handles missing user gracefully', () => {
@@ -115,6 +115,6 @@ describe('LandlordDrawerNavigator', () => {
     );
 
     // Navigator should still render even without user
-    expect(queryByTestId('drawer-navigator')).toBeTruthy();
+    expect(queryByTestId('landlord-drawer-navigator')).toBeTruthy();
   });
 });

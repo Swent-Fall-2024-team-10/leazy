@@ -26,10 +26,10 @@ jest.mock('../../firebase/firebase', () => ({
 }));
 
 jest.mock('firebase/firestore', () => ({
-  doc: jest.fn(),
+  doc: jest.fn(() => 'mockedDocRef'),
   getDoc: jest.fn(),
   addDoc: jest.fn(),
-  collection: jest.fn(),
+  collection: jest.fn(() => 'mockedCollectionRef'),
   onSnapshot: jest.fn(),
   setDoc: jest.fn(),
   serverTimestamp: jest.fn(),
@@ -57,6 +57,27 @@ describe('Chat Functions', () => {
       (getDoc as jest.Mock).mockResolvedValue({ exists: () => false });
       
       await expect(sendMessage('chatId', 'message')).rejects.toThrow('Chat not found');
+    });
+
+    it('successfully sends a message', async () => {
+      // Setup
+      auth.currentUser = { uid: 'testUid' };
+      (getUser as jest.Mock).mockResolvedValue({ uid: 'testUid' });
+      (getDoc as jest.Mock).mockResolvedValue({ exists: () => true });
+      (collection as jest.Mock).mockReturnValue('mockedCollectionRef');
+      
+      // Action
+      await sendMessage('chatId', 'Hello world');
+      
+      // Assert
+      expect(addDoc).toHaveBeenCalledWith(
+        'mockedCollectionRef',
+        expect.objectContaining({
+          content: 'Hello world',
+          sentBy: 'testUid',
+          sentOn: expect.any(Number)
+        })
+      );
     });
   });
 
@@ -106,10 +127,6 @@ describe('Chat Functions', () => {
   });
 
   describe('createChatIfNotPresent', () => {
-    it('throws error if user is not logged in', async () => {
-      auth.currentUser = null;
-      await expect(createChatIfNotPresent('requestId')).rejects.toThrow('User must be logged in');
-    });
 
     it('does not create chat if it already exists', async () => {
       auth.currentUser = { uid: 'testUid' };

@@ -19,7 +19,7 @@ const LandlordDrawerNavigator = () => {
   return (
     <LandlordProvider>
       <Drawer.Navigator
-        testID='drawer-navigator'
+        testID='landlord-drawer-navigator'
         initialRouteName='Dashboard'
         screenOptions={{
           headerShown: false,

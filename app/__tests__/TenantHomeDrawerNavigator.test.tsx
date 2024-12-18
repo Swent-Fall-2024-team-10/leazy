@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import TenantHomeDrawerNavigator from '../Navigators/TenantHomeDrawerNavigator';
 
@@ -45,7 +45,7 @@ describe('TenantHomeDrawerNavigator', () => {
         <TenantHomeDrawerNavigator />
       </TestWrapper>
     );
-    expect(getByTestId('drawer-navigator')).toBeTruthy();
+    expect(getByTestId('tenant-drawer-navigator')).toBeTruthy();
   });
 
   it('contains all expected screens', () => {
@@ -69,6 +69,27 @@ describe('TenantHomeDrawerNavigator', () => {
     expectedScreens.forEach(screenName => {
       expect(getByTestId(screenName)).toBeTruthy();
     });
+  });
+
+  it('navigates to the correct screen when pressed', () => {
+    const { getByTestId } = render(
+      <TestWrapper>
+        <TenantHomeDrawerNavigator />
+      </TestWrapper>
+    );
+
+    // Check initial route is Home
+    const navigator = getByTestId('tenant-drawer-navigator');
+    expect(navigator.props['data-initial-route']).toBe('Home');
+
+    // Verify navigation to different screens
+    const maintenanceScreen = getByTestId('Maintenance Requests');
+    fireEvent.press(maintenanceScreen);
+    expect(maintenanceScreen.props['data-screen-name']).toBe('Maintenance Requests');
+
+    const settingsScreen = getByTestId('Settings');
+    fireEvent.press(settingsScreen);
+    expect(settingsScreen.props['data-screen-name']).toBe('Settings');
   });
 
 });

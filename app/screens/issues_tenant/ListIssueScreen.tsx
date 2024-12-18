@@ -131,12 +131,14 @@ const MaintenanceIssues = () => {
     const lastUpdate = recentUpdatesRef.current[key];
     const now = Date.now();
 
-    if (lastUpdate && now - lastUpdate < 2000) {
-      // 2 second window
+    if (lastUpdate && now - lastUpdate < 5000) {
+      // Increased to 5 seconds
+      console.log('Recent update detected, skipping');
       return true;
     }
 
     recentUpdatesRef.current[key] = now;
+    console.log('No recent update found, proceeding');
     return false;
   };
 
@@ -150,44 +152,55 @@ const MaintenanceIssues = () => {
 
         const query = await getMaintenanceRequestsQuery(userId);
 
+        // Initialize the status tracking ref
+        let isInitialized = false;
+
         const unsubscribe = onSnapshot(query, (querySnapshot) => {
-          const updatedIssues: MaintenanceRequest[] = [];
+          console.log('Snapshot update received');
 
-          querySnapshot.docChanges().forEach((change) => {
-            const newData = change.doc.data() as MaintenanceRequest;
-
-            if (change.type === 'modified' && newData.requestID) {
-              const oldStatus = statusTrackingRef.current[newData.requestID];
-              const newStatus = newData.requestStatus;
-
-              console.log('Status check:', {
-                requestID: newData.requestID,
-                oldStatus,
-                newStatus,
-                isDifferent: oldStatus !== newStatus,
-              });
-
-              if (
-                oldStatus &&
-                oldStatus !== newStatus &&
-                !hasRecentlyUpdated(newData.requestID, newStatus)
-              ) {
-                console.log('Creating news for status change');
-                createStatusChangeNews(newData, userId);
+          // One-time initialization of status tracking
+          if (!isInitialized) {
+            querySnapshot.docs.forEach((doc) => {
+              const data = doc.data() as MaintenanceRequest;
+              if (data.requestID) {
+                statusTrackingRef.current[data.requestID] = data.requestStatus;
               }
+            });
+            isInitialized = true;
+            return; // Skip processing changes during initialization
+          }
 
+          // Process only modified changes
+          querySnapshot.docChanges().forEach((change) => {
+            if (change.type !== 'modified') return;
+
+            const newData = change.doc.data() as MaintenanceRequest;
+            if (!newData.requestID) return;
+
+            const oldStatus = statusTrackingRef.current[newData.requestID];
+            const newStatus = newData.requestStatus;
+
+            console.log('Processing status change:', {
+              requestID: newData.requestID,
+              oldStatus,
+              newStatus,
+            });
+
+            if (
+              oldStatus &&
+              oldStatus !== newStatus &&
+              !hasRecentlyUpdated(newData.requestID, newStatus)
+            ) {
+              console.log('Creating single news item');
+              createStatusChangeNews(newData, userId);
               statusTrackingRef.current[newData.requestID] = newStatus;
-            } else if (change.type === 'added' && newData.requestID) {
-              statusTrackingRef.current[newData.requestID] =
-                newData.requestStatus;
             }
           });
 
-          querySnapshot.forEach((doc) => {
-            const data = doc.data() as MaintenanceRequest;
-            updatedIssues.push(data);
-          });
-
+          // Update the issues state
+          const updatedIssues = querySnapshot.docs.map(
+            (doc) => doc.data() as MaintenanceRequest,
+          );
           setIssues(updatedIssues);
         });
 

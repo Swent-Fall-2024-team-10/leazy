@@ -17,6 +17,7 @@ import { News } from '../../../types/types';
 import {
   getNewsByReceiver,
   markNewsAsRead,
+  deleteNews,
 } from '../../../firebase/firestore/firestore';
 import { useAuth } from '../../context/AuthContext';
 
@@ -48,8 +49,23 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
   // Filter out posts that were read more than an hour ago
   const visibleNews = news.filter(isPostVisible);
 
+  // Deduplicate news items
+  const deduplicatedNews = visibleNews.reduce((unique: News[], item) => {
+    // Check if we already have a news item with the same content and timestamp
+    const isDuplicate = unique.some(
+      (existingItem) =>
+        existingItem.content === item.content &&
+        existingItem.createdAt.seconds === item.createdAt.seconds,
+    );
+
+    if (!isDuplicate) {
+      unique.push(item);
+    }
+    return unique;
+  }, []);
+
   // Enhanced sorting logic: urgent first, then unread, then by date
-  const sortedNews = [...visibleNews].sort((a, b) => {
+  const sortedNews = [...deduplicatedNews].sort((a, b) => {
     // First sort by urgent status
     if (a.type === 'urgent' && b.type !== 'urgent') return -1;
     if (a.type !== 'urgent' && b.type === 'urgent') return 1;
@@ -183,15 +199,54 @@ const NewsfeedScreen = () => {
 
   const fetchNews = async () => {
     if (!tenant) return;
-
+  
     try {
       const [generalNewsItems, personalNewsItems] = await Promise.all([
         getNewsByReceiver('all'),
-        getNewsByReceiver(tenant.userId), // Use tenant's userId from context
+        getNewsByReceiver(tenant.userId),
       ]);
-
-      setGeneralNews(generalNewsItems);
-      setPersonalNews(personalNewsItems);
+  
+      // Function to find and delete duplicates
+      const deduplicateNewsInFirestore = async (newsItems: News[]) => {
+        const seen = new Map<string, News>();
+        const duplicates: string[] = [];
+  
+        // Group by content and timestamp
+        newsItems.forEach((item) => {
+          const key = `${item.content}_${item.createdAt.seconds}`;
+          if (!seen.has(key)) {
+            seen.set(key, item);
+          } else {
+            // Keep the older item (by maintenanceRequestID)
+            const existingItem = seen.get(key)!;
+            if (existingItem.maintenanceRequestID > item.maintenanceRequestID) {
+              duplicates.push(existingItem.maintenanceRequestID);
+              seen.set(key, item);
+            } else {
+              duplicates.push(item.maintenanceRequestID);
+            }
+          }
+        });
+  
+        // Delete duplicates from Firestore
+        if (duplicates.length > 0) {
+          console.log('Deleting duplicate news items:', duplicates.length);
+          const deletePromises = duplicates.map((id) => 
+            deleteNews(id)  // You'll need to create this function in your firestore.ts
+          );
+          await Promise.all(deletePromises);
+        }
+  
+        // Return deduplicated array
+        return Array.from(seen.values());
+      };
+  
+      // Deduplicate and update state
+      const deduplicatedGeneralNews = await deduplicateNewsInFirestore(generalNewsItems);
+      const deduplicatedPersonalNews = await deduplicateNewsInFirestore(personalNewsItems);
+  
+      setGeneralNews(deduplicatedGeneralNews);
+      setPersonalNews(deduplicatedPersonalNews);
     } catch (error) {
       console.error('Error fetching news:', error);
     }

@@ -353,6 +353,45 @@ export function AddItemButton({
   );
 }
 
+
+export function SituationReportLabel() {
+  return (
+  <View style={situationReportStyles.layoutCreationSeparationLine}>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ marginBottom: '2%' }}>
+        <Text testID='OC-description'>OC = Original Condition </Text>
+        <Text testID='NW-description'>NW = Natural Wear</Text>
+        <Text testID='AW-description'>AW = Abnormal Wear</Text>
+      </View>
+
+      <View style={situationReportStyles.labels}>
+        <Text
+          testID='OC-tag'
+          style={situationReportStyles.wearStatus}
+        >
+          OC
+        </Text>
+        <Text
+          testID='NW-tag'
+          style={situationReportStyles.wearStatus}
+        >
+          NW
+        </Text>
+        <Text
+          testID='AW-tag'
+          style={situationReportStyles.wearStatus}
+        >
+          AW
+        </Text>
+      </View>
+    </View>
+
+    <StraightLine />
+  </View>
+  )
+
+}
+
 export default function SituationReportCreation() {
   const navigation = useNavigation();
   const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
@@ -450,39 +489,8 @@ export default function SituationReportCreation() {
                 />
               </View>
             </View>
-
-            <View style={situationReportStyles.layoutCreationSeparationLine}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ marginBottom: '2%' }}>
-                  <Text testID='OC-description'>OC = Original Condition </Text>
-                  <Text testID='NW-description'>NW = Natural Wear</Text>
-                  <Text testID='AW-description'>AW = Abnormal Wear</Text>
-                </View>
-
-                <View style={situationReportStyles.labels}>
-                  <Text
-                    testID='OC-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    OC
-                  </Text>
-                  <Text
-                    testID='NW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    NW
-                  </Text>
-                  <Text
-                    testID='AW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    AW
-                  </Text>
-                </View>
-              </View>
-
-              <StraightLine />
-            </View>
+            
+            <SituationReportLabel />
 
             {editMode ? (
               <View style={layoutCreationStyles.cancelOrSaveContainer}>

@@ -32,6 +32,7 @@ import {
   situationReportStyles,
 } from '../../../../styles/SituationReportStyling';
 import { useAuth } from '../../../context/AuthContext';
+import { SituationReportLabel } from './SituationReportCreationScreen';
 
 enum enumStatus {
   OC = 1,
@@ -454,42 +455,8 @@ export default function SituationReportScreen({
               testIDSurname='leaving-tenant-surname'
             />
 
-            <View style={situationReportStyles.lineContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ marginBottom: '2%' }}>
-                  <Text testID='OC-description'>OC = Original Condition </Text>
-                  <Text testID='NW-description'>NW = Natural Wear</Text>
-                  <Text testID='AW-description'>AW = Abnormal Wear</Text>
-                </View>
-
-                <View style={situationReportStyles.labels}>
-                  <Text
-                    testID='OC-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    OC
-                  </Text>
-                  <Text
-                    testID='NW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    NW
-                  </Text>
-                  <Text
-                    testID='AW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    AW
-                  </Text>
-                </View>
-              </View>
-
-              <StraightLine />
-            </View>
-              
-
-
-
+            <SituationReportLabel />
+          
             { layout?.length > 0 ? (
 
               <GroupedSituationReport

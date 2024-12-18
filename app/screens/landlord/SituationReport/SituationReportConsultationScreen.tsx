@@ -52,7 +52,7 @@ export default function SituationReportConsultationScreen() {
         <ScrollView>
             <View style={{ marginBottom: '50%', paddingBottom: '30%' }}>
 
-                <View style={appStyles.backButton}>
+                <View>
                     <TouchableOpacity
                         testID='go-back-button'
                         onPress={() => {

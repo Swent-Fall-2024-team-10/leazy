@@ -20,51 +20,63 @@ import {
 } from '../../../types/types';
 import { useAuth } from '../../context/AuthContext';
 import { useProperty } from '../../context/LandlordContext';
-import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useNavigation,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { Color } from '../../../styles/styles';
 import {
   getIssueStatusColor,
   getIssueStatusText,
 } from '../../../app/utils/StatusHelper';
-
+import { stylesForLandlordListIssues } from '../../../styles/styles';
 // Shared constants
 const FILTER_OPTIONS = {
   status: ['all', 'notStarted', 'inProgress', 'completed'],
 };
 
 // Reusable Filter Chip component
-const FilterChip = ({ 
-  label, 
-  selected, 
-  onPress, 
-  testID 
-}: { 
-  label: string; 
-  selected: boolean; 
-  onPress: () => void; 
+const FilterChip = ({
+  label,
+  selected,
+  onPress,
+  testID,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
   testID?: string;
 }) => (
   <TouchableOpacity
     testID={testID}
-    style={[styles.filterChip, selected && styles.filterChipSelected]}
+    style={[
+      stylesForLandlordListIssues.filterChip,
+      selected && stylesForLandlordListIssues.filterChipSelected,
+    ]}
     onPress={onPress}
   >
-    <Text style={[styles.filterChipText, selected && styles.filterChipTextSelected]}>
+    <Text
+      style={[
+        stylesForLandlordListIssues.filterChipText,
+        selected && stylesForLandlordListIssues.filterChipTextSelected,
+      ]}
+    >
       {label === 'all' ? 'All' : label}
     </Text>
   </TouchableOpacity>
 );
 
 // Reusable Filter Section component
-const FilterSection = ({ 
-  label, 
-  children 
-}: { 
-  label: string; 
+const FilterSection = ({
+  label,
+  children,
+}: {
+  label: string;
   children: React.ReactNode;
 }) => (
-  <View style={styles.filterSection}>
-    <Text style={styles.filterLabel}>{label}:</Text>
+  <View style={stylesForLandlordListIssues.filterSection}>
+    <Text style={stylesForLandlordListIssues.filterLabel}>{label}:</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       {children}
     </ScrollView>
@@ -72,37 +84,37 @@ const FilterSection = ({
 );
 
 // Issue Item component
-const IssueItem = ({ 
-  issue, 
-  onPress 
-}: { 
-  issue: MaintenanceRequest; 
+const IssueItem = ({
+  issue,
+  onPress,
+}: {
+  issue: MaintenanceRequest;
   onPress: () => void;
 }) => (
   <TouchableOpacity
-    style={styles.issueItem}
+    style={stylesForLandlordListIssues.issueItem}
     onPress={onPress}
     testID={`issue-${issue.requestID}`}
   >
-    <View style={styles.issueContent}>
-      <View style={styles.issueTextContainer}>
-        <Text style={styles.issueText} numberOfLines={1}>
+    <View style={stylesForLandlordListIssues.issueContent}>
+      <View style={stylesForLandlordListIssues.issueTextContainer}>
+        <Text style={stylesForLandlordListIssues.issueText} numberOfLines={1}>
           {issue.requestTitle}
         </Text>
       </View>
       <View
         style={[
-          styles.statusTextContainer,
+          stylesForLandlordListIssues.statusTextContainer,
           { backgroundColor: getIssueStatusColor(issue.requestStatus) },
         ]}
       >
-        <Text style={styles.statusText}>
+        <Text style={stylesForLandlordListIssues.statusText}>
           Status: {getIssueStatusText(issue.requestStatus)}
         </Text>
       </View>
     </View>
-    <View style={styles.arrowButton}>
-      <Feather name="chevron-right" size={24} color="black" />
+    <View style={stylesForLandlordListIssues.arrowButton}>
+      <Feather name='chevron-right' size={24} color='black' />
     </View>
   </TouchableOpacity>
 );
@@ -124,29 +136,35 @@ const LandlordListIssuesScreen: React.FC = () => {
     throw new Error('User not found.');
   }
 
-  const refreshIssues = () => setRefreshTrigger(prev => prev + 1);
+  const refreshIssues = () => setRefreshTrigger((prev) => prev + 1);
 
   useEffect(() => {
     const fetchIssues = async () => {
       try {
         const allIssues: MaintenanceRequest[] = [];
-        
+
         for (const residence of residences) {
           const tenantsForResidence = await Promise.all(
-            residence.tenantIds.map(getTenant)
+            residence.tenantIds.map(getTenant),
           );
-          
-          const validTenants = tenantsForResidence.filter((tenant): tenant is Tenant => tenant !== null);
-          
+
+          const validTenants = tenantsForResidence.filter(
+            (tenant): tenant is Tenant => tenant !== null,
+          );
+
           for (const tenant of validTenants) {
             const requests = await Promise.all(
-              tenant.maintenanceRequests.map(getMaintenanceRequest)
+              tenant.maintenanceRequests.map(getMaintenanceRequest),
             );
-            
-            allIssues.push(...requests.filter((req): req is MaintenanceRequest => req !== null));
+
+            allIssues.push(
+              ...requests.filter(
+                (req): req is MaintenanceRequest => req !== null,
+              ),
+            );
           }
         }
-        
+
         setIssues(allIssues);
       } catch (error) {
         console.error('Error fetching issues data:', error);
@@ -160,22 +178,28 @@ const LandlordListIssuesScreen: React.FC = () => {
 
   const filterIssues = (issue: MaintenanceRequest) => {
     if (!showArchived && issue.requestStatus === 'completed') return false;
-    if (selectedStatus !== 'all' && issue.requestStatus !== selectedStatus) return false;
-    if (selectedResidenceId !== 'all' && issue.residenceId !== selectedResidenceId) return false;
+    if (selectedStatus !== 'all' && issue.requestStatus !== selectedStatus)
+      return false;
+    if (
+      selectedResidenceId !== 'all' &&
+      issue.residenceId !== selectedResidenceId
+    )
+      return false;
     return true;
   };
 
   const toggleResidenceExpansion = (residenceId: string) => {
-    setExpandedResidences(prev =>
+    setExpandedResidences((prev) =>
       prev.includes(residenceId)
-        ? prev.filter(id => id !== residenceId)
-        : [...prev, residenceId]
+        ? prev.filter((id) => id !== residenceId)
+        : [...prev, residenceId],
     );
   };
 
-  const displayedResidences = selectedResidenceId === 'all'
-    ? residences
-    : residences.filter(residence => residence.id === selectedResidenceId);
+  const displayedResidences =
+    selectedResidenceId === 'all'
+      ? residences
+      : residences.filter((residence) => residence.id === selectedResidenceId);
 
   const resetFilters = () => {
     setSelectedStatus('all');
@@ -184,37 +208,44 @@ const LandlordListIssuesScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={stylesForLandlordListIssues.container}>
       <Header>
-        <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: '85%' }}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Maintenance issues</Text>
+        <ScrollView
+          style={stylesForLandlordListIssues.scrollView}
+          contentContainerStyle={{ paddingBottom: '85%' }}
+        >
+          <View style={stylesForLandlordListIssues.titleContainer}>
+            <Text style={stylesForLandlordListIssues.title}>
+              Maintenance issues
+            </Text>
           </View>
 
-          <View style={styles.switchContainer}>
+          <View style={stylesForLandlordListIssues.switchContainer}>
             <Text>Archived issues</Text>
             <Switch
-              style={styles.switch}
+              style={stylesForLandlordListIssues.switch}
               value={showArchived}
               onValueChange={setShowArchived}
-              testID="archivedSwitch"
+              testID='archivedSwitch'
             />
             <TouchableOpacity
               onPress={() => setFilterVisible(!filterVisible)}
-              style={styles.filterButton}
-              testID="filterSection"
+              style={stylesForLandlordListIssues.filterButton}
+              testID='filterSection'
             >
-              <Feather name="filter" size={24} color="black" />
-              <Text style={styles.filterText}>Filter</Text>
+              <Feather name='filter' size={24} color='black' />
+              <Text style={stylesForLandlordListIssues.filterText}>Filter</Text>
             </TouchableOpacity>
           </View>
 
           {filterVisible && (
-            <View style={styles.filterOptions}>
-              <Text style={styles.filterTitle}>Sort by...</Text>
+            <View style={stylesForLandlordListIssues.filterOptions}>
+              <Text style={stylesForLandlordListIssues.filterTitle}>
+                Sort by...
+              </Text>
 
-              <FilterSection label="Status">
-                {FILTER_OPTIONS.status.map(status => (
+              <FilterSection label='Status'>
+                {FILTER_OPTIONS.status.map((status) => (
                   <FilterChip
                     key={status}
                     label={status}
@@ -225,13 +256,13 @@ const LandlordListIssuesScreen: React.FC = () => {
                 ))}
               </FilterSection>
 
-              <FilterSection label="Residence">
+              <FilterSection label='Residence'>
                 <FilterChip
-                  label="All Residences"
+                  label='All Residences'
                   selected={selectedResidenceId === 'all'}
                   onPress={() => setSelectedResidenceId('all')}
                 />
-                {residences.map(residence => (
+                {residences.map((residence) => (
                   <FilterChip
                     key={residence.id}
                     label={residence.residenceName}
@@ -243,42 +274,56 @@ const LandlordListIssuesScreen: React.FC = () => {
               </FilterSection>
 
               <TouchableOpacity
-                style={styles.resetButton}
+                style={stylesForLandlordListIssues.resetButton}
                 onPress={resetFilters}
               >
-                <Text style={styles.resetButtonText}>Reset Filters</Text>
+                <Text style={stylesForLandlordListIssues.resetButtonText}>
+                  Reset Filters
+                </Text>
               </TouchableOpacity>
             </View>
           )}
 
-          <View style={styles.residenceList}>
-            {displayedResidences.map(residence => (
+          <View style={stylesForLandlordListIssues.residenceList}>
+            {displayedResidences.map((residence) => (
               <View key={residence.id}>
                 <TouchableOpacity
-                  style={styles.residenceHeader}
+                  style={stylesForLandlordListIssues.residenceHeader}
                   onPress={() => toggleResidenceExpansion(residence.id)}
-                  testID="residenceButton"
+                  testID='residenceButton'
                 >
-                  <Text style={styles.residenceName}>{residence.residenceName}</Text>
+                  <Text style={stylesForLandlordListIssues.residenceName}>
+                    {residence.residenceName}
+                  </Text>
                   <Feather
-                    name={expandedResidences.includes(residence.id) ? 'chevron-up' : 'chevron-down'}
+                    name={
+                      expandedResidences.includes(residence.id)
+                        ? 'chevron-up'
+                        : 'chevron-down'
+                    }
                     size={24}
-                    color="black"
+                    color='black'
                   />
                 </TouchableOpacity>
 
                 {expandedResidences.includes(residence.id) && (
-                  <View style={styles.issuesContainer}>
+                  <View style={stylesForLandlordListIssues.issuesContainer}>
                     {issues
-                      .filter(issue => issue.residenceId === residence.id && filterIssues(issue))
-                      .map(issue => (
+                      .filter(
+                        (issue) =>
+                          issue.residenceId === residence.id &&
+                          filterIssues(issue),
+                      )
+                      .map((issue) => (
                         <IssueItem
                           key={issue.requestID}
                           issue={issue}
-                          onPress={() => navigation.navigate('IssueDetails', {
-                            requestID: issue.requestID,
-                            source: 'LandlordListIssues',
-                          })}
+                          onPress={() =>
+                            navigation.navigate('IssueDetails', {
+                              requestID: issue.requestID,
+                              source: 'LandlordListIssues',
+                            })
+                          }
                         />
                       ))}
                   </View>
@@ -291,170 +336,5 @@ const LandlordListIssuesScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-    paddingTop: 15,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    textAlign: 'center',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    alignItems: 'center',
-  },
-  switch: {
-    marginLeft: 8,
-    marginRight: 48,
-    marginBottom: 8,
-    marginTop: 8,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 10,
-  },
-  filterText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: '#2C3E50',
-  },
-  filterOptions: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  applyButton: {
-    marginTop: 10,
-    textAlign: 'center',
-    color: '#2C3E50',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  residenceList: {
-    paddingHorizontal: 16,
-  },
-  residenceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#EDEDED',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  residenceName: {
-    fontSize: 18,
-    color: '#2C3E50',
-  },
-  issuesContainer: {
-    paddingLeft: 16,
-    marginTop: 8,
-  },
-  issueItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: Color.IssueBackground,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: Color.IssueBorder,
-    width: 340,
-    height: 110,
-    marginBottom: '2%',
-    padding: '4%',
-  },
-  issueContent: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flex: 1,
-  },
-  issueTextContainer: {
-    width: '100%',
-    height: 32,
-    borderRadius: 25,
-    backgroundColor: Color.IssueTextBackground,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-  },
-  issueText: {
-    fontSize: 16,
-    color: Color.TextInputText,
-  },
-  statusTextContainer: {
-    borderRadius: 25,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    alignSelf: 'flex-start',
-    marginTop: '8%',
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-  },
-  arrowButton: {
-    marginLeft: '4%',
-    width: '15%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  filterSection: {
-    marginBottom: 16,
-  },
-  filterLabel: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  filterChip: {
-    backgroundColor: '#EDEDED',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  filterChipSelected: {
-    backgroundColor: '#2C3E50',
-  },
-  filterChipText: {
-    color: '#2C3E50',
-  },
-  filterChipTextSelected: {
-    color: '#FFFFFF',
-  },
-  resetButton: {
-    backgroundColor: Color.ButtonBackground,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  resetButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-});
 
 export default LandlordListIssuesScreen;

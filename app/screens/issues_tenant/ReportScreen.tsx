@@ -77,10 +77,7 @@ export default function ReportScreen() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    console.log("bd handle");
-
     try {
-      console.log("in handle");
       if (!user) {
         throw new Error("User not found");
       }
@@ -122,7 +119,6 @@ export default function ReportScreen() {
         picture: pictureURLs,
         requestStatus: "notStarted",
       };
-      Alert.alert("coucou");
       const requestID = await createMaintenanceRequest(newRequest);
 
       Alert.alert("Success", "Your maintenance request has been submitted.");
@@ -138,7 +134,6 @@ export default function ReportScreen() {
       }
     
     } catch (error) {
-      console.log("huh");
       Alert.alert(
         "Error",
         "There was an error submitting your request. It will be synced when you're back online.",

@@ -35,6 +35,7 @@ import { auth } from "../../firebase/firebase";
 import { IMessage } from "react-native-gifted-chat";
 import { Alert } from "react-native";
 import { useNetworkStore } from "../../app/stores/NetworkStore";
+import { useState } from "react";
 
 // Generic function to get a document with offline support
 async function getDocumentWithOfflineSupport<T>(
@@ -448,7 +449,16 @@ export async function getMaintenanceRequestsQuery(userID: string) {
   return q;
 }
 
+let syncTimeout: NodeJS.Timeout | null = null;
+
 export async function syncPendingRequests() {
+  // Clear any existing timer
+  if (syncTimeout) {
+    clearTimeout(syncTimeout);
+  }
+
+  // Set new timer
+  syncTimeout = setTimeout(async () => {
   const isOnline = useNetworkStore.getState().isOnline;
   if (!isOnline) return;
 
@@ -472,7 +482,7 @@ export async function syncPendingRequests() {
     await AsyncStorage.setItem('pendingMaintenanceRequests', JSON.stringify([]));
   } catch (error) {
     console.error('Error syncing pending requests:', error);
-  }
+  }}, 3000);  // 3 secondes de délai
 }
 
 export async function updateMaintenanceRequest(

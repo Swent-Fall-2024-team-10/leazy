@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Header from "../../components/Header";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useNavigation, NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { ReportStackParamList, MaintenanceRequest } from "../../../types/types"; // Assuming this also includes navigation types
 import {
   updateMaintenanceRequest,
@@ -81,11 +81,83 @@ const MaintenanceIssues = () => {
   const [issues, setIssues] = useState<MaintenanceRequest[]>([]);
   const [showArchived, setShowArchived] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+
 
   const auth = getAuth();
   const user = auth.currentUser;
   const userId = user ? user.uid : null;
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (userId) {
+        fetchIssues();
+      }
+    }, [userId])
+  );
+
+    // Function to handle syncing - now returns a promise
+  const handleSync = async () => {
+    if (isSyncing) return;
+    
+    try {
+      setIsSyncing(true);
+      await syncPendingRequests();
+      // Remove the onSnapshot here - we don't need it because fetchIssues already has one
+      // await fetchIssues();
+    } catch (error) {
+      console.error("Sync error:", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Set up Firestore listener and merge with pending requests
+  const fetchIssues = async () => {
+    if (!userId) return () => {};
+
+    try {
+      const query = await getMaintenanceRequestsQuery(userId);
+      
+      // Set up real-time listener for Firestore
+      const unsubscribe = onSnapshot(query, 
+        async (querySnapshot) => {
+          const firestoreIssues = querySnapshot.docs.map(doc => ({
+            ...doc.data(),
+            requestID: doc.id
+          })) as MaintenanceRequest[];
+
+          // Get pending requests
+      const pendingRequests = await getPendingRequests();
+    
+      // Ne garder que les pending requests qui n'ont pas leur équivalent dans Firestore
+      const filteredPendingRequests = pendingRequests.filter(pending => 
+        !firestoreIssues.some(fire => 
+          fire.requestTitle === pending.requestTitle && 
+          fire.requestDescription === pending.requestDescription &&
+          fire.tenantId === pending.tenantId
+        )
+      );
+
+      // Merge and set all issues
+      setIssues([...firestoreIssues, ...filteredPendingRequests]);
+        },
+        (error) => {
+          console.error("Firestore error:", error);
+          // On error, just load pending requests
+          getPendingRequests().then(setIssues);
+        }
+      );
+
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up listeners:", error);
+      // If initial setup fails, load pending requests
+      const pendingRequests = await getPendingRequests();
+      setIssues(pendingRequests);
+      return () => {};  // return no-op cleanup si erreur
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -94,49 +166,19 @@ const MaintenanceIssues = () => {
     const unsubscribeNetInfo = NetInfo.addEventListener(state => {
       setIsOnline(!!state.isConnected);
       if (state.isConnected) {
-        syncPendingRequests().catch(console.error);
+        handleSync().catch(console.error);
       }
     });
 
-    // Set up Firestore listener and merge with pending requests
-    const fetchIssues = async () => {
-      try {
-        const query = await getMaintenanceRequestsQuery(userId);
-        
-        // Set up real-time listener for Firestore
-        const unsubscribe = onSnapshot(query, 
-          async (querySnapshot) => {
-            const firestoreIssues = querySnapshot.docs.map(doc => ({
-              ...doc.data(),
-              requestID: doc.id
-            })) as MaintenanceRequest[];
-
-            // Get pending requests
-            const pendingRequests = await getPendingRequests();
-            
-            // Merge and set all issues
-            setIssues([...firestoreIssues, ...pendingRequests]);
-          },
-          (error) => {
-            console.error("Firestore error:", error);
-            // On error, just load pending requests
-            getPendingRequests().then(setIssues);
-          }
-        );
-
-        return () => {
-          unsubscribe();
-          unsubscribeNetInfo();
-        };
-      } catch (error) {
-        console.error("Error setting up listeners:", error);
-        // If initial setup fails, load pending requests
-        const pendingRequests = await getPendingRequests();
-        setIssues(pendingRequests);
-      }
+    const setupListeners = async () => {
+      const unsubscribeFirestore = await fetchIssues();
+      return () => {
+        unsubscribeFirestore();
+        unsubscribeNetInfo();
+      };
     };
 
-    fetchIssues();
+    setupListeners();
   }, [userId]);
 
   const archiveIssue = (requestID: string) => {

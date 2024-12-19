@@ -9,6 +9,7 @@ import {
   Platform,
   Image,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { Bell, Info, ChevronDown, ChevronUp } from 'lucide-react-native';
 import Header from '../../../app/components/Header';
@@ -216,11 +217,17 @@ const NewsfeedScreen = () => {
 
         // Delete duplicates from Firestore
         if (duplicates.length > 0) {
-          console.log('Deleting duplicate news items:', duplicates.length);
-          const deletePromises = duplicates.map(
-            (id) => deleteNews(id), 
-          );
-          await Promise.all(deletePromises);
+          try {
+            console.log('Deleting duplicate news items:', duplicates.length);
+            const deletePromises = duplicates.map((id) => deleteNews(id));
+            await Promise.all(deletePromises);
+          } catch (error) {
+            Alert.alert(
+              'Warning',
+              "Some duplicate news items could not be removed. This won't affect your experience.",
+              [{ text: 'OK' }],
+            );
+          }
         }
 
         // Return deduplicated array
@@ -236,6 +243,11 @@ const NewsfeedScreen = () => {
       setGeneralNews(deduplicatedGeneralNews);
       setPersonalNews(deduplicatedPersonalNews);
     } catch (error) {
+      Alert.alert(
+        'Error',
+        'Failed to fetch news. Please pull down to refresh and try again.',
+        [{ text: 'OK' }],
+      );
       console.error('Error fetching news:', error);
     }
   };
@@ -268,7 +280,21 @@ const NewsfeedScreen = () => {
       } else {
         setPersonalNews(updateNews);
       }
+
+      // Show success alert for urgent news
+      if (news.type === 'urgent') {
+        Alert.alert(
+          'Important Notice Acknowledged',
+          'You have marked this urgent notification as read.',
+          [{ text: 'OK' }],
+        );
+      }
     } catch (error) {
+      Alert.alert(
+        'Error',
+        'Failed to mark notification as read. Please try again.',
+        [{ text: 'OK' }],
+      );
       console.error('Error marking news as read:', error);
     } finally {
       setIsUpdating(false);
@@ -364,7 +390,6 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 10,
   },
-
   expandButton: {
     alignItems: 'center',
     padding: 10,

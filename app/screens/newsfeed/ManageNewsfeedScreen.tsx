@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
   Platform,
+  Alert,
 } from 'react-native';
 import { Bell, Info, Plus, X } from 'lucide-react-native';
 import Header from '../../../app/components/Header';
@@ -173,7 +174,6 @@ const NewsfeedManagementScreen = () => {
   const [editingNews, setEditingNews] = useState<News | undefined>();
   const { landlord } = useAuth();
 
-
   useEffect(() => {
     fetchNews();
   }, []);
@@ -184,6 +184,11 @@ const NewsfeedManagementScreen = () => {
       setNews(newsItems);
     } catch (error) {
       console.error('Error fetching news:', error);
+      Alert.alert(
+        'Error',
+        'Unable to fetch news items. Please try again later.',
+        [{ text: 'OK' }],
+      );
     }
   };
 
@@ -198,8 +203,14 @@ const NewsfeedManagementScreen = () => {
       await createNews(newNews);
       await fetchNews();
       setModalVisible(false);
+      Alert.alert('Success', 'News post created successfully!', [
+        { text: 'OK' },
+      ]);
     } catch (error) {
       console.error('Error creating news:', error);
+      Alert.alert('Error', 'Unable to create news post. Please try again.', [
+        { text: 'OK' },
+      ]);
     }
   };
 
@@ -211,18 +222,48 @@ const NewsfeedManagementScreen = () => {
       await fetchNews();
       setModalVisible(false);
       setEditingNews(undefined);
+      Alert.alert('Success', 'News post updated successfully!', [
+        { text: 'OK' },
+      ]);
     } catch (error) {
       console.error('Error updating news:', error);
+      Alert.alert('Error', 'Unable to update news post. Please try again.', [
+        { text: 'OK' },
+      ]);
     }
   };
 
   const handleDeleteNews = async (newsId: string) => {
-    try {
-      await deleteNews(newsId);
-      await fetchNews();
-    } catch (error) {
-      console.error('Error deleting news:', error);
-    }
+    Alert.alert(
+      'Confirm Delete',
+      'Are you sure you want to delete this news post?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteNews(newsId);
+              await fetchNews();
+              Alert.alert('Success', 'News post deleted successfully!', [
+                { text: 'OK' },
+              ]);
+            } catch (error) {
+              console.error('Error deleting news:', error);
+              Alert.alert(
+                'Error',
+                'Unable to delete news post. Please try again.',
+                [{ text: 'OK' }],
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const NewsIcon = ({ type }: { type: News['type'] }) => {
@@ -259,10 +300,16 @@ const NewsfeedManagementScreen = () => {
                 <NewsIcon type={item.type} />
                 <View style={styles.newsContent}>
                   <View style={styles.newsHeader}>
-                    <Text style={appStyles.tenantsTitle}>{item.title}</Text>
-                    <Text>{item.createdAt.toDate().toLocaleDateString()}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={appStyles.tenantsTitle}>{item.title}</Text>
+                    </View>
+                    <View>
+                      <Text>{item.createdAt.toDate().toLocaleDateString()}</Text>
+                    </View>
                   </View>
-                  <Text style={appStyles.flatText}>{item.content}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={appStyles.flatText}>{item.content}</Text>
+                  </View>
                   <View style={styles.actionButtons}>
                     <SubmitButton
                       testID='edit-news-button'
@@ -376,10 +423,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 25,
     padding: 20,
-    minHeight: 400, // Add minimum height to ensure proper spacing
+    minHeight: 400,
     flexDirection: 'column',
-    justifyContent: 'space-between', // Add this to create space between content
-    display: 'flex', // Ensure flex layout
+    justifyContent: 'space-between',
+    display: 'flex',
   },
   submitButton: {
     backgroundColor: Color.ButtonBackground,
@@ -387,9 +434,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     width: '100%',
-    marginTop: 'auto', // Push button to bottom
+    marginTop: 'auto',
   },
-
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',

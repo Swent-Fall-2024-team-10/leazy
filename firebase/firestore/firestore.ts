@@ -798,6 +798,7 @@ export async function markNewsAsRead(maintenanceRequestID: string) {
 }
 
 
+/**
  * Fetches all unread news for a specific `ReceiverID`.
  * @param receiverID - The unique identifier of the news receiver.
  * @returns An array of unread news objects.

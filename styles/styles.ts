@@ -83,9 +83,6 @@ export const ButtonDimensions = {
   fullWidthButtonWidth: Dimensions.get('window').width * 0.85,
 
 
-  fullWidthButtonWidth: Dimensions.get("window").width * 0.85,
-
-
   veryLargeButtonWidth: 300,
   veryLargeButtonHeight: 44,
 

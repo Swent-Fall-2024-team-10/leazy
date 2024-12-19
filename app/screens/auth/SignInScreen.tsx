@@ -122,7 +122,7 @@ export default function SignInScreen() {
         textStyle={appStyles.submitButtonText}
       />
 
-      <Text style={stylesForNonHeaderScreens.text}>or</Text>
+      <Text style={[stylesForNonHeaderScreens.text, {marginTop: "10%"}]}>or</Text>
       <View style={styles.horizontalLine} />
       <Text style={stylesForNonHeaderScreens.text}>
         Don't have an account yet?

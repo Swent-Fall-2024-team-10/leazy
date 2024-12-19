@@ -143,7 +143,6 @@ export const Color = {
   GrayGroupMargin: '#A3A3A3CC',
   GrayGroupBackground: '#f2f2f2',
 
-
   IssueTextBackground: "#FFFFFF",
   CancelColor: "#E74C3C",
   ShadowColor: "#171717",

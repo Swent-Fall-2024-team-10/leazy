@@ -92,6 +92,17 @@ export function changeStatus(layout: [string, [string, number][]][], groupIndex:
     return nextLayout
 }
 
+export function getNameAndSurname(jsonString: string): [string, string] {
+  try {
+      const data = JSON.parse(jsonString); // Parse the JSON string into an object
+      const { name, surname } = data; // Destructure name and surname from the object
+      return [ name, surname ]; // Return the name and surname
+  } catch (error) {
+      console.error("Invalid JSON string:", error);
+      return ["", ""]; // Return null if the JSON string is invalid
+  }
+}
+
 
 interface PickerData {
     label: string;
@@ -166,7 +177,19 @@ export async function fetchSituationReportLayout(
     }
 }
 
-
+export function filterEmptyElements(
+    layout: [string, [string, number][]][]
+  ): [string, [string, number][]][] {
+    return layout.filter((group) => {
+      const filteredItems = group[1].filter(
+        (item) => item[0] !== "" && Array.isArray(item) && item.length > 0
+      );
+      
+      group[1] = filteredItems;
+      
+      return filteredItems.length > 0;
+    });
+  }
 
 export async function fetchFromDatabase(
   situationReportId: string

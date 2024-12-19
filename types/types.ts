@@ -38,6 +38,11 @@ export type ResidenceStackParamList = {
   CreateResidence: undefined;
 };
 
+export type SettingsStackParamList = {
+  Settings: undefined;
+  SituationReportConsultation: undefined;
+};
+
 export type ReportStackParamList = {
   Issues: undefined;
   Report: undefined;

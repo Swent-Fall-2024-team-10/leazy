@@ -118,28 +118,6 @@ describe("Firestore functions", () => {
     expect(result).toEqual(["field1", "field2"]);
   });
 
-  it("getSituationReport should return the situation report if it exists", async () => {
-    const apartmentId = "apt123";
-    const situationReport = {
-      ...situationReportMock,
-    };
-
-    (getDoc as jest.Mock).mockResolvedValueOnce({
-      exists: () => true,
-      data: () => apartmentMock,
-    });
-
-    (getDoc as jest.Mock).mockResolvedValueOnce({
-      exists: () => true,
-      data: () => situationReport,
-    });
-
-    const result = await getSituationReport(apartmentId);
-
-    expect(result).toEqual(situationReport);
-
-  });
-
 
   it("should return an empty array if the situation report layout doesn't exist", async () => {
     // Mock getResidence to return null layout

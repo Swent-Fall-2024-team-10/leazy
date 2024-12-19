@@ -1,5 +1,5 @@
 import * as SituationReport from '../utils/SituationReport';
-import { addGroupToLayout } from '../utils/SituationReport';
+import { addGroupToLayout, getNameAndSurname } from '../utils/SituationReport';
 
 describe('converting backend format to front-end format', () => {
     it('Converting to front-end format should return correct structure for multiple groups', () => {
@@ -558,6 +558,58 @@ jest.mock("firebase/firestore", () => ({
         expect(mockBatch.update).toHaveBeenCalledTimes(1);
         expect(mockBatch.commit).toHaveBeenCalledTimes(1); 
         expect(mockDoc).toHaveBeenCalled();
+      });
+    });
+
+    describe('getNameAndSurname', () => {
+      it('should correctly parse valid JSON with name and surname', () => {
+        const jsonString = JSON.stringify({ name: "John", surname: "Doe" });
+        const [name, surname] = getNameAndSurname(jsonString);
+        
+        expect(name).toBe("John");
+        expect(surname).toBe("Doe");
+      });
+    
+      it('should handle empty strings in JSON', () => {
+        const jsonString = JSON.stringify({ name: "", surname: "" });
+        const [name, surname] = getNameAndSurname(jsonString);
+        
+        expect(name).toBe("");
+        expect(surname).toBe("");
+      });
+    
+      it('should return empty strings for invalid JSON', () => {
+        const invalidJson = "{ invalid json }";
+        const [name, surname] = getNameAndSurname(invalidJson);
+        
+        expect(name).toBe("");
+        expect(surname).toBe("");
+      });
+    
+      it('should handle JSON without required fields', () => {
+        const jsonString = JSON.stringify({ firstName: "John", lastName: "Doe" });
+        const [name, surname] = getNameAndSurname(jsonString);
+        
+        expect(name).toBeUndefined();
+        expect(surname).toBeUndefined();
+      });
+    
+      it('should handle null values in JSON', () => {
+        const jsonString = JSON.stringify({ name: null, surname: null });
+        const [name, surname] = getNameAndSurname(jsonString);
+        
+        expect(name).toBeNull();
+        expect(surname).toBeNull();
+      });
+    
+      it('should log error for invalid JSON', () => {
+        const consoleSpy = jest.spyOn(console, 'error');
+        const invalidJson = "invalid json";
+        
+        getNameAndSurname(invalidJson);
+        
+        expect(consoleSpy).toHaveBeenCalled();
+        consoleSpy.mockRestore();
       });
     });
 

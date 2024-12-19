@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  useNavigation,
-  NavigationProp,
-  useFocusEffect,
-} from '@react-navigation/native';
-import {
   View,
   Text,
   ScrollView,
@@ -33,6 +28,7 @@ import {
   situationReportStyles,
 } from '../../../../styles/SituationReportStyling';
 import { useAuth } from '../../../context/AuthContext';
+import { SituationReportLabel } from './SituationReportCreationScreen';
 
 enum enumStatus {
   OC = 1,
@@ -56,6 +52,7 @@ type GroupedSituationReportProps = {
   ) => void;
   resetState: boolean;
   setReset: (value: boolean) => void;
+  changeAllowed?: boolean;
 };
 
 export function GroupedSituationReport({
@@ -63,6 +60,7 @@ export function GroupedSituationReport({
   changeStatus,
   resetState,
   setReset,
+  changeAllowed = true,
 }: GroupedSituationReportProps) {
 
   // Counter for numbering items across the layout
@@ -96,6 +94,7 @@ export function GroupedSituationReport({
                       changeStatus={changeStatus}
                       resetState={resetState}
                       setReset={setReset}
+                      changeAllowed={changeAllowed}
                     />
                   </View>
                 );
@@ -119,6 +118,7 @@ export function GroupedSituationReport({
                 changeStatus={changeStatus}
                 resetState={resetState}
                 setReset={setReset}
+                changeAllowed={changeAllowed}
               />
             </View>
           );
@@ -133,15 +133,16 @@ export function PickerGroup({
   label,
   data,
   chosed,
-  testID,
   setValue,
 }: {
-  testID: string;
   label: string;
   data: PickerItem[];
   chosed: any;
   setValue: (value: any) => void;
 }) {
+
+  const pickerLabel = 'Select ' + label;
+
   return (
     <View
       style={[
@@ -156,7 +157,7 @@ export function PickerGroup({
           onValueChange={(value) => setValue(value)}
           items={data}
           value={chosed}
-          placeholder={{ label }}
+          placeholder={{label: pickerLabel, value: null}}
           style={pickerSelectStyles}
         />
       </View>
@@ -178,6 +179,7 @@ type SituationReportItemProps = {
     itemIndex: number,
     newStatus: string,
   ) => void;
+  changeAllowed?: boolean;
 };
 
 const STATUS_MAPPING = ['NONE', 'OC', 'NW', 'AW'];
@@ -191,6 +193,7 @@ function SituationReportItem({
   resetState,
   changeStatus,
   setReset,
+  changeAllowed = true,
 }: SituationReportItemProps) {
   const [checked, setChecked] = useState<number>(currentStatus);
 
@@ -202,6 +205,10 @@ function SituationReportItem({
   }, [resetState]);
 
   function handleCheck(newStatus: number) {
+    if (!changeAllowed) {
+      return;
+    }
+
     if (checked === newStatus) {
       setChecked(0);
       changeStatus(
@@ -346,15 +353,17 @@ export default function SituationReportScreen({
   const { landlord } = useAuth();
 
   useEffect(() => {
-    if (landlord) {
-      fetchResidences(landlord, setResidencesMappedToName);
-    }
-
     if (selectedResidence !== '' && selectedResidence !== undefined) {
-      fetchApartmentNames(selectedResidence, setApartmentMappedToName);
-      fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
+        if (landlord) {
+          fetchResidences(landlord, setResidencesMappedToName);
+        }
+        
+        if (selectedResidence !== '' && selectedResidence !== undefined) {
+          fetchApartmentNames(selectedResidence, setApartmentMappedToName);
+          fetchSituationReportLayout(selectedResidence, setLayoutMappedWithName);
+        }
     }
-    
+      
   }, [landlord?.residenceIds, selectedResidence]);
 
 
@@ -372,15 +381,6 @@ export default function SituationReportScreen({
     setResetState((prev) => !prev);
   }
 
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ y: 0, animated: true });
-      }
-    }, []),
-  );
 
   return (
     <Header>
@@ -391,20 +391,17 @@ export default function SituationReportScreen({
         <ScrollView
           automaticallyAdjustKeyboardInsets={true}
           removeClippedSubviews={true}
-          ref={scrollViewRef}
         >
-          <View style={{ marginBottom: '90%', paddingBottom: '30%' }}>
+          <View style={{  paddingBottom: '25%' }}>
             <Text style={appStyles.screenHeader}>Situation Report Form</Text>
 
             <PickerGroup
-              testID='residence-picker'
               label={'Residence'}
               data={residencesMappedToName}
               chosed={enablePickers ? testPickerResidence : selectedResidence}
               setValue={setSelectedResidence}
             />
             <PickerGroup
-              testID='apartment-picker'
               label={'Apartment'}
               data={apartmentMappedToName}
               chosed={enablePickers ? testPickerApartment : selectedApartment}
@@ -412,7 +409,6 @@ export default function SituationReportScreen({
             />
 
             <PickerGroup
-              testID='layout-picker'
               label={'Situation Report'}
               data={layoutMappedWithName}
               chosed={enablePickers ? testPickerLayout : layout}
@@ -445,42 +441,8 @@ export default function SituationReportScreen({
               testIDSurname='leaving-tenant-surname'
             />
 
-            <View style={situationReportStyles.lineContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ marginBottom: '2%' }}>
-                  <Text testID='OC-description'>OC = Original Condition </Text>
-                  <Text testID='NW-description'>NW = Natural Wear</Text>
-                  <Text testID='AW-description'>AW = Abnormal Wear</Text>
-                </View>
-
-                <View style={situationReportStyles.labels}>
-                  <Text
-                    testID='OC-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    OC
-                  </Text>
-                  <Text
-                    testID='NW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    NW
-                  </Text>
-                  <Text
-                    testID='AW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    AW
-                  </Text>
-                </View>
-              </View>
-
-              <StraightLine />
-            </View>
-              
-
-
-
+            <SituationReportLabel />
+          
             { layout?.length > 0 ? (
 
               <GroupedSituationReport

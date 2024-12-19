@@ -208,7 +208,7 @@ describe('LandlordDashboard Component', () => {
           residenceId: 'res1',
           tenants: [],
           maintenanceRequests: [],
-          situationReportId: 'situation1',
+          situationReportId: ['situation1'],
         } as Apartment);
       }
       return Promise.resolve(null);
@@ -349,7 +349,7 @@ describe('LandlordDashboard Component', () => {
       residenceId: 'res1',
       tenants: [],
       maintenanceRequests: [],
-      situationReportId: 'situation1',
+      situationReportId: ['situation1'],
     } as Apartment);
 
     const { findByTestId, getByTestId } = renderWithNavigation(

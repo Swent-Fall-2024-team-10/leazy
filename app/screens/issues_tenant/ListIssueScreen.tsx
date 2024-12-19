@@ -167,13 +167,11 @@ const MaintenanceIssues = () => {
               }
             });
             isInitialized = true;
-            return; // Skip processing changes during initialization
           }
 
-          // Process only modified changes
+          // Process modified changes for status updates
           querySnapshot.docChanges().forEach((change) => {
             if (change.type !== 'modified') return;
-
             const newData = change.doc.data() as MaintenanceRequest;
             if (!newData.requestID) return;
 
@@ -197,7 +195,7 @@ const MaintenanceIssues = () => {
             }
           });
 
-          // Update the issues state
+          // Always update the issues state with the full snapshot
           const updatedIssues = querySnapshot.docs.map(
             (doc) => doc.data() as MaintenanceRequest,
           );

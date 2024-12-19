@@ -356,12 +356,13 @@ function ResidenceCreationScreen() {
                 return newApartmentId;
               }),
             );
-
+            console.log('newApartments:', newApartments);
             const successfulApartments = newApartments.filter(
               (id) => id !== null,
             );
 
             newResidence.apartments = successfulApartments;
+            console.log('newResidence:', newResidence);
             await updateResidence(newResidenceId, newResidence);
           } catch (error) {
             setFirebaseError(true);

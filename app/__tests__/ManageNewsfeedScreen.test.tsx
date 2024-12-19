@@ -128,7 +128,7 @@ describe('ManageNewsFeedScreen', () => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Success',
         'News post created successfully!',
-        expect.any(Array)
+        expect.any(Array),
       );
     });
   });
@@ -149,13 +149,15 @@ describe('ManageNewsFeedScreen', () => {
       'Are you sure you want to delete this news post?',
       expect.arrayContaining([
         expect.objectContaining({ text: 'Cancel' }),
-        expect.objectContaining({ text: 'Delete' })
-      ])
+        expect.objectContaining({ text: 'Delete' }),
+      ]),
     );
 
     // Get the delete confirmation dialog and simulate pressing delete
     const [[, , buttons]] = (Alert.alert as jest.Mock).mock.calls;
-    const deleteButton = buttons.find((button: any) => button.text === 'Delete');
+    const deleteButton = buttons.find(
+      (button: any) => button.text === 'Delete',
+    );
     await deleteButton.onPress();
 
     await waitFor(() => {
@@ -163,7 +165,7 @@ describe('ManageNewsFeedScreen', () => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Success',
         'News post deleted successfully!',
-        expect.any(Array)
+        expect.any(Array),
       );
     });
   });
@@ -217,7 +219,7 @@ describe('ManageNewsFeedScreen', () => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Success',
         'News post created successfully!',
-        expect.any(Array)
+        expect.any(Array),
       );
     });
   });
@@ -248,7 +250,7 @@ describe('ManageNewsFeedScreen', () => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Error',
         'Unable to create news post. Please try again.',
-        expect.any(Array)
+        expect.any(Array),
       );
     });
   });
@@ -280,23 +282,27 @@ describe('ManageNewsFeedScreen', () => {
   });
 
   it('shows error alert when fetching news fails', async () => {
-    (getNewsByReceiver as jest.Mock).mockRejectedValue(new Error('Failed to fetch'));
-    
+    (getNewsByReceiver as jest.Mock).mockRejectedValue(
+      new Error('Failed to fetch'),
+    );
+
     render(<ManageNewsfeedScreen />);
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Error',
         'Unable to fetch news items. Please try again later.',
-        expect.any(Array)
+        expect.any(Array),
       );
     });
   });
 
   it('shows success alert when updating news item', async () => {
-    const { getAllByTestId, getByTestId, getByText, findByText } = render(<ManageNewsfeedScreen />);
+    const { getAllByTestId, getByTestId, getByText, findByText } = render(
+      <ManageNewsfeedScreen />,
+    );
     await findByText('Test News 1');
-    
+
     // Click edit button
     const editButtons = getAllByTestId('edit-news-button');
     fireEvent.press(editButtons[0]);
@@ -310,17 +316,19 @@ describe('ManageNewsFeedScreen', () => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Success',
         'News post updated successfully!',
-        expect.any(Array)
+        expect.any(Array),
       );
     });
   });
 
   it('shows error alert when updating news item fails', async () => {
     (updateNews as jest.Mock).mockRejectedValue(new Error('Failed to update'));
-    
-    const { getAllByTestId, getByTestId, getByText, findByText } = render(<ManageNewsfeedScreen />);
+
+    const { getAllByTestId, getByTestId, getByText, findByText } = render(
+      <ManageNewsfeedScreen />,
+    );
     await findByText('Test News 1');
-    
+
     // Click edit button
     const editButtons = getAllByTestId('edit-news-button');
     fireEvent.press(editButtons[0]);
@@ -334,7 +342,77 @@ describe('ManageNewsFeedScreen', () => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Error',
         'Unable to update news post. Please try again.',
-        expect.any(Array)
+        expect.any(Array),
+      );
+    });
+  });
+
+  it('displays long text correctly in news item list', async () => {
+    // Create a mock news item with long text
+    const longTextNews = {
+      maintenanceRequestID: '3',
+      title: 'This is a very long title that could potentially overflow',
+      content:
+        'This is a very long content that contains multiple paragraphs and could potentially cause layout issues. eoqrhféqeuabféq3wubflsa ubqwel fulqweuaf',
+      createdAt: { toDate: () => new Date() },
+      type: 'informational',
+    };
+
+    // Add the long text news item to mock data
+    const mockNewsWithLongText = [...mockNewsItems, longTextNews];
+    (getNewsByReceiver as jest.Mock).mockResolvedValue(mockNewsWithLongText);
+
+    const { findByText, getByText } = render(<ManageNewsfeedScreen />);
+
+    // Wait for the long text news item to be displayed
+    await findByText(longTextNews.title);
+
+    // Verify the content is also displayed
+    expect(getByText(longTextNews.content)).toBeTruthy();
+  });
+
+  it('handles editing news item with long text', async () => {
+    // Mock successful update
+    (updateNews as jest.Mock).mockResolvedValue(undefined);
+
+    const { getAllByTestId, getByTestId, getByText, findByText } = render(
+      <ManageNewsfeedScreen />,
+    );
+    await findByText('Test News 1');
+
+    // Click edit button
+    const editButtons = getAllByTestId('edit-news-button');
+    fireEvent.press(editButtons[0]);
+
+    // Create long text strings
+    const longTitle =
+      'This is a very long title that could potentially overflow';
+    const longContent =
+      'This is a very long content that contains multiple paragraphs and could potentially cause layout issues. eoqrhféqeuabféq3wubflsa ubqwel fulqweuaf';
+
+    // Update with long text
+    fireEvent.changeText(getByTestId('title-input'), longTitle);
+    fireEvent.changeText(getByTestId('content-input'), longContent);
+    fireEvent.press(getByText('Add to newsfeed'));
+
+    await waitFor(() => {
+      expect(updateNews).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({
+          title: longTitle,
+          content: longContent,
+          type: 'informational',
+          isRead: false,
+          ReceiverID: 'all',
+          createdAt: expect.any(Object),
+          UpdatedAt: expect.any(Object),
+          ReadAt: expect.any(Object),
+        }),
+      );
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Success',
+        'News post updated successfully!',
+        expect.any(Array),
       );
     });
   });

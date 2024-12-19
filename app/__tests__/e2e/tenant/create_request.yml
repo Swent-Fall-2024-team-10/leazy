@@ -30,7 +30,7 @@ appId: "com.leazy.swent"
 - hideKeyboard
 
 - tapOn:
-      id: "testRoomField"
+      id: "testRoomNameField"
 - inputText: "Test room"
 - hideKeyboard
 

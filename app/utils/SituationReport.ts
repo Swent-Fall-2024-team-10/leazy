@@ -92,6 +92,17 @@ export function changeStatus(layout: [string, [string, number][]][], groupIndex:
     return nextLayout
 }
 
+export function getNameAndSurname(jsonString: string): [string, string] {
+  try {
+      const data = JSON.parse(jsonString); // Parse the JSON string into an object
+      const { name, surname } = data; // Destructure name and surname from the object
+      return [ name, surname ]; // Return the name and surname
+  } catch (error) {
+      console.error("Invalid JSON string:", error);
+      return ["", ""]; // Return null if the JSON string is invalid
+  }
+}
+
 
 interface PickerData {
     label: string;

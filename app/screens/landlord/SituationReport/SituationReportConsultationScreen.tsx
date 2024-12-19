@@ -1,21 +1,23 @@
-import Header from '@/app/components/Header';
-import { appStyles, Color, IconDimension } from '@/styles/styles';
+import Header from '../../../components/Header';
+import { appStyles, Color, IconDimension } from '../../../../styles/styles';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { GroupedSituationReport } from './SituationReportScreen';
 import { useAuth } from '../../../context/AuthContext';
-import { getSituationReport } from '@/firebase/firestore/firestore';
-import { fetchFromDatabase } from '@/app/utils/SituationReport';
+import { getSituationReport } from '../../../../firebase/firestore/firestore';
+import { fetchFromDatabase, getNameAndSurname } from '../../../utils/SituationReport';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Icon } from 'react-native-elements';
-import { reportConsStyles, situationReportStyles } from '@/styles/SituationReportStyling';
+import { reportConsStyles, situationReportStyles } from '../../../../styles/SituationReportStyling';
 import { SituationReportLabel } from './SituationReportCreationScreen';
 
 export default function SituationReportConsultationScreen() {
     const navigation = useNavigation();
     const { tenant } = useAuth();
     const [reportName, setReportName] = useState("");
+    const [reportDate, setReportDate] = useState("");
+    const [leavingTenant, setLeavingTenant] = useState("");
     const [layout, setReportLayout] = useState<[string, [string, number][]][]>([]);
     const [remarks, setRemarks] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -33,7 +35,11 @@ export default function SituationReportConsultationScreen() {
                 return;
             }
 
+            console.log("Situation report date: ", situationReport);
             setRemarks(situationReport.remarks);
+            setReportDate(situationReport.reportDate.split("T")[0]);
+            const [name, surname] = getNameAndSurname(situationReport.leavingTenant);
+            setLeavingTenant(`${name} ${surname}`);
             const [reportName, reportLayout] = await fetchFromDatabase(situationReport.reportForm);
             setReportName(reportName);
             setReportLayout(reportLayout);
@@ -74,6 +80,11 @@ export default function SituationReportConsultationScreen() {
 
                     <View style={[appStyles.screenContainer]}>
                         <Text style={[appStyles.screenHeader, reportConsStyles.reportHeader]}>{reportName}</Text>
+                        
+                        <Text style={appStyles.inputFieldLabel}>Leaving tenant : {leavingTenant}</Text>
+
+                        <Text style={appStyles.inputFieldLabel}>Created the : {reportDate}</Text>
+                        
                         <SituationReportLabel />
 
                         <View style={situationReportStyles.reportContainer}>

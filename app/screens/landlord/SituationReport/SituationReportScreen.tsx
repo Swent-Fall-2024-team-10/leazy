@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  useFocusEffect,
-  useScrollToTop,
-} from '@react-navigation/native';
-import {
   View,
   Text,
   ScrollView,
@@ -122,6 +118,7 @@ export function GroupedSituationReport({
                 changeStatus={changeStatus}
                 resetState={resetState}
                 setReset={setReset}
+                changeAllowed={changeAllowed}
               />
             </View>
           );
@@ -196,7 +193,7 @@ function SituationReportItem({
   resetState,
   changeStatus,
   setReset,
-  changeAllowed,
+  changeAllowed = true,
 }: SituationReportItemProps) {
   const [checked, setChecked] = useState<number>(currentStatus);
 
@@ -384,16 +381,6 @@ export default function SituationReportScreen({
     setResetState((prev) => !prev);
   }
 
-  const scrollViewRef = useRef<ScrollView>(null);
-  useScrollToTop(scrollViewRef);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ y: 0, animated: true });
-      }
-    }, []),
-  );
 
   return (
     <Header>
@@ -404,7 +391,6 @@ export default function SituationReportScreen({
         <ScrollView
           automaticallyAdjustKeyboardInsets={true}
           removeClippedSubviews={true}
-          ref={scrollViewRef}
         >
           <View style={{  paddingBottom: '25%' }}>
             <Text style={appStyles.screenHeader}>Situation Report Form</Text>

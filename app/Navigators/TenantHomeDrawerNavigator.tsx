@@ -39,7 +39,11 @@ const TenantHomeDrawerNavigator = () => {
             <Drawer.Screen name="Subrent" component={SubrentScreen} />
             <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
             <Drawer.Screen name="Snitch Mode" component={SnitchModeScreen} />
-            <Drawer.Screen name="Settings" component={SettingsStackNavigator} />
+            <Drawer.Screen 
+                name="Settings" 
+                component={SettingsStackNavigator}
+                options={{ unmountOnBlur: true }}    
+            />
         </Drawer.Navigator>
     );
 };

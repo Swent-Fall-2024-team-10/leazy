@@ -631,7 +631,7 @@ export async function getSituationReport(apartmentId: string) {
     return null;
   }
 
-  return situationReport;
+  return situationReport as SituationReport;
 }
 
 /**

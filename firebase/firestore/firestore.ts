@@ -17,6 +17,8 @@ import {
   onSnapshot,
   serverTimestamp,
   orderBy,
+  arrayRemove,
+  Timestamp,
 } from "firebase/firestore";
 
 import {
@@ -29,6 +31,7 @@ import {
   MaintenanceRequest,
   TenantCode,
   SituationReport,
+  News,
 } from "../../types/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebase/firebase";
@@ -36,6 +39,7 @@ import { IMessage } from "react-native-gifted-chat";
 import { Alert } from "react-native";
 import { useNetworkStore } from "../../app/stores/NetworkStore";
 import { useState } from "react";
+import { getAuth } from "firebase/auth";
 
 // Generic function to get a document with offline support
 async function getDocumentWithOfflineSupport<T>(
@@ -317,25 +321,77 @@ export async function updateResidence(residenceId: string, residence: Partial<Re
   }
 }
 
-export async function deleteResidence(residenceId: string) {
-  const isOnline = useNetworkStore.getState().isOnline;
-
-  if (!isOnline) {
-    await saveToOfflineStorage("residences", residenceId, { deleted: true });
-    return;
-  }
-
-  const docRef = doc(db, "residences", residenceId);
+/**
+ * Deletes a residence document from Firestore by residence ID.
+ * @param residenceId - The unique identifier of the residence to delete.
+ */
+export const deleteResidence = async (residenceId: string) => {
   try {
-    await deleteDoc(docRef);
-  } catch (e) {
-    console.error("Error deleting residence:", e);
-    throw e;
+    const auth = getAuth();
+    const userId = auth.currentUser?.uid;
+    
+    if (!userId) {
+      throw new Error('No authenticated user found');
+    }
+
+    // Get the residence to access its apartments
+    const residenceRef = doc(db, 'residences', residenceId);
+    const residenceSnap = await getDoc(residenceRef);
+    
+    if (!residenceSnap.exists()) {
+      throw new Error('Residence not found');
+    }
+
+    const residence = residenceSnap.data() as Residence;
+
+    // Check and delete all apartments
+    for (const apartmentId of residence.apartments) {
+      const apartmentRef = doc(db, 'apartments', apartmentId);
+      const apartmentSnap = await getDoc(apartmentRef);
+      
+      if (apartmentSnap.exists()) {
+        const apartment = apartmentSnap.data() as Apartment;
+        
+        // Check if apartment has tenants
+        if (apartment.tenants && apartment.tenants.length > 0) {
+          // Update each tenant's reference
+          for (const tenantId of apartment.tenants) {
+            const tenant = await getTenant(tenantId);
+            if (tenant) {
+              await updateTenant(tenantId, {
+                apartmentId: '',
+                residenceId: ''
+              });
+            }
+          }
+        }
+        
+        // Delete the apartment
+        await deleteDoc(apartmentRef);
+      }
+    }
+
+    // Delete the residence document
+    await deleteDoc(residenceRef);
+
+    // Update the landlord's residenceIds array
+    const landlordRef = doc(db, 'landlords', userId);
+    await updateDoc(landlordRef, {
+      residenceIds: arrayRemove(residenceId)
+    });
+
+  } catch (error) {
+    console.error('Error deleting residence:', error);
+    throw error;
   }
-}
+};
 
 export async function createApartment(apartment: Apartment): Promise<string> {
   const isOnline = useNetworkStore.getState().isOnline;
+
+  if (!apartment.apartmentName || !apartment.residenceId) {
+    throw new Error("Invalid apartment data");
+  }
 
   if (!isOnline) {
     const tempId = `temp_${Date.now()}`;
@@ -783,6 +839,145 @@ export async function addSituationReport(situationReport: SituationReport, apart
     throw e;
   }
  }
+
+/**
+ * Creates a new news document in Firestore.
+ * @param news - The news object to be added to the 'news' collection.
+ */
+export async function createNews(news: News) {
+  const docRef = doc(db, "news", news.maintenanceRequestID);
+  try {
+    await setDoc(docRef, news);
+  } catch (e) {
+    console.error("Error creating news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Retrieves a news document from Firestore by its `maintenanceRequestID`.
+ * @param maintenanceRequestID - The unique identifier of the news document.
+ * @returns The news object or null if not found.
+ */
+export async function getNews(maintenanceRequestID: string): Promise<News | null> {
+  const newsRef = doc(db, "news", maintenanceRequestID);
+  const docSnap = await getDoc(newsRef);
+  return docSnap.exists() ? (docSnap.data() as News) : null;
+}
+
+/**
+ * Updates an existing news document in Firestore by `maintenanceRequestID`.
+ * @param maintenanceRequestID - The unique identifier of the news to update.
+ * @param news - The partial news data to update.
+ */
+export async function updateNews(
+  maintenanceRequestID: string,
+  news: Partial<News>
+) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  try {
+    await updateDoc(docRef, news);
+  } catch (e) {
+    console.error("Error updating news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Deletes a news document from Firestore by its `maintenanceRequestID`.
+ * @param maintenanceRequestID - The unique identifier of the news to delete.
+ */
+export async function deleteNews(maintenanceRequestID: string) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  try {
+    await deleteDoc(docRef);
+  } catch (e) {
+    console.error("Error deleting news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Retrieves all news documents for a specific `ReceiverID`.
+ * @param receiverID - The unique identifier of the news receiver.
+ * @returns An array of news objects.
+ */
+export async function getNewsByReceiver(receiverID: string): Promise<News[]> {
+  const newsRef = collection(db, "news");
+  const q = query(newsRef, where("ReceiverID", "==", receiverID));
+  const querySnapshot = await getDocs(q);
+
+  const news: News[] = [];
+  querySnapshot.forEach((doc) => {
+    news.push(doc.data() as News);
+  });
+
+  return news;
+}
+
+/**
+ * Marks a news document as read by updating the `isRead` and `ReadAt` fields.
+ * @param maintenanceRequestID - The unique identifier of the news to update.
+ */
+export async function markNewsAsRead(maintenanceRequestID: string) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  try {
+    await updateDoc(docRef, {
+      isRead: true,
+      ReadAt: Timestamp.now(),
+    });
+  } catch (e) {
+    console.error("Error marking news as read:", e);
+    throw e;
+  }
+}
+
+/**
+ * Adds an image to a news document's `images` array.
+ * @param maintenanceRequestID - The unique identifier of the news document.
+ * @param imageUrl - The URL of the image to add.
+ */
+export async function addNewsImage(
+  maintenanceRequestID: string,
+  imageUrl: string
+) {
+  const docRef = doc(db, "news", maintenanceRequestID);
+  const news = await getNews(maintenanceRequestID);
+
+  if (!news) {
+    throw new Error("News not found");
+  }
+
+  const updatedImages = [...(news.images || []), imageUrl];
+  try {
+    await updateDoc(docRef, { images: updatedImages });
+  } catch (e) {
+    console.error("Error adding image to news:", e);
+    throw e;
+  }
+}
+
+/**
+ * Fetches all unread news for a specific `ReceiverID`.
+ * @param receiverID - The unique identifier of the news receiver.
+ * @returns An array of unread news objects.
+ */
+export async function getUnreadNewsByReceiver(receiverID: string): Promise<News[]> {
+  const newsRef = collection(db, "news");
+  const q = query(
+    newsRef,
+    where("ReceiverID", "==", receiverID),
+    where("isRead", "==", false)
+  );
+  const querySnapshot = await getDocs(q);
+
+  const news: News[] = [];
+  querySnapshot.forEach((doc) => {
+    news.push(doc.data() as News);
+  });
+
+  return news;
+}
  
  export async function getSituationReport(apartmentId: string): Promise<SituationReport | null> {
   if (!apartmentId || typeof apartmentId !== "string") {

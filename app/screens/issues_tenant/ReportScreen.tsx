@@ -28,6 +28,7 @@ import { getFileBlob, clearFiles } from "../../utils/cache";
 import {
   createMaintenanceRequest,
   getTenant,
+  updateApartment,
   updateMaintenanceRequest,
   updateTenant,
 } from "../../../firebase/firestore/firestore";

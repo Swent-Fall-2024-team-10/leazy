@@ -18,6 +18,7 @@ jest.mock('expo-linear-gradient', () => ({
     getPermissionsAsync: jest.fn(),
     requestPermissionsAsync: jest.fn(),
     scheduleNotificationAsync: jest.fn(),
+    setNotificationHandler: jest.fn(() => {}),
   }));
 
 jest.mock('../../firebase/firestore/firestore', () => ({
@@ -152,7 +153,7 @@ describe('WashingMachineScreen', () => {
       isFunctional: true,
       occupiedBy: 'test-user-id',
       estimatedFinishTime: {
-        toMillis: () => Date.now() - 1000
+        toMillis: () => Date.now() + 1000
       }
     };
     

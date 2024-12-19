@@ -163,6 +163,7 @@ const LandlordDashboard: React.FC = () => {
   ];
 
   const handleResidencePress = (residence: Residence) => {
+    console.log("Pressed residence", residence);
     navigation.navigate("Residence Stack", {
       screen: "ResidenceList"
     });

@@ -34,7 +34,7 @@ const consoleSpy = {
   log: jest.spyOn(console, "log").mockImplementation(() => {}),
   warn: jest.spyOn(console, "warn").mockImplementation(() => {}),
 };
-
+const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockedGetLandlord = getLandlord as jest.MockedFunction<typeof getLandlord>;
 const mockedGetResidence = getResidence as jest.MockedFunction<typeof getResidence>;
@@ -415,7 +415,10 @@ describe("LandlordDashboard Component", () => {
     expect(mockNavigate).toHaveBeenCalledWith("Residence Stack", {
       screen: "ResidenceList"
     });
+    expect(mockConsoleLog).toHaveBeenCalledWith("Pressed residence", {"apartments": ["apt1"], "id": "res1", "pictures": ["https://example.com/pic1.jpg"], "residenceName": "Residence 1"});
+
   });
+
 
   test("renders correctly when there are no residences", async () => {
     mockedUseAuth.mockReturnValue({

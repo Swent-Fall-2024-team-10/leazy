@@ -35,7 +35,6 @@ const LandlordDrawerNavigator = () => {
         <Drawer.Screen name="ManageMachines" component={ManageMachinesScreen} />
         <Drawer.Screen name="WashingMachine" component={WashingMachineScreen} />
         <Drawer.Screen name="Manage Newsfeed" component={ManageNewsfeedScreen} />
-        <Drawer.Screen name="View Newsfeed" component={ViewNewsfeedScreen} />
         <Drawer.Screen name="ResidenceStack" component={ResidenceStack}/>
         <Drawer.Screen name="Situation Report Creation" component={SituationReportCreation} />
         <Drawer.Screen name="Situation Report Form" component={SituationReport} />

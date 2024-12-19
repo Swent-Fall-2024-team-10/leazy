@@ -143,16 +143,11 @@ export const Color = {
   GrayGroupMargin: '#A3A3A3CC',
   GrayGroupBackground: '#f2f2f2',
 
-
   IssueTextBackground: "#FFFFFF",
   CancelColor: "#E74C3C",
   ShadowColor: "#171717",
 
   GrayText: '#666666',
-
-  IssueTextBackground: '#FFFFFF',
-  CancelColor: '#E74C3C',
-  ShadowColor: '#171717',
 
   HeaderText: "#0f5257",
   HeaderBackground: "#e9d5ff",
@@ -581,12 +576,15 @@ export const appStyles = StyleSheet.create({
 
   // Residence List Styles
   residenceHeaderContainer: {
-    paddingHorizontal: 24,
+    position: 'relative',
+    alignItems: 'center',  // Centers the title
+    justifyContent: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 16,
     paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: "#FFFFFF",
   },
-
   residenceTitle: {
     fontSize: 28,
     fontWeight: "600",
@@ -605,6 +603,8 @@ export const appStyles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 10,
     paddingBottom: 100,
+    alignItems: 'center',
+    width: '100%',
   },
 
   residenceContainer: {
@@ -685,7 +685,7 @@ export const appStyles = StyleSheet.create({
     zIndex: 2,
 
     position: "absolute",
-    bottom: "35%",
+    bottom: "15%",
 
     right: 24,
     width: 56,
@@ -960,5 +960,239 @@ export const stylesForSnitchMode = StyleSheet.create({
   disabledButton: {
     opacity: 0.5,
 
+  },
+});
+
+
+export const stylesForLandlordListIssues = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+    paddingTop: 15,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  switch: {
+    marginLeft: 8,
+    marginRight: 48,
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  filterText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#2C3E50',
+  },
+  filterOptions: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  applyButton: {
+    marginTop: 10,
+    textAlign: 'center',
+    color: '#2C3E50',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  residenceList: {
+    paddingHorizontal: 16,
+  },
+  residenceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#EDEDED',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  residenceName: {
+    fontSize: 18,
+    color: '#2C3E50',
+  },
+  issuesContainer: {
+    paddingLeft: 16,
+    marginTop: 8,
+  },
+  issueItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: Color.IssueBackground,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: Color.IssueBorder,
+    width: 340,
+    height: 110,
+    marginBottom: '2%',
+    padding: '4%',
+  },
+  issueContent: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flex: 1,
+  },
+  issueTextContainer: {
+    width: '100%',
+    height: 32,
+    borderRadius: 25,
+    backgroundColor: Color.IssueTextBackground,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  issueText: {
+    fontSize: 16,
+    color: Color.TextInputText,
+  },
+  statusTextContainer: {
+    borderRadius: 25,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+    marginTop: '8%',
+  },
+  statusText: {
+    color: 'white',
+    fontSize: 12,
+  },
+  arrowButton: {
+    marginLeft: '4%',
+    width: '15%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  filterSection: {
+    marginBottom: 16,
+  },
+  filterLabel: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  filterChip: {
+    backgroundColor: '#EDEDED',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  filterChipSelected: {
+    backgroundColor: '#2C3E50',
+  },
+  filterChipText: {
+    color: '#2C3E50',
+  },
+  filterChipTextSelected: {
+    color: '#FFFFFF',
+  },
+  resetButton: {
+    backgroundColor: Color.ButtonBackground,
+    padding: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  resetButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+});
+
+export const stylesForResidenceList = StyleSheet.create({
+  editButton: {
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    padding: 2,
+    paddingTop: 20,
+  },
+  residenceContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', 
+    paddingRight: 16, 
+  },
+  residenceContent: {
+    flex: 1, 
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  modalButton: {
+    padding: 10,
+    borderRadius: 20,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#e0e0e0',
+  },
+  deleteButton: {
+    backgroundColor: Color.ButtonBackground,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  deleteText: {
+    color: 'white',
   },
 });

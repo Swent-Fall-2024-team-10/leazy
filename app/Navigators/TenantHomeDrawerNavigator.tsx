@@ -5,14 +5,15 @@ import HomepageScreen from '../screens/tenant/HomepageScreen';
 import IssueStackNavigator from '../Navigators/IssueStackNavigator';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
 import { Color, appStyles } from '../../styles/styles';
-import SettingsScreen from '../screens/auth/SettingsScreen';
 import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
+import SettingsStackNavigator from './SettingsStackNavigator';
 
 const Drawer = createDrawerNavigator();
 
 const TenantHomeDrawerNavigator = () => {
     return (
         <Drawer.Navigator
+            testID='tenant-drawer-navigator'
             initialRouteName="Home"
             useLegacyImplementation={false}
             drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -33,7 +34,11 @@ const TenantHomeDrawerNavigator = () => {
             />
             <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
             <Drawer.Screen name="Snitch Mode" component={SnitchModeScreen} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
+            <Drawer.Screen 
+                name="Settings" 
+                component={SettingsStackNavigator}
+                options={{ unmountOnBlur: true }}    
+            />
         </Drawer.Navigator>
     );
 };

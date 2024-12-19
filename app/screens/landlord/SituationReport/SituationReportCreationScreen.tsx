@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep, set } from 'lodash';
 import Header from '../../../components/Header';
 import {
   appStyles,
@@ -7,7 +7,7 @@ import {
   defaultButtonRadius,
   textInputHeight,
 } from '../../../../styles/styles';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import React from 'react';
 import { Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Button, Icon } from 'react-native-elements';
@@ -24,6 +24,7 @@ import {
   removeGroupFromLayout,
   removeItemFrom,
   toDatabase,
+  filterEmptyElements
 } from '../../../utils/SituationReport';
 import SubmitButton from '../../../components/buttons/SubmitButton';
 import InputField from '../../../components/forms/text_input';
@@ -35,7 +36,8 @@ import {
 } from '../../../../firebase/firestore/firestore';
 import { PickerGroup } from './SituationReportScreen';
 import { useAuth } from '../../../context/AuthContext';
-import { Residence } from '@/types/types';
+import { Residence } from '../../../../types/types';
+import { useScrollToTop } from '../../../utils/ScrollUp';
 
 type RemoveSingleProps = {
   layout: [string, [string, number][]][];
@@ -142,8 +144,9 @@ export function SituationReportItem({
     },
     [layout, groupIndex, itemIndex, setLayout],
   );
-
   const [itemNumber, itemText] = label.split(': ');
+  console.log("item number ", groupIndex, "item text", itemIndex);
+
 
   return (
     <View style={situationReportStyles.item}>
@@ -199,14 +202,14 @@ export function GroupedSituationReport({
 
   let toDisplay = editMode ? tempLayout : layout;
   let itemCounter = 1;
-
   return (
     <View>
-      {toDisplay.map((group, groupIndex) => {
+      { toDisplay.map((group, groupIndex) => {
         const groupName = group[0];
         const items = group[1];
 
-        if (items.length > 1) {
+        if (items.length > 1 && toDisplay.length > 0) {
+
           return (
             <View key={groupIndex} style={situationReportStyles.groupContainer}>
               {editMode ? (
@@ -272,7 +275,7 @@ export function GroupedSituationReport({
                   onPress={() => {
                     let nextLayout = addSingleItemToGroup(
                       tempLayout,
-                      ['New Item', 0],
+                      ['', 0],
                       groupIndex,
                     );
                     setTempLayout(nextLayout);
@@ -350,6 +353,45 @@ export function AddItemButton({
   );
 }
 
+
+export function SituationReportLabel() {
+  return (
+  <View style={situationReportStyles.layoutCreationSeparationLine}>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ marginBottom: '2%' }}>
+        <Text testID='OC-description'>OC = Original Condition </Text>
+        <Text testID='NW-description'>NW = Natural Wear</Text>
+        <Text testID='AW-description'>AW = Abnormal Wear</Text>
+      </View>
+
+      <View style={situationReportStyles.labels}>
+        <Text
+          testID='OC-tag'
+          style={situationReportStyles.wearStatus}
+        >
+          OC
+        </Text>
+        <Text
+          testID='NW-tag'
+          style={situationReportStyles.wearStatus}
+        >
+          NW
+        </Text>
+        <Text
+          testID='AW-tag'
+          style={situationReportStyles.wearStatus}
+        >
+          AW
+        </Text>
+      </View>
+    </View>
+
+    <StraightLine />
+  </View>
+  )
+
+}
+
 export default function SituationReportCreation() {
   const navigation = useNavigation();
   const [layout, setLayout] = useState<[string, [string, number][]][]>([]);
@@ -387,6 +429,8 @@ export default function SituationReportCreation() {
     fetchData();
   }, [landlord?.residenceIds, selectedResidence]);
 
+  const scrollViewRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollViewRef);
 
   function resetStates() {
     setSelectedResidence('');
@@ -414,13 +458,12 @@ export default function SituationReportCreation() {
           automaticallyAdjustKeyboardInsets={true}
           removeClippedSubviews={true}
         >
-          <View style={{ marginBottom: '90%', paddingBottom: '30%' }}>
+          <View style={{ marginBottom: '25%', paddingBottom: '30%' }}>
             <Text style={appStyles.screenHeader}>
               Situation Report : Layout Creation{' '}
             </Text>
 
             <PickerGroup
-              testID='residence-picker'
               label={'Residence'}
               data={residencesMappedToName}
               chosed={selectedResidence}
@@ -446,39 +489,8 @@ export default function SituationReportCreation() {
                 />
               </View>
             </View>
-
-            <View style={situationReportStyles.layoutCreationSeparationLine}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ marginBottom: '2%' }}>
-                  <Text testID='OC-description'>OC = Original Condition </Text>
-                  <Text testID='NW-description'>NW = Natural Wear</Text>
-                  <Text testID='AW-description'>AW = Abnormal Wear</Text>
-                </View>
-
-                <View style={situationReportStyles.labels}>
-                  <Text
-                    testID='OC-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    OC
-                  </Text>
-                  <Text
-                    testID='NW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    NW
-                  </Text>
-                  <Text
-                    testID='AW-tag'
-                    style={situationReportStyles.wearStatus}
-                  >
-                    AW
-                  </Text>
-                </View>
-              </View>
-
-              <StraightLine />
-            </View>
+            
+            <SituationReportLabel />
 
             {editMode ? (
               <View style={layoutCreationStyles.cancelOrSaveContainer}>
@@ -501,7 +513,8 @@ export default function SituationReportCreation() {
                   title='Save'
                   titleStyle={appStyles.submitButtonText}
                   onPress={() => {
-                    setLayout(cloneDeep(tempLayout));
+                    const next = filterEmptyElements(tempLayout);
+                    setLayout(cloneDeep(next));
                     setEditMode(false);
                   }}
                   buttonStyle={[
@@ -627,7 +640,6 @@ export default function SituationReportCreation() {
                     );
                     resetStates();
                   } catch (error){
-                    console.log(error);
                     Alert.alert(
                       'Situation Report Creation ',
                       'An error occurred while creating the situation report please verify your connection and try again',

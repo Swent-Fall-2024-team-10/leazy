@@ -102,6 +102,7 @@ jest.mock('../context/PictureContext', () => ({
 }));
 
 jest.mock('../../firebase/firebase', () => ({
+<<<<<<< fix/dashboard
   db: {},
   storage: {},
   auth: {},
@@ -155,6 +156,53 @@ jest.mock('firebase/firestore', () => ({
   query: jest.fn(),
   where: jest.fn(),
 }));
+=======
+    db: {},
+    storage: {},
+    auth: {}
+  }));
+
+  jest.mock('../../firebase/firestore/firestore', () => ({
+    getTenant: jest.fn(),
+    updateTenant: jest.fn(),
+    updateMaintenanceRequest: jest.fn(),
+    updateApartment: jest.fn(),
+  }));
+  
+  jest.mock('firebase/firestore', () => ({
+    collection: jest.fn(),
+    addDoc: jest.fn(),
+    getFirestore: jest.fn(),
+    doc: jest.fn(),
+    updateDoc: jest.fn()
+  }));
+  
+  jest.mock('firebase/auth', () => ({
+    getAuth: jest.fn(),
+    initializeAuth: jest.fn(),
+    getReactNativePersistence: jest.fn()
+  }));
+  
+  jest.mock('@react-native-async-storage/async-storage', () => ({
+    AsyncStorage: jest.fn()
+  }));
+  
+  jest.mock('firebase/app', () => ({
+    initializeApp: jest.fn(),
+    getApp: jest.fn()
+  }));
+  
+  jest.mock('firebase/firestore', () => ({
+    collection: jest.fn(),
+    addDoc: jest.fn(() => Promise.resolve({ id: 'test-id' })),
+    doc: jest.fn(),
+    updateDoc: jest.fn(),
+    getFirestore: jest.fn(),
+    getDocs: jest.fn(),
+    query: jest.fn(),
+    where: jest.fn()
+  }));
+>>>>>>> main
 jest.mock('../utils/cache');
 
 describe('ReportScreen', () => {
@@ -348,7 +396,9 @@ describe('ReportScreen', () => {
   });
 
   it('handles successful submission with pictures', async () => {
+    // Mock all required Firebase functions
     const mockNavigate = jest.fn();
+<<<<<<< fix/dashboard
     jest
       .spyOn(require('@react-navigation/native'), 'useNavigation')
       .mockReturnValue({
@@ -356,6 +406,50 @@ describe('ReportScreen', () => {
       });
 
     const { getByTestId } = render(<ReportScreen />);
+=======
+    jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
+      navigate: mockNavigate
+    });
+
+    // Mock updateApartment function
+    jest.mock('../../firebase/firestore/firestore', () => ({
+      ...jest.requireActual('../../firebase/firestore/firestore'),
+      updateApartment: jest.fn().mockResolvedValue(undefined),
+    }));
+
+    const { getByTestId } = render(<ReportScreen />);
+    
+    // Fill in form fields
+    fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
+    fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
+
+    // Mock file blob
+    const mockBlob = new Blob(['test'], { type: 'image/jpeg' });
+    (CacheUtils.getFileBlob as jest.Mock).mockResolvedValue(mockBlob);
+    
+    // Mock Firebase storage operations
+    const mockStorageRef = { toString: () => 'storage-ref' };
+    const mockUploadResult = {};
+    const mockDownloadURL = 'test-url';
+    
+    require('firebase/storage').ref.mockReturnValue(mockStorageRef);
+    require('firebase/storage').uploadBytes.mockResolvedValue(mockUploadResult);
+    require('firebase/storage').getDownloadURL.mockResolvedValue(mockDownloadURL);
+
+    // Mock Firestore operations
+    const mockRequest = { id: 'test-id' };
+    const mockFirestore = require('firebase/firestore');
+    mockFirestore.addDoc.mockResolvedValue(mockRequest);
+    
+    await fireEvent.press(getByTestId('testSubmitButton'));
+    
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith('Success', 'Your maintenance request has been submitted.');
+    });
+  });
+});
+>>>>>>> main
 
     await act(async () => {
       fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');

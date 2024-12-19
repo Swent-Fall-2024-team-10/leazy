@@ -28,6 +28,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getFileBlob, clearFiles } from '../../utils/cache';
 import {
   getTenant,
+  updateApartment,
   updateMaintenanceRequest,
   updateTenant,
   getApartment,
@@ -147,8 +148,6 @@ export default function ReportScreen() {
       await updateApartment(tenant.apartmentId, {
         maintenanceRequests: [...apartment.maintenanceRequests, requestID.id],
       });
-
-      
       await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
 
       Alert.alert('Success', 'Your maintenance request has been submitted.');

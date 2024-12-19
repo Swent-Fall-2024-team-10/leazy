@@ -134,6 +134,7 @@ jest.mock('firebase/firestore', () => ({
     }),
   },
 }));
+
 jest.mock('../utils/cache');
 
 describe('ReportScreen', () => {
@@ -327,6 +328,7 @@ describe('ReportScreen', () => {
   });
 
   it('handles successful submission with pictures', async () => {
+
     console.log('Starting test setup');
 
     // Mock Firestore addDoc to resolve successfully
@@ -344,6 +346,7 @@ describe('ReportScreen', () => {
       .mockImplementation(mockAddDoc);
 
     // Mock navigation
+
     const mockNavigate = jest.fn();
     jest
       .spyOn(require('@react-navigation/native'), 'useNavigation')
@@ -362,6 +365,7 @@ describe('ReportScreen', () => {
       console.log('getTenant called');
       return mockTenant;
     });
+
 
     (FirestoreModule.updateTenant as jest.Mock).mockImplementation(async () => {
       console.log('updateTenant called');
@@ -450,4 +454,6 @@ describe('ReportScreen', () => {
     expect(getDownloadURL).toHaveBeenCalled();
     expect(FirestoreModule.createNews).toHaveBeenCalled();
   }, 10000); // Increase timeout to 10 seconds for this test
+
 });
+

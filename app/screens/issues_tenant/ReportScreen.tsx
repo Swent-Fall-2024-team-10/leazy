@@ -27,6 +27,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getFileBlob, clearFiles } from '../../utils/cache';
 import {
   getTenant,
+  updateApartment,
   updateMaintenanceRequest,
   updateTenant,
   createNews,
@@ -37,6 +38,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
+
   const { user } = useAuth();
 
   const [room, setRoom] = useState('');
@@ -52,7 +54,6 @@ export default function ReportScreen() {
   const hours = currentDay.getHours().toString().padStart(2, '0');
   const minutes = currentDay.getMinutes().toString().padStart(2, '0');
   const { pictureList, resetPictureList } = usePictureContext();
-  const { removePicture } = usePictureContext();
 
   async function resetStates() {
     setRoom('');
@@ -155,13 +156,27 @@ export default function ReportScreen() {
         maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
       });
 
-      Alert.alert('Success', 'Your maintenance request has been submitted.');
+
+      // update the appartements maintenanceRequests array with the new request id
+      await updateApartment(tenant.apartmentId, {
+        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
+      });
+
+      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+
+      Alert.alert("Success", "Your maintenance request has been submitted.");
 
       resetStates();
-      const nextScreen = tick ? 'Messaging' : 'Issues';
-      setTick(false);
 
-      navigation.navigate(nextScreen);
+
+      if (tick) {
+        setTick(false);
+        navigation.navigate("Messaging", {chatID: requestID.id});
+      } else {
+        setTick(false);
+        navigation.navigate("Issues");
+      }
+    
     } catch (error) {
       Alert.alert(
         'Error',

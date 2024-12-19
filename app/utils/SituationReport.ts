@@ -1,46 +1,13 @@
+import { getApartment, getResidence } from "../../firebase/firestore/firestore";
+import { Landlord, SituationReportLayout, SituationReportSingleton } from "../../types/types";
+import { getFirestore, writeBatch, doc, collection, getDoc, addDoc, where, query, getDocs } from "firebase/firestore";
+
 enum SituationReportStatus {
     OC = 1,
     NW = 2,
     AW = 3,
     NONE = 0,
-}
-
-/**
- * Convert a situation report from the backend format to the frontend format 
- * converting from JSON to a tuple containing in a tuple : 1 ) the name of the report
- * 2) a list of groups representing the layout of the report
- *  
- * @param backendJsonString the situation report in JSON format (backend format)
- * @returns A tuple containing the name of the report and the layout of the report
- */
-export function toFrontendFormat(backendJsonString: string): [string, [string, [string, number][]][]] {
-    const backendData = JSON.parse(backendJsonString);
-    const name = backendData.name;
-    const groups = backendData.groups.map((group: { groupName: string; items: (string | number)[] }) => {
-        const formattedItems: [string, number][] = [];
-        for (let i = 0; i < group.items.length; i += 2) {
-            formattedItems.push([group.items[i] as string, group.items[i + 1] as number]);
-        }
-        return [group.groupName, formattedItems];
-    });
-    return [name, groups];
-}
-
-
-/**
- * Convert a situation report from the frontend format to a JSON string (backend format)
- * 
- * @param frontendFormat list of groups representing the layout of the report (frontend format)
- * @param reportName name of the report (because there might be multiple layouts)
- * @returns a JSON string representing the situation report to be stored in the database
- */
-export function toDatabaseFormat(frontendFormat: [string, [string, number][]][], reportName: string): string {
-    const groups = frontendFormat.map(([groupName, items]) => {
-        const itemsString = items.map(([item, status]) => `Item:${item},Status:${status}`).join(',');
-        return { groupName, items: itemsString };
-    });
-    return JSON.stringify({ name : reportName,  groups });
-}
+} 
 
 export function addGroupToLayout(
     currentLayout: [string, [string, number][]][], 
@@ -123,4 +90,221 @@ export function changeStatus(layout: [string, [string, number][]][], groupIndex:
     nextLayout[groupIndex][1][itemIndex][1] = nextStatus;
 
     return nextLayout
+}
+
+export function getNameAndSurname(jsonString: string): [string, string] {
+  try {
+      const data = JSON.parse(jsonString); // Parse the JSON string into an object
+      const { name, surname } = data; // Destructure name and surname from the object
+      return [ name, surname ]; // Return the name and surname
+  } catch (error) {
+      console.error("Invalid JSON string:", error);
+      return ["", ""]; // Return null if the JSON string is invalid
+  }
+}
+
+
+interface PickerData {
+    label: string;
+    value: string;
+}
+
+export async function fetchResidences(
+    landlord: Landlord, 
+    setResidencesMappedToName: (residences: PickerData[]) => void
+): Promise<void> {
+    // Map residence IDs to their corresponding names
+    const mappedResidences: PickerData[] = (await Promise.all(
+        landlord.residenceIds.map(async (id: string) => {
+            const residence = await getResidence(id);
+            if (residence) {
+                return {
+                    label: residence?.residenceName ?? 'Unknown',
+                    value: id,
+                };
+            }
+            return undefined;
+        }),
+    )).filter((item): item is PickerData => item !== undefined);
+    setResidencesMappedToName(mappedResidences);
+}
+
+export async function fetchApartmentNames(
+    landlordID: string,
+    setApartmentMappedToName: (apartments: PickerData[]) => void
+): Promise<void> {
+    const residence = await getResidence(landlordID);
+
+    if (residence) {
+        const mappedApartments: PickerData[] = (await Promise.all(residence.apartments.map(async (id: string) => {
+            const apartment = await getApartment(id);
+            if (apartment) {
+                return {
+                    label: apartment.apartmentName,
+                    value: id,
+                };
+            }
+            return undefined;
+        }))).filter((item): item is PickerData => item !== undefined);
+        setApartmentMappedToName(mappedApartments);
+    }
+}
+
+interface LayoutPickerData {
+    label: string;
+    value: [string, [string, number][]][];
+}
+
+export async function fetchSituationReportLayout(
+    residenceID: string,
+    setLayout: (layout: LayoutPickerData[]) => void
+): Promise<void> {
+    const residence = await getResidence(residenceID);
+    const mappedLayout = residence?.situationReportLayout.map(async (layout) => {
+        if (layout) {
+            const [label, value] = await fetchFromDatabase(layout)
+            return { 
+                label: label, 
+                value: value
+            };
+        }
+    }
+    );
+
+    if (mappedLayout) {
+        const resolvedLayout = await Promise.all(mappedLayout);
+        setLayout(resolvedLayout.filter((layout): layout is LayoutPickerData => layout !== undefined));
+    }
+}
+
+export function filterEmptyElements(
+    layout: [string, [string, number][]][]
+  ): [string, [string, number][]][] {
+    return layout.filter((group) => {
+      const filteredItems = group[1].filter(
+        (item) => item[0] !== "" && Array.isArray(item) && item.length > 0
+      );
+      
+      group[1] = filteredItems;
+      
+      return filteredItems.length > 0;
+    });
+  }
+
+export async function fetchFromDatabase(
+  situationReportId: string
+): Promise<[string, [string, [string, number][]][]]> {
+  const db = getFirestore();
+
+  const reportRef = doc(db, "situationReports", situationReportId);
+  const reportSnapshot = await getDoc(reportRef);
+
+  if (!reportSnapshot.exists()) {
+    throw new Error(`SituationReport with ID "${situationReportId}" does not exist.`);
+  }
+
+  const reportData = reportSnapshot.data();
+  const reportName = reportData.layout.label;
+  const groups: string[] = reportData.layout.value;
+
+  const groupDocsQuery = query(
+    collection(db, "situationReports", situationReportId, "situationReportGroups"),
+    where("__name__", "in", groups)  
+  );
+
+  const groupDocsSnapshot = await getDocs(groupDocsQuery);
+
+  const groupData = groupDocsSnapshot.docs
+    .map((doc) => ({ id: doc.id, data: doc.data() }))  
+    .sort((a, b) => groups.indexOf(a.id) - groups.indexOf(b.id))  
+    .map((doc) => doc.data);  
+
+  let layoutDatas: [string, [string, number][]][] = [];
+
+  for (const group of groupData) {
+    let groupName = group.label;
+    const singletonRefs = group.value; 
+
+    const singletonDocsQuery = query(
+      collection(db, "situationReports", situationReportId, "situationReportSingletons"),
+      where("__name__", "in", singletonRefs)  
+    );
+
+    const singletonDocsSnapshot = await getDocs(singletonDocsQuery);
+
+    let datas: [string, number][] = [];
+    singletonDocsSnapshot.docs
+      .map((doc) => ({ id: doc.id, data: doc.data() }))  
+      .sort((a, b) => singletonRefs.indexOf(a.id) - singletonRefs.indexOf(b.id))  
+      .forEach((doc) => {
+        const singleton_data = doc.data;
+        const label: string = singleton_data.label;
+        const value: number = singleton_data.value;
+        datas.push([label, value]);
+      });
+
+    layoutDatas.push([groupName, datas]);
+  }
+
+  return [reportName, layoutDatas];
+}
+  
+
+export async function toDatabase(
+  frontendFormat: [string, [string, number][]][],
+  reportName: string
+): Promise<string> {
+  const db = getFirestore();
+  const groupReferences: { groupID: string; singletonRefs: string[] }[] = [];
+
+  let batch = writeBatch(db);
+  let batchCount = 0;
+
+  const reportRef = await addDoc(collection(db, "situationReports"), {
+    layout: {},
+  });
+
+  const groupCollectionRef = collection(reportRef, "situationReportGroups");
+  const singletonCollectionRef = collection(reportRef, "situationReportSingletons");
+
+  for (const group of frontendFormat) {
+    const groupName = group[0];
+    const items = group[1];
+
+    const singletonRefs: string[] = [];
+
+    for (const item of items) {
+      const singleton: SituationReportSingleton = {
+        label: item[0],
+        value: item[1],
+      };
+
+      const singletonRef = doc(singletonCollectionRef); 
+      batch.set(singletonRef, singleton); 
+      singletonRefs.push(singletonRef.id);
+
+      batchCount++;
+    }
+
+    const groupData = { label: groupName, value: singletonRefs }; 
+    const groupRef = doc(groupCollectionRef);
+    batch.set(groupRef, groupData); 
+
+    groupReferences.push({ groupID: groupRef.id, singletonRefs }); 
+  }
+
+  const reportLayout: SituationReportLayout = {
+    label: reportName,
+    value: groupReferences.map((group) => group.groupID),
+  };
+
+  batch.update(reportRef, { layout: reportLayout });
+
+  batchCount++;
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  return reportRef.id;
 }

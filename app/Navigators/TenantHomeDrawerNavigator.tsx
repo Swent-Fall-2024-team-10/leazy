@@ -6,16 +6,18 @@ import IssueStackNavigator from '../Navigators/IssueStackNavigator';
 import MyRentScreen from '../screens/tenant/MyRentScreen';
 import SharedElementsScreen from '../screens/tenant/SharedElementsScreen';
 import SubrentScreen from '../screens/tenant/SubrentScreen';
-import SettingsScreen from '../screens/tenant/SettingsScreen';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
 import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
 import { Color, appStyles } from '../../styles/styles';
+import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
+import SettingsStackNavigator from './SettingsStackNavigator';
 
 const Drawer = createDrawerNavigator();
 
 const TenantHomeDrawerNavigator = () => {
     return (
         <Drawer.Navigator
+            testID='tenant-drawer-navigator'
             initialRouteName="Home"
             useLegacyImplementation={false}
             drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -38,7 +40,12 @@ const TenantHomeDrawerNavigator = () => {
             <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
             <Drawer.Screen name="Subrent" component={SubrentScreen} />
             <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
+            <Drawer.Screen name="Snitch Mode" component={SnitchModeScreen} />
+            <Drawer.Screen 
+                name="Settings" 
+                component={SettingsStackNavigator}
+                options={{ unmountOnBlur: true }}    
+            />
         </Drawer.Navigator>
     );
 };

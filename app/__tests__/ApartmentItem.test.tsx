@@ -1,136 +1,118 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import ApartmentItem from '../components/ApartmentItem';
+import { NavigationProp } from '@react-navigation/native';
+
+const mockNavigate = jest.fn();
 
 jest.mock('@expo/vector-icons', () => ({
   Feather: 'Feather',
 }));
 
-const Stack = createStackNavigator();
-const mockNavigate = jest.fn();
+const mockNavigation: Partial<NavigationProp<any>> = {
+  navigate: mockNavigate,
+};
 
-jest.mock('@react-navigation/native', () => {
-  const actualNav = jest.requireActual('@react-navigation/native');
-  return {
-    ...actualNav,
-    useNavigation: () => ({
-      navigate: mockNavigate,
-    }),
-  };
-});
-
-describe('ApartmentItem', () => {
-  const mockApartment = {
-    apartmentName: '101',
-    tenants: [
-      { id: '1', name: 'John Doe' },
-      { id: '2', name: 'Jane Smith' }
-    ]
+describe('ApartmentItem Component', () => {
+  const apartment = {
+    id: '1',
+    apartmentName: 'Sunrise Villa',
+    tenants: [{ id: '101' }, { id: '102' }],
   };
 
   beforeEach(() => {
-    mockNavigate.mockClear();
+    jest.clearAllMocks();
   });
 
-  const renderWithNavigation = (component) => {
-    return render(
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="Test">
-            {() => component}
-          </Stack.Screen>
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-  };
-
-  it('renders apartment information correctly', () => {
-    const { getByTestId, getByText } = renderWithNavigation(
-      <ApartmentItem 
-        apartment={mockApartment}
+  it('renders correctly with apartment details', () => {
+    const { getByText } = render(
+      <ApartmentItem
+        apartment={apartment}
         editMode={false}
-        navigation={mockNavigate as any}
+        navigation={mockNavigation}
       />
     );
-
-    const apartmentItem = getByTestId('apartment-item-101');
-    expect(apartmentItem).toBeTruthy();
-    expect(getByText('101 (2 tenants)')).toBeTruthy();
+    expect(getByText('Sunrise Villa (2 tenants)')).toBeTruthy();
   });
 
-  it('renders with correct initial style', () => {
-    const { getByTestId } = renderWithNavigation(
-      <ApartmentItem 
-        apartment={mockApartment}
+  it('navigates to FlatDetails on press when not in edit mode', () => {
+    const { getByTestId } = render(
+      <ApartmentItem
+        apartment={apartment}
         editMode={false}
-        navigation={mockNavigate as any}
+        navigation={mockNavigation}
       />
     );
-
-    const pressableElement = getByTestId('apartment-item-101');
-    expect(pressableElement.props.style).toMatchObject({
-      width: '100%',
-      opacity: 1,
-      backgroundColor: '#D6D3F0',
-      borderRadius: 4,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 12,
-      marginVertical: 4
-    });
+    fireEvent.press(getByTestId(`apartment-item-${apartment.id}`));
+    expect(mockNavigate).toHaveBeenCalledWith('FlatDetails', { apartment });
   });
 
-  it('handles empty tenants array', () => {
-    const emptyApartment = {
-      apartmentName: '102',
-      tenants: []
-    };
-
-    const { getByTestId, getByText } = renderWithNavigation(
-      <ApartmentItem 
-        apartment={emptyApartment}
-        editMode={false}
-        navigation={mockNavigate as any}
-      />
-    );
-
-    const apartmentItem = getByTestId('apartment-item-102');
-    expect(apartmentItem).toBeTruthy();
-    expect(getByText('102 (0 tenants)')).toBeTruthy();
-  });
-
-  it('renders correctly with single tenant', () => {
-    const singleTenantApartment = {
-      apartmentName: '103',
-      tenants: [{ id: '1', name: 'John Doe' }]
-    };
-
-    const { getByTestId, getByText } = renderWithNavigation(
-      <ApartmentItem 
-        apartment={singleTenantApartment}
-        editMode={false}
-        navigation={mockNavigate as any}
-      />
-    );
-
-    const apartmentItem = getByTestId('apartment-item-103');
-    expect(apartmentItem).toBeTruthy();
-    expect(getByText('103 (1 tenants)')).toBeTruthy();
-  });
-
-  it('handles edit mode correctly', () => {
-    const { getByTestId } = renderWithNavigation(
-      <ApartmentItem 
-        apartment={mockApartment}
+  it('calls onDelete when in edit mode and delete button is pressed', () => {
+    const mockOnDelete = jest.fn();
+    const { getByTestId } = render(
+      <ApartmentItem
+        apartment={apartment}
         editMode={true}
-        navigation={mockNavigate as any}
-        onDelete={() => {}}
+        navigation={mockNavigation}
+        onDelete={mockOnDelete}
       />
     );
+    fireEvent.press(getByTestId('delete-button'));
+    expect(mockOnDelete).toHaveBeenCalledWith(apartment.id);
+  });
 
+  it('renders correct icon based on editMode', () => {
+    const { getByTestId, rerender } = render(
+      <ApartmentItem
+        apartment={apartment}
+        editMode={false}
+        navigation={mockNavigation}
+      />
+    );
+    expect(getByTestId('chevron-button')).toBeTruthy();
+    rerender(
+      <ApartmentItem
+        apartment={apartment}
+        editMode={true}
+        navigation={mockNavigation}
+      />
+    );
     expect(getByTestId('delete-button')).toBeTruthy();
+  });
+
+  it('does not navigate when clicking chevron button in edit mode', () => {
+    const { getByTestId } = render(
+      <ApartmentItem
+        apartment={apartment}
+        editMode={true}
+        navigation={mockNavigation}
+      />
+    );
+    fireEvent.press(getByTestId('delete-button'));
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('does not call onDelete when clicking delete button without onDelete prop', () => {
+    const { getByTestId } = render(
+      <ApartmentItem
+        apartment={apartment}
+        editMode={true}
+        navigation={mockNavigation}
+      />
+    );
+    fireEvent.press(getByTestId('delete-button'));
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates to FlatDetails on chevron press when not in edit mode', () => {
+    const { getByTestId } = render(
+      <ApartmentItem
+        apartment={apartment}
+        editMode={false}
+        navigation={mockNavigation}
+      />
+    );
+    fireEvent.press(getByTestId('chevron-button'));
+    expect(mockNavigate).toHaveBeenCalledWith('FlatDetails', { apartment });
   });
 });

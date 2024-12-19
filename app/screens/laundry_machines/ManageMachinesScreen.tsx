@@ -78,8 +78,11 @@ const ManageMachinesScreen = () => {
     });
     setMachines((prev) =>
       prev.map((m) =>
-        m.laundryMachineId === machine.laundryMachineId ? updatedMachine : m,
-      ),
+
+        m.laundryMachineId === machine.laundryMachineId ? updatedMachine : m
+      )
+      
+
     );
   };
 

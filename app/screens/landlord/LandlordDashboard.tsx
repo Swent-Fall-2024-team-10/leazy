@@ -21,6 +21,7 @@ import {
   Residence,
   MaintenanceRequest,
   Apartment,
+  ResidenceStackParamList,
 } from "@/types/types";
 
 import {
@@ -44,6 +45,7 @@ const RoundedRectangle: React.FC<{
 const LandlordDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation<NavigationProp<LandlordStackParamList>>();
+
   if (!user) {
     throw new Error("User not found.");
   }
@@ -160,7 +162,11 @@ const LandlordDashboard: React.FC = () => {
     },
   ];
 
-  const handleResidencePress = (residence: Residence) => {};
+  const handleResidencePress = (residence: Residence) => {
+    navigation.navigate("Residence Stack", {
+      screen: "ResidenceList"
+    });
+  };
 
   const handleRetry = () => {
     fetchResidence();

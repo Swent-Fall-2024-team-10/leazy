@@ -1,10 +1,3 @@
-jest.mock('react-native-keyboard-aware-scroll-view', () => {
-  const { ScrollView } = require('react-native');
-  return {
-    KeyboardAwareScrollView: ScrollView,
-  };
-});
-
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
@@ -18,6 +11,10 @@ import {
   createResidence,
   updateResidence,
 } from '../../firebase/firestore/firestore';
+
+jest.mock('react-native-keyboard-aware-scroll-view', () => ({
+  KeyboardAwareScrollView: 'MockKeyboardAwareScrollView',
+}));
 
 // Mock navigation
 const mockNavigate = jest.fn();
@@ -64,6 +61,11 @@ jest.mock('../../firebase/firestore/firestore', () => ({
   createResidence: jest.fn(),
   createApartment: jest.fn(),
   updateResidence: jest.fn(),
+  getLandlord: jest.fn().mockResolvedValue({
+    residenceIds: [],
+    // Add any other required landlord properties
+  }),
+  updateLandlord: jest.fn().mockResolvedValue(true),
 }));
 
 jest.spyOn(Alert, 'alert');

@@ -42,7 +42,9 @@ import {
   Color,
   FontSizes,
   stylesForNonHeaderScreens,
+  ButtonDimensions,
 } from '../../../styles/styles';
+import SubmitButton from '../../components/buttons/SubmitButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { LandlordStackParamList } from '../../../types/types';
 
@@ -259,6 +261,25 @@ const LandlordDashboard: React.FC = () => {
 
   const handleRetry = () => {
     fetchResidence();
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      // Fetch residences and maintenance requests
+      await fetchResidence();
+
+      // Fetch latest message
+      if (maintenanceRequestList.length > 0) {
+        const message = await fetchLastMessage();
+        setLatestMessage(message);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Unable to refresh data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -499,6 +520,19 @@ const LandlordDashboard: React.FC = () => {
                   </Text>
                 )}
               </RoundedRectangle>
+
+              <View>
+                <SubmitButton
+                  disabled={false}
+                  onPress={handleRefresh}
+                  width={ButtonDimensions.mediumButtonWidth}
+                  height={ButtonDimensions.mediumButtonHeight}
+                  label='Refresh'
+                  testID='testRefreshButton'
+                  style={[appStyles.submitButton, { alignSelf: 'center' }]}
+                  textStyle={appStyles.submitButtonText}
+                />
+              </View>
             </>
           )}
         </ScrollView>

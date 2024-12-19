@@ -25,8 +25,11 @@ import {
   createApartment,
   createResidence,
   updateResidence,
+  getLandlord,
+  updateLandlord,
 } from '../../../firebase/firestore/firestore';
 import CustomPopUp from '../../components/CustomPopUp';
+import { get } from 'http';
 
 interface ResidenceFormData {
   name: string;
@@ -85,6 +88,11 @@ const validateEmail = (email: string): boolean => {
 function ResidenceCreationScreen() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const { user } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
   const [formData, setFormData] = useState<ResidenceFormData>({
     name: '',
     address: '',
@@ -248,6 +256,14 @@ function ResidenceCreationScreen() {
       };
 
       const newResidenceId = await createResidence(newResidence);
+
+      if (newResidenceId) {
+        const updatedLandlord = await getLandlord(user.uid);
+        if (updatedLandlord) {
+          updatedLandlord.residenceIds.push(newResidenceId);
+          await updateLandlord(user.uid, updatedLandlord);
+        }
+      }
 
       if (!newResidenceId) {
         setFirebaseError(true);

@@ -74,7 +74,6 @@ describe('LandlordDashboard Component', () => {
     return render(<NavigationContainer>{component}</NavigationContainer>);
   };
 
-  // Define the mocked user of type TUser
   const mockedUser: TUser = {
     uid: 'test-uid',
     type: 'landlord',
@@ -89,14 +88,11 @@ describe('LandlordDashboard Component', () => {
     country: 'Anycountry',
   };
 
-  // Define a mock FirebaseUser
   const mockedFirebaseUser: FirebaseUser = {
     uid: 'test-uid',
     email: 'johndoe@example.com',
-    // Other properties can be included as needed
   } as unknown as FirebaseUser;
 
-  // Define the default mocked AuthContextType
   const mockedAuthContext = {
     firebaseUser: mockedFirebaseUser,
     user: mockedUser,
@@ -107,14 +103,12 @@ describe('LandlordDashboard Component', () => {
   };
 
   test('renders loading state initially', () => {
-    // Set isLoading to true
     mockedUseAuth.mockReturnValue({
       ...mockedAuthContext,
       isLoading: true,
     });
 
     const { getByTestId } = renderWithNavigation(<LandlordDashboard />);
-
     expect(getByTestId('LandlordDashboard_LoadingIndicator')).toBeTruthy();
     expect(getByTestId('LandlordDashboard_LoadingText')).toHaveTextContent(
       'Loading...',
@@ -129,7 +123,6 @@ describe('LandlordDashboard Component', () => {
     mockedGetLandlord.mockRejectedValue(new Error('Network Error'));
 
     const { findByTestId } = renderWithNavigation(<LandlordDashboard />);
-
     const errorMessage = await findByTestId('LandlordDashboard_ErrorMessage');
     expect(errorMessage).toHaveTextContent(
       'Unable to load data. Please check your connection and try again.',
@@ -244,14 +237,11 @@ describe('LandlordDashboard Component', () => {
       <LandlordDashboard />,
     );
 
-    // Wait for residences to be displayed
     await findByTestId('LandlordDashboard_ListedResidencesContainer');
 
-    // Check that residences are displayed
     const residenceItems = getAllByTestId(/^LandlordDashboard_ResidenceItem_/);
     expect(residenceItems.length).toBe(2);
 
-    // Check residence names
     expect(getByTestId('LandlordDashboard_ResidenceName_0')).toHaveTextContent(
       'Residence 1',
     );
@@ -259,7 +249,6 @@ describe('LandlordDashboard Component', () => {
       'Residence 2',
     );
 
-    // Check maintenance issues counts
     expect(getByTestId('LandlordDashboard_NotStartedIssues')).toHaveTextContent(
       '1 Not Started',
     );
@@ -270,7 +259,6 @@ describe('LandlordDashboard Component', () => {
       '1 Completed',
     );
 
-    // Check most recent maintenance request
     expect(getByTestId('LandlordDashboard_MostRecentIssue')).toHaveTextContent(
       'Leaky roof',
     );
@@ -278,8 +266,6 @@ describe('LandlordDashboard Component', () => {
 
   test('navigates to IssueDetails when most recent issue is pressed', async () => {
     const mockNavigate = jest.fn();
-
-    // Use the mocked useNavigation from the mocked module
     (Navigation.useNavigation as jest.Mock).mockReturnValue({
       navigate: mockNavigate,
     });
@@ -315,14 +301,11 @@ describe('LandlordDashboard Component', () => {
     );
 
     await findByTestId('LandlordDashboard_MostRecentIssue');
-
     const mostRecentTouchable = getByTestId(
       'LandlordDashboard_MostRecentIssue',
     ).parent;
-    if (!mostRecentTouchable) {
-      throw new Error('Touchable not found');
-    }
-    fireEvent.press(mostRecentTouchable);
+
+    fireEvent.press(mostRecentTouchable!);
 
     expect(mockNavigate).toHaveBeenCalledWith('IssueDetails', {
       requestID: 'req3',
@@ -352,9 +335,7 @@ describe('LandlordDashboard Component', () => {
       situationReportId: ['situation1'],
     } as Apartment);
 
-    const { findByTestId, getByTestId } = renderWithNavigation(
-      <LandlordDashboard />,
-    );
+    const { getByTestId } = renderWithNavigation(<LandlordDashboard />);
 
     await waitFor(() => {
       expect(
@@ -383,14 +364,49 @@ describe('LandlordDashboard Component', () => {
       residenceIds: [],
     });
 
-    const { findByTestId, getByTestId } = renderWithNavigation(
-      <LandlordDashboard />,
-    );
+    const { getByTestId } = renderWithNavigation(<LandlordDashboard />);
 
     await waitFor(() => {
       expect(
         getByTestId('LandlordDashboard_NoResidencesText'),
       ).toHaveTextContent('No residences available');
+    });
+  });
+
+  // New tests for messages:
+
+  test('displays "You have no messages" when no messages are found', async () => {
+    mockedUseAuth.mockReturnValue({
+      ...mockedAuthContext,
+    });
+
+    // Setup landlord with a residence and request
+    mockedGetLandlord.mockResolvedValue({
+      userId: mockedUser.uid,
+      residenceIds: ['res1'],
+    });
+
+    mockedGetResidence.mockResolvedValue({
+      residenceName: 'Residence 1',
+      apartments: ['apt1'],
+    } as Residence);
+
+    mockedGetApartment.mockResolvedValue({
+      apartmentName: 'Apartment 1',
+      maintenanceRequests: [],
+      residenceId: 'res1',
+      tenants: [],
+      situationReportId: [],
+    } as Apartment);
+
+    // No maintenance requests means no chat doc will be found
+    // So no messages should appear.
+    const { getByTestId } = renderWithNavigation(<LandlordDashboard />);
+
+    await waitFor(() => {
+      expect(getByTestId('LandlordDashboard_NoMessagesText')).toHaveTextContent(
+        'You have no messages',
+      );
     });
   });
 });

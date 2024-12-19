@@ -1,3 +1,10 @@
+jest.mock('../../firebase/firebase', () => {
+  return {
+    db: {},
+    auth: {},
+  };
+});
+
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import LandlordDashboard from '../screens/landlord/LandlordDashboard';
@@ -10,6 +17,7 @@ import {
   getResidence,
   getApartment,
   getMaintenanceRequest,
+  getUser,
 } from '../../firebase/firestore/firestore';
 import { NavigationContainer } from '@react-navigation/native';
 import {
@@ -19,7 +27,16 @@ import {
   MaintenanceRequest,
 } from '../../types/types';
 import { User as FirebaseUser } from 'firebase/auth';
-import { getDoc, getDocs } from 'firebase/firestore';
+import {
+  getDoc,
+  getDocs,
+  collection,
+  doc,
+  query,
+  where,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
 
 jest.mock('../context/AuthContext');
 jest.mock('../../firebase/firestore/firestore');
@@ -28,11 +45,30 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
+// Mocking firestore methods to prevent "is not a function" errors
+jest.mock('firebase/firestore', () => {
+  const original = jest.requireActual('firebase/firestore');
+  return {
+    ...original,
+    getDoc: jest.fn().mockResolvedValue({ exists: () => false }),
+    getDocs: jest.fn().mockResolvedValue({ empty: true, docs: [] }),
+    collection: jest.fn((...args) => args),
+    doc: jest.fn((...args) => args),
+    query: jest.fn((...args) => args),
+    where: jest.fn((...args) => ({ type: 'where', args })),
+    orderBy: jest.fn((...args) => ({ type: 'orderBy', args })),
+    limit: jest.fn((...args) => ({ type: 'limit', args })),
+  };
+});
+
 const consoleSpy = {
   error: jest.spyOn(console, 'error').mockImplementation(() => {}),
   log: jest.spyOn(console, 'log').mockImplementation(() => {}),
   warn: jest.spyOn(console, 'warn').mockImplementation(() => {}),
 };
+
+const mockGetDoc = getDoc as jest.Mock;
+const mockGetDocs = getDocs as jest.Mock;
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockedGetLandlord = getLandlord as jest.MockedFunction<
@@ -46,15 +82,7 @@ const mockedGetApartment = getApartment as jest.MockedFunction<
 >;
 const mockedGetMaintenanceRequest =
   getMaintenanceRequest as jest.MockedFunction<typeof getMaintenanceRequest>;
-
-(getDoc as jest.Mock).mockResolvedValue({
-  exists: () => false,
-});
-
-(getDocs as jest.Mock).mockResolvedValue({
-  empty: true,
-  docs: [],
-});
+const mockedGetUser = getUser as jest.MockedFunction<typeof getUser>;
 
 describe('LandlordDashboard Component', () => {
   beforeEach(() => {
@@ -100,6 +128,53 @@ describe('LandlordDashboard Component', () => {
     landlord: null,
     isLoading: false,
     error: undefined,
+  };
+
+  const mockedMessageData = (
+    content: string,
+    sentOn: number,
+    sentBy: string,
+  ) => ({
+    content,
+    sentOn,
+    sentBy,
+  });
+
+  const mockMessageDocs = (docsData: any[]) => {
+    return {
+      empty: docsData.length === 0,
+      docs: docsData.map((data, idx) => ({
+        id: `msg${idx}`,
+        data: () => data,
+      })),
+    };
+  };
+
+  const mockLandlordWithRequests = () => {
+    mockedGetLandlord.mockResolvedValue({
+      userId: mockedUser.uid,
+      residenceIds: ['res1'],
+    });
+
+    mockedGetResidence.mockResolvedValue({
+      residenceName: 'Residence 1',
+      apartments: ['apt1'],
+    } as Residence);
+
+    mockedGetApartment.mockResolvedValue({
+      apartmentName: 'Apartment 1',
+      maintenanceRequests: ['req1'],
+      residenceId: 'res1',
+      tenants: [],
+      situationReportId: [],
+    } as Apartment);
+
+    mockedGetMaintenanceRequest.mockResolvedValue({
+      requestID: 'req1',
+      requestTitle: 'Leaky faucet',
+      requestStatus: 'inProgress',
+      requestDate: '04/01/2023 at 12:00',
+    } as MaintenanceRequest);
   };
 
   test('renders loading state initially', () => {
@@ -399,8 +474,6 @@ describe('LandlordDashboard Component', () => {
       situationReportId: [],
     } as Apartment);
 
-    // No maintenance requests means no chat doc will be found
-    // So no messages should appear.
     const { getByTestId } = renderWithNavigation(<LandlordDashboard />);
 
     await waitFor(() => {
@@ -408,5 +481,165 @@ describe('LandlordDashboard Component', () => {
         'You have no messages',
       );
     });
+  });
+
+  test('fetches and displays the latest message normally', async () => {
+    mockLandlordWithRequests();
+
+    // docSnapshot exists
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+    });
+
+    // Primary query returns one message
+    mockGetDocs.mockResolvedValueOnce(
+      mockMessageDocs([
+        mockedMessageData('Hello from tenant', 1690000000000, 'tenant123'),
+      ]),
+    );
+
+    const mockNavigate = jest.fn();
+    (Navigation.useNavigation as jest.Mock).mockReturnValue({
+      navigate: mockNavigate,
+    });
+
+    mockedUseAuth.mockReturnValue({
+      ...mockedAuthContext,
+    });
+
+    const { findByTestId, getByTestId } = renderWithNavigation(
+      <LandlordDashboard />,
+    );
+
+    await findByTestId('LandlordDashboard_NewMessagesContainer');
+    expect(getByTestId('LandlordDashboard_MessageText_0')).toHaveTextContent(
+      'Hello from tenant',
+    );
+  });
+
+  test('falls back to the catch block query when main query fails', async () => {
+    mockLandlordWithRequests();
+
+    // docSnapshot exists
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+    });
+
+    // Primary query throws an error
+    mockGetDocs.mockImplementationOnce(() => {
+      throw new Error('Primary query failed');
+    });
+
+    // Fallback query returns one message
+    mockGetDocs.mockResolvedValueOnce(
+      mockMessageDocs([
+        mockedMessageData('Fallback message', 1690000001000, 'tenant456'),
+      ]),
+    );
+
+    // getUser returns a name for tenant456
+    mockedGetUser.mockResolvedValue({
+      uid: 'tenant-uid',
+      type: 'tenant',
+      name: 'Tenant User',
+      email: 'tenantuser@example.com',
+      phone: '123456789',
+      street: 'Tenant Street',
+      number: '10',
+      city: 'Tenant City',
+      canton: 'Tenant Canton',
+      zip: '12345',
+      country: 'Tenant Country',
+    });
+
+    const mockNavigate = jest.fn();
+    (Navigation.useNavigation as jest.Mock).mockReturnValue({
+      navigate: mockNavigate,
+    });
+
+    mockedUseAuth.mockReturnValue({
+      ...mockedAuthContext,
+    });
+
+    const { findByTestId, getByTestId } = renderWithNavigation(
+      <LandlordDashboard />,
+    );
+
+    await findByTestId('LandlordDashboard_NewMessagesContainer');
+    expect(getByTestId('LandlordDashboard_MessageText_0')).toHaveTextContent(
+      'Fallback message',
+    );
+    expect(getByTestId('LandlordDashboard_MessageText_0')).toHaveTextContent(
+      'From Tenant User:',
+    );
+  });
+
+  test('displays no messages if fetchLastMessage returns null (no messages found)', async () => {
+    mockLandlordWithRequests();
+
+    // docSnapshot exists but no messages
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+    });
+
+    // Primary query returns empty
+    mockGetDocs.mockResolvedValueOnce(mockMessageDocs([]));
+
+    const mockNavigate = jest.fn();
+    (Navigation.useNavigation as jest.Mock).mockReturnValue({
+      navigate: mockNavigate,
+    });
+
+    mockedUseAuth.mockReturnValue({
+      ...mockedAuthContext,
+    });
+
+    const { findByTestId, getByTestId } = renderWithNavigation(
+      <LandlordDashboard />,
+    );
+
+    await findByTestId('LandlordDashboard_NewMessagesContainer');
+    expect(getByTestId('LandlordDashboard_NoMessagesText')).toHaveTextContent(
+      'You have no messages',
+    );
+  });
+
+  test('tests handleRefresh by mocking a message after refresh', async () => {
+    mockLandlordWithRequests();
+
+    // First load: no messages
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+    });
+    mockGetDocs.mockResolvedValueOnce(mockMessageDocs([]));
+
+    const mockNavigate = jest.fn();
+    (Navigation.useNavigation as jest.Mock).mockReturnValue({
+      navigate: mockNavigate,
+    });
+
+    mockedUseAuth.mockReturnValue({
+      ...mockedAuthContext,
+    });
+
+    const { findByTestId, getByTestId } = renderWithNavigation(
+      <LandlordDashboard />,
+    );
+
+    await findByTestId('LandlordDashboard_NewMessagesContainer');
+    expect(getByTestId('LandlordDashboard_NoMessagesText')).toHaveTextContent(
+      'You have no messages',
+    );
+
+    // After refresh, new message appears
+    mockGetDocs.mockReset();
+    mockGetDocs.mockResolvedValueOnce(
+      mockMessageDocs([
+        mockedMessageData('Refreshed message', 1690000002000, 'tenant789'),
+      ]),
+    );
+
+    const refreshButton = getByTestId('testRefreshButton');
+    fireEvent.press(refreshButton);
   });
 });

@@ -36,17 +36,10 @@ const consoleSpy = {
 };
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockedGetLandlord = getLandlord as jest.MockedFunction<
-  typeof getLandlord
->;
-const mockedGetResidence = getResidence as jest.MockedFunction<
-  typeof getResidence
->;
-const mockedGetApartment = getApartment as jest.MockedFunction<
-  typeof getApartment
->;
-const mockedGetMaintenanceRequest =
-  getMaintenanceRequest as jest.MockedFunction<typeof getMaintenanceRequest>;
+const mockedGetLandlord = getLandlord as jest.MockedFunction<typeof getLandlord>;
+const mockedGetResidence = getResidence as jest.MockedFunction<typeof getResidence>;
+const mockedGetApartment = getApartment as jest.MockedFunction<typeof getApartment>;
+const mockedGetMaintenanceRequest = getMaintenanceRequest as jest.MockedFunction<typeof getMaintenanceRequest>;
 
 describe("LandlordDashboard Component", () => {
   beforeEach(() => {
@@ -66,7 +59,6 @@ describe("LandlordDashboard Component", () => {
     return render(<NavigationContainer>{component}</NavigationContainer>);
   };
 
-  // Define the mocked user of type TUser
   const mockedUser: TUser = {
     uid: "test-uid",
     type: "landlord",
@@ -81,14 +73,25 @@ describe("LandlordDashboard Component", () => {
     country: "Anycountry",
   };
 
-  // Define a mock FirebaseUser
   const mockedFirebaseUser: FirebaseUser = {
     uid: "test-uid",
     email: "johndoe@example.com",
-    // Other properties can be included as needed
-  } as unknown as FirebaseUser;
+    emailVerified: true,
+    isAnonymous: false,
+    metadata: {},
+    providerData: [],
+    refreshToken: "",
+    tenantId: null,
+    delete: jest.fn(),
+    getIdToken: jest.fn(),
+    getIdTokenResult: jest.fn(),
+    reload: jest.fn(),
+    toJSON: jest.fn(),
+    providerId: "",
+    displayName: null,
+    photoURL: null,
+  };
 
-  // Define the default mocked AuthContextType
   const mockedAuthContext = {
     firebaseUser: mockedFirebaseUser,
     user: mockedUser,
@@ -99,7 +102,6 @@ describe("LandlordDashboard Component", () => {
   };
 
   test("renders loading state initially", () => {
-    // Set isLoading to true
     mockedUseAuth.mockReturnValue({
       ...mockedAuthContext,
       isLoading: true,
@@ -134,13 +136,12 @@ describe("LandlordDashboard Component", () => {
       ...mockedAuthContext,
     });
 
-    // First attempt fails
-    mockedGetLandlord.mockRejectedValueOnce(new Error("Network Error"));
-    // Second attempt succeeds
-    mockedGetLandlord.mockResolvedValueOnce({
-      userId: mockedUser.uid,
-      residenceIds: [],
-    });
+    mockedGetLandlord
+      .mockRejectedValueOnce(new Error("Network Error"))
+      .mockResolvedValueOnce({
+        userId: mockedUser.uid,
+        residenceIds: [],
+      });
 
     const { findByTestId, getByTestId } = renderWithNavigation(
       <LandlordDashboard />
@@ -169,81 +170,87 @@ describe("LandlordDashboard Component", () => {
     });
 
     mockedGetResidence.mockImplementation((resId) => {
-      if (resId === "res1") {
-        return Promise.resolve({
+      const residences = {
+        res1: {
           residenceName: "Residence 1",
           apartments: ["apt1", "apt2"],
-        } as Residence);
-      } else if (resId === "res2") {
-        return Promise.resolve({
+          pictures: ["https://example.com/pic1.jpg"],
+          id: "res1",
+        } as Residence,
+        res2: {
           residenceName: "Residence 2",
           apartments: ["apt3"],
-        } as Residence);
-      }
-      return Promise.resolve(null);
+          pictures: ["https://example.com/pic2.jpg"],
+          id: "res2",
+        } as Residence,
+      };
+      return Promise.resolve(residences[resId] || null);
     });
 
     mockedGetApartment.mockImplementation((aptId) => {
-      if (aptId === "apt1") {
-        return Promise.resolve({
+      const apartments = {
+        apt1: {
           apartmentName: "Apartment 1",
           maintenanceRequests: ["req1"],
-        } as Apartment);
-      } else if (aptId === "apt2") {
-        return Promise.resolve({
+          id: "apt1",
+          residenceId: "res1",
+        } as Apartment,
+        apt2: {
           apartmentName: "Apartment 2",
           maintenanceRequests: ["req2", "req3"],
-        } as Apartment);
-      } else if (aptId === "apt3") {
-        return Promise.resolve({
-          apartmentName: "Apartment 3",
+          id: "apt2",
           residenceId: "res1",
+        } as Apartment,
+        apt3: {
+          apartmentName: "Apartment 3",
+          residenceId: "res2",
           tenants: [],
           maintenanceRequests: [],
+          id: "apt3",
           situationReportId: "situation1",
-        } as Apartment);
-      }
-      return Promise.resolve(null);
+        } as Apartment,
+      };
+      return Promise.resolve(apartments[aptId] || null);
     });
 
     mockedGetMaintenanceRequest.mockImplementation((reqId) => {
-      if (reqId === "req1") {
-        return Promise.resolve({
+      const requests = {
+        req1: {
           requestID: "req1",
           requestTitle: "Fix sink",
           requestStatus: "notStarted",
           requestDate: "01/01/2023 at 12:00",
-        } as MaintenanceRequest);
-      } else if (reqId === "req2") {
-        return Promise.resolve({
+          apartmentId: "apt1",
+        } as MaintenanceRequest,
+        req2: {
           requestID: "req2",
           requestTitle: "Broken window",
           requestStatus: "inProgress",
           requestDate: "02/01/2023 at 12:00",
-        } as MaintenanceRequest);
-      } else if (reqId === "req3") {
-        return Promise.resolve({
+          apartmentId: "apt2",
+        } as MaintenanceRequest,
+        req3: {
           requestID: "req3",
           requestTitle: "Leaky roof",
           requestStatus: "completed",
           requestDate: "03/01/2023 at 12:00",
-        } as MaintenanceRequest);
-      }
-      return Promise.resolve(null);
+          apartmentId: "apt2",
+        } as MaintenanceRequest,
+      };
+      return Promise.resolve(requests[reqId] || null);
     });
 
     const { findByTestId, getByTestId, getAllByTestId } = renderWithNavigation(
       <LandlordDashboard />
     );
 
-    // Wait for residences to be displayed
-    await findByTestId("LandlordDashboard_ListedResidencesContainer");
+    await waitFor(() => {
+      expect(getByTestId("LandlordDashboard_ListedResidencesContainer")).toBeTruthy();
+    });
 
-    // Check that residences are displayed
     const residenceItems = getAllByTestId(/^LandlordDashboard_ResidenceItem_/);
-    expect(residenceItems.length).toBe(2);
+    expect(residenceItems).toHaveLength(2);
 
-    // Check residence names
     expect(getByTestId("LandlordDashboard_ResidenceName_0")).toHaveTextContent(
       "Residence 1"
     );
@@ -251,7 +258,6 @@ describe("LandlordDashboard Component", () => {
       "Residence 2"
     );
 
-    // Check maintenance issues counts
     expect(getByTestId("LandlordDashboard_NotStartedIssues")).toHaveTextContent(
       "1 Not Started"
     );
@@ -262,7 +268,6 @@ describe("LandlordDashboard Component", () => {
       "1 Completed"
     );
 
-    // Check most recent maintenance request
     expect(getByTestId("LandlordDashboard_MostRecentIssue")).toHaveTextContent(
       "Leaky roof"
     );
@@ -270,8 +275,6 @@ describe("LandlordDashboard Component", () => {
 
   test("navigates to IssueDetails when most recent issue is pressed", async () => {
     const mockNavigate = jest.fn();
-
-    // Use the mocked useNavigation from the mocked module
     (Navigation.useNavigation as jest.Mock).mockReturnValue({
       navigate: mockNavigate,
     });
@@ -288,36 +291,40 @@ describe("LandlordDashboard Component", () => {
     mockedGetResidence.mockResolvedValue({
       residenceName: "Residence 1",
       apartments: ["apt1"],
+      pictures: ["https://example.com/pic1.jpg"],
+      id: "res1",
     } as Residence);
 
     mockedGetApartment.mockResolvedValue({
       apartmentName: "Apartment 1",
-      maintenanceRequests: ["req3"],
+      maintenanceRequests: ["req1"],
+      id: "apt1",
+      residenceId: "res1",
     } as Apartment);
 
     mockedGetMaintenanceRequest.mockResolvedValue({
-      requestID: "req3",
-      requestTitle: "Leaky roof",
-      requestStatus: "completed",
-      requestDate: "03/01/2023 at 12:00",
+      requestID: "req1",
+      requestTitle: "Fix sink",
+      requestStatus: "notStarted",
+      requestDate: "01/01/2023 at 12:00",
+      apartmentId: "apt1",
     } as MaintenanceRequest);
 
-    const { findByTestId, getByTestId } = renderWithNavigation(
-      <LandlordDashboard />
-    );
+    const { findByTestId } = renderWithNavigation(<LandlordDashboard />);
 
-    await findByTestId("LandlordDashboard_MostRecentIssue");
+    await waitFor(async () => {
+      const mostRecentIssue = await findByTestId("LandlordDashboard_MostRecentIssue");
+      expect(mostRecentIssue).toBeTruthy();
+    });
 
-    const mostRecentTouchable = getByTestId(
-      "LandlordDashboard_MostRecentIssue"
-    ).parent;
+    const mostRecentTouchable = (await findByTestId("LandlordDashboard_MostRecentIssue")).parent;
     if (!mostRecentTouchable) {
       throw new Error("Touchable not found");
     }
     fireEvent.press(mostRecentTouchable);
 
     expect(mockNavigate).toHaveBeenCalledWith("IssueDetails", {
-      requestID: "req3",
+      requestID: "req1",
     });
   });
 
@@ -334,6 +341,8 @@ describe("LandlordDashboard Component", () => {
     mockedGetResidence.mockResolvedValue({
       residenceName: "Residence 1",
       apartments: ["apt1"],
+      pictures: ["https://example.com/pic1.jpg"],
+      id: "res1",
     } as Residence);
 
     mockedGetApartment.mockResolvedValue({
@@ -341,17 +350,16 @@ describe("LandlordDashboard Component", () => {
       residenceId: "res1",
       tenants: [],
       maintenanceRequests: [],
+      id: "apt1",
       situationReportId: "situation1",
     } as Apartment);
 
-    const { findByTestId, getByTestId } = renderWithNavigation(
-      <LandlordDashboard />
-    );
+    const { getByTestId } = renderWithNavigation(<LandlordDashboard />);
 
     await waitFor(() => {
-      expect(
-        getByTestId("LandlordDashboard_NotStartedIssues")
-      ).toHaveTextContent("0 Not Started");
+      expect(getByTestId("LandlordDashboard_NotStartedIssues")).toHaveTextContent(
+        "0 Not Started"
+      );
     });
 
     expect(getByTestId("LandlordDashboard_InProgressIssues")).toHaveTextContent(
@@ -365,6 +373,50 @@ describe("LandlordDashboard Component", () => {
     );
   });
 
+  test("navigates to Residence Stack when residence is pressed", async () => {
+    const mockNavigate = jest.fn();
+    (Navigation.useNavigation as jest.Mock).mockReturnValue({
+      navigate: mockNavigate,
+    });
+
+    mockedUseAuth.mockReturnValue({
+      ...mockedAuthContext,
+    });
+
+    mockedGetLandlord.mockResolvedValue({
+      userId: mockedUser.uid,
+      residenceIds: ["res1"],
+    });
+
+    mockedGetResidence.mockResolvedValue({
+      residenceName: "Residence 1",
+      apartments: ["apt1"],
+      pictures: ["https://example.com/pic1.jpg"],
+      id: "res1",
+    } as Residence);
+
+    mockedGetApartment.mockResolvedValue({
+      apartmentName: "Apartment 1",
+      maintenanceRequests: [],
+      id: "apt1",
+      residenceId: "res1",
+    } as Apartment);
+
+    const { findByTestId } = renderWithNavigation(<LandlordDashboard />);
+
+    await waitFor(async () => {
+      const residenceItem = await findByTestId("LandlordDashboard_ResidenceItem_0");
+      expect(residenceItem).toBeTruthy();
+    });
+
+    const residenceItem = await findByTestId("LandlordDashboard_ResidenceItem_0");
+    fireEvent.press(residenceItem);
+
+    expect(mockNavigate).toHaveBeenCalledWith("Residence Stack", {
+      screen: "ResidenceList"
+    });
+  });
+
   test("renders correctly when there are no residences", async () => {
     mockedUseAuth.mockReturnValue({
       ...mockedAuthContext,
@@ -375,14 +427,11 @@ describe("LandlordDashboard Component", () => {
       residenceIds: [],
     });
 
-    const { findByTestId, getByTestId } = renderWithNavigation(
-      <LandlordDashboard />
-    );
+    const { findByTestId } = renderWithNavigation(<LandlordDashboard />);
 
-    await waitFor(() => {
-      expect(
-        getByTestId("LandlordDashboard_NoResidencesText")
-      ).toHaveTextContent("No residences available");
+    await waitFor(async () => {
+      const noResidencesText = await findByTestId("LandlordDashboard_NoResidencesText");
+      expect(noResidencesText).toHaveTextContent("No residences available");
     });
   });
 });

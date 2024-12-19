@@ -101,6 +101,7 @@ export type Residence = {
   apartments: string[];
   tenantCodesID: string[];
   situationReportLayout: string[];
+  pictures: string[];
 };
 
 export type TenantCode = {

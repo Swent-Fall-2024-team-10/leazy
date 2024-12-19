@@ -712,6 +712,24 @@ export const appStyles = StyleSheet.create({
   residenceBottomSpacing: {
     height: 80,
   },
+  imagePreviewContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  imagePreviewTitle: {
+    fontSize: 16,
+    color: '#333',
+  },
+  clearButton: {
+    padding: 8,
+  },
+  clearButtonText: {
+    color: '#ff4444',
+    fontSize: 14,
+  },
 
   // Flat Details Styles
   flatCard: {

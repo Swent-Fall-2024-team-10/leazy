@@ -311,7 +311,7 @@ describe('ResidenceCreationScreen', () => {
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith(
           'Invalid file type',
-          'Please select a .jpg or .jpeg or .png file'
+          'Please select .jpg or .jpeg or .png files'
         );
       });
     });

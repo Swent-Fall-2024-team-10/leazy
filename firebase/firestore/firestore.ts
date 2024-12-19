@@ -15,6 +15,7 @@ import {
   onSnapshot,
   serverTimestamp,
   orderBy,
+  arrayRemove,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -33,6 +34,7 @@ import {
 
 import { auth } from "../../firebase/firebase";
 import { IMessage } from "react-native-gifted-chat";
+import { getAuth } from "firebase/auth";
 
 // Set the log level to 'silent' to disable logging
 // setLogLevel("silent");
@@ -230,10 +232,66 @@ export async function updateResidence(
  * Deletes a residence document from Firestore by residence ID.
  * @param residenceId - The unique identifier of the residence to delete.
  */
-export async function deleteResidence(residenceId: string) {
-  const docRef = doc(db, "residences", residenceId);
-  await deleteDoc(docRef);
-}
+export const deleteResidence = async (residenceId: string) => {
+  try {
+    const auth = getAuth();
+    const userId = auth.currentUser?.uid;
+    
+    if (!userId) {
+      throw new Error('No authenticated user found');
+    }
+
+    // Get the residence to access its apartments
+    const residenceRef = doc(db, 'residences', residenceId);
+    const residenceSnap = await getDoc(residenceRef);
+    
+    if (!residenceSnap.exists()) {
+      throw new Error('Residence not found');
+    }
+
+    const residence = residenceSnap.data() as Residence;
+
+    // Check and delete all apartments
+    for (const apartmentId of residence.apartments) {
+      const apartmentRef = doc(db, 'apartments', apartmentId);
+      const apartmentSnap = await getDoc(apartmentRef);
+      
+      if (apartmentSnap.exists()) {
+        const apartment = apartmentSnap.data() as Apartment;
+        
+        // Check if apartment has tenants
+        if (apartment.tenants && apartment.tenants.length > 0) {
+          // Update each tenant's reference
+          for (const tenantId of apartment.tenants) {
+            const tenant = await getTenant(tenantId);
+            if (tenant) {
+              await updateTenant(tenantId, {
+                apartmentId: '',
+                residenceId: ''
+              });
+            }
+          }
+        }
+        
+        // Delete the apartment
+        await deleteDoc(apartmentRef);
+      }
+    }
+
+    // Delete the residence document
+    await deleteDoc(residenceRef);
+
+    // Update the landlord's residenceIds array
+    const landlordRef = doc(db, 'landlords', userId);
+    await updateDoc(landlordRef, {
+      residenceIds: arrayRemove(residenceId)
+    });
+
+  } catch (error) {
+    console.error('Error deleting residence:', error);
+    throw error;
+  }
+};
 
 /**
  * Creates a new apartment document in Firestore.

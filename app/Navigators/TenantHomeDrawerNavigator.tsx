@@ -16,7 +16,6 @@ const Drawer = createDrawerNavigator();
 const TenantHomeDrawerNavigator = () => {
     return (
         <Drawer.Navigator
-            testID='tenant-drawer-navigator'
             initialRouteName="Home"
             useLegacyImplementation={false}
             drawerContent={(props) => <CustomDrawerContent {...props} />}

@@ -93,6 +93,7 @@ jest.mock('../../firebase/firestore/firestore', () => ({
   updateTenant: jest.fn(),
   updateMaintenanceRequest: jest.fn(),
   createNews: jest.fn(),
+  updateApartment: jest.fn(),
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -328,7 +329,6 @@ describe('ReportScreen', () => {
   });
 
   it('handles successful submission with pictures', async () => {
-
     console.log('Starting test setup');
 
     // Mock Firestore addDoc to resolve successfully
@@ -336,6 +336,8 @@ describe('ReportScreen', () => {
       console.log('mockAddDoc called');
       return { id: 'test-request-id' };
     });
+    const mockUpdateApartment = FirestoreModule.updateApartment as jest.Mock;
+    mockUpdateApartment.mockResolvedValue(undefined);
 
     // Mock Firestore functions with logging
     jest
@@ -365,7 +367,6 @@ describe('ReportScreen', () => {
       console.log('getTenant called');
       return mockTenant;
     });
-
 
     (FirestoreModule.updateTenant as jest.Mock).mockImplementation(async () => {
       console.log('updateTenant called');
@@ -454,6 +455,4 @@ describe('ReportScreen', () => {
     expect(getDownloadURL).toHaveBeenCalled();
     expect(FirestoreModule.createNews).toHaveBeenCalled();
   }, 10000); // Increase timeout to 10 seconds for this test
-
 });
-

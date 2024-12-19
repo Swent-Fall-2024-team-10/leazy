@@ -7,6 +7,7 @@ import {
   createNews,
   deleteNews,
   getNewsByReceiver,
+  updateNews,
 } from '../../firebase/firestore/firestore';
 
 // Mock Firebase and Firestore
@@ -121,8 +122,13 @@ describe('ManageNewsFeedScreen', () => {
           title: 'New Test News',
           content: 'New Test Content',
           type: 'informational',
-          SenderID: 'test-uid', // Verify the correct sender ID is used
+          SenderID: 'test-uid',
         }),
+      );
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Success',
+        'News post created successfully!',
+        expect.any(Array)
       );
     });
   });
@@ -137,9 +143,28 @@ describe('ManageNewsFeedScreen', () => {
     const deleteButtons = getAllByTestId('delete-news-button');
     fireEvent.press(deleteButtons[0]);
 
-    // Verify delete function was called
+    // Verify delete confirmation dialog
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Confirm Delete',
+      'Are you sure you want to delete this news post?',
+      expect.arrayContaining([
+        expect.objectContaining({ text: 'Cancel' }),
+        expect.objectContaining({ text: 'Delete' })
+      ])
+    );
+
+    // Get the delete confirmation dialog and simulate pressing delete
+    const [[, , buttons]] = (Alert.alert as jest.Mock).mock.calls;
+    const deleteButton = buttons.find((button: any) => button.text === 'Delete');
+    await deleteButton.onPress();
+
     await waitFor(() => {
       expect(deleteNews).toHaveBeenCalledWith('1');
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Success',
+        'News post deleted successfully!',
+        expect.any(Array)
+      );
     });
   });
 
@@ -186,8 +211,13 @@ describe('ManageNewsFeedScreen', () => {
           type: 'urgent',
           title: 'Urgent News',
           content: 'Urgent Content',
-          SenderID: 'test-uid', // Verify the correct sender ID is used
+          SenderID: 'test-uid',
         }),
+      );
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Success',
+        'News post created successfully!',
+        expect.any(Array)
       );
     });
   });
@@ -215,6 +245,11 @@ describe('ManageNewsFeedScreen', () => {
         'Error creating news:',
         expect.any(Error),
       );
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Error',
+        'Unable to create news post. Please try again.',
+        expect.any(Array)
+      );
     });
   });
 
@@ -238,8 +273,68 @@ describe('ManageNewsFeedScreen', () => {
     await waitFor(() => {
       expect(createNews).toHaveBeenCalledWith(
         expect.objectContaining({
-          SenderID: 'landlord', // Verify fallback ID is used
+          SenderID: 'landlord',
         }),
+      );
+    });
+  });
+
+  it('shows error alert when fetching news fails', async () => {
+    (getNewsByReceiver as jest.Mock).mockRejectedValue(new Error('Failed to fetch'));
+    
+    render(<ManageNewsfeedScreen />);
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Error',
+        'Unable to fetch news items. Please try again later.',
+        expect.any(Array)
+      );
+    });
+  });
+
+  it('shows success alert when updating news item', async () => {
+    const { getAllByTestId, getByTestId, getByText, findByText } = render(<ManageNewsfeedScreen />);
+    await findByText('Test News 1');
+    
+    // Click edit button
+    const editButtons = getAllByTestId('edit-news-button');
+    fireEvent.press(editButtons[0]);
+
+    // Update the news item
+    fireEvent.changeText(getByTestId('title-input'), 'Updated Title');
+    fireEvent.changeText(getByTestId('content-input'), 'Updated Content');
+    fireEvent.press(getByText('Add to newsfeed'));
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Success',
+        'News post updated successfully!',
+        expect.any(Array)
+      );
+    });
+  });
+
+  it('shows error alert when updating news item fails', async () => {
+    (updateNews as jest.Mock).mockRejectedValue(new Error('Failed to update'));
+    
+    const { getAllByTestId, getByTestId, getByText, findByText } = render(<ManageNewsfeedScreen />);
+    await findByText('Test News 1');
+    
+    // Click edit button
+    const editButtons = getAllByTestId('edit-news-button');
+    fireEvent.press(editButtons[0]);
+
+    // Update the news item
+    fireEvent.changeText(getByTestId('title-input'), 'Updated Title');
+    fireEvent.changeText(getByTestId('content-input'), 'Updated Content');
+    fireEvent.press(getByText('Add to newsfeed'));
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Error',
+        'Unable to update news post. Please try again.',
+        expect.any(Array)
       );
     });
   });

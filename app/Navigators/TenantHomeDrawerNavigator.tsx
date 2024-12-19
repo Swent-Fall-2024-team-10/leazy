@@ -3,9 +3,6 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import CustomDrawerContent from '../components/drawer/CustomDrawer';
 import HomepageScreen from '../screens/tenant/HomepageScreen';
 import IssueStackNavigator from '../Navigators/IssueStackNavigator';
-import MyRentScreen from '../screens/tenant/MyRentScreen';
-import SharedElementsScreen from '../screens/tenant/SharedElementsScreen';
-import SubrentScreen from '../screens/tenant/SubrentScreen';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
 import { Color, appStyles } from '../../styles/styles';
 import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
@@ -35,9 +32,6 @@ const TenantHomeDrawerNavigator = () => {
                 component={IssueStackNavigator}
                 options={{ unmountOnBlur: true }}
             />
-            <Drawer.Screen name="My Rent" component={MyRentScreen} />
-            <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
-            <Drawer.Screen name="Subrent" component={SubrentScreen} />
             <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
             <Drawer.Screen name="Snitch Mode" component={SnitchModeScreen} />
             <Drawer.Screen 

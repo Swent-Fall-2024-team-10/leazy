@@ -305,8 +305,26 @@ const NewsfeedScreen = () => {
   if (!tenant) {
     return (
       <Header>
-        <View style={{ flex: 0.7 }}>
-          <Text style={appStyles.flatText}>Loading...</Text>
+        <View
+          style={{
+            flex: 0.7,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+        >
+          <Text
+            style={[
+              appStyles.flatTitle,
+              { textAlign: 'center', marginBottom: 8 },
+            ]}
+          >
+            Setting Up Your Newsfeed
+          </Text>
+          <Text style={[appStyles.flatText, { textAlign: 'center' }]}>
+            We're getting your latest updates and important notifications ready.
+            This should only take a moment.
+          </Text>
         </View>
       </Header>
     );

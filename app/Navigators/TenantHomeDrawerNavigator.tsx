@@ -28,7 +28,7 @@ const TenantHomeDrawerNavigator = () => {
                 drawerLabelStyle: appStyles.drawerLabel,
             }}
         >
-            <Drawer.Screen name="Home" component={HomepageScreen} />
+            <Drawer.Screen name="Home" component={ViewNewsfeedScreen} />
             <Drawer.Screen
                 name="Maintenance Requests"
                 component={IssueStackNavigator}
@@ -38,7 +38,6 @@ const TenantHomeDrawerNavigator = () => {
             <Drawer.Screen name="Shared elements" component={SharedElementsScreen} />
             <Drawer.Screen name="Subrent" component={SubrentScreen} />
             <Drawer.Screen name="Washing Machines" component={WashingMachineScreen} />
-            <Drawer.Screen name="Newsfeed" component={ViewNewsfeedScreen} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
         </Drawer.Navigator>
     );

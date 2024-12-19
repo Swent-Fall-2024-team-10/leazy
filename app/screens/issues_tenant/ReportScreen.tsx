@@ -12,18 +12,18 @@ import {
   textInputHeight,
 } from '../../../styles/styles';
 import Close from '../..//components/buttons/Close';
-import { NavigationProp, useNavigation } from '@react-navigation/native'; // Import NavigationProp
-import { ReportStackParamList } from '../../../types/types'; // Import or define your navigation types
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { ReportStackParamList } from '../../../types/types'; 
 import CameraButton from '../../components/buttons/CameraButton';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import CloseConfirmation from '../../components/buttons/CloseConfirmation';
-import { collection, addDoc } from 'firebase/firestore'; // Import Firestore functions
+import { collection, addDoc } from 'firebase/firestore'; 
 import { MaintenanceRequest } from '../../../types/types';
 import { db } from '../../../firebase/firebase';
 import Header from '../../components/Header';
 import { usePictureContext } from '../../context/PictureContext';
-import { storage } from '../../../firebase/firebase'; // Import storage from your Firebase config
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase imports
+import { storage } from '../../../firebase/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../context/AuthContext';
 import { getFileBlob, clearFiles } from '../../utils/cache';
 import {
@@ -32,7 +32,6 @@ import {
   updateMaintenanceRequest,
   updateTenant,
   getApartment,
-  updateApartment,
 } from '../../../firebase/firestore/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant
@@ -129,8 +128,6 @@ export default function ReportScreen() {
         requestStatus: 'notStarted',
       };
 
-      //this should be changed when the database function are updated
-      //this is not respecting the model view model pattern for now but this is a temporary solution
       const requestID = await addDoc(
         collection(db, 'maintenanceRequests'),
         newRequest,
@@ -148,6 +145,7 @@ export default function ReportScreen() {
       await updateApartment(tenant.apartmentId, {
         maintenanceRequests: [...apartment.maintenanceRequests, requestID.id],
       });
+
       await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
 
       Alert.alert('Success', 'Your maintenance request has been submitted.');
@@ -182,7 +180,10 @@ export default function ReportScreen() {
       contentContainerStyle={{ flexGrow: 1 }}
     >
       <Header>
-        <ScrollView style={appStyles.screenContainer}>
+        <ScrollView
+          style={appStyles.screenContainer}
+          automaticallyAdjustKeyboardInsets={true}
+        >
           <View
             style={[
               appStyles.scrollContainer,

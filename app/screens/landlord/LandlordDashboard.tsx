@@ -257,8 +257,8 @@ const LandlordDashboard: React.FC = () => {
   }, [maintenanceRequestList]);
 
   const handleResidencePress = (residence: Residence) => {
-    navigation.navigate("Residence Stack", {
-      screen: "ResidenceList"
+    navigation.navigate('Residence Stack', {
+      screen: 'ResidenceList',
     });
   };
 
@@ -523,7 +523,6 @@ const LandlordDashboard: React.FC = () => {
                   </Text>
                 )}
               </RoundedRectangle>
-
               <View>
                 <SubmitButton
                   disabled={false}

@@ -445,5 +445,4 @@ describe('ResidenceCreationScreen', () => {
       expect(mockNavigate).toHaveBeenCalledWith('ResidenceList');
     });
   });
-  
 });

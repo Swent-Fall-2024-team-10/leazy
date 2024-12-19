@@ -207,9 +207,7 @@ function ResidenceCreationScreen() {
             return newPath;
           })
         );
-
         console.log('imageUris:', imageUris);
-
         setFormData(prev => ({
           ...prev,
           pictures: [...prev.pictures, ...imageUris],
@@ -293,13 +291,10 @@ function ResidenceCreationScreen() {
       try {
         const uploadedPictureUrls = await Promise.all(
           formData.pictures.map(picturePath => {
-            console.log('Uploading picture:', picturePath);
             return uploadImage(picturePath, formData.name);
           }
           )
         );
-
-        console.log('uploadedPictureUrls:', uploadedPictureUrls);
 
         const newResidence: Residence = {
           residenceName: formData.name,
@@ -319,9 +314,7 @@ function ResidenceCreationScreen() {
         };
 
         const newResidenceId = await createResidence(newResidence);
-        console.log('newResidenceId:', newResidenceId);
         const landlord = await getLandlord(user.uid);
-        console.log('landlord:', landlord);
         if (landlord) {
           await updateLandlord(user.uid, {
             userId: landlord.userId,
@@ -345,7 +338,6 @@ function ResidenceCreationScreen() {
                 };
 
                 const newApartmentId = await createApartment(newApartment);
-                console.log('newApartmentId:', newApartmentId);
                 if (!newApartmentId) {
                   setFirebaseError(true);
                   setFirebaseErrorText(
@@ -356,13 +348,11 @@ function ResidenceCreationScreen() {
                 return newApartmentId;
               }),
             );
-            console.log('newApartments:', newApartments);
             const successfulApartments = newApartments.filter(
               (id) => id !== null,
             );
 
             newResidence.apartments = successfulApartments;
-            console.log('newResidence:', newResidence);
             await updateResidence(newResidenceId, newResidence);
           } catch (error) {
             setFirebaseError(true);

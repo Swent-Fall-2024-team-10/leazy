@@ -81,13 +81,6 @@ function FlatDetails() {
               Apartment ID: {apartment?.apartmentName}
             </Text>
           </View>
-          <View style={appStyles.flatImageContainer}>
-            <Image
-              source={require('../../../assets/images/react-logo.png')}
-              style={appStyles.flatImage}
-              resizeMode="cover"
-            />
-          </View>
           <View style={appStyles.tenantsSection}>
             <View style={appStyles.tenantHeader}>
               <Text style={appStyles.tenantsTitle}>

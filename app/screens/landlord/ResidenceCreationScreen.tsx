@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -6,6 +7,8 @@ import {
   Text,
   Alert,
   Modal,
+  Keyboard,
+  Platform,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
@@ -74,6 +77,25 @@ function ResidenceCreationScreen() {
   const [firebaseError, setFirebaseError] = useState<boolean>(false);
   const [firebaseErrorText, setFirebaseErrorText] = useState<string>('');
 
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const parseExcelFile = async (fileUri: string) => {
     try {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, {
@@ -93,7 +115,6 @@ function ResidenceCreationScreen() {
       Alert.alert('Success', `Parsed ${apartmentNames.length} apartments`);
     } catch (error) {
       Alert.alert('Error', 'Failed to parse Excel file');
-      console.error(error);
     }
   };
 
@@ -157,7 +178,6 @@ function ResidenceCreationScreen() {
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to upload file');
-      console.error(error);
     }
   };
 
@@ -200,7 +220,7 @@ function ResidenceCreationScreen() {
       const newResidence: Residence = {
         residenceName: formData.name,
         street: formData.address,
-        number: formData.zipCode,
+        number: formData.number,
         city: formData.city,
         canton: formData.provinceState,
         zip: formData.zipCode,
@@ -249,7 +269,6 @@ function ResidenceCreationScreen() {
                 );
                 return null;
               }
-              console.log('s: ' + newApartmentId);
               return newApartmentId;
             }),
           );
@@ -260,7 +279,6 @@ function ResidenceCreationScreen() {
           );
 
           newResidence.apartments = successfulApartments;
-          console.log('New Residence Apps' + newResidence.apartments);
           await updateResidence(newResidenceId, newResidence);
         } catch (error) {
           setFirebaseError(true);

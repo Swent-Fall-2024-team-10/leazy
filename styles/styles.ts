@@ -18,18 +18,16 @@ export const borderWidth = {
 };
 export const residenceManagementListStyles = StyleSheet.create({
   addApartmentButton: {
-    height: 36,
-
-    backgroundColor: "white",
+    height: 40,
+    backgroundColor: 'white',
     borderRadius: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     marginTop: 2,
-    width: "80%",
-    alignSelf: "flex-start",
-    shadowColor: "#000",
-
+    width: '90%',
+    alignSelf: 'flex-start',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -197,6 +195,9 @@ export const Color = {
   chatBubbleRightText: "#000000",
 
   chatTimeText: "#7F7F7F",
+  availableBubble: "green",
+  inUseBubble: "orange",
+  underMaintenanceBubble: "red",
 };
 
 export const chatStyles = StyleSheet.create({
@@ -749,9 +750,7 @@ export const appStyles = StyleSheet.create({
   idText: {
     color: Color.TextInputText,
     fontSize: 16,
-
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto"
   },
 
   flatImageContainer: {

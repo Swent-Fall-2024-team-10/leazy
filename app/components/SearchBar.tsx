@@ -18,8 +18,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onChangeText, onClear }) =
         paddingHorizontal: 12,
         borderColor: '#666666',
         borderWidth: 1,
-        height: 36,
-        width: '40%'
+        height: 40,
+        width: '90%'
     }}>
         <Feather testID="search-icon" name="search" size={16} color="#666666" />
         <TextInput

@@ -332,7 +332,6 @@ describe('ResidenceCreationScreen', () => {
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to upload file');
-        expect(console.error).toHaveBeenCalled();
       });
     });
 
@@ -353,7 +352,6 @@ describe('ResidenceCreationScreen', () => {
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to upload file');
-        expect(console.error).toHaveBeenCalled();
       });
     });
   });
@@ -389,7 +387,6 @@ describe('ResidenceCreationScreen', () => {
           'Error',
           'Failed to upload file',
         );
-        expect(console.error).toHaveBeenCalledWith(mockError);
       });
     });
 
@@ -423,7 +420,6 @@ describe('ResidenceCreationScreen', () => {
           'Error',
           'Failed to parse Excel file',
         );
-        expect(console.error).toHaveBeenCalledWith(mockError);
       });
     });
   });
@@ -499,7 +495,6 @@ describe('ResidenceCreationScreen', () => {
           'Error',
           'Failed to upload file',
         );
-        expect(console.error).toHaveBeenCalledWith(mockError);
       });
     });
   });

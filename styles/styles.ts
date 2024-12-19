@@ -141,7 +141,6 @@ export const Color = {
   GrayGroupMargin: '#A3A3A3CC',
   GrayGroupBackground: '#f2f2f2',
 
-
   IssueTextBackground: "#FFFFFF",
   CancelColor: "#E74C3C",
   ShadowColor: "#171717",
@@ -687,7 +686,7 @@ export const appStyles = StyleSheet.create({
     zIndex: 2,
 
     position: "absolute",
-    bottom: "35%",
+    bottom: "15%",
 
     right: 24,
     width: 56,

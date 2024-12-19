@@ -32,7 +32,6 @@ export async function emailAndPasswordSignIn(
     const user = userCredential.user;
     return user;
   } catch (error) {
-    console.log('Error while signing in to firebase : ', error);
     return null;
   }
 }
@@ -52,13 +51,9 @@ export async function emailAndPasswordLogIn(
 export async function deleteAccount() {
   if (auth.currentUser !== null) {
     try {
-      console.log('Deleting user data');
       await deleteUser(auth.currentUser);
     } catch (error) {}
-  } else {
-    console.log('User is not signed in');
-    // maybe create error objects
-  }
+  } 
 }
 
 export async function signOutUser(
@@ -72,9 +67,6 @@ export async function signOutUser(
     } catch (error) {
       errorCallback(error);
     }
-  } else {
-    console.log('User is not signed in');
-    // maybe create error objects
   }
 }
 
@@ -121,7 +113,6 @@ export async function updateUserEmailAuth(password: string, newEmail: string) {
       // Use verifyBeforeUpdateEmail instead of updateEmail
       await verifyBeforeUpdateEmail(auth.currentUser, newEmail);
     } catch (error) {
-      console.log('Error while updating user email: ', error);
       throw error;
     }
   } else {

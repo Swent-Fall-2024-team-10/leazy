@@ -138,7 +138,7 @@ describe('Authentication Functions', () => {
       await deleteAccount();
 
       expect(deleteUser).not.toHaveBeenCalled();
-      expect(console.log).toHaveBeenCalledWith('User is not signed in');
+      expect(console.log).not.toHaveBeenCalled();
     });
   });
 
@@ -176,7 +176,7 @@ describe('Authentication Functions', () => {
       expect(signOut).not.toHaveBeenCalled();
       expect(mockSuccessCallback).not.toHaveBeenCalled();
       expect(mockErrorCallback).not.toHaveBeenCalled();
-      expect(console.log).toHaveBeenCalledWith('User is not signed in');
+      expect(console.log).not.toHaveBeenCalled();
     });
   });
 

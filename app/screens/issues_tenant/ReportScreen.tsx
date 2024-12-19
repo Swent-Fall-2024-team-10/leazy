@@ -10,7 +10,7 @@ import {
   Color,
   textInputHeight,
 } from "../../../styles/styles";
-import Close from "../..//components/buttons/Close";
+import Close from "../../components/buttons/Close";
 import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
 import { ReportStackParamList } from "../../../types/types"; // Import or define your navigation types
 import CameraButton from "../../components/buttons/CameraButton";
@@ -26,6 +26,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase
 import { useAuth } from "../../context/AuthContext";
 import { getFileBlob, clearFiles } from "../../utils/cache";
 import {
+  createMaintenanceRequest,
   getTenant,
   updateApartment,
   updateMaintenanceRequest,
@@ -76,45 +77,37 @@ export default function ReportScreen() {
   };
 
   const handleSubmit = async () => {
-    setLoading(true); // Set loading to true when starting the submission
-
-    // first get user then get tenantId
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const tenant = await getTenant(user.uid);
-
-    if (!tenant) {
-      Alert.alert("Error", "Tenant not found");
-      setLoading(false);
-      return;
-    }
-
+    setLoading(true);
     try {
-      if (!tenant.userId) {
-        throw new Error("Tenant not found");
+      if (!user) {
+        throw new Error("User not found");
       }
-
+  
+      const tenant = await getTenant(user.uid);
+      if (!tenant) {
+        Alert.alert("Error", "Tenant not found");
+        setLoading(false);
+        return;
+      }
+  
       // Upload pictures to Firebase Storage
       let pictureURLs: string[] = [];
-
-      // Use getpictureblob to upload every picture
-      for (const picture of pictureList) {
-        const blob = await getFileBlob(picture);
-
-        // Upload resized image as before
-        const filename = picture.substring(picture.lastIndexOf("/") + 1);
-        const storageRef = ref(storage, `uploads/${filename}`);
-        await uploadBytes(storageRef, blob);
-        const downloadURL = await getDownloadURL(storageRef);
-        pictureURLs.push(downloadURL);
-
-        console.log("File uploaded to storage");
+  
+      try {
+        // Only try to upload pictures if online
+        for (const picture of pictureList) {
+          const blob = await getFileBlob(picture);
+          const filename = picture.substring(picture.lastIndexOf("/") + 1);
+          const storageRef = ref(storage, `uploads/${filename}`);
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
+          pictureURLs.push(downloadURL);
+        }
+      } catch (error) {
+        // If picture upload fails (likely offline), store local URIs temporarily
+        pictureURLs = pictureList;
       }
-
-      
-
+  
       const newRequest: MaintenanceRequest = {
         requestID: "",
         tenantId: tenant.userId,
@@ -127,23 +120,7 @@ export default function ReportScreen() {
         picture: pictureURLs,
         requestStatus: "notStarted",
       };
-
-      //this should be changed when the database function are updated
-      //this is not respecting the model view model pattern for now but this is a temporary solution
-      const requestID = await addDoc(
-        collection(db, "maintenanceRequests"),
-        newRequest
-      );
-      await updateTenant(tenant.userId, {
-        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
-      });
-
-      // update the appartements maintenanceRequests array with the new request id
-      await updateApartment(tenant.apartmentId, {
-        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
-      });
-
-      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
+      const requestID = await createMaintenanceRequest(newRequest);
 
       Alert.alert("Success", "Your maintenance request has been submitted.");
 
@@ -151,7 +128,7 @@ export default function ReportScreen() {
 
       if (tick) {
         setTick(false);
-        navigation.navigate("Messaging", {chatID: requestID.id});
+        navigation.navigate("Messaging", {chatID: requestID});
       } else {
         setTick(false);
         navigation.navigate("Issues");
@@ -160,11 +137,20 @@ export default function ReportScreen() {
     } catch (error) {
       Alert.alert(
         "Error",
-        "There was an error submitting your request. Please try again."
+        "There was an error submitting your request. It will be synced when you're back online.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              resetStates();
+              navigation.navigate("Issues");
+            }
+          }
+        ]
       );
       console.log("Error submitting request:", error);
     } finally {
-      setLoading(false); // Set loading to false after submission is complete
+      setLoading(false);
       await clearFiles(pictureList);
     }
   };
@@ -290,7 +276,10 @@ export default function ReportScreen() {
           <View style={appStyles.submitContainer}>
             <SubmitButton
               disabled={room === "" || description === "" || issue === ""}
-              onPress={handleSubmit}
+              onPress={() => {
+                console.log("Button Pressed!");
+                handleSubmit();
+              }}
               width={ButtonDimensions.mediumButtonWidth}
               height={ButtonDimensions.mediumButtonHeight}
               label="Submit"

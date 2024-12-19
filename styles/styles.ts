@@ -686,7 +686,7 @@ export const appStyles = StyleSheet.create({
     zIndex: 2,
 
     position: "absolute",
-    bottom: "35%",
+    bottom: "15%",
 
     right: 24,
     width: 56,

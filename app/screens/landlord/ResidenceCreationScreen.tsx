@@ -292,8 +292,10 @@ function ResidenceCreationScreen() {
     if (validateForm() && user) {
       try {
         const uploadedPictureUrls = await Promise.all(
-          formData.pictures.map(picturePath => 
-            uploadImage(picturePath, formData.name)
+          formData.pictures.map(picturePath => {
+            console.log('Uploading picture:', picturePath);
+            return uploadImage(picturePath, formData.name);
+          }
           )
         );
 
@@ -317,8 +319,9 @@ function ResidenceCreationScreen() {
         };
 
         const newResidenceId = await createResidence(newResidence);
-        
+        console.log('newResidenceId:', newResidenceId);
         const landlord = await getLandlord(user.uid);
+        console.log('landlord:', landlord);
         if (landlord) {
           await updateLandlord(user.uid, {
             userId: landlord.userId,
@@ -342,6 +345,7 @@ function ResidenceCreationScreen() {
                 };
 
                 const newApartmentId = await createApartment(newApartment);
+                console.log('newApartmentId:', newApartmentId);
                 if (!newApartmentId) {
                   setFirebaseError(true);
                   setFirebaseErrorText(

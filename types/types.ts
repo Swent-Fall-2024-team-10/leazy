@@ -154,9 +154,11 @@ export type News = {
   content: string;
   isRead: boolean;
   createdAt: Timestamp;
-  ReadAt: Timestamp;
+
+  ReadAt: Timestamp | null;
   UpdatedAt: Timestamp;
-  images: string[];
+  type: "urgent" | "informational";
+
 }
 
 export type SituationReportGroup = {
@@ -172,6 +174,7 @@ export type SituationReportSingleton = {
 export type SituationReportLayout = {
   label: string;
   value: string[]; // list of SituationReportGroup's ID
+
 }
 
 export type SituationReport = {

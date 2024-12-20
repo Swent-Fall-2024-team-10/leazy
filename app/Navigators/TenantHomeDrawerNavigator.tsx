@@ -7,6 +7,7 @@ import MyRentScreen from '../screens/tenant/MyRentScreen';
 import SharedElementsScreen from '../screens/tenant/SharedElementsScreen';
 import SubrentScreen from '../screens/tenant/SubrentScreen';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
+import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
 import { Color, appStyles } from '../../styles/styles';
 import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
 import SettingsStackNavigator from './SettingsStackNavigator';
@@ -29,7 +30,7 @@ const TenantHomeDrawerNavigator = () => {
                 drawerLabelStyle: appStyles.drawerLabel,
             }}
         >
-            <Drawer.Screen name="Home" component={HomepageScreen} />
+            <Drawer.Screen name="Home" component={ViewNewsfeedScreen} />
             <Drawer.Screen
                 name="Maintenance Requests"
                 component={IssueStackNavigator}

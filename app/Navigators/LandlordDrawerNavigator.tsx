@@ -9,9 +9,12 @@ import ResidenceStack from './ResidenceStack';
 import { LandlordProvider } from '../context/LandlordContext';
 import SituationReportCreation from '../screens/landlord/SituationReport/SituationReportCreationScreen';
 import SituationReport from '../screens/landlord/SituationReport/SituationReportScreen';
+import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
+import ManageNewsfeedScreen from '../screens/newsfeed/ManageNewsfeedScreen';
 import CodeCreationScreen from '../screens/landlord/CreateNewCode';
 import IssueStackLandlord from './IssueStackLandlord';
 import SettingsScreen from '../screens/auth/SettingsScreen';
+
 
 const Drawer = createDrawerNavigator();
 
@@ -31,11 +34,14 @@ const LandlordDrawerNavigator = () => {
         }}
         drawerContent={(props) => <CustomDrawerContent {...props} />}
       >
-        <Drawer.Screen name='Dashboard' component={IssueStackLandlord}/>
-        <Drawer.Screen name='List Issues' component={LandlordListIssuesScreen}/>
-        <Drawer.Screen name='Manage Machines' component={ManageMachinesScreen}/>
-        <Drawer.Screen name='Washing Machine' component={WashingMachineScreen}/>
-        <Drawer.Screen name='Residence Stack' component={ResidenceStack}/>
+
+        <Drawer.Screen name='Dashboard' component={IssueStackLandlord} />
+        <Drawer.Screen name='List Issues' component={LandlordListIssuesScreen} />
+        <Drawer.Screen name="Manage Newsfeed" component={ManageNewsfeedScreen} />
+        <Drawer.Screen name='Manage Machines' component={ManageMachinesScreen} />
+        <Drawer.Screen name='Washing Machines' component={WashingMachineScreen} />
+        <Drawer.Screen name='Residence Stack' component={ResidenceStack} />
+
         <Drawer.Screen
           name='Situation Report Creation'
           component={SituationReportCreation}
@@ -46,7 +52,7 @@ const LandlordDrawerNavigator = () => {
         />
         <Drawer.Screen name='Create New Code' component={CodeCreationScreen} />
         <Drawer.Screen name="Settings" component={SettingsScreen} />
-      </Drawer.Navigator>
+       </Drawer.Navigator>
     </LandlordProvider>
   );
 };

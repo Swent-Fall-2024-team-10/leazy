@@ -1,50 +1,54 @@
-# Welcome to your Expo app
+# Welcome to Leazy! 
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Leazy is an app designed to simplify the management of student housing and facilitate seamless communication between landlords and tenants. It streamlines processes like creating maintenance requests and managing property-related tasks.
 
-## Get started
+Tired of going to the laundry room only to find all the machines occupied? Leazy has you covered! The app includes a feature that allows tenants to show when they are using a laundry machine, helping everyone avoid wasted time.
 
-1. Install dependencies
+For landlords, Leazy offers powerful tools to make property management more efficient. Landlords can easily create a residence profile, import apartment details via an `.xlsx` file, and effortlessly create, fill out, and update situation reports for tenants—directly from their phone. Tenants, on the other hand, can easily access their situation report and profile details through the settings screen.
 
-   ```bash
-   npm install
-   ```
+With Leazy, you'll never miss an update from your landlord regarding housing-related issues. Thanks to the newsfeed feature, you'll always be up to date with the latest information about your residence and more with Leazy!
 
-2. Start the app
 
-   ```bash
-    npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+## Installation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+1. **Download the APK**:  
+   Download the Leazy APK from the repository.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+2. **Allow Installation from Unknown Sources**:  
+   If you haven't already, you may need to allow your phone to install apps from unknown sources. Go to:
+   - **Settings** > **Security** > **Install unknown apps**
+   - Find your browser or file manager app and toggle **Allow from this source**.
 
-## Get a fresh project
+3. **Install the APK**:  
+   Once the APK is downloaded, open it and follow the prompts to install.
 
-When you're ready, run:
+4. **Launch the App**:  
+   After installation is complete, find Leazy in your app drawer and open it if your landlord is using the app, sign in and ask him for your personalized code to join your apartment and access all the feature.
 
-```bash
-npm run reset-project
-```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Contributing
 
-## Learn more
+### Setup
+We welcome contributions! To get started:
 
-To learn more about developing your project with Expo, look at the following resources:
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. install the dependencies with : `npm install` and all the expo go framework dependencies
+4. Make your changes and test the app.
+5. Submit a pull request with a clear description of your changes and why your modifications are meaningful to the app
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Your new screens or functionnailities should follow the same design as in this Figma, first create a Figma design and then you're good to go with the implementation, you can access this Figma with this link : https://www.figma.com/design/FBCsE6Mo3ht4wPzoNoJmd4/Swent-Fall-2024-team-10?node-id=70-2&p=f&t=B0LIjeaxQf8XXM2M-0
 
-## Join the community
+### Architecture diagram
 
-Join our community of developers creating universal apps.
+Here bellow you have the architecture diagram for the tenant and the landlord
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+#### Tenant Architecture Diagram
+
+<object data="architectureDiagramImages/Landlordarchitecture.pdf" type="application/pdf" width="80%" height="400px"></object>
+
+#### Landlord Architecture Diagram
+
+
+<object data="architectureDiagramImages/Tenantarchitecturediagram.pdf" type="application/pdf" width="80%" height="400px"></object>

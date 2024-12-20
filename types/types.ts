@@ -1,7 +1,6 @@
+
+import { Timestamp } from "@firebase/firestore";
 import { NavigatorScreenParams } from "@react-navigation/native";
-import { Timestamp } from "firebase/firestore";
-
-
 // WithId type helper
 export type WithId<T> = T & { id: string };
 // Define the navigation stack types
@@ -106,6 +105,7 @@ export type Residence = {
   apartments: string[];
   tenantCodesID: string[];
   situationReportLayout: string[];
+  pictures: string[];
 };
 
 export type TenantCode = {

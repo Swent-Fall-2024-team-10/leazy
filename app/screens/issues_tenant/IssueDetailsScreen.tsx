@@ -282,7 +282,7 @@ const IssueDetailsScreen: React.FC = () => {
             </View>
           </Modal>
 
-          <Spacer height={20} />
+          <Spacer height={50} />
         </ScrollView>
       </View>
     </Header>

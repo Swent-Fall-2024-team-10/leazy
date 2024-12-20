@@ -9,6 +9,8 @@ import { getAuth } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
 import '@testing-library/jest-native/extend-expect';
 import { createNews } from '../../../firebase/firestore/firestore';
+import { View } from 'react-native';
+import { within } from '@testing-library/react-native';
 
 // Mock Firebase Auth
 jest.mock('firebase/auth', () => ({
@@ -419,6 +421,128 @@ describe('MaintenanceIssues', () => {
 
     await waitFor(() => {
       expect(createNews).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // Add these test cases to your existing MaintenanceIssues.test.tsx file
+
+  test('handles error in fetching maintenance requests', async () => {
+    // Mock getMaintenanceRequestsQuery to throw an error
+    (getMaintenanceRequestsQuery as jest.Mock).mockRejectedValue(
+      new Error('Failed to fetch'),
+    );
+
+    const consoleErrorSpy = jest.spyOn(console, 'error');
+    render(<MaintenanceIssues />);
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error setting up maintenance requests listener:',
+        expect.any(Error),
+      );
+    });
+  });
+
+  test('handles initial snapshot data correctly', async () => {
+    const multipleIssuesData = [
+      mockIssueData,
+      {
+        ...mockIssueData,
+        requestID: 'request2',
+        requestTitle: 'Broken Window',
+        requestStatus: 'notStarted',
+      },
+    ];
+
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      callback({
+        docs: multipleIssuesData.map((data) => ({
+          data: () => data,
+          id: data.requestID,
+        })),
+        forEach: (fn: any) =>
+          multipleIssuesData.forEach((data) =>
+            fn({ data: () => data, id: data.requestID }),
+          ),
+        docChanges: () => [],
+      });
+      return () => {};
+    });
+
+    const screen = render(<MaintenanceIssues />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Leaky faucet')).toBeTruthy();
+      expect(screen.getByText('Broken Window')).toBeTruthy();
+    });
+  });
+
+  test('handles error in createNews', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error');
+    (createNews as jest.Mock).mockRejectedValue(
+      new Error('Failed to create news'),
+    );
+
+    const inProgressIssueData = {
+      ...mockIssueData,
+      requestStatus: 'inProgress',
+    };
+
+    // Set up the snapshot with proper callback handling
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      // Initial data
+      callback({
+        docs: [{ data: () => inProgressIssueData, id: 'request1' }],
+        forEach: (fn: any) =>
+          fn({ data: () => inProgressIssueData, id: 'request1' }),
+        docChanges: () => [],
+      });
+
+      // Simulate status change after a short delay
+      setTimeout(() => {
+        callback({
+          docs: [
+            {
+              data: () => ({
+                ...inProgressIssueData,
+                requestStatus: 'completed',
+              }),
+              id: 'request1',
+            },
+          ],
+          forEach: (fn: any) =>
+            fn({
+              data: () => ({
+                ...inProgressIssueData,
+                requestStatus: 'completed',
+              }),
+              id: 'request1',
+            }),
+          docChanges: () => [
+            {
+              type: 'modified',
+              doc: {
+                data: () => ({
+                  ...inProgressIssueData,
+                  requestStatus: 'completed',
+                }),
+                id: 'request1',
+              },
+            },
+          ],
+        });
+      }, 0);
+
+      return () => {};
+    });
+
+    render(<MaintenanceIssues />);
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error creating status change news:',
+        expect.any(Error),
+      );
     });
   });
 });

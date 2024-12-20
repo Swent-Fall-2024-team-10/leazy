@@ -22,6 +22,7 @@ jest.mock("../../../firebase/firestore/firestore", () => ({
           notificationScheduled: false,
         })
       ),
+    getTenant: jest.fn(() => Promise.resolve({ residenceId: 'test-residence' })),
 }));
 
 jest.mock('expo-notifications', () => ({
@@ -47,39 +48,40 @@ return {
     })),
     },
     onSnapshot: jest.fn((query, callback) => {
-    const mockSnapshot = {
-        forEach: (fn: (arg0: {
-        id: string;
-        data: () => {
+      // Create a mock snapshot that matches the expected data structure
+      const mockSnapshot = {
+        forEach: (fn: (doc: {
+          id: string;
+          data: () => {
             laundryMachineId: string;
             isAvailable: boolean;
             isFunctional: boolean;
             occupiedBy: string;
-            startTime: ReturnType<typeof actualFirestore.Timestamp.now>;
-            estimatedFinishTime: ReturnType<typeof actualFirestore.Timestamp.fromMillis>;
+            startTime: any;
+            estimatedFinishTime: any;
             notificationScheduled: boolean;
-        };
+          };
         }) => void) => {
-        fn({
+          fn({
             id: 'coucou',
             data: () => ({
-            laundryMachineId: 'coucou',
-            isAvailable: true,
-            isFunctional: true,
-            occupiedBy: 'none',
-            startTime: actualFirestore.Timestamp.now(),
-            estimatedFinishTime: actualFirestore.Timestamp.fromMillis(Date.now() + 3600000), // 1 hour from now
-            notificationScheduled: false,
+              laundryMachineId: 'coucou',
+              isAvailable: true,
+              isFunctional: true,
+              occupiedBy: 'none',
+              startTime: actualFirestore.Timestamp.now(),
+              estimatedFinishTime: actualFirestore.Timestamp.fromMillis(Date.now() + 3600000),
+              notificationScheduled: false,
             }),
-        });
+          });
         },
-    };
+      };
 
-    // Call the callback with the mock snapshot
-    callback(mockSnapshot);
+      // Call the callback immediately with the mock data
+      setTimeout(() => callback(mockSnapshot), 0);
 
-    // Return an unsubscribe function
-    return () => {};
+      // Return an unsubscribe function
+      return () => {};
     }),
 };
 });  
@@ -134,26 +136,24 @@ afterEach(() => {
 
     const { getByText, getByTestId } = render(<WashingMachineScreen />);
   
-    // Verify that the placeholder machine is rendered
-    expect(getByText("Machine coucou")).toBeTruthy();
+    // Wait for the component to render with mock data
+    await waitFor(() => {
+      expect(getByText("Machine coucou")).toBeTruthy();
+    });
 
     // Simulate setting a timer
     const button = getByTestId("setTimerButton");
     await act(async () => {
-    fireEvent.press(button);
+      fireEvent.press(button);
     });
 
     // Step 2: Simulate confirming a duration of 5 minutes
     const modal = getByTestId("timer-picker-modal");
     await act(async () => {
-        fireEvent(modal, "onConfirm", new Date(0, 0, 0, 0, 2, 0)); // Mock time selection
+      fireEvent(modal, "onConfirm", new Date(0, 0, 0, 0, 2, 0));
     });
 
-    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        trigger: { seconds: expect.any(Number) },
-      })
-    );
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
   });
 
   it("updates Firestore after scheduling a notification", async () => {
@@ -164,29 +164,31 @@ afterEach(() => {
 
     const { getByText, getByTestId } = render(<WashingMachineScreen />);
   
-      // Verify that the placeholder machine is rendered
+    // Wait for the component to render with mock data
+    await waitFor(() => {
       expect(getByText("Machine coucou")).toBeTruthy();
+    });
   
-      // Simulate setting a timer
-      const button = getByTestId("setTimerButton");
-      await act(async () => {
-        fireEvent.press(button);
-      });
+    // Simulate setting a timer
+    const button = getByTestId("setTimerButton");
+    await act(async () => {
+      fireEvent.press(button);
+    });
   
-      // Step 2: Simulate confirming a duration of 5 minutes
-      const modal = getByTestId("timer-picker-modal");
-      await act(async () => {
-          fireEvent(modal, "onConfirm", { hours: 0, minutes: 5, seconds: 0 }); // Mock time selection
-      });
+    // Step 2: Simulate confirming a duration of 5 minutes
+    const modal = getByTestId("timer-picker-modal");
+    await act(async () => {
+      fireEvent(modal, "onConfirm", { hours: 0, minutes: 5, seconds: 0 });
+    });
 
-      await waitFor(() => {
-        expect(updateLaundryMachine).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.any(String),
-          expect.objectContaining({
-            notificationScheduled: true,
-          })
-        );
-      }, { timeout: 3000 });
+    await waitFor(() => {
+      expect(updateLaundryMachine).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({
+          notificationScheduled: true,
+        })
+      );
+    }, { timeout: 3000 });
   });
 });

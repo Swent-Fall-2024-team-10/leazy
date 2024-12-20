@@ -4,6 +4,7 @@ import MaintenanceIssues from "../../screens/issues_tenant/ListIssueScreen";
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
+  getPendingRequests,
 } from "../../../firebase/firestore/firestore";
 import { getAuth } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
@@ -27,12 +28,30 @@ jest.mock('@expo/vector-icons', () => ({
 jest.mock("../../../firebase/firestore/firestore", () => ({
   updateMaintenanceRequest: jest.fn(),
   getMaintenanceRequestsQuery: jest.fn(),
+  getPendingRequests: jest.fn().mockResolvedValue([]), // Return an empty array by default
 }));
 
-// Mock onSnapshot from Firestore
 jest.mock("firebase/firestore", () => ({
   ...jest.requireActual("firebase/firestore"),
-  onSnapshot: jest.fn(),
+  onSnapshot: jest.fn().mockImplementation((query, callback) => {
+    // Properly structure the querySnapshot with docs array
+    callback({
+      docs: [
+        {
+          id: "request1",
+          data: () => ({
+            requestID: "request1",
+            requestTitle: "Leaky faucet",
+            requestStatus: "completed"
+          })
+        }
+      ],
+      forEach: function(fn: any) {
+        this.docs.forEach(fn);
+      }
+    });
+    return jest.fn(); // Cleanup function
+  })
 }));
 
 // Mock Navigation
@@ -42,6 +61,7 @@ jest.mock("@react-navigation/native", () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
   }),
+  useFocusEffect: jest.fn()
 }));
 
 describe("MaintenanceIssues", () => {
@@ -64,11 +84,6 @@ describe("MaintenanceIssues", () => {
     };
 
     (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-      callback({
-        forEach: (fn: any) => fn({ data: () => mockIssueData }),
-      });
-    });
 
     const screen = render(<MaintenanceIssues />);
 
@@ -79,38 +94,47 @@ describe("MaintenanceIssues", () => {
   });
 
   test("toggles archived issues switch and displays archived issues when toggled", async () => {
-    const mockIssueData = {
-      requestID: "request1",
+    // Mock pending requests
+    (getPendingRequests as jest.Mock).mockResolvedValue([{
       requestTitle: "Leaky faucet",
-      requestStatus: "completed",
-    };
-        // Mock query and snapshot response
-        const mockQuery = jest.fn();
-        (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-        (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-          callback({
-            forEach: (fn: any) => fn({ data: () => mockIssueData }),
-          });
-        });
+      requestDescription: "Bathroom faucet is leaking",
+      requestStatus: "pending"
+  }]);
+    
+    // Mock the query response
+    const mockIssueData = [{
+        id: "request1",
+        data: () => ({
+            requestID: "request1",
+            requestTitle: "Leaky faucet",
+            requestStatus: "completed",
+        })
+    }];
+
     const screen = render(<MaintenanceIssues />);
     const archivedSwitch = await waitFor(() => screen.getByTestId("archiveSwitch"));
-    const leaky_faucet = screen.queryByText('Leaky faucet');
-    await waitFor(() => expect(leaky_faucet).toBeNull());
 
-  // Toggle to true
-  fireEvent(archivedSwitch, 'valueChange', true);
-  await waitFor(() => expect(archivedSwitch.props.value).toBe(true));
+    // Check initial state (should not show completed issues)
+    expect(screen.queryByText("Leaky faucet")).toBeNull();
 
-  await waitFor(() => expect(screen.getByText("Leaky faucet")).toBeTruthy());
+    // Toggle switch to show archived issues
+    fireEvent(archivedSwitch, 'valueChange', true);
+    
+    // Verify archived issues are shown
+    await waitFor(() => {
+        expect(archivedSwitch.props.value).toBe(true);
+        expect(screen.getByText("Leaky faucet")).toBeTruthy();
+    });
 
-  // Toggle back to false
-  fireEvent(archivedSwitch, 'valueChange', false);
-  await waitFor(() => expect(archivedSwitch.props.value).toBe(false));
-
-  const leaky_faucet_toggled = screen.queryByText('Leaky faucet');
-  await waitFor(() => expect(leaky_faucet_toggled).toBeNull());
-
-  });
+    // Toggle switch back to hide archived issues
+    fireEvent(archivedSwitch, 'valueChange', false);
+    
+    // Verify archived issues are hidden
+    await waitFor(() => {
+        expect(archivedSwitch.props.value).toBe(false);
+        expect(screen.queryByText("Leaky faucet")).toBeNull();
+    });
+});
 
   test("navigates to the report screen when add button is pressed", () => {
     const screen = render(<MaintenanceIssues />);
@@ -130,11 +154,6 @@ describe("MaintenanceIssues", () => {
     // Mock Firestore query and snapshot response
     const mockQuery = jest.fn();
     (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
-      callback({
-        forEach: (fn: any) => fn({ data: () => mockIssueData }),
-      });
-    });
 
     const screen = render(<MaintenanceIssues />);
 

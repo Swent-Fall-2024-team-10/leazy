@@ -137,16 +137,7 @@ export default function ReportScreen() {
     } catch (error) {
       Alert.alert(
         "Error",
-        "There was an error submitting your request. It will be synced when you're back online.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              resetStates();
-              navigation.navigate("Issues");
-            }
-          }
-        ]
+        "There was an error submitting your request. Please try again."
       );
       console.log("Error submitting request:", error);
     } finally {

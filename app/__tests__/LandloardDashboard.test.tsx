@@ -29,6 +29,12 @@ jest.mock("@react-navigation/native", () => ({
   useNavigation: jest.fn(),
 }));
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 const consoleSpy = {
   error: jest.spyOn(console, "error").mockImplementation(() => {}),
   log: jest.spyOn(console, "log").mockImplementation(() => {}),

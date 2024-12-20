@@ -19,7 +19,11 @@ jest.mock("../../firebase/firestore/firestore", () => ({
   writeBatch: jest.fn(),
 }));
 
-
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn()
+}));
 
 const { addSituationReport } = jest.mocked(require("../../firebase/firestore/firestore"));
 

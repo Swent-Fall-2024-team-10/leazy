@@ -1,6 +1,12 @@
 import * as SituationReport from '../utils/SituationReport';
 import { addGroupToLayout } from '../utils/SituationReport';
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 describe('converting backend format to front-end format', () => {
     it('Converting to front-end format should return correct structure for multiple groups', () => {
         const backendJsonString = JSON.stringify({

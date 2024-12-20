@@ -16,6 +16,12 @@ jest.mock('../../firebase/firestore/firestore');
   landlord: { residenceIds: ['residenceId'] },
 });
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 // Mocking database functions
 (fetchResidences as jest.Mock).mockImplementation((landlord, setResidences) => setResidences([{ label: 'Residence 1', value: 'residenceId' }]));
 (fetchApartmentNames as jest.Mock).mockImplementation((residence, setApartments) => setApartments([{ label: 'Apartment 1', value: 'apartmentId' }]));

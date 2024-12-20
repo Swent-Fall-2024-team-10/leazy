@@ -23,6 +23,12 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn()
+}));
+
 // Mock components
 jest.mock('../components/Header', () => 'MockHeader');
 jest.mock('../components/CustomTextField', () => 'MockCustomTextField');

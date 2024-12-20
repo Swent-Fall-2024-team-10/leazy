@@ -11,10 +11,14 @@ jest.mock("firebase/firestore", () => {
     getFirestore: jest.fn(),
     getDoc: jest.fn(),
     updateDoc: jest.fn(),
-    addDoc: jest.fn(),
+    addDoc: jest.fn().mockResolvedValue({
+      id: "report123", // Mock the `id` property of the DocumentReference
+    }),
     deleteDoc: jest.fn(),
     collection: jest.fn(),
     doc: jest.fn(),
+    memoryLocalCache: jest.fn(),
+    initializeFirestore: jest.fn(),
   };
 });
 

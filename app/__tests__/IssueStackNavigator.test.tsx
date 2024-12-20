@@ -17,6 +17,12 @@ declare global {
   }
 }
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 jest.mock('@react-navigation/stack', () => ({
   createStackNavigator: jest.fn().mockReturnValue({
     Navigator: ({ children, initialRouteName }: { children: React.ReactNode, initialRouteName: string }) => (

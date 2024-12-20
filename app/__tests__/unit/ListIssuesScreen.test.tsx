@@ -861,4 +861,105 @@ describe('MaintenanceIssues', () => {
     await findByText('Pending Issue');
     expect(await findByText('Pending Issue')).toBeTruthy();
   });
+
+  test('handles missing user ID', async () => {
+    // Mock auth to return null user
+    jest.spyOn(require('firebase/auth'), 'getAuth').mockImplementation(() => ({
+      currentUser: null,
+    }));
+
+    const { queryByText } = render(<MaintenanceIssues />);
+
+    // Wait a bit to ensure async operations complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Verify that maintenance requests are not fetched
+    expect(getMaintenanceRequestsQuery).not.toHaveBeenCalled();
+    expect(queryByText('Maintenance Requests')).toBeTruthy(); // Header should still show
+  });
+
+  test('handles sync during offline state', async () => {
+    render(<MaintenanceIssues />);
+
+    // Simulate going offline
+    netInfoCallback?.({ isConnected: false });
+    
+    // Verify sync wasn't called
+    expect(syncPendingRequests).not.toHaveBeenCalled();
+  });
+
+  test('handles sync error', async () => {
+    (syncPendingRequests as jest.Mock).mockRejectedValue(new Error('Sync failed'));
+    const consoleErrorSpy = jest.spyOn(console, 'error');
+
+    render(<MaintenanceIssues />);
+
+    // Simulate going online
+    netInfoCallback?.({ isConnected: true });
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Sync error:', expect.any(Error));
+    });
+  });
+
+  test('handles multiple network state changes', async () => {
+    const { rerender } = render(<MaintenanceIssues />);
+
+    // Simulate going offline
+    netInfoCallback?.({ isConnected: false });
+    
+    // Simulate going online
+    netInfoCallback?.({ isConnected: true });
+    
+    // Simulate going offline again while sync is in progress
+    (syncPendingRequests as jest.Mock).mockImplementation(() => 
+      new Promise((resolve) => setTimeout(resolve, 1000))
+    );
+    
+    netInfoCallback?.({ isConnected: false });
+    
+    // Simulate going online again
+    netInfoCallback?.({ isConnected: true });
+
+    await waitFor(() => {
+      // Should have been called twice
+      expect(syncPendingRequests).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  test('handles undefined network state', async () => {
+    render(<MaintenanceIssues />);
+
+    // Simulate undefined connection state
+    netInfoCallback?.({ isConnected: undefined });
+    
+    // Should treat undefined as offline
+    expect(syncPendingRequests).not.toHaveBeenCalled();
+  });
+
+  test('handles status update with missing requestID', async () => {
+    // This covers lines 158-159, 169-170
+    const invalidIssueData = {
+      ...mockIssueData,
+      requestID: undefined,
+    };
+
+    let snapshotCallback: any;
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      snapshotCallback = callback;
+      callback({
+        docs: [{ data: () => invalidIssueData, id: 'request1' }],
+        forEach: (fn: any) => fn({ data: () => invalidIssueData, id: 'request1' }),
+        docChanges: () => [],
+      });
+      return () => {};
+    });
+
+    render(<MaintenanceIssues />);
+
+    // Verify createNews is not called for invalid request
+    expect(createNews).not.toHaveBeenCalled();
+  });
+
+  
 });

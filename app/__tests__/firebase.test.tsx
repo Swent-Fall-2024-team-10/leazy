@@ -165,14 +165,16 @@ describe("Firestore Functions", () => {
     beforeEach(() => {
       jest.clearAllMocks();
       (getFirestore as jest.Mock).mockReturnValue("mockedFirestore");
-      (collection as jest.Mock).mockReturnValue("residencesCollectionRef");
-    });
+      const residencesCollectionRef = "residencesCollectionRef";
+      (collection as jest.Mock).mockReturnValue(residencesCollectionRef);
+      });
 
     it("should successfully create a residence document", async () => {
       const mockDocRef = { id: "generatedDocId" };
       (addDoc as jest.Mock).mockResolvedValueOnce(mockDocRef);
-      (collection as jest.Mock).mockReturnValueOnce("residencesCollectionRef");
-      
+      const residencesCollectionRef = "residencesCollectionRef";
+      (collection as jest.Mock).mockReturnValue(residencesCollectionRef);
+            
       const docId = await firestore.createResidence(mockResidence);
 
       expect(collection).toHaveBeenCalledWith("residencesCollectionRef", "residences");

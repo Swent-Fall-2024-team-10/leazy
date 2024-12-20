@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -15,10 +15,11 @@ import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
   syncPendingRequests,
-  getPendingRequests
+  getPendingRequests,
+  createNews
 } from "../../../firebase/firestore/firestore"; // Firestore functions
 import { getAuth } from "firebase/auth";
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot, Timestamp } from "firebase/firestore";
 import {
   getIssueStatusColor,
   getIssueStatusText,
@@ -82,11 +83,86 @@ const MaintenanceIssues = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-
+  const statusTrackingRef = useRef<Record<string, string>>({});
+  const recentUpdatesRef = React.useRef<Record<string, number>>({});
 
   const auth = getAuth();
   const user = auth.currentUser;
   const userId = user ? user.uid : null;
+
+  const getStatusUpdateMessage = (title: string, newStatus: string) => {
+    switch (newStatus) {
+      case 'inProgress':
+        return `Work has begun on your maintenance request "${title}"`;
+      case 'completed':
+        return `Your maintenance request "${title}" has been completed`;
+      case 'rejected':
+        return `Your maintenance request "${title}" has been rejected`;
+      case 'notStarted':
+        return `Your maintenance request "${title}" has been opened`;
+      default:
+        return `Your maintenance request "${title}" has been updated to status: ${newStatus}`;
+    }
+  };
+  
+  const createStatusChangeNews = async (
+    request: MaintenanceRequest,
+    userId: string,
+  ) => {
+    try {
+      console.log('Creating news item for request:', request.requestID);
+      const newsItem = {
+        maintenanceRequestID: `news_${request.requestID}_${Date.now()}`,
+        title: 'Maintenance Request Status Update',
+        content: getStatusUpdateMessage(
+          request.requestTitle,
+          request.requestStatus,
+        ),
+        type: request.requestStatus === 'rejected' ? 'urgent' : 'informational',
+        isRead: false,
+        createdAt: Timestamp.now(),
+        UpdatedAt: Timestamp.now(),
+        ReadAt: null,
+        images: request.picture || [],
+        ReceiverID: userId,
+        SenderID: 'system',
+      } as const;
+
+      await createNews(newsItem);
+      console.log('Successfully created news item');
+    } catch (error) {
+      console.error('Error creating status change news:', error);
+    }
+  };
+
+  const handleStatusChange = async (
+    requestID: string,
+    newStatus: MaintenanceRequest['requestStatus'],
+    title: string,
+  ) => {
+    if (!userId) return;
+    try {
+      await updateMaintenanceRequest(requestID, { requestStatus: newStatus });
+    } catch (error) {
+      console.error('Error updating issue status:', error);
+    }
+  };
+
+  const hasRecentlyUpdated = (requestId: string, status: string) => {
+    const key = `${requestId}_${status}`;
+    const lastUpdate = recentUpdatesRef.current[key];
+    const now = Date.now();
+
+    if (lastUpdate && now - lastUpdate < 5000) {
+      // Increased to 5 seconds
+      console.log('Recent update detected, skipping');
+      return true;
+    }
+
+    recentUpdatesRef.current[key] = now;
+    console.log('No recent update found, proceeding');
+    return false;
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -118,10 +194,39 @@ const MaintenanceIssues = () => {
 
     try {
       const query = await getMaintenanceRequestsQuery(userId);
+      let isInitialized = false;
       
       // Set up real-time listener for Firestore
       const unsubscribe = onSnapshot(query, 
         async (querySnapshot) => {
+          if (!isInitialized) {
+            querySnapshot.docs.forEach((doc) => {
+              const data = doc.data() as MaintenanceRequest;
+              if (data.requestID) {
+                statusTrackingRef.current[data.requestID] = data.requestStatus;
+              }
+            });
+            isInitialized = true;
+          }
+
+          // Process modified changes for status updates
+          querySnapshot.docChanges().forEach((change) => {
+            if (change.type !== 'modified') return;
+            const newData = change.doc.data() as MaintenanceRequest;
+            if (!newData.requestID) return;
+            const oldStatus = statusTrackingRef.current[newData.requestID];
+            const newStatus = newData.requestStatus;
+            
+            if (
+              oldStatus &&
+              oldStatus !== newStatus &&
+              !hasRecentlyUpdated(newData.requestID, newStatus)
+            ) {
+              createStatusChangeNews(newData, userId);
+              statusTrackingRef.current[newData.requestID] = newStatus;
+            }
+          });
+
           const firestoreIssues = querySnapshot.docs.map(doc => ({
             ...doc.data(),
             requestID: doc.id

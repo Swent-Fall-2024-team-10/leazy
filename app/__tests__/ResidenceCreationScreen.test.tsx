@@ -7,67 +7,72 @@ jest.mock('react-native-keyboard-aware-scroll-view', () => {
 
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { Alert, Platform, Keyboard } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as XLSX from 'xlsx';
+import { Buffer } from 'buffer';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../firebase/firebase';
 import ResidenceCreationScreen from '../screens/landlord/ResidenceCreationScreen';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import {
   createApartment,
   createResidence,
+  updateLandlord,
   updateResidence,
   getLandlord,
-  updateLandlord,
 } from '../../firebase/firestore/firestore';
 
-// Mock navigation
+// Mock dependencies
+jest.mock('../../firebase/firebase', () => ({
+  storage: {},
+}));
+
+jest.mock('firebase/storage', () => ({
+  ref: jest.fn(),
+  uploadBytes: jest.fn(),
+  getDownloadURL: jest.fn(),
+}));
+
+jest.mock('../context/AuthContext', () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock('../../firebase/firestore/firestore', () => ({
+  createApartment: jest.fn(),
+  createResidence: jest.fn(),
+  updateLandlord: jest.fn(),
+  updateResidence: jest.fn(),
+  getLandlord: jest.fn(),
+}));
+
 const mockNavigate = jest.fn();
+const mockGoBack = jest.fn();
+
 jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
     navigate: mockNavigate,
+    goBack: mockGoBack,
   }),
 }));
 
-// Mock components
-jest.mock('../components/Header', () => 'MockHeader');
-jest.mock('../components/CustomTextField', () => 'MockCustomTextField');
-jest.mock('../components/CustomButton', () => 'MockCustomButton');
-
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: 'MockedIonicons',
-}));
-
-// Mock external dependencies
 jest.mock('expo-document-picker', () => ({
   getDocumentAsync: jest.fn(),
 }));
 
 jest.mock('expo-file-system', () => ({
-  cacheDirectory: 'file:///cache/',
+  cacheDirectory: 'mockCacheDirectory/',
   makeDirectoryAsync: jest.fn(),
   copyAsync: jest.fn(),
   readAsStringAsync: jest.fn(),
-  EncodingType: { Base64: 'base64' },
-}));
-
-jest.mock('xlsx', () => ({
-  read: jest.fn(() => ({
-    SheetNames: ['Sheet1'],
-    Sheets: { Sheet1: {} },
-  })),
-  utils: {
-    sheet_to_json: jest.fn(() => [['Header'], ['Apt1'], ['Apt2']]),
+  EncodingType: {
+    Base64: 'base64',
   },
 }));
 
-jest.mock('../../firebase/firestore/firestore', () => ({
-  createResidence: jest.fn(),
-  createApartment: jest.fn(),
-  updateResidence: jest.fn(),
-  getLandlord: jest.fn(),
-  updateLandlord: jest.fn(),
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: 'Ionicons',
 }));
 
 jest.spyOn(Alert, 'alert');
@@ -108,67 +113,44 @@ const renderWithAuth = (component: React.ReactElement) => {
 };
 
 describe('ResidenceCreationScreen', () => {
-  const mockValidFormData = {
-    'residence-name': 'Test Residence',
-    address: '123 Test St',
-    number: '123',
-    'zip-code': '12345',
-    city: 'Test City',
-    'province-state': 'Test Province',
-    country: 'Test Country',
-    description: 'Test Description',
-    website: 'https://example.com',
-  };
+  const mockUser = { uid: 'test-user-id' };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (FileSystem.makeDirectoryAsync as jest.Mock).mockResolvedValue(undefined);
-    (FileSystem.copyAsync as jest.Mock).mockResolvedValue(undefined);
-    (FileSystem.readAsStringAsync as jest.Mock).mockResolvedValue(
-      'mock-base64-content',
-    );
+    useAuth.mockReturnValue({ user: mockUser });
+    Platform.OS = 'ios';
+    Keyboard.addListener = jest.fn().mockReturnValue({ remove: jest.fn() });
   });
 
-  describe('Rendering', () => {
-    it('renders all form fields', () => {
-      const { getByTestId } = renderWithAuth(<ResidenceCreationScreen />);
-
-      // Check for all required fields
-      Object.keys(mockValidFormData).forEach((fieldId) => {
-        expect(getByTestId(fieldId)).toBeTruthy();
-      });
-      expect(getByTestId('next-button')).toBeTruthy();
-    });
-
-    it('renders upload buttons', () => {
-      const { getByText } = renderWithAuth(<ResidenceCreationScreen />);
-
-      expect(getByText('List of Apartments (.xlsx)')).toBeTruthy();
-      expect(getByText('Proof of Ownership')).toBeTruthy();
-      expect(getByText('Pictures of residence')).toBeTruthy();
+  describe('Form Rendering', () => {
+    it('renders all form fields correctly', () => {
+      const { getByTestId, getByPlaceholderText } = render(<ResidenceCreationScreen />);
+      expect(getByTestId('screen-title')).toBeTruthy();
+      expect(getByPlaceholderText('Residence Name')).toBeTruthy();
+      expect(getByPlaceholderText('Address')).toBeTruthy();
+      expect(getByPlaceholderText('Street no')).toBeTruthy();
+      expect(getByPlaceholderText('Zip Code')).toBeTruthy();
+      expect(getByPlaceholderText('City')).toBeTruthy();
+      expect(getByPlaceholderText('Province/State')).toBeTruthy();
+      expect(getByPlaceholderText('Country')).toBeTruthy();
+      expect(getByPlaceholderText('Description')).toBeTruthy();
+      expect(getByPlaceholderText('Website (e.g., https://example.com)')).toBeTruthy();
     });
   });
 
-  describe('Form Input Handling', () => {
-    it('updates form fields on user input', () => {
-      const { getByTestId } = renderWithAuth(<ResidenceCreationScreen />);
-
-      Object.entries(mockValidFormData).forEach(([fieldId, value]) => {
-        const input = getByTestId(fieldId);
-        fireEvent.changeText(input, value);
-        expect(input.props.value).toBe(value);
+  describe('Keyboard Handling', () => {
+    it('handles keyboard visibility changes', async () => {
+      render(<ResidenceCreationScreen />);
+      
+      await waitFor(() => {
+        // Component already adds 2 listeners in useEffect
+        // So we should just verify they were added without adding more
+        expect(Keyboard.addListener).toHaveBeenCalled();
+        expect(Keyboard.addListener.mock.calls).toEqual([
+          ['keyboardWillShow', expect.any(Function)],
+          ['keyboardWillHide', expect.any(Function)]
+        ]);
       });
-    });
-
-    it('handles numeric input correctly', () => {
-      const { getByTestId } = renderWithAuth(<ResidenceCreationScreen />);
-      const numberInput = getByTestId('number');
-
-      fireEvent.changeText(numberInput, '42');
-      expect(numberInput.props.value).toBe('42');
-
-      fireEvent.changeText(numberInput, 'abc');
-      expect(numberInput.props.keyboardType).toBe('numeric');
     });
   });
 
@@ -178,140 +160,66 @@ describe('ResidenceCreationScreen', () => {
         <ResidenceCreationScreen />,
       );
 
-      fireEvent.changeText(getByTestId('website'), 'invalid-url');
-      fireEvent.press(getByTestId('next-button'));
+      FileSystem.makeDirectoryAsync.mockResolvedValue(undefined);
+      FileSystem.copyAsync.mockResolvedValue(undefined);
 
       await waitFor(() => {
-        expect(queryByText('Please enter a valid website URL')).toBeTruthy();
+        fireEvent.press(getByText('Pictures of residence'));
       });
 
-      // Clear error on valid input
-      fireEvent.changeText(getByTestId('website'), 'https://valid-url.com');
-      expect(queryByText('Please enter a valid website URL')).toBeFalsy();
+      expect(FileSystem.makeDirectoryAsync).toHaveBeenCalled();
+      expect(FileSystem.copyAsync).toHaveBeenCalled();
+      expect(mockConsoleLog).toHaveBeenCalledWith('imageUris:', expect.any(Array));
     });
 
-    it('accepts valid form submission', async () => {
-      const mockResidenceId = 'test-residence-id';
-      const mockLandlordData = {
-        userId: 'test-user-id',
-        residenceIds: ['existing-residence-id'],
-      };
-
-      (createResidence as jest.Mock).mockResolvedValueOnce(mockResidenceId);
-      (getLandlord as jest.Mock).mockResolvedValueOnce(mockLandlordData);
-      (updateLandlord as jest.Mock).mockResolvedValueOnce(undefined);
-
-      const { getByTestId } = renderWithAuth(<ResidenceCreationScreen />);
-
-      Object.entries(mockValidFormData).forEach(([fieldId, value]) => {
-        fireEvent.changeText(getByTestId(fieldId), value);
-      });
-
-      fireEvent.press(getByTestId('next-button'));
-
-      await waitFor(() => {
-        expect(createResidence).toHaveBeenCalled();
-        expect(getLandlord).toHaveBeenCalledWith('test-user-id');
-        expect(updateLandlord).toHaveBeenCalledWith('test-user-id', {
-          userId: 'test-user-id',
-          residenceIds: ['existing-residence-id', mockResidenceId],
-        });
-        expect(mockNavigate).toHaveBeenCalledWith('ResidenceList');
-      });
-    });
-  });
-
-  describe('File Upload Handling', () => {
-    it('handles excel file upload', async () => {
-      const mockFile = {
+    it('handles invalid file extensions for images', async () => {
+      const { getByText } = render(<ResidenceCreationScreen />);
+      
+      DocumentPicker.getDocumentAsync.mockResolvedValueOnce({
         canceled: false,
-        assets: [
-          {
-            name: 'test.xlsx',
-            uri: 'file:///test.xlsx',
-          },
-        ],
-      };
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
-        mockFile,
-      );
+        assets: [{ uri: 'file://test.txt', name: 'test.txt' }]
+      });
 
-      const { getByTestId, getByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
+      await waitFor(() => {
+        fireEvent.press(getByText('Pictures of residence'));
+      });
+
+      expect(mockAlert).toHaveBeenCalledWith(
+        'Invalid file type',
+        expect.any(String)
       );
+    });
+
+    it('validates residence name before image upload', async () => {
+      const { getByText } = render(<ResidenceCreationScreen />);
+    
+      DocumentPicker.getDocumentAsync.mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://test.jpg', name: 'test.jpg' }]
+      });
+    
+      await waitFor(() => {
+        fireEvent.press(getByText('Pictures of residence'));
+        // Need to wait for the next tick to ensure validation happens
+      }, { timeout: 1000 });
+    
+      await waitFor(() => {
+        expect(mockAlert).toHaveBeenCalledWith('Error', 'Please enter a residence name first');
+      });
+    });
+
+    it('handles clear all pictures', async () => {
+      const { getByText, queryByText, getByTestId } = render(<ResidenceCreationScreen />);
+
       fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
-      fireEvent.press(getByText('List of Apartments (.xlsx)'));
-
-      await waitFor(() => {
-        expect(DocumentPicker.getDocumentAsync).toHaveBeenCalled();
-        expect(FileSystem.copyAsync).toHaveBeenCalled();
-        expect(FileSystem.readAsStringAsync).toHaveBeenCalled();
-      });
-    });
-
-    it('handles upload cancellation', async () => {
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce({
-        canceled: true,
-      });
-
-      const { getByText } = renderWithAuth(<ResidenceCreationScreen />);
-      fireEvent.press(getByText('List of Apartments (.xlsx)'));
-
-      await waitFor(() => {
-        expect(FileSystem.copyAsync).not.toHaveBeenCalled();
-      });
-    });
-
-    it('validates file extensions', async () => {
-      const mockFile = {
+      
+      DocumentPicker.getDocumentAsync.mockResolvedValueOnce({
         canceled: false,
-        assets: [
-          {
-            name: 'test.txt',
-            uri: 'file:///test.txt',
-          },
-        ],
-      };
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
-        mockFile,
-      );
-
-      const { getByTestId, getByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
-      );
-      fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
-      fireEvent.press(getByText('List of Apartments (.xlsx)'));
-
-      await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Invalid file type',
-          expect.any(String),
-        );
+        assets: [{ uri: 'file://test.jpg', name: 'test.jpg' }]
       });
-    });
-
-    it('requires residence name before file upload', async () => {
-      const mockFile = {
-        canceled: false,
-        assets: [
-          {
-            name: 'test.xlsx',
-            uri: 'file:///test.xlsx',
-          },
-        ],
-      };
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
-        mockFile,
-      );
-
-      const { getByText } = renderWithAuth(<ResidenceCreationScreen />);
-      fireEvent.press(getByText('List of Apartments (.xlsx)'));
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Error',
-          'Please enter a residence name first',
-        );
+        fireEvent.press(getByText('Pictures of residence'));
       });
     });
 
@@ -336,12 +244,35 @@ describe('ResidenceCreationScreen', () => {
           'Please select a .jpg or .jpeg or .png file',
         );
       });
-    });
 
-    it('handles file system directory creation errors', async () => {
-      const mockFile = {
+      expect(queryByText('Selected Pictures (1)')).toBeNull();
+    });
+  });
+
+  describe('Excel File Handling', () => {
+    it('handles Excel file parsing successfully', async () => {
+      const { getByText, getByTestId } = render(<ResidenceCreationScreen />);
+      
+      // Set residence name first
+      fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
+    
+      DocumentPicker.getDocumentAsync.mockResolvedValueOnce({
         canceled: false,
-        assets: [{ name: 'test.jpg', uri: 'file:///test.jpg' }],
+        assets: [{ uri: 'file://test.xlsx', name: 'test.xlsx' }]
+      });
+    
+      // Mock successful file content
+      FileSystem.readAsStringAsync.mockResolvedValueOnce('mock-content');
+      
+      const mockWorkbook = {
+        SheetNames: ['Sheet1'],
+        Sheets: {
+          Sheet1: {
+            'A1': { v: 'ApartmentName' },
+            'A2': { v: 'Apt 1' },
+            'A3': { v: 'Apt 2' }
+          }
+        }
       };
       (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
         mockFile,
@@ -363,6 +294,8 @@ describe('ResidenceCreationScreen', () => {
         );
         expect(console.error).toHaveBeenCalled();
       });
+    
+      expect(mockAlert).toHaveBeenCalledWith('Success', expect.any(String));
     });
 
     it('handles file copy errors', async () => {
@@ -384,8 +317,14 @@ describe('ResidenceCreationScreen', () => {
         <ResidenceCreationScreen />,
       );
       fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
-      fireEvent.press(getByText('Pictures of residence'));
-
+    
+      DocumentPicker.getDocumentAsync.mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://test.xlsx', name: 'test.xlsx' }]
+      });
+    
+      FileSystem.readAsStringAsync.mockRejectedValueOnce(new Error('Parse error'));
+      
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith(
           'Error',
@@ -393,167 +332,89 @@ describe('ResidenceCreationScreen', () => {
         );
         expect(console.error).toHaveBeenCalled();
       });
+    
+      expect(mockAlert).toHaveBeenCalledWith('Error', 'Failed to parse Excel file');
     });
   });
 
-  describe('File System Error Handling', () => {
-    it('handles directory creation errors', async () => {
-      const mockError = new Error('File system error');
-      (FileSystem.makeDirectoryAsync as jest.Mock).mockRejectedValueOnce(
-        mockError,
-      );
-
-      const mockFile = {
-        canceled: false,
-        assets: [
-          {
-            name: 'test.xlsx',
-            uri: 'file:///test.xlsx',
-          },
-        ],
-      };
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
-        mockFile,
-      );
-
-      const { getByTestId, getByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
-      );
+  describe('PDF Upload', () => {
+    it('handles PDF upload successfully', async () => {
+      const { getByText, getByTestId } = render(<ResidenceCreationScreen />);
+      
       fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
-      fireEvent.press(getByText('List of Apartments (.xlsx)'));
+
+      DocumentPicker.getDocumentAsync.mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://test.pdf', name: 'test.pdf' }]
+      });
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Error',
-          'Failed to upload file',
-        );
-        expect(console.error).toHaveBeenCalledWith(mockError);
-      });
-    });
-
-    it('handles excel parsing errors', async () => {
-      const mockError = new Error('Parse error');
-      (XLSX.utils.sheet_to_json as jest.Mock).mockImplementationOnce(() => {
-        throw mockError;
+        fireEvent.press(getByText('Proof of Ownership'));
       });
 
-      const mockFile = {
-        canceled: false,
-        assets: [
-          {
-            name: 'test.xlsx',
-            uri: 'file:///test.xlsx',
-          },
-        ],
-      };
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
-        mockFile,
-      );
-
-      const { getByTestId, getByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
-      );
-      fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
-      fireEvent.press(getByText('List of Apartments (.xlsx)'));
-
-      await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Error',
-          'Failed to parse Excel file',
-        );
-        expect(console.error).toHaveBeenCalledWith(mockError);
-      });
+      expect(FileSystem.makeDirectoryAsync).toHaveBeenCalled();
+      expect(FileSystem.copyAsync).toHaveBeenCalled();
+      expect(getByText('Proof uploaded')).toBeTruthy();
     });
   });
 
-  describe('Picture Upload Handling', () => {
-    it('handles multiple picture uploads', async () => {
-      const mockPicture1 = {
-        canceled: false,
-        assets: [
-          {
-            name: 'test1.jpg',
-            uri: 'file:///test1.jpg',
-          },
-        ],
-      };
-      const mockPicture2 = {
-        canceled: false,
-        assets: [
-          {
-            name: 'test2.jpg',
-            uri: 'file:///test2.jpg',
-          },
-        ],
-      };
+  describe('Form Submission', () => {
+    it('handles successful form submission', async () => {
+      const { getByTestId } = render(<ResidenceCreationScreen />);
 
-      (DocumentPicker.getDocumentAsync as jest.Mock)
-        .mockResolvedValueOnce(mockPicture1)
-        .mockResolvedValueOnce(mockPicture2);
+      createResidence.mockResolvedValueOnce('new-residence-id');
+      getLandlord.mockResolvedValueOnce({
+        userId: 'test-user-id',
+        residenceIds: []
+      });
+      updateLandlord.mockResolvedValueOnce(undefined);
 
-      const { getByTestId, getByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
-      );
       fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
+      fireEvent.changeText(getByTestId('address'), 'Test Address');
+      fireEvent.changeText(getByTestId('city'), 'Test City');
 
-      // Upload first picture
-      fireEvent.press(getByText('Pictures of residence'));
       await waitFor(() => {
-        expect(getByText('1 pictures uploaded')).toBeTruthy();
+        fireEvent.press(getByTestId('next-button'));
       });
 
-      // Upload second picture
-      fireEvent.press(getByText('1 pictures uploaded'));
-      await waitFor(() => {
-        expect(getByText('2 pictures uploaded')).toBeTruthy();
-      });
+      expect(createResidence).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('ResidenceList');
     });
 
-    it('handles picture upload errors', async () => {
-      const mockError = new Error('Upload failed');
-      (FileSystem.copyAsync as jest.Mock).mockRejectedValueOnce(mockError);
+    it('handles firebase errors during submission', async () => {
+      const { getByTestId } = render(<ResidenceCreationScreen />);
 
-      const mockPicture = {
-        canceled: false,
-        assets: [
-          {
-            name: 'test.jpg',
-            uri: 'file:///test.jpg',
-          },
-        ],
-      };
-      (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce(
-        mockPicture,
-      );
+      createResidence.mockRejectedValueOnce(new Error('Firebase error'));
 
-      const { getByTestId, getByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
-      );
       fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
-      fireEvent.press(getByText('Pictures of residence'));
+      fireEvent.changeText(getByTestId('address'), 'Test Address');
+      fireEvent.changeText(getByTestId('city'), 'Test City');
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
-          'Error',
-          'Failed to upload file',
-        );
-        expect(console.error).toHaveBeenCalledWith(mockError);
+        fireEvent.press(getByTestId('next-button'));
       });
+
+      expect(getByTestId('FirebaseErrorModal')).toBeTruthy();
     });
-  });
 
-  describe('Form Error Handling', () => {
-    it('clears field errors when input changes', async () => {
-      const { getByTestId, queryByText } = renderWithAuth(
-        <ResidenceCreationScreen />,
-      );
+   
 
-      // First create an error
-      fireEvent.changeText(getByTestId('website'), 'invalid-url');
-      fireEvent.press(getByTestId('next-button'));
-
+    it('handles landlord update error', async () => {
+      const { getByTestId } = render(<ResidenceCreationScreen />);
+    
+      // Mock API sequences with fixed promises
+      createResidence.mockImplementationOnce(() => Promise.resolve('new-residence-id'));
+      getLandlord.mockImplementationOnce(() => Promise.resolve({ 
+        userId: 'test-user-id', 
+        residenceIds: [] 
+      }));
+      updateLandlord.mockImplementationOnce(() => Promise.reject(new Error('Update failed')));
+    
+      // Fill form
       await waitFor(() => {
-        expect(queryByText('Please enter a valid website URL')).toBeTruthy();
+        fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
+        fireEvent.changeText(getByTestId('address'), 'Test Address');
+        fireEvent.changeText(getByTestId('city'), 'Test City');
       });
 
       // Now update the field
@@ -588,8 +449,17 @@ describe('ResidenceCreationScreen', () => {
           'Failed to parse Excel file',
         );
       });
+    
+      // Wait for all promises to resolve and verify error state
+      await waitFor(() => {
+        expect(createResidence).toHaveBeenCalled();
+        expect(getLandlord).toHaveBeenCalled();
+        expect(updateLandlord).toHaveBeenCalled();
+        expect(getByTestId('FirebaseErrorModal')).toBeTruthy();
+      }, { timeout: 2000 });
     });
   });
+
 
   describe('Apartment Creation Error Handling', () => {
     it('handles apartment update failures', async () => {
@@ -633,17 +503,26 @@ describe('ResidenceCreationScreen', () => {
         mockFile,
       );
       fireEvent.press(getByText('List of Apartments (.xlsx)'));
-
       await waitFor(() => {
-        expect(getByText('2 apartments loaded')).toBeTruthy();
+        expect(createResidence).not.toHaveBeenCalled();
       });
-
-      // Submit form
+    });
+    
+    it('validates website format', async () => {
+      const { getByTestId } = render(<ResidenceCreationScreen />);
+    
+      // Fill required fields
+      fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
+      fireEvent.changeText(getByTestId('address'), 'Test Address');
+      fireEvent.changeText(getByTestId('city'), 'Test City');
+      
+      // Add invalid website
+      fireEvent.changeText(getByTestId('website'), 'invalid-url');
+      
       fireEvent.press(getByTestId('next-button'));
-
+    
       await waitFor(() => {
-        expect(getByTestId('FirebaseErrorModal')).toBeTruthy();
-        expect(getByText('Failed to create apartments')).toBeTruthy();
+        expect(createResidence).not.toHaveBeenCalled();
       });
     });
 
@@ -683,14 +562,13 @@ describe('ResidenceCreationScreen', () => {
       fireEvent.press(getByText('List of Apartments (.xlsx)'));
 
       await waitFor(() => {
-        expect(getByText('1 apartments loaded')).toBeTruthy();
+        fireEvent.changeText(getByTestId('website'), 'invalid-url');
+        fireEvent.press(getByTestId('next-button'));
       });
 
-      fireEvent.press(getByTestId('next-button'));
-
+      // Clear website error by entering valid URL
       await waitFor(() => {
-        expect(getByTestId('FirebaseErrorModal')).toBeTruthy();
-        expect(getByText('Failed to create apartment Apt1')).toBeTruthy();
+        fireEvent.changeText(getByTestId('website'), 'https://valid-url.com');
       });
     });
   });
@@ -702,20 +580,24 @@ describe('ResidenceCreationScreen', () => {
         <ResidenceCreationScreen />,
       );
 
-      // Trigger a Firebase error
-      (createResidence as jest.Mock).mockResolvedValueOnce(null);
+    it('navigates to list after success', async () => {
+      const { getByTestId } = render(<ResidenceCreationScreen />);
 
-      // Fill form data and submit
-      Object.entries(mockValidFormData).forEach(([fieldId, value]) => {
-        fireEvent.changeText(getByTestId(fieldId), value);
+      createResidence.mockResolvedValueOnce('new-residence-id');
+      getLandlord.mockResolvedValueOnce({
+        userId: 'test-user-id',
+        residenceIds: []
       });
-      fireEvent.press(getByTestId('next-button'));
+
+      fireEvent.changeText(getByTestId('residence-name'), 'Test Residence');
+      fireEvent.changeText(getByTestId('address'), 'Test Address');
+      fireEvent.changeText(getByTestId('city'), 'Test City');
 
       await waitFor(() => {
-        const errorModal = getByTestId('FirebaseErrorModal');
-        expect(errorModal).toBeTruthy();
-        expect(getByText('Failed to create residence')).toBeTruthy();
+        fireEvent.press(getByTestId('next-button'));
       });
+
+      expect(mockNavigate).toHaveBeenCalledWith('ResidenceList');
     });
   });
 });

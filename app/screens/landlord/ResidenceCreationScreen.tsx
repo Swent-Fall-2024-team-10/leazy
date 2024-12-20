@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -14,9 +14,11 @@ import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import * as XLSX from 'xlsx';
 import { Buffer } from 'buffer';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../../firebase/firebase';
 import { appStyles, ButtonDimensions } from '../../../styles/styles';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { ResidenceStackParamList, Residence, Apartment } from '@/types/types';
+import { ResidenceStackParamList } from '@/types/types';
 import CustomTextField from '../../components/CustomTextField';
 import CustomButton from '../../components/CustomButton';
 import Header from '../../components/Header';
@@ -55,6 +57,24 @@ const ALLOWED_EXTENSIONS = {
   images: ['.jpg', '.jpeg', '.png'],
 };
 
+const uploadImage = async (uri: string, residenceName: string): Promise<string> => {
+  try {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    
+    const filename = uri.substring(uri.lastIndexOf('/') + 1);
+    const storageRef = ref(storage, `residences/${residenceName}/pictures/${filename}`);
+    
+    await uploadBytes(storageRef, blob);
+    const downloadURL = await getDownloadURL(storageRef);
+    
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
 function ResidenceCreationScreen() {
   const navigation = useNavigation<NavigationProp<ResidenceStackParamList>>();
   const { user } = useAuth();
@@ -74,6 +94,24 @@ function ResidenceCreationScreen() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [firebaseError, setFirebaseError] = useState<boolean>(false);
   const [firebaseErrorText, setFirebaseErrorText] = useState<string>('');
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const parseExcelFile = async (fileUri: string) => {
     try {
@@ -94,7 +132,6 @@ function ResidenceCreationScreen() {
       Alert.alert('Success', `Parsed ${apartmentNames.length} apartments`);
     } catch (error) {
       Alert.alert('Error', 'Failed to parse Excel file');
-      console.error(error);
     }
   };
 
@@ -104,61 +141,89 @@ function ResidenceCreationScreen() {
   ) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type:
-          fileType === 'images'
-            ? 'image/*'
-            : fileType === 'excel'
-              ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-              : 'application/pdf',
+        type: fileType === 'images'
+          ? 'image/*'
+          : fileType === 'excel'
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            : 'application/pdf',
+        multiple: fileType === 'images',
       });
 
       if (result.canceled) return;
 
-      const file = result.assets[0];
-      const extension = file.name.toLowerCase().split('.').pop();
-      const allowedExts = ALLOWED_EXTENSIONS[fileType];
+      if (fileType === 'images') {
+        const validImageFiles = result.assets.filter(file => {
+          const extension = file.name.toLowerCase().split('.').pop();
+          return ALLOWED_EXTENSIONS.images.includes(`.${extension}`);
+        });
 
-      if (!allowedExts.includes(`.${extension}`)) {
-        Alert.alert(
-          'Invalid file type',
-          `Please select a ${allowedExts.join(' or ')} file`,
+        if (validImageFiles.length === 0) {
+          Alert.alert(
+            'Invalid file type',
+            `Please select ${ALLOWED_EXTENSIONS.images.join(' or ')} files`,
+          );
+          return;
+        }
+
+        if (!formData.name) {
+          Alert.alert('Error', 'Please enter a residence name first');
+          return;
+        }
+
+        const imageUris = await Promise.all(
+          validImageFiles.map(async (file) => {
+            const directory = FileSystem.cacheDirectory + `residence/${formData.name}/`;
+            await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+            const newPath = directory + file.name;
+            await FileSystem.copyAsync({
+              from: file.uri,
+              to: newPath,
+            });
+            return newPath;
+          })
         );
-        return;
-      }
-
-      if (!formData.name) {
-        Alert.alert('Error', 'Please enter a residence name first');
-        return;
-      }
-
-      const directory =
-        FileSystem.cacheDirectory + `residence/${formData.name}/`;
-      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
-
-      const newPath = directory + file.name;
-      await FileSystem.copyAsync({
-        from: file.uri,
-        to: newPath,
-      });
-
-      if (field === 'tenantsFile') {
-        await parseExcelFile(newPath);
-      }
-
-      if (field === 'pictures') {
-        setFormData((prev) => ({
+        console.log('imageUris:', imageUris);
+        setFormData(prev => ({
           ...prev,
-          pictures: [...prev.pictures, newPath],
+          pictures: [...prev.pictures, ...imageUris],
         }));
       } else {
-        setFormData((prev) => ({
-          ...prev,
-          [field]: newPath,
-        }));
+        const file = result.assets[0];
+        const extension = file.name.toLowerCase().split('.').pop();
+        const allowedExts = ALLOWED_EXTENSIONS[fileType];
+
+        if (!allowedExts.includes(`.${extension}`)) {
+          Alert.alert(
+            'Invalid file type',
+            `Please select a ${allowedExts.join(' or ')} file`,
+          );
+          return;
+        }
+
+        if (!formData.name) {
+          Alert.alert('Error', 'Please enter a residence name first');
+          return;
+        }
+
+        const directory = FileSystem.cacheDirectory + `residence/${formData.name}/`;
+        await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+        const newPath = directory + file.name;
+        await FileSystem.copyAsync({
+          from: file.uri,
+          to: newPath,
+        });
+
+        if (field === 'tenantsFile') {
+          await parseExcelFile(newPath);
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            [field]: newPath,
+          }));
+        }
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to upload file');
-      console.error(error);
     }
   };
 
@@ -253,20 +318,76 @@ function ResidenceCreationScreen() {
             }),
           );
 
-          // Filter out any null values from failed creations
-          const successfulApartments = newApartments.filter(
-            (id) => id !== null,
-          );
+        const newResidence: Residence = {
+          residenceName: formData.name,
+          street: formData.address,
+          number: formData.number,
+          city: formData.city,
+          canton: formData.provinceState,
+          zip: formData.zipCode,
+          country: formData.country,
+          landlordId: user.uid,
+          tenantIds: [],
+          laundryMachineIds: [],
+          apartments: [],
+          tenantCodesID: [],
+          situationReportLayout: [],
+          pictures: 
+          
+          ,
+        };
 
-          newResidence.apartments = successfulApartments;
-          console.log('New Residence Apps' + newResidence.apartments);
-          await updateResidence(newResidenceId, newResidence);
-        } catch (error) {
-          setFirebaseError(true);
-          setFirebaseErrorText('Failed to create apartments');
+        const newResidenceId = await createResidence(newResidence);
+        const landlord = await getLandlord(user.uid);
+        if (landlord) {
+          await updateLandlord(user.uid, {
+            userId: landlord.userId,
+            residenceIds: [...landlord.residenceIds, newResidenceId]
+          });
         }
+
+        if (!newResidenceId) {
+          setFirebaseError(true);
+          setFirebaseErrorText('Failed to create residence');
+        } else {
+          try {
+            const newApartments = await Promise.all(
+              apartments.map(async (apartmentName) => {
+                const newApartment: Apartment = {
+                  apartmentName: apartmentName,
+                  residenceId: newResidenceId,
+                  tenants: [],
+                  maintenanceRequests: [],
+                  situationReportId: [''],
+                };
+
+                const newApartmentId = await createApartment(newApartment);
+                if (!newApartmentId) {
+                  setFirebaseError(true);
+                  setFirebaseErrorText(
+                    `Failed to create apartment ${apartmentName}`,
+                  );
+                  return null;
+                }
+                return newApartmentId;
+              }),
+            );
+            const successfulApartments = newApartments.filter(
+              (id) => id !== null,
+            );
+
+            newResidence.apartments = successfulApartments;
+            await updateResidence(newResidenceId, newResidence);
+          } catch (error) {
+            setFirebaseError(true);
+            setFirebaseErrorText('Failed to create apartments');
+          }
+        }
+        navigation.navigate('ResidenceList');
+      } catch (error) {
+        setFirebaseError(true);
+        setFirebaseErrorText('Failed to upload images');
       }
-      navigation.navigate('ResidenceList');
     }
   };
 
@@ -318,6 +439,7 @@ function ResidenceCreationScreen() {
                 </Modal>
               )}
             </View>
+
             <CustomTextField
               testID='residence-name'
               value={formData.name}
@@ -333,7 +455,6 @@ function ResidenceCreationScreen() {
               placeholder='Address'
               style={appStyles.formFullWidth}
             />
-
             <View style={appStyles.formRow}>
               <CustomTextField
                 testID='number'

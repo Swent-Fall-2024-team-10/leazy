@@ -35,9 +35,6 @@ jest.mock('expo-camera', () => {
   };
 });
 
-
-
-
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
 }));

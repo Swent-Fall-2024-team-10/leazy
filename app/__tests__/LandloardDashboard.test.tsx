@@ -315,7 +315,7 @@ describe('LandlordDashboard Component', () => {
     await findByTestId('LandlordDashboard_ListedResidencesContainer');
 
     const residenceItems = getAllByTestId(/^LandlordDashboard_ResidenceItem_/);
-    expect(residenceItems.length).toBe(2);
+    expect(residenceItems).toHaveLength(2);
 
     expect(getByTestId('LandlordDashboard_ResidenceName_0')).toHaveTextContent(
       'Residence 1',
@@ -323,7 +323,6 @@ describe('LandlordDashboard Component', () => {
     expect(getByTestId('LandlordDashboard_ResidenceName_1')).toHaveTextContent(
       'Residence 2',
     );
-
     expect(getByTestId('LandlordDashboard_NotStartedIssues')).toHaveTextContent(
       '1 Not Started',
     );

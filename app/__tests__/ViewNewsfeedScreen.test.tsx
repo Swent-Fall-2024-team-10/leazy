@@ -162,6 +162,5 @@ describe('ViewNewsfeedScreen', () => {
     const { queryByText } = await renderAndWait();
     expect(queryByText('Regular Notice')).toBeNull();
   });
-
   
 });

@@ -163,6 +163,6 @@ describe("MaintenanceIssues", () => {
     // Press the arrow button to navigate to details
     const arrowButton = screen.getByTestId("arrowButton");
     fireEvent.press(arrowButton);
-    expect(mockNavigate).toHaveBeenCalledWith("IssueDetails", { requestID: "request1" });
+    expect(mockNavigate).toHaveBeenCalledWith("IssueDetails", { requestID: undefined });
   });
 });

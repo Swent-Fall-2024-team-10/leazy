@@ -375,14 +375,26 @@ describe('ManageNewsFeedScreen', () => {
   });
 
   it('renders correctly with news items', async () => {
+    // Set up mock implementations
+    (getNewsByReceiver as jest.Mock).mockResolvedValue(mockNewsItems);
+    (useAuth as jest.Mock).mockReturnValue({ landlord: mockLandlord });
+
     const { getByText, findByText } = render(<ManageNewsfeedScreen />);
 
     // Verify the screen title is present
     expect(getByText('Newsfeed management')).toBeTruthy();
 
-    // Wait for news items to load and verify they're displayed
-    await findByText('Test News 1');
-    await findByText('Test News 2');
+    // Wait for the async operations to complete
+    await waitFor(() => {
+      expect(getNewsByReceiver).toHaveBeenCalledWith('all');
+    });
+
+    // Verify news items are displayed
+    const newsItem1 = await findByText('Test News 1');
+    const newsItem2 = await findByText('Test News 2');
+    
+    expect(newsItem1).toBeTruthy();
+    expect(newsItem2).toBeTruthy();
   });
 
   it('handles deleting news item', async () => {

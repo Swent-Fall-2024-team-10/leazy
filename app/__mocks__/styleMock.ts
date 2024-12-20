@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export const Color = {
   ButtonBackground: '#0F5257',
   // Add other colors as needed

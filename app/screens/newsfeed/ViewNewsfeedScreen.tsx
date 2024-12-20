@@ -27,7 +27,7 @@ export const formatDate = (timestamp: Timestamp) =>
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 
-const deduplicateNews = (news: News[]) => {
+export const deduplicateNews = (news: News[]) => {
   const seen = new Map();
   return news.reduce((unique: News[], item) => {
     const key = `${item.content}_${item.createdAt.seconds}`;
@@ -55,7 +55,7 @@ const NewsIcon: React.FC<{ type: News['type'] }> = ({ type }) => (
   </View>
 );
 
-const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({ title, news, onNewsPress, isExpandable = false }) => {
+export const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({ title, news, onNewsPress, isExpandable = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const visibleNews = sortNews(deduplicateNews(news.filter(isPostVisible)));
   const displayedNews = isExpandable ? (isExpanded ? visibleNews : visibleNews.slice(0, 2)) : visibleNews;

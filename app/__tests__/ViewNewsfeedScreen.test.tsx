@@ -20,9 +20,10 @@ jest.mock('@react-navigation/native', () => {
 });
 import { Alert } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import NewsfeedScreen, { isPostVisible } from '../screens/newsfeed/ViewNewsfeedScreen';
+import NewsfeedScreen, { isPostVisible, deduplicateNews, NewsfeedSection } from '../screens/newsfeed/ViewNewsfeedScreen';
 import { getNewsByReceiver, markNewsAsRead, deleteNews } from '../../firebase/firestore/firestore';
 import { useAuth } from '../context/AuthContext';
+import { News } from '../../types/types';
 
 // Mock Firebase initialization and core functionality
 jest.mock('firebase/app', () => ({
@@ -76,13 +77,13 @@ const mockTenant = {
   userId: 'test-user-id',
 };
 
-const createMockNews = (override = {}) => ({
+const createMockNews = (override = {}): News => ({
   maintenanceRequestID: 'test-id-1',
   type: 'normal',
   title: 'Test News',
   content: 'Test content',
   isRead: false,
-  createdAt: mockTimestamp,
+  createdAt: mockTimestamp as Timestamp,
   ReceiverID: 'all',
   ReadAt: null,
   ...override
@@ -214,6 +215,140 @@ describe('NewsfeedScreen', () => {
       // Expect getNewsByReceiver called again for 'all' and personal after refresh
       // The initial call has already happened (2 calls), plus 2 more now
       expect(getNewsByReceiver).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  // Test for lines 157-175 (loading state)
+  describe('Loading State', () => {
+    it('should show loading state with correct messages', () => {
+      (useAuth as jest.Mock).mockReturnValueOnce({ tenant: null });
+      
+      const { getByText } = render(<NewsfeedScreen />);
+      
+      expect(getByText('Setting Up Your Newsfeed')).toBeTruthy();
+      expect(getByText(/We're getting your latest updates/)).toBeTruthy();
+    });
+  });
+
+  // Test for lines 181-182 (refresh handling)
+  describe('Refresh Handling', () => {
+    it('should handle refresh completion', async () => {
+      const { getByTestId } = render(<NewsfeedScreen />);
+      
+      let refreshingState = false;
+      
+      await act(async () => {
+        const scrollView = getByTestId('newsfeed-scroll');
+        const { refreshControl } = scrollView.props;
+        refreshingState = refreshControl.props.refreshing;
+        refreshControl.props.onRefresh();
+      });
+      
+      expect(refreshingState).toBe(false);
+    });
+  });
+
+  describe('deduplicateNews', () => {
+    it('should remove duplicate news items', () => {
+      const mockNews = [
+        createMockNews({ content: 'Test 1', createdAt: { seconds: 100 } }),
+        createMockNews({ content: 'Test 1', createdAt: { seconds: 100 } }), // Duplicate
+        createMockNews({ content: 'Test 2', createdAt: { seconds: 200 } })
+      ];
+      
+      const result = deduplicateNews(mockNews);
+      expect(result.length).toBe(2);
+      expect(result.map((n: News) => n.content)).toEqual(['Test 1', 'Test 2']);
+    });
+  });
+
+  // Test for lines 81-100 (NewsfeedSection component empty state)
+  describe('NewsfeedSection', () => {
+    it('should display empty state when no visible news', () => {
+      const { getByText } = render(
+        <NewsfeedSection 
+          title="Test Section" 
+          news={[]} 
+          onNewsPress={() => {}}
+        />
+      );
+      
+      expect(getByText('Nothing new to show')).toBeTruthy();
+    });
+  });
+
+  describe('handleNewsPress', () => {
+    it('should handle urgent news acknowledgment', async () => {
+      // Create urgent news item
+      const mockUrgentNews = createMockNews({ 
+        type: 'urgent',
+        maintenanceRequestID: 'urgent-123'
+      });
+  
+      // Mock the getNewsByReceiver to return our urgent news
+      (getNewsByReceiver as jest.Mock).mockImplementation((receiverId) => 
+        Promise.resolve(receiverId === 'all' ? [mockUrgentNews] : [])
+      );
+  
+      // Mock markNewsAsRead to resolve successfully
+      (markNewsAsRead as jest.Mock).mockResolvedValue(undefined);
+  
+      // Render the component
+      const { getByTestId } = render(<NewsfeedScreen />);
+  
+      // Wait for the news to be loaded and rendered
+      await waitFor(() => {
+        const newsItem = getByTestId(`news-item-${mockUrgentNews.maintenanceRequestID}`);
+        expect(newsItem).toBeTruthy();
+      });
+  
+      // Trigger the press event
+      const newsItem = getByTestId(`news-item-${mockUrgentNews.maintenanceRequestID}`);
+      await act(async () => {
+        fireEvent.press(newsItem);
+      });
+  
+      // Verify the alert was shown
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Important Notice Acknowledged',
+        'You have marked this urgent notification as read.'
+      );
+    });
+  
+    it('should handle error when marking news as read', async () => {
+      // Create news item
+      const mockNews = createMockNews({ 
+        maintenanceRequestID: 'error-123'
+      });
+  
+      // Mock getNewsByReceiver to return our news
+      (getNewsByReceiver as jest.Mock).mockImplementation((receiverId) => 
+        Promise.resolve(receiverId === 'all' ? [mockNews] : [])
+      );
+  
+      // Mock markNewsAsRead to reject
+      (markNewsAsRead as jest.Mock).mockRejectedValue(new Error('Failed to mark as read'));
+  
+      // Render the component
+      const { getByTestId } = render(<NewsfeedScreen />);
+  
+      // Wait for the news to be loaded and rendered
+      await waitFor(() => {
+        const newsItem = getByTestId(`news-item-${mockNews.maintenanceRequestID}`);
+        expect(newsItem).toBeTruthy();
+      });
+  
+      // Trigger the press event
+      const newsItem = getByTestId(`news-item-${mockNews.maintenanceRequestID}`);
+      await act(async () => {
+        fireEvent.press(newsItem);
+      });
+  
+      // Verify error alert was shown
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Error',
+        'Failed to mark notification as read. Please try again.'
+      );
     });
   });
 });

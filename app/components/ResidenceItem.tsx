@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
@@ -40,19 +40,13 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [localApartments, setLocalApartments] =
-    useState<ApartmentWithId[]>(apartments);
 
-  useEffect(() => {
-    setLocalApartments(apartments);
-  }, [apartments]);
-
-  const filteredApartments = localApartments.filter((apt) =>
-    apt.apartmentName.toLowerCase().includes(apartmentSearch.toLowerCase()),
+  // Use apartments prop directly instead of maintaining local state
+  const filteredApartments = apartments.filter(apt =>
+    apt.apartmentName.toLowerCase().includes(apartmentSearch.toLowerCase())
   );
 
   const handleAddApartment = async (name: string) => {
-    console.log('Adding apartment:', name);
     setIsSubmitting(true);
     try {
       const newApartment = {
@@ -63,21 +57,13 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
         situationReportId: [],
       };
       const apartmentId = await createApartment(newApartment);
-      console.log('Apartment added:', apartmentId);
       if (apartmentId) {
         const updatedApartments = [...residence.apartments, apartmentId];
-        console.log('Updated apartments:', updatedApartments);
         await updateResidence(residence.id, {
           apartments: updatedApartments,
         });
-        console.log('Residence updated:', residence.id);
-        setLocalApartments((prev) => [
-          ...prev,
-          { ...newApartment, id: apartmentId },
-        ]);
       }
     } catch (error) {
-      console.log('Error adding apartment:', error);
       Alert.alert('Error adding apartment');
     } finally {
       setIsSubmitting(false);
@@ -86,24 +72,15 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
   };
 
   const handleDeleteApartment = async (apartmentId: string) => {
-    console.log('Deleting apartment:', apartmentId);
     try {
       await deleteApartment(apartmentId);
-      console.log('Apartment deleted:', apartmentId);
-      const updatedApartments = residence.apartments.filter(
-        (id) => id !== apartmentId,
-      );
-      console.log('Updated apartments:', updatedApartments);
+      const updatedApartments = residence.apartments.filter(id => id !== apartmentId);
       await updateResidence(residence.id, {
         apartments: updatedApartments,
       });
-
-      setLocalApartments((prev) =>
-        prev.filter((apt) => apt.id !== apartmentId),
-      );
     } catch (error) {
-      console.log('Error deleting apartment:', error);
-      Alert.alert('Error deleting apartment');
+      Alert.alert('Error deleting apartment');  
+
     }
   };
 
@@ -194,15 +171,12 @@ const ResidenceItem: React.FC<ResidenceItemProps> = ({
           ))}
 
           {filteredApartments.length === 0 && (
-            <Text
-              testID='no-apartments-message'
-              style={{
-                textAlign: 'center',
-                marginTop: 12,
-                color: '#666666',
-                fontSize: 14,
-              }}
-            >
+            <Text testID="no-apartments-message" style={{
+              textAlign: 'center',
+              marginVertical: 30,
+              color: '#666666',
+              fontSize: 14,
+            }}>
               No apartments found
             </Text>
           )}

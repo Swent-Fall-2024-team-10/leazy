@@ -157,7 +157,7 @@ const MaintenanceIssues = () => {
 
         const unsubscribe = onSnapshot(query, (querySnapshot) => {
           console.log('Snapshot update received');
-
+        
           // One-time initialization of status tracking
           if (!isInitialized) {
             querySnapshot.docs.forEach((doc) => {
@@ -168,7 +168,7 @@ const MaintenanceIssues = () => {
             });
             isInitialized = true;
           }
-
+        
           // Process modified changes for status updates
           querySnapshot.docChanges().forEach((change) => {
             if (change.type !== 'modified') return;
@@ -194,10 +194,10 @@ const MaintenanceIssues = () => {
               statusTrackingRef.current[newData.requestID] = newStatus;
             }
           });
-
+        
           // Always update the issues state with the full snapshot
           const updatedIssues = querySnapshot.docs.map(
-            (doc) => doc.data() as MaintenanceRequest,
+            (doc) => doc.data() as MaintenanceRequest
           );
           setIssues(updatedIssues);
         });

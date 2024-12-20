@@ -545,4 +545,91 @@ describe('MaintenanceIssues', () => {
       );
     });
   });
+
+  
+
+  test('generates correct status update message for different statuses', async () => {
+    const testCases = [
+      {
+        initialStatus: 'notStarted',
+        newStatus: 'inProgress',
+        expectedContent: 'Work has begun on your maintenance request',
+      },
+      {
+        initialStatus: 'inProgress',
+        newStatus: 'completed',
+        expectedContent: 'has been completed',
+      },
+      {
+        initialStatus: 'inProgress',
+        newStatus: 'rejected',
+        expectedContent: 'has been rejected',
+      },
+      {
+        initialStatus: 'rejected',
+        newStatus: 'notStarted',
+        expectedContent: 'has been opened',
+      },
+    ];
+
+    for (const testCase of testCases) {
+      jest.clearAllMocks();
+
+      let snapshotCallback: (snapshot: any) => void;
+      (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+        snapshotCallback = callback;
+        return () => {};
+      });
+
+      const { rerender } = render(<MaintenanceIssues />);
+
+      // Wait for component to mount and initialize
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Simulate initial state
+      const initialData = {
+        ...mockIssueData,
+        requestStatus: testCase.initialStatus,
+      };
+
+      snapshotCallback({
+        docs: [{ data: () => initialData, id: 'request1' }],
+        forEach: (fn: any) => fn({ data: () => initialData, id: 'request1' }),
+        docChanges: () => [],
+      });
+
+      // Wait for initial state to be processed
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Simulate status change
+      const updatedData = {
+        ...mockIssueData,
+        requestStatus: testCase.newStatus,
+      };
+
+      snapshotCallback({
+        docs: [{ data: () => updatedData, id: 'request1' }],
+        forEach: (fn: any) => fn({ data: () => updatedData, id: 'request1' }),
+        docChanges: () => [{
+          type: 'modified',
+          doc: {
+            data: () => updatedData,
+            id: 'request1',
+          },
+        }],
+      });
+
+      // Wait for the status change to be processed
+      await waitFor(() => {
+        expect(createNews).toHaveBeenCalledWith(
+          expect.objectContaining({
+            content: expect.stringContaining(testCase.expectedContent),
+          }),
+        );
+      }, { timeout: 2000 });
+
+      // Clean up between test cases
+      rerender(<MaintenanceIssues />);
+    }
+  });
 });

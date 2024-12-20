@@ -31,11 +31,11 @@ const LandlordDrawerNavigator = () => {
         }}
         drawerContent={(props) => <CustomDrawerContent {...props} />}
       >
-        <Drawer.Screen name='Dashboard' component={IssueStackLandlord}/>
-        <Drawer.Screen name='List Issues' component={LandlordListIssuesScreen}/>
-        <Drawer.Screen name='Manage Machines' component={ManageMachinesScreen}/>
-        <Drawer.Screen name='Washing Machine' component={WashingMachineScreen}/>
-        <Drawer.Screen name='Residence Stack' component={ResidenceStack}/>
+
+        <Drawer.Screen name='Dashboard' component={IssueStackLandlord} />
+        <Drawer.Screen name='List Issues' component={LandlordListIssuesScreen} />
+        <Drawer.Screen name='Manage Machines' component={ManageMachinesScreen} />
+        <Drawer.Screen name='Residence Stack' component={ResidenceStack} />
         <Drawer.Screen
           name='Situation Report Creation'
           component={SituationReportCreation}

@@ -29,9 +29,6 @@ jest.mock('firebase/firestore', () => ({
 
 // Mock all the screen components
 jest.mock('../screens/tenant/HomepageScreen', () => 'HomepageScreen');
-jest.mock('../screens/tenant/MyRentScreen', () => 'MyRentScreen');
-jest.mock('../screens/tenant/SharedElementsScreen', () => 'SharedElementsScreen');
-jest.mock('../screens/tenant/SubrentScreen', () => 'SubrentScreen');
 jest.mock('../screens/laundry_machines/WashingMachineScreen', () => 'WashingMachineScreen');
 jest.mock('../screens/auth/SettingsScreen', () => 'SettingsScreen');
 jest.mock('../screens/SnitchMode/SnitchModeScreen', () => 'SnitchModeScreen');
@@ -64,9 +61,6 @@ describe('TenantHomeDrawerNavigator', () => {
     const expectedScreens = [
       'Home',
       'Maintenance Requests',
-      'My Rent',
-      'Shared elements',
-      'Subrent',
       'Washing Machines',
       'Snitch Mode',
       'Settings'

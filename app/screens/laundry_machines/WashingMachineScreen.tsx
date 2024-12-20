@@ -13,6 +13,7 @@ import {
   getLaundryMachine,
   getLaundryMachinesQuery,
   updateLaundryMachine,
+  getTenant,
 } from "../../../firebase/firestore/firestore";
 import { getAuth } from "firebase/auth";
 import { onSnapshot, Timestamp } from "firebase/firestore";
@@ -193,14 +194,30 @@ const WashingMachineScreen = () => {
   const [isTimerModalVisible, setIsTimerModalVisible] = useState(false);
   const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const residenceId = "TestResidence1"; // Replace with the actual residence ID
+  const [residenceId, setResidenceId] = useState<string>("");
 
   // Initialize auth instance
   const auth = getAuth();
-
-  // Access the current user's UID
   const user = auth.currentUser;
   const userId = user ? user.uid : undefined;
+
+  // Add useEffect to fetch tenant's residence
+  useEffect(() => {
+    const fetchTenantResidence = async () => {
+      if (!userId) return;
+      
+      try {
+        const tenantDoc = await getTenant(userId);
+        if (tenantDoc && tenantDoc.residenceId) {
+          setResidenceId(tenantDoc.residenceId);
+        }
+      } catch (error) {
+        console.error("Error fetching tenant's residence:", error);
+      }
+    };
+
+    fetchTenantResidence();
+  }, [userId]);
 
   // Use the custom timer management hook
   const { 
@@ -209,7 +226,10 @@ const WashingMachineScreen = () => {
     cleanupTimer 
   } = useTimerManagement(residenceId, userId);
 
+  // Update fetchMachines to only fetch if we have a residenceId
   const fetchMachines = useCallback(async () => {
+    if (!residenceId) return () => {};
+    
     setRefreshing(true);
     try {
       const query = getLaundryMachinesQuery(residenceId);
@@ -396,7 +416,7 @@ const WashingMachineScreen = () => {
                       height={40}
                       textStyle={{ fontSize: 16 }}
                       style={appStyles.submitButton}
-                      testID="unlockButton"
+                      testID={`${machine.laundryMachineId}-unlock-button`}
                       label="Unlock"
                       onPress={() =>
                         handleResetMachine(machine.laundryMachineId)
@@ -415,7 +435,7 @@ const WashingMachineScreen = () => {
                       height={40}
                       textStyle={{ fontSize: 16 }}
                       style={appStyles.submitButton}
-                      testID="cancelTimerButton"
+                      testID={`${machine.laundryMachineId}-cancel-button`}
                       label="Cancel Timer"
                       onPress={() =>
                         handleResetMachine(machine.laundryMachineId)

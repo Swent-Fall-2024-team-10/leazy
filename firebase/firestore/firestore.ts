@@ -19,6 +19,7 @@ import {
   orderBy,
   arrayRemove,
   Timestamp,
+  arrayUnion,
 } from "firebase/firestore";
 
 import {
@@ -578,20 +579,36 @@ export async function deleteMaintenanceRequest(requestID: string) {
   }
 }
 
-export async function createLaundryMachine(residenceId: string, machine: LaundryMachine) {
-  const isOnline = useNetworkStore.getState().isOnline;
-
-  if (!isOnline) {
-    await saveToOfflineStorage(`residences/${residenceId}/laundryMachines`, machine.laundryMachineId, machine);
-    return;
-  }
-
-  const docRef = doc(db, `residences/${residenceId}/laundryMachines`, machine.laundryMachineId);
+/**
+ * Creates a new laundry machine document within a specific residence in Firestore.
+ * @param residenceId - The unique identifier of the residence where the machine is located.
+ * @param machine - The laundry machine object to be added.
+ */
+export async function createLaundryMachine(
+  residenceId: string,
+  machine: LaundryMachine
+) {
   try {
-    await setDoc(docRef, machine);
-  } catch (e) {
-    console.error("Error creating washing machine:", e);
-    throw e;
+    // Create the laundry machine document in the residence's subcollection
+    const machineRef = doc(
+      db,
+      'residences',
+      residenceId,
+      'laundryMachines',
+      machine.laundryMachineId
+    );
+    await setDoc(machineRef, machine);
+
+    // Update the residence's laundryMachineIds array
+    const residenceRef = doc(db, 'residences', residenceId);
+    await updateDoc(residenceRef, {
+      laundryMachineIds: arrayUnion(machine.laundryMachineId)
+    });
+
+    console.log(`Created machine ${machine.laundryMachineId} in residence ${residenceId}`);
+  } catch (error) {
+    console.error("Error creating laundry machine:", error);
+    throw error;
   }
 }
 
@@ -630,20 +647,34 @@ export async function updateLaundryMachine(
   }
 }
 
-export async function deleteLaundryMachine(residenceId: string, machineId: string) {
-  const isOnline = useNetworkStore.getState().isOnline;
-
-  if (!isOnline) {
-    await saveToOfflineStorage(`residences/${residenceId}/laundryMachines`, machineId, { deleted: true });
-    return;
-  }
-
-  const docRef = doc(db, `residences/${residenceId}/laundryMachines`, machineId);
+/**
+ * Deletes a laundry machine document from Firestore by residence ID and machine ID.
+ * @param residenceId - The unique identifier of the residence.
+ * @param machineId - The unique identifier of the laundry machine to delete.
+ */
+export async function deleteLaundryMachine(
+  residenceId: string,
+  machineId: string
+) {
   try {
+    // Delete the machine document from the subcollection
+    const docRef = doc(
+      db,
+      `residences/${residenceId}/laundryMachines`,
+      machineId
+    );
     await deleteDoc(docRef);
-  } catch (e) {
-    console.error("Error deleting washing machine:", e);
-    throw e;
+
+    // Remove the machine ID from the residence's laundryMachineIds array
+    const residenceRef = doc(db, 'residences', residenceId);
+    await updateDoc(residenceRef, {
+      laundryMachineIds: arrayRemove(machineId)
+    });
+
+    console.log(`Deleted machine ${machineId} from residence ${residenceId}`);
+  } catch (error) {
+    console.error("Error deleting laundry machine:", error);
+    throw error;
   }
 }
 

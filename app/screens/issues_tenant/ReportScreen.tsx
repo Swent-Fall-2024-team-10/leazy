@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Text, View, Alert, Image, Modal } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import InputField from "../../components/forms/text_input";
-import Spacer from "../../components/Spacer";
-import SubmitButton from "../../components/buttons/SubmitButton";
+import React, { useState, useEffect } from 'react';
+import { Text, View, Alert, Image, Modal, Platform } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import InputField from '../../components/forms/text_input';
+import Spacer from '../../components/Spacer';
+import SubmitButton from '../../components/buttons/SubmitButton';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   appStyles,
   ButtonDimensions,
@@ -31,7 +32,8 @@ import {
   updateApartment,
   updateMaintenanceRequest,
   updateTenant,
-} from "../../../firebase/firestore/firestore";
+  getApartment,
+} from '../../../firebase/firestore/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
@@ -40,24 +42,24 @@ export default function ReportScreen() {
 
   const { user } = useAuth();
 
-  const [room, setRoom] = useState("");
-  const [issue, setIssue] = useState("");
-  const [description, setDescription] = useState("");
+  const [room, setRoom] = useState('');
+  const [issue, setIssue] = useState('');
+  const [description, setDescription] = useState('');
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
   const currentDay = new Date();
-  const day = currentDay.getDate().toString().padStart(2, "0");
-  const month = (currentDay.getMonth() + 1).toString().padStart(2, "0");
+  const day = currentDay.getDate().toString().padStart(2, '0');
+  const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
   const year = currentDay.getFullYear();
-  const hours = currentDay.getHours().toString().padStart(2, "0");
-  const minutes = currentDay.getMinutes().toString().padStart(2, "0");
+  const hours = currentDay.getHours().toString().padStart(2, '0');
+  const minutes = currentDay.getMinutes().toString().padStart(2, '0');
   const { pictureList, resetPictureList } = usePictureContext();
 
   async function resetStates() {
-    setRoom("");
-    setIssue("");
-    setDescription("");
+    setRoom('');
+    setIssue('');
+    setDescription('');
     clearFiles(pictureList);
     resetPictureList();
   }
@@ -73,7 +75,7 @@ export default function ReportScreen() {
   }, []);
 
   const handleAddPicture = () => {
-    navigation.navigate("CameraScreen");
+    navigation.navigate('CameraScreen');
   };
 
   const handleSubmit = async () => {
@@ -109,7 +111,7 @@ export default function ReportScreen() {
       }
   
       const newRequest: MaintenanceRequest = {
-        requestID: "",
+        requestID: '',
         tenantId: tenant.userId,
         residenceId: tenant.residenceId,
         apartmentId: tenant.apartmentId,
@@ -118,11 +120,11 @@ export default function ReportScreen() {
         requestDate: `${day}/${month}/${year} at ${hours}:${minutes}`,
         requestDescription: description,
         picture: pictureURLs,
-        requestStatus: "notStarted",
+        requestStatus: 'notStarted',
       };
       const requestID = await createMaintenanceRequest(newRequest);
 
-      Alert.alert("Success", "Your maintenance request has been submitted.");
+      Alert.alert('Success', 'Your maintenance request has been submitted.');
 
       resetStates();
 
@@ -131,15 +133,14 @@ export default function ReportScreen() {
         navigation.navigate("Messaging", {chatID: requestID});
       } else {
         setTick(false);
-        navigation.navigate("Issues");
+        navigation.navigate('Issues');
       }
-    
     } catch (error) {
       Alert.alert(
-        "Error",
-        "There was an error submitting your request. Please try again."
+        'Error',
+        'There was an error submitting your request. Please try again.',
       );
-      console.log("Error submitting request:", error);
+      console.log('Error submitting request:', error);
     } finally {
       setLoading(false);
       await clearFiles(pictureList);
@@ -147,140 +148,145 @@ export default function ReportScreen() {
   };
 
   return (
-    <Header>
-      <ScrollView
-        style={appStyles.screenContainer}
-        automaticallyAdjustKeyboardInsets={true}
-      >
-        <View
-          style={[
-            appStyles.scrollContainer,
-            { paddingBottom: "90%", marginBottom: "10%" },
-          ]}
+    <KeyboardAwareScrollView
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
+      keyboardShouldPersistTaps='handled'
+      extraScrollHeight={Platform.OS === 'ios' ? 30 : 50}
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
+      <Header>
+        <ScrollView
+          style={appStyles.screenContainer}
+          automaticallyAdjustKeyboardInsets={true}
         >
-          <Close  onPress={handleClose} />
-          <Text style={appStyles.screenHeader}>Create a new issue</Text>
-          <Text style={appStyles.date}>
-            Current day: {day}/{month}/{year} at {hours}:{minutes}
-          </Text>
-
-          <Spacer height={20} />
-
-          {isVisible && (
-            <Modal
-              testID="close-confirmation-modal"
-              transparent={true}
-              animationType="fade"
-              visible={isVisible}
-              onRequestClose={() => setIsVisible(false)}
-            >
-              <CloseConfirmation
-                isVisible={isVisible}
-                onPressYes={() => {
-                  resetStates();
-                  setTick(false);
-                  navigation.navigate("Issues");
-                  setIsVisible(false);
-                }}
-                onPressNo={() => setIsVisible(false)}
-              />
-            </Modal>
-          )}
-
-          <InputField
-            label="What kind of issue are you experiencing?"
-            value={issue}
-            setValue={setIssue}
-            placeholder="Your issue..."
-            radius={25}
-            height={textInputHeight}
-            width={ButtonDimensions.fullWidthButtonWidth}
-            backgroundColor={Color.TextInputBackground}
-            testID="testIssueNameField"
-            style={{ alignContent: "center" }}
-          />
-
-          <Spacer height={20} />
-
-          <Text style={appStyles.inputFieldLabel}>
-            Please take a picture of the damage or situation if applicable
-          </Text>
-
-          <CameraButton onPress={handleAddPicture} />
-
-          <View style={appStyles.carouselImageContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {pictureList.map((image, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: image }}
-                  style={appStyles.smallThumbnailImage}
-                />
-              ))}
-            </ScrollView>
-          </View>
-
-          <InputField
-            label="Which room is the issue in?"
-            value={room}
-            setValue={setRoom}
-            placeholder="e.g: Bedroom, Kitchen, Bathroom..."
-            radius={25}
-            height={textInputHeight}
-            width={ButtonDimensions.fullWidthButtonWidth}
-            backgroundColor={Color.TextInputBackground}
-            testID="testRoomNameField"
-            style={{ alignContent: "center" }}
-          />
-
-          <Spacer height={20} />
-
-          <InputField
-            label="Please provide a description of your issue:"
-            value={description}
-            setValue={setDescription}
-            placeholder="e.g: The bathtub is leaking because of..."
-            height={100}
-            width={ButtonDimensions.fullWidthButtonWidth}
-            backgroundColor={Color.TextInputBackground}
-            radius={20}
-            testID="testDescriptionField"
-            style={{ alignContent: "center" }}
-          />
-
-          <Spacer height={20} />
-
-          <View style={{ flexDirection: "row" }}>
-            <BouncyCheckbox
-              testID="messaging-checkbox"
-              iconImageStyle={appStyles.tickingBox}
-              iconStyle={appStyles.tickingBox}
-              innerIconStyle={appStyles.tickingBox}
-              unFillColor={Color.TextInputBackground}
-              fillColor={Color.ButtonBackground}
-              onPress={(isChecked: boolean) => setTick(isChecked)}
-            />
-            <Text style={appStyles.inputFieldLabel}>
-              I would like to start a chat with the manager about this issue
+          <View
+            style={[
+              appStyles.scrollContainer,
+              { paddingBottom: '90%', marginBottom: '10%' },
+            ]}
+          >
+            <Close onPress={handleClose} />
+            <Text style={appStyles.screenHeader}>Create a new issue</Text>
+            <Text style={appStyles.date}>
+              Current day: {day}/{month}/{year} at {hours}:{minutes}
             </Text>
-          </View>
-          <View style={appStyles.submitContainer}>
-            <SubmitButton
-              disabled={room === "" || description === "" || issue === ""}
-              onPress={() => {
-                console.log("Button Pressed!");
-                handleSubmit();
-              }}
-              width={ButtonDimensions.mediumButtonWidth}
-              height={ButtonDimensions.mediumButtonHeight}
-              label="Submit"
-              testID="testSubmitButton"
-              style={appStyles.submitButton}
-              textStyle={appStyles.submitButtonText}
+
+            <Spacer height={20} />
+
+            {isVisible && (
+              <Modal
+                testID='close-confirmation-modal'
+                transparent={true}
+                animationType='fade'
+                visible={isVisible}
+                onRequestClose={() => setIsVisible(false)}
+              >
+                <CloseConfirmation
+                  isVisible={isVisible}
+                  onPressYes={() => {
+                    resetStates();
+                    setTick(false);
+                    navigation.navigate('Issues');
+                    setIsVisible(false);
+                  }}
+                  onPressNo={() => setIsVisible(false)}
+                />
+              </Modal>
+            )}
+
+            <InputField
+              label='What kind of issue are you experiencing?'
+              value={issue}
+              setValue={setIssue}
+              placeholder='Your issue...'
+              radius={25}
+              height={textInputHeight}
+              width={ButtonDimensions.fullWidthButtonWidth}
+              backgroundColor={Color.TextInputBackground}
+              testID='testIssueNameField'
+              style={{ alignContent: 'center' }}
             />
+
+            <Spacer height={20} />
+
+            <Text style={appStyles.inputFieldLabel}>
+              Please take a picture of the damage or situation if applicable
+            </Text>
+
+            <CameraButton onPress={handleAddPicture} />
+
+            <View style={appStyles.carouselImageContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {pictureList.map((image, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: image }}
+                    style={appStyles.smallThumbnailImage}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+
+            <InputField
+              label='Which room is the issue in?'
+              value={room}
+              setValue={setRoom}
+              placeholder='e.g: Bedroom, Kitchen, Bathroom...'
+              radius={25}
+              height={textInputHeight}
+              width={ButtonDimensions.fullWidthButtonWidth}
+              backgroundColor={Color.TextInputBackground}
+              testID='testRoomNameField'
+              style={{ alignContent: 'center' }}
+            />
+
+            <Spacer height={20} />
+
+            <InputField
+              label='Please provide a description of your issue:'
+              value={description}
+              setValue={setDescription}
+              placeholder='e.g: The bathtub is leaking because of...'
+              height={100}
+              width={ButtonDimensions.fullWidthButtonWidth}
+              backgroundColor={Color.TextInputBackground}
+              radius={20}
+              testID='testDescriptionField'
+              style={{ alignContent: 'center' }}
+            />
+
+            <Spacer height={20} />
+
+            <View style={{ flexDirection: 'row' }}>
+              <BouncyCheckbox
+                testID='messaging-checkbox'
+                iconImageStyle={appStyles.tickingBox}
+                iconStyle={appStyles.tickingBox}
+                innerIconStyle={appStyles.tickingBox}
+                unFillColor={Color.TextInputBackground}
+                fillColor={Color.ButtonBackground}
+                onPress={(isChecked: boolean) => setTick(isChecked)}
+              />
+              <Text style={appStyles.inputFieldLabel}>
+                I would like to start a chat with the manager about this issue
+              </Text>
+            </View>
+            <View style={appStyles.submitContainer}>
+              <SubmitButton
+                disabled={room === '' || description === '' || issue === ''}
+                onPress={handleSubmit}
+                width={ButtonDimensions.mediumButtonWidth}
+                height={ButtonDimensions.mediumButtonHeight}
+                label='Submit'
+                testID='testSubmitButton'
+                style={appStyles.submitButton}
+                textStyle={appStyles.submitButtonText}
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </Header>
+        </ScrollView>
+      </Header>
+    </KeyboardAwareScrollView>
   );
 }

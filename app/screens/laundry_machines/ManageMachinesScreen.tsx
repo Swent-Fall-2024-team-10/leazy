@@ -8,64 +8,125 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
-import Header from "../../../app/components/Header";
-import { LaundryMachine } from "../../../types/types";
+import Header from "../../components/Header";
+import { Landlord, LaundryMachine, Residence } from "../../../types/types";
 import {
   createLaundryMachine,
   deleteLaundryMachine,
   updateLaundryMachine,
   getAllLaundryMachines,
+  getLandlord,
+  getResidence,
 } from "../../../firebase/firestore/firestore";
 import { Timestamp } from "firebase/firestore";
 import { Color } from "../../../styles/styles";
+import { useAuth } from '../../context/AuthContext';
 
 const ManageMachinesScreen = () => {
   const [machines, setMachines] = useState<LaundryMachine[]>([]);
   const [newMachineId, setNewMachineId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const residenceId = "TestResidence1"; // Replace with actual residence ID
+  const [residences, setResidences] = useState<{ id: string; name: string }[]>([]);
+  const [selectedResidenceId, setSelectedResidenceId] = useState<string>("");
+  const { user } = useAuth();
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
 
   useEffect(() => {
-    const fetchMachines = async () => {
-      const fetchedMachines = await getAllLaundryMachines(residenceId);
-      setMachines(fetchedMachines);
+    const fetchLandlordData = async () => {
+      try {
+        const landlord = await getLandlord(user?.uid) as Landlord;
+        if (!landlord) {
+          throw new Error("Landlord not found");
+        }
+
+        // Fetch residence names
+        const residencePromises = landlord.residenceIds.map(async (id) => {
+          const residence = await getResidence(id) as Residence;
+          return {
+            id,
+            name: residence.residenceName || `Residence ${id}`
+          };
+        });
+
+        const residencesData = await Promise.all(residencePromises);
+        setResidences(residencesData);
+
+        // Set the first residence as default selected
+        if (residencesData.length > 0) {
+          setSelectedResidenceId(residencesData[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching landlord data:", error);
+        setErrorMessage("Failed to load residences");
+      }
     };
 
-    fetchMachines();
-  }, []);
+    if (user?.uid) {
+      fetchLandlordData();
+    }
+  }, [user?.uid]);
+
+  const fetchMachines = async (resId: string) => {
+    try {
+      console.log('Fetching machines for residence:', resId);
+      const fetchedMachines = await getAllLaundryMachines(resId);
+      console.log('Fetched machines:', fetchedMachines);
+      setMachines(fetchedMachines);
+    } catch (error) {
+      console.error('Error fetching machines:', error);
+      setErrorMessage('Failed to load machines');
+    }
+  };
+
+  useEffect(() => {
+    if (selectedResidenceId) {
+      fetchMachines(selectedResidenceId);
+    }
+  }, [selectedResidenceId]);
 
   const handleAddMachine = async () => {
-    if (newMachineId.trim() === "") return;
-
-    // Check for existing machine ID
-    const idExists = machines.some(
-      (machine) => machine.laundryMachineId === newMachineId
-    );
-    if (idExists) {
-      setErrorMessage("A machine with this ID already exists.");
+    if (!selectedResidenceId) {
+      setErrorMessage("Please select a residence first.");
       return;
     }
 
-    // Clear any previous error message
-    setErrorMessage(null);
+    if (newMachineId.trim() === "") {
+      setErrorMessage("Please enter a machine ID.");
+      return;
+    }
 
-    const newMachine: LaundryMachine = {
-      laundryMachineId: newMachineId,
-      isAvailable: true,
-      isFunctional: true,
-      occupiedBy: "none",
-      startTime: Timestamp.fromMillis(Date.now()),
-      estimatedFinishTime: Timestamp.fromMillis(Date.now()),
-      notificationScheduled: false,
-    };
+    console.log('Adding machine:', newMachineId, 'to residence:', selectedResidenceId);
 
-    await createLaundryMachine(residenceId, newMachine);
-    setMachines((prev) => [...prev, newMachine]);
-    setNewMachineId(""); // Clear input after adding
+    try {
+      const newMachine: LaundryMachine = {
+        laundryMachineId: newMachineId,
+        isAvailable: true,
+        isFunctional: true,
+        occupiedBy: "none",
+        startTime: Timestamp.fromMillis(Date.now()),
+        estimatedFinishTime: Timestamp.fromMillis(Date.now()),
+        notificationScheduled: false,
+      };
+
+      // Create the machine in the database
+      await createLaundryMachine(selectedResidenceId, newMachine);
+      
+      // Refresh the machines list
+      await fetchMachines(selectedResidenceId);
+      
+      // Clear input
+      setNewMachineId("");
+    } catch (error) {
+      console.error("Error adding machine:", error);
+      setErrorMessage("Failed to add machine. Please try again.");
+    }
   };
 
   const handleDeleteMachine = async (machineId: string) => {
-    await deleteLaundryMachine(residenceId, machineId);
+    await deleteLaundryMachine(selectedResidenceId, machineId);
     setMachines((prev) =>
       prev.filter((machine) => machine.laundryMachineId !== machineId)
     );
@@ -73,7 +134,7 @@ const ManageMachinesScreen = () => {
 
   const toggleMaintenanceStatus = async (machine: LaundryMachine) => {
     const updatedMachine = { ...machine, isFunctional: !machine.isFunctional };
-    await updateLaundryMachine(residenceId, machine.laundryMachineId, {
+    await updateLaundryMachine(selectedResidenceId, machine.laundryMachineId, {
       isFunctional: updatedMachine.isFunctional,
     });
     setMachines((prev) =>
@@ -125,6 +186,27 @@ const ManageMachinesScreen = () => {
       <Header>
         <View style={styles.container}>
           <Text style={styles.title}>Manage Laundry Machines</Text>
+
+          {/* Residence Selector */}
+          <View style={styles.residenceSelector}>
+            {residences.map((residence) => (
+              <TouchableOpacity
+                key={residence.id}
+                style={[
+                  styles.residenceButton,
+                  selectedResidenceId === residence.id && styles.selectedResidence,
+                ]}
+                onPress={() => setSelectedResidenceId(residence.id)}
+              >
+                <Text style={[
+                  styles.residenceButtonText,
+                  selectedResidenceId === residence.id && styles.selectedResidenceText,
+                ]}>
+                  {residence.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           {/* Display error message if ID already exists */}
           {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
@@ -249,6 +331,30 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
+  },
+  residenceSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+  },
+  residenceButton: {
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  selectedResidence: {
+    backgroundColor: Color.ButtonBackground,
+  },
+  residenceButtonText: {
+    color: '#333',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  selectedResidenceText: {
+    color: '#fff',
   },
 });
 

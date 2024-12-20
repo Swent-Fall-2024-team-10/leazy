@@ -46,9 +46,8 @@ Here bellow you have the architecture diagram for the tenant and the landlord
 
 #### Tenant Architecture Diagram
 
-<object data="architectureDiagramImages/Landlordarchitecture.pdf" type="application/pdf" width="80%" height="400px"></object>
+<img src="architectureDiagramImages/tenantArchi.png" width="80%" />
 
 #### Landlord Architecture Diagram
 
-
-<object data="architectureDiagramImages/Tenantarchitecturediagram.pdf" type="application/pdf" width="80%" height="400px"></object>
+<img src="architectureDiagramImages/landlordArchi.png" width="80%" />

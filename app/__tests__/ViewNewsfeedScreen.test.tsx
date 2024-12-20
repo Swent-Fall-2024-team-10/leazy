@@ -1,167 +1,219 @@
-// Import React first
 import React from 'react';
-import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
-import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
-import { Alert } from 'react-native';
-import * as firestore from '../../firebase/firestore/firestore';
-import { Timestamp } from 'firebase/firestore';
 
-// Create mock implementation before the jest.mock call
-const mockUseEffect = (effect: any, deps?: any[]) => {
-  if (deps?.includes('checkExpiredPosts')) {
-    return;
-  }
-};
-
-// Then use the mock
-jest.mock('../screens/newsfeed/ViewNewsfeedScreen', () => ({
-  __esModule: true,
-  default: (props: any) => {
-    const original = jest.requireActual(
-      '../screens/newsfeed/ViewNewsfeedScreen',
-    ).default;
-    jest.spyOn(require('react'), 'useEffect').mockImplementation(mockUseEffect);
-    return original(props);
-  },
+// Mock Firebase config
+jest.mock('../../firebase/firebase', () => ({
+  db: {},
+  auth: {}
 }));
 
 // Mock navigation hooks
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
-  useNavigation: () => ({
-    navigate: jest.fn(),
-    setOptions: jest.fn(),
-    goBack: jest.fn(),
-  }),
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      setOptions: jest.fn(),
+      goBack: jest.fn(),
+    }),
+  };
+});
+import { Alert } from 'react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import NewsfeedScreen, { isPostVisible } from '../screens/newsfeed/ViewNewsfeedScreen';
+import { getNewsByReceiver, markNewsAsRead, deleteNews } from '../../firebase/firestore/firestore';
+import { useAuth } from '../context/AuthContext';
+
+// Mock Firebase initialization and core functionality
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(() => ({
+    name: '[DEFAULT]',
+    options: {},
+  }))
 }));
 
-// Mock Timestamp.now() to return a consistent value
-const mockNow = {
+// Mock Firebase Auth
+jest.mock('firebase/auth', () => ({
+  initializeAuth: jest.fn(() => ({})),
+  getReactNativePersistence: jest.fn()
+}));
+
+// Mock Firebase Firestore
+const mockTimestamp = {
   seconds: Date.now() / 1000,
   toDate: () => new Date(),
 };
 
 jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(() => ({
+    type: 'firestore-mock',
+    toJSON: () => ({})
+  })),
   Timestamp: {
-    now: () => mockNow,
-  },
+    now: () => mockTimestamp,
+    fromDate: (date: Date) => ({
+      seconds: Math.floor(date.getTime() / 1000),
+      toDate: () => date
+    })
+  }
 }));
 
-// Mock the firestore functions
-jest.mock('../../firebase/firestore/firestore', () => ({
-  getNewsByReceiver: jest.fn(),
-  markNewsAsRead: jest.fn(),
-  deleteNews: jest.fn(),
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  default: {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn()
+  }
 }));
 
-// Update mock news data
-const mockNews = [
-  {
-    maintenanceRequestID: '1',
-    id: '1',
-    title: 'Urgent Notice',
-    content: 'Test content 1',
-    type: 'urgent',
-    isRead: false,
-    createdAt: mockNow,
-    ReceiverID: 'all',
-    ReadAt: null,
-  },
-  {
-    maintenanceRequestID: '2',
-    id: '2',
-    title: 'Regular Notice',
-    content: 'Test content 2',
-    type: 'info',
-    isRead: false,
-    createdAt: mockNow,
-    ReceiverID: 'test-user-id',
-    ReadAt: null,
-  },
-];
+// Mock other dependencies
+jest.mock('../../firebase/firestore/firestore');
+jest.mock('../context/AuthContext');
+jest.mock('react-native/Libraries/Alert/Alert', () => ({ alert: jest.fn() }));
 
-// Mock the Auth Context
-jest.mock('../context/AuthContext', () => ({
-  useAuth: () => ({
-    tenant: {
-      userId: 'test-user-id',
-    },
-  }),
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+const mockTenant = {
+  userId: 'test-user-id',
+};
 
-describe('ViewNewsfeedScreen', () => {
+const createMockNews = (override = {}) => ({
+  maintenanceRequestID: 'test-id-1',
+  type: 'normal',
+  title: 'Test News',
+  content: 'Test content',
+  isRead: false,
+  createdAt: mockTimestamp,
+  ReceiverID: 'all',
+  ReadAt: null,
+  ...override
+});
+
+describe('NewsfeedScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset useEffect mock
-    jest.spyOn(require('react'), 'useEffect').mockImplementation(mockUseEffect);
-    // Make sure getNewsByReceiver returns the correct mock data
-    (firestore.getNewsByReceiver as jest.Mock).mockImplementation((receiverId) => 
-      Promise.resolve(
-        mockNews.filter(news => news.ReceiverID === receiverId || receiverId === 'all')
-      )
-    );
-    // Mock Alert properly
-    jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+    (useAuth as jest.Mock).mockReturnValue({ tenant: mockTenant });
+    (getNewsByReceiver as jest.Mock).mockResolvedValue([]);
   });
 
-  afterEach(() => {
-    // Restore useEffect
-    jest.restoreAllMocks();
-  });
+  describe('News Display', () => {
+    const mockGeneralNews = [createMockNews()];
+    const mockPersonalNews = [createMockNews({ ReceiverID: mockTenant.userId })];
 
-  const renderAndWait = async () => {
-    const result = render(<ViewNewsfeedScreen />);
-    await act(async () => {
-      await new Promise((resolve) => setImmediate(resolve));
-    });
-    return result;
-  };
-
-  it('renders loading state when tenant is not available', async () => {
-    jest
-      .spyOn(require('../context/AuthContext'), 'useAuth')
-      .mockReturnValueOnce({ tenant: null });
-
-    const { getByText } = await renderAndWait();
-    expect(getByText('Setting Up Your Newsfeed')).toBeTruthy();
-  });
-
-  it('handles refresh action', async () => {
-    const { getByTestId } = await renderAndWait();
-
-    const scrollView = getByTestId('newsfeed-scroll');
-    await act(async () => {
-      const { refreshControl } = scrollView.props;
-      refreshControl.props.onRefresh();
+    beforeEach(() => {
+      (getNewsByReceiver as jest.Mock)
+        .mockImplementation((receiverId) => 
+          Promise.resolve(receiverId === 'all' ? mockGeneralNews : mockPersonalNews)
+        );
     });
 
-    expect(firestore.getNewsByReceiver).toHaveBeenCalledWith('all');
-    expect(firestore.getNewsByReceiver).toHaveBeenCalledWith('test-user-id');
+    it('should display both general and personal news sections', async () => {
+      const { getByText } = render(<NewsfeedScreen />);
+      
+      await waitFor(() => {
+        expect(getByText('Important information regarding your residence')).toBeTruthy();
+        expect(getByText('Updates for you')).toBeTruthy();
+      });
+    });
+
+    it('should show "Nothing new to show" when no visible news', async () => {
+      (getNewsByReceiver as jest.Mock).mockResolvedValue([]);
+      const { getAllByText } = render(<NewsfeedScreen />);
+      
+      await waitFor(() => {
+        const emptyMessages = getAllByText('Nothing new to show');
+        expect(emptyMessages.length).toBe(2);
+      });
+    });
   });
 
-  it('shows "Nothing new to show" when no news available', async () => {
-    (firestore.getNewsByReceiver as jest.Mock).mockResolvedValue([]);
-    const { findAllByText } = await renderAndWait();
-    const emptyMessages = await findAllByText('Nothing new to show');
-    expect(emptyMessages.length).toBeGreaterThan(0);
+  describe('Refresh Functionality', () => {
+    it('should refresh news when pull-to-refresh is triggered', async () => {
+      const { getByTestId } = render(<NewsfeedScreen />);
+      
+      await waitFor(() => {
+        const scrollView = getByTestId('newsfeed-scroll');
+        const { refreshControl } = scrollView.props;
+        act(() => {
+          refreshControl.props.onRefresh();
+        });
+      });
+
+      // Called twice initially (for 'all' and personal) and twice again for refresh
+      expect(getNewsByReceiver).toHaveBeenCalledTimes(4); 
+    });
   });
 
-  it('filters out old read posts correctly', async () => {
-    const oldReadNews = {
-      ...mockNews[1],
-      ReadAt: { 
-        seconds: mockNow.seconds - 601, // Older than 10 minutes
-        toDate: () => new Date(mockNow.seconds * 1000 - 601000)
-      }
-    };
-    
-    const newsWithOldRead = [mockNews[0], oldReadNews];
-    (firestore.getNewsByReceiver as jest.Mock).mockResolvedValue(newsWithOldRead);
-    
-    const { queryByText } = await renderAndWait();
-    expect(queryByText('Regular Notice')).toBeNull();
+  describe('Error Handling', () => {
+    it('should show error alert when news fetch fails', async () => {
+      (getNewsByReceiver as jest.Mock).mockRejectedValue(new Error('Fetch failed'));
+      
+      render(<NewsfeedScreen />);
+      
+      await waitFor(() => {
+        expect(Alert.alert).toHaveBeenCalledWith(
+          'Error',
+          'Failed to fetch news. Please pull down to refresh and try again.'
+        );
+      });
+    });
   });
 
-  
+  describe('Utility Functions', () => {
+    describe('isPostVisible', () => {
+      it('should return true for unread posts', () => {
+        const unreadNews = createMockNews({ isRead: false });
+        expect(isPostVisible(unreadNews)).toBe(true);
+      });
+
+      it('should return true for recently read posts', () => {
+        const recentlyReadNews = createMockNews({
+          isRead: true,
+          ReadAt: {
+            seconds: Math.floor(Date.now() / 1000) - (5 * 60),
+            toDate: () => new Date(Date.now() - 5 * 60 * 1000)
+          }
+        });
+        expect(isPostVisible(recentlyReadNews)).toBe(true);
+      });
+
+      it('should return false for old read posts', () => {
+        const oldReadNews = createMockNews({
+          isRead: true,
+          ReadAt: {
+            seconds: Math.floor(Date.now() / 1000) - (15 * 60),
+            toDate: () => new Date(Date.now() - 15 * 60 * 1000)
+          }
+        });
+        expect(isPostVisible(oldReadNews)).toBe(false);
+      });
+    });
+  });
+
+  // Add additional tests here, taken from the second file
+  describe('Additional Tests (from second file)', () => {
+    it('renders loading state when tenant is not available', async () => {
+      // Override the Auth mock for this test
+      (useAuth as jest.Mock).mockReturnValueOnce({ tenant: null });
+      const { getByText } = render(<NewsfeedScreen />);
+      await waitFor(() => {
+        expect(getByText('Setting Up Your Newsfeed')).toBeTruthy();
+      });
+    });
+
+    it('handles refresh action (additional test)', async () => {
+      // This test is similar to what we have, but we'll just confirm behavior again
+      const { getByTestId } = render(<NewsfeedScreen />);
+      await waitFor(() => {
+        const scrollView = getByTestId('newsfeed-scroll');
+        const { refreshControl } = scrollView.props;
+        act(() => {
+          refreshControl.props.onRefresh();
+        });
+      });
+
+      // Expect getNewsByReceiver called again for 'all' and personal after refresh
+      // The initial call has already happened (2 calls), plus 2 more now
+      expect(getNewsByReceiver).toHaveBeenCalledTimes(4);
+    });
+  });
 });

@@ -18,11 +18,11 @@ interface NewsfeedSectionProps {
 }
 
 // Utility Functions
-const isPostVisible = (news: News) => 
+export const isPostVisible = (news: News) => 
   !news.isRead || !news.ReadAt || 
   (Timestamp.now().seconds - news.ReadAt.seconds) < TEN_MINUTES_IN_SECONDS;
 
-const formatDate = (timestamp: Timestamp) => 
+export const formatDate = (timestamp: Timestamp) => 
   timestamp.toDate().toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
   });

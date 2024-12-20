@@ -8,12 +8,12 @@ import {
     MaintenanceRequest,
     TenantCode,
     News
-  } from "../../../types/types";
-  import { db } from "../../../firebase/firebase";
+  } from "../../../../types/types";
+  import { db } from "../../../../firebase/firebase";
   import { Timestamp } from "firebase/firestore";
-  import * as firestore from "../../../firebase/firestore/firestore";
+  import * as firestore from "../../../../firebase/firestore/firestore";
   import AsyncStorage from "@react-native-async-storage/async-storage";
-  import { useNetworkStore } from "../../../app/stores/NetworkStore";
+  import { useNetworkStore } from "../../../stores/NetworkStore";
   
   const {
     getFirestore,
@@ -64,7 +64,7 @@ import {
     getAllKeys: jest.fn()
   }));
   
-  jest.mock('../../../app/stores/NetworkStore', () => ({
+  jest.mock('../../../../app/stores/NetworkStore', () => ({
     useNetworkStore: {
       getState: jest.fn()
     }

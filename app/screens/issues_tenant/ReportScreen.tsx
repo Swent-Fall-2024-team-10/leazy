@@ -141,7 +141,7 @@ export default function ReportScreen() {
       await updateTenant(tenant.userId, {
         maintenanceRequests: [...tenant.maintenanceRequests, requestID],
       });
-    const isOnline = useNetworkStore.getState().isOnline;
+      const isOnline = useNetworkStore.getState().isOnline;
       if (isOnline) {
         const apartment = await getApartment(tenant.apartmentId);
 

@@ -16,6 +16,13 @@ const mockAuthProvider = {
   fetchTenant: jest.fn(),
   fetchLandlord: jest.fn(),
 };
+
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 describe('SituationReportCreation', () => {
   it('renders the component and displays initial UI elements', () => {
     render(

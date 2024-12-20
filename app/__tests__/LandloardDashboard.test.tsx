@@ -58,6 +58,8 @@ jest.mock('firebase/firestore', () => {
     where: jest.fn((...args) => ({ type: 'where', args })),
     orderBy: jest.fn((...args) => ({ type: 'orderBy', args })),
     limit: jest.fn((...args) => ({ type: 'limit', args })),
+    memoryLocalCache: jest.fn(),
+    initializeFirestore: jest.fn(),
   };
 });
 

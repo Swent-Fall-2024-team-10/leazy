@@ -1,6 +1,37 @@
 import * as SituationReport from '../utils/SituationReport';
 import { addGroupToLayout, getNameAndSurname } from '../utils/SituationReport';
 
+jest.mock('../../firebase/firebase', () => ({
+  db: {},
+  app: {},
+}));
+
+jest.mock('../../firebase/firestore/firestore', () => ({
+  getResidence: jest.fn(),
+  getApartment: jest.fn(),
+}));
+
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: () => ({}),
+  initializeFirestore: jest.fn(() => ({})),
+  getFirestore: jest.fn(() => ({})),
+  collection: jest.fn(),
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  getDocs: jest.fn(),
+  writeBatch: jest.fn(() => ({
+    set: jest.fn(),
+    update: jest.fn(),
+    commit: jest.fn(),
+  })),
+  addDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  query: jest.fn((...args) => args),
+  where: jest.fn((field, operator, values) => ({ field, operator, values })),
+}));
+
+
 describe('converting backend format to front-end format', () => {
     it('Converting to front-end format should return correct structure for multiple groups', () => {
         const backendJsonString = JSON.stringify({

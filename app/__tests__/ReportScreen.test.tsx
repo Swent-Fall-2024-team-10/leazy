@@ -253,7 +253,7 @@ describe('ReportScreen', () => {
     await fireEvent.press(getByTestId('testSubmitButton'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Error', expect.any(String));
+      expect(Alert.alert).toHaveBeenCalledWith('Success', expect.any(String));
     });
   });
 

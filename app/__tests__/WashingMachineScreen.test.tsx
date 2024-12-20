@@ -21,7 +21,6 @@ import { LaundryMachine } from '../../types/types';
 // Import the mocked functions
 import {
   getLaundryMachinesQuery,
-  createMachineNotification,
 } from '../../firebase/firestore/firestore';
 
 // Mock expo-linear-gradient

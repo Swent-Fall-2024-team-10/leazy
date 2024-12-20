@@ -21,6 +21,12 @@ jest.mock('@react-navigation/drawer', () => {
   };
 });
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 // Mock all the screen components
 jest.mock('../screens/tenant/HomepageScreen', () => 'HomepageScreen');
 jest.mock('../screens/laundry_machines/WashingMachineScreen', () => 'WashingMachineScreen');

@@ -14,6 +14,12 @@ jest.mock("react-native-reanimated", () => {
   return Reanimated;
 });
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+}));
+
 // Silence the warning: Animated: `useNativeDriver` is not supported because the native animated module is missing
 jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 jest.mock('@react-native-async-storage/async-storage', () =>

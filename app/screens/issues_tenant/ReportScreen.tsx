@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, Alert, Image, Modal, Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import InputField from '../../components/forms/text_input';
 import Spacer from '../../components/Spacer';
 import SubmitButton from '../../components/buttons/SubmitButton';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   appStyles,
   ButtonDimensions,
   Color,
   textInputHeight,
-} from '../../../styles/styles';
-import Close from '../..//components/buttons/Close';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { ReportStackParamList } from '../../../types/types';
-import CameraButton from '../../components/buttons/CameraButton';
-import BouncyCheckbox from 'react-native-bouncy-checkbox';
-import CloseConfirmation from '../../components/buttons/CloseConfirmation';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { MaintenanceRequest } from '../../../types/types';
-import { db } from '../../../firebase/firebase';
-import Header from '../../components/Header';
-import { usePictureContext } from '../../context/PictureContext';
-import { storage } from '../../../firebase/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuth } from '../../context/AuthContext';
-import { getFileBlob, clearFiles } from '../../utils/cache';
+} from "../../../styles/styles";
+import Close from "../../components/buttons/Close";
+import { NavigationProp, useNavigation } from "@react-navigation/native"; // Import NavigationProp
+import { ReportStackParamList } from "../../../types/types"; // Import or define your navigation types
+import CameraButton from "../../components/buttons/CameraButton";
+import BouncyCheckbox from "react-native-bouncy-checkbox";
+import CloseConfirmation from "../../components/buttons/CloseConfirmation";
+import { collection, addDoc, Timestamp } from "firebase/firestore"; // Import Firestore functions
+import { MaintenanceRequest } from "../../../types/types";
+import { db } from "../../../firebase/firebase";
+import Header from "../../components/Header";
+import { usePictureContext } from "../../context/PictureContext";
+import { storage } from "../../../firebase/firebase"; // Import storage from your Firebase config
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase imports
+import { useAuth } from "../../context/AuthContext";
+import { getFileBlob, clearFiles } from "../../utils/cache";
 import {
+  createMaintenanceRequest,
   getTenant,
   updateApartment,
   updateMaintenanceRequest,
@@ -34,19 +35,21 @@ import {
   getApartment,
   createNews,
 } from '../../../firebase/firestore/firestore';
+import { useNetworkStore } from '../../../app/stores/NetworkStore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
+
   const { user } = useAuth();
+
   const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
   const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
@@ -62,12 +65,12 @@ export default function ReportScreen() {
     clearFiles(pictureList);
     resetPictureList();
   }
-
   const handleClose = () => {
     setIsVisible(true);
   };
 
   useEffect(() => {
+    // Reset picture list when navigating away from the screen
     return () => {
       resetPictureList();
     };
@@ -79,36 +82,36 @@ export default function ReportScreen() {
 
   const handleSubmit = async () => {
     setLoading(true);
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const tenant = await getTenant(user.uid);
-
-    if (!tenant) {
-      Alert.alert('Error', 'Tenant not found');
-      setLoading(false);
-      return;
-    }
-
     try {
-      if (!tenant.userId) {
-        throw new Error('Tenant not found');
+      if (!user) {
+        throw new Error("User not found");
       }
-
+  
+      const tenant = await getTenant(user.uid);
+      if (!tenant) {
+        Alert.alert("Error", "Tenant not found");
+        setLoading(false);
+        return;
+      }
+  
+      // Upload pictures to Firebase Storage
       let pictureURLs: string[] = [];
-
-      for (const picture of pictureList) {
-        const blob = await getFileBlob(picture);
-        const filename = picture.substring(picture.lastIndexOf('/') + 1);
-        const storageRef = ref(storage, `uploads/${filename}`);
-        await uploadBytes(storageRef, blob);
-        const downloadURL = await getDownloadURL(storageRef);
-        pictureURLs.push(downloadURL);
-        console.log('File uploaded to storage');
+  
+      try {
+        // Only try to upload pictures if online
+        for (const picture of pictureList) {
+          const blob = await getFileBlob(picture);
+          const filename = picture.substring(picture.lastIndexOf("/") + 1);
+          const storageRef = ref(storage, `uploads/${filename}`);
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
+          pictureURLs.push(downloadURL);
+        }
+      } catch (error) {
+        // If picture upload fails (likely offline), store local URIs temporarily
+        pictureURLs = pictureList;
       }
-
+  
       const newRequest: MaintenanceRequest = {
         requestID: '',
         tenantId: tenant.userId,
@@ -121,16 +124,9 @@ export default function ReportScreen() {
         picture: pictureURLs,
         requestStatus: 'notStarted',
       };
-
-      const requestID = await addDoc(
-        collection(db, 'maintenanceRequests'),
-        newRequest,
-      );
-
-      await updateMaintenanceRequest(requestID.id, { requestID: requestID.id });
-
+      const requestID = await createMaintenanceRequest(newRequest);
       await createNews({
-        maintenanceRequestID: `news_${requestID.id}_${Date.now()}`,
+        maintenanceRequestID: `news_${requestID}_${Date.now()}`,
         title: 'Maintenance Request Status Update',
         content: `Your maintenance request "${issue}" has been opened`,
         type: 'informational',
@@ -143,26 +139,28 @@ export default function ReportScreen() {
       });
 
       await updateTenant(tenant.userId, {
-        maintenanceRequests: [...tenant.maintenanceRequests, requestID.id],
+        maintenanceRequests: [...tenant.maintenanceRequests, requestID],
       });
+      const isOnline = useNetworkStore.getState().isOnline;
+      if (isOnline) {
+        const apartment = await getApartment(tenant.apartmentId);
 
-      const apartment = await getApartment(tenant.apartmentId);
+        if (!apartment) {
+          throw new Error('Apartment not found');
+        }
 
-      if (!apartment) {
-        throw new Error('Apartment not found');
+        await updateApartment(tenant.apartmentId, {
+          maintenanceRequests: [...apartment.maintenanceRequests, requestID],
+        });
       }
-
-      await updateApartment(tenant.apartmentId, {
-        maintenanceRequests: [...apartment.maintenanceRequests, requestID.id],
-      });
-
+     
       Alert.alert('Success', 'Your maintenance request has been submitted.');
 
       resetStates();
 
       if (tick) {
         setTick(false);
-        navigation.navigate('Messaging', { chatID: requestID.id });
+        navigation.navigate("Messaging", {chatID: requestID});
       } else {
         setTick(false);
         navigation.navigate('Issues');

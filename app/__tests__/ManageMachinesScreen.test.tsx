@@ -23,6 +23,8 @@ jest.mock('firebase/auth', () => ({
 
 jest.mock('firebase/firestore', () => ({
   getFirestore: jest.fn(),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
   Timestamp: {
     fromMillis: (milliseconds: number) => ({
       toMillis: () => milliseconds,

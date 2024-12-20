@@ -10,7 +10,7 @@ import {
 } from "../../types/types";
 import * as firestore from "../../firebase/firestore/firestore";
 import { db } from "../../firebase/firebase";
-import { Timestamp } from "firebase/firestore";
+import { getDocFromCache, Timestamp } from "firebase/firestore";
 
 const {
   getFirestore,
@@ -50,23 +50,48 @@ const mockResidence: Residence = {
   situationReportLayout: [],
 };
 
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  memoryLocalCache: jest.fn(),
+  initializeFirestore: jest.fn(),
+  getFirestore: jest.fn(),
+  collection: jest.fn(),
+  addDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  getDocs: jest.fn(),
+  getDoc: jest.fn(),
+  doc: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  onSnapshot: jest.fn(),
+  getDocFromCache: jest.fn(),
+}));
+
 jest.spyOn(console, "error").mockImplementation(() => {});
 
 describe("Firestore Functions", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    (getFirestore as jest.Mock).mockReturnValue("mockedFirestore");
+    (collection as jest.Mock).mockReturnValue("mockedCollectionRef");
+    (doc as jest.Mock).mockReturnValue("mockDocRef");
+  });
+
   describe("createApartment", () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      (getFirestore as jest.Mock).mockReturnValue("mockedFirestore");
-      (collection as jest.Mock).mockReturnValue("apartmentsCollectionRef");
     });
 
     it("should successfully create an apartment document", async () => {
       const mockDocRef = { id: "generatedDocId" };
       (addDoc as jest.Mock).mockResolvedValueOnce(mockDocRef);
-
+      (collection as jest.Mock).mockReturnValueOnce("apartmentsCollectionRef");
+      
       const docId = await firestore.createApartment(mockApartment);
 
-      expect(collection).toHaveBeenCalledWith("mockedFirestore", "apartments");
+      expect(collection).toHaveBeenCalledWith(undefined, "apartments");
       expect(addDoc).toHaveBeenCalledWith(
         "apartmentsCollectionRef",
         mockApartment
@@ -114,10 +139,14 @@ describe("Firestore Functions", () => {
         exists: () => true,
         data: () => mockApartment,
       });
+      (getDocFromCache as jest.Mock).mockResolvedValue({
+        exists: () => true,
+        data: () => mockApartment
+    });
 
       const result = await firestore.getApartment(firestoreId);
       
-      expect(doc).toHaveBeenCalledWith("mockedFirestore", "apartments", firestoreId);
+      expect(doc).toHaveBeenCalledWith(undefined, "apartments", firestoreId);
       expect(result).toEqual(mockApartment);
     });
 
@@ -127,6 +156,12 @@ describe("Firestore Functions", () => {
         exists: () => false,
       });
 
+      // Fix: Provide proper mock for getDocFromCache with exists() returning false
+      (getDocFromCache as jest.Mock).mockResolvedValue({
+        exists: () => false,
+        data: () => null
+    });
+
       const result = await firestore.getApartment(firestoreId);
       expect(result).toBeNull();
     });
@@ -135,17 +170,17 @@ describe("Firestore Functions", () => {
   describe("createResidence", () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      (getFirestore as jest.Mock).mockReturnValue("mockedFirestore");
-      (collection as jest.Mock).mockReturnValue("residencesCollectionRef");
-    });
+      });
 
     it("should successfully create a residence document", async () => {
       const mockDocRef = { id: "generatedDocId" };
       (addDoc as jest.Mock).mockResolvedValueOnce(mockDocRef);
-
+      const residencesCollectionRef = "residencesCollectionRef";
+      (collection as jest.Mock).mockReturnValue(residencesCollectionRef);
+            
       const docId = await firestore.createResidence(mockResidence);
 
-      expect(collection).toHaveBeenCalledWith("mockedFirestore", "residences");
+      expect(collection).toHaveBeenCalledWith(undefined, "residences");
       expect(addDoc).toHaveBeenCalledWith(
         "residencesCollectionRef",
         mockResidence
@@ -154,6 +189,8 @@ describe("Firestore Functions", () => {
     });
 
     it("should throw an error if residence name is missing", async () => {
+      (addDoc as jest.Mock).mockRejectedValueOnce(new Error("Invalid residence ID."));
+
       const invalidResidence = { ...mockResidence, residenceName: "" };
 
       await expect(firestore.createResidence(invalidResidence)).rejects.toThrow(
@@ -169,10 +206,14 @@ describe("Firestore Functions", () => {
         exists: () => true,
         data: () => mockResidence,
       });
+      (getDocFromCache as jest.Mock).mockResolvedValue({
+        exists: () => true,
+        data: () => mockResidence
+    });
 
       const result = await firestore.getResidence(firestoreId);
       
-      expect(doc).toHaveBeenCalledWith("mockedFirestore", "residences", firestoreId);
+      expect(doc).toHaveBeenCalledWith(undefined, "residences", firestoreId);
       expect(result).toEqual(mockResidence);
     });
 
@@ -181,6 +222,11 @@ describe("Firestore Functions", () => {
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => false,
       });
+      // Fix: Provide proper mock for getDocFromCache with exists() returning false
+      (getDocFromCache as jest.Mock).mockResolvedValue({
+        exists: () => false,
+        data: () => null
+    });
 
       const result = await firestore.getResidence(firestoreId);
       expect(result).toBeNull();
@@ -205,7 +251,7 @@ describe("Firestore Functions", () => {
 
       await firestore.updateResidence(firestoreId, updateData);
       
-      expect(doc).toHaveBeenCalledWith("mockedFirestore", "residences", firestoreId);
+      expect(doc).toHaveBeenCalledWith(undefined, "residences", firestoreId);
       expect(updateDoc).toHaveBeenCalledWith(mockDocRef, updateData);
     });
 

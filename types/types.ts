@@ -144,6 +144,9 @@ export type MaintenanceRequest = {
   requestDescription: string;
   picture: string[];
   requestStatus: "inProgress" | "completed" | "notStarted" | "rejected";
+  _isPending?: boolean;  // Add these optional properties
+  _localId?: string;     // for offline support
+  _localPictures?: string[];
 };
 
 export type News = {

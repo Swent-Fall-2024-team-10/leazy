@@ -464,6 +464,7 @@ export default function SituationReportCreation() {
             </Text>
 
             <PickerGroup
+              testID='residence-picker'
               label={'Residence'}
               data={residencesMappedToName}
               chosed={selectedResidence}

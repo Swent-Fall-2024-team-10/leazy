@@ -134,11 +134,13 @@ export function PickerGroup({
   data,
   chosed,
   setValue,
+  testID = '',
 }: {
   label: string;
   data: PickerItem[];
   chosed: any;
   setValue: (value: any) => void;
+  testID?: string;
 }) {
 
   const pickerLabel = 'Select ' + label;
@@ -152,7 +154,7 @@ export function PickerGroup({
     >
       <Text style={situationReportStyles.label}>{label}</Text>
 
-      <View style={situationReportStyles.pickerWrapper} testID=''>
+      <View style={situationReportStyles.pickerWrapper} testID={testID}>
         <RNPickerSelect
           onValueChange={(value) => setValue(value)}
           items={data}

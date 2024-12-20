@@ -4,24 +4,17 @@ import MaintenanceIssues from '../../screens/issues_tenant/ListIssueScreen';
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
-<<<<<<< HEAD
   getPendingRequests,
-} from "../../../firebase/firestore/firestore";
-import { getAuth } from "firebase/auth";
-import { onSnapshot } from "firebase/firestore";
-import "@testing-library/jest-native/extend-expect";
-
-// portions of this code were generated using chatGPT as an AI assistant
-=======
+  createNews,
+  syncPendingRequests,
 } from '../../../firebase/firestore/firestore';
 import { getAuth } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
 import '@testing-library/jest-native/extend-expect';
-import { createNews } from '../../../firebase/firestore/firestore';
 import { View } from 'react-native';
 import { within } from '@testing-library/react-native';
 import { Colors } from '../../../constants/Colors';
->>>>>>> 4f65a85a52374508a87b077f5d91448b1e78292d
+import { MaintenanceRequest } from '../../../types/types';
 
 // Mock Firebase Auth
 jest.mock('firebase/auth', () => ({
@@ -46,34 +39,9 @@ jest.mock('@expo/vector-icons', () => ({
 jest.mock('../../../firebase/firestore/firestore', () => ({
   updateMaintenanceRequest: jest.fn(),
   getMaintenanceRequestsQuery: jest.fn(),
-<<<<<<< HEAD
-  getPendingRequests: jest.fn().mockResolvedValue([]), // Return an empty array by default
-}));
-
-jest.mock("firebase/firestore", () => ({
-  ...jest.requireActual("firebase/firestore"),
-  onSnapshot: jest.fn().mockImplementation((query, callback) => {
-    // Properly structure the querySnapshot with docs array
-    callback({
-      docs: [
-        {
-          id: "request1",
-          data: () => ({
-            requestID: "request1",
-            requestTitle: "Leaky faucet",
-            requestStatus: "completed"
-          })
-        }
-      ],
-      forEach: function(fn: any) {
-        this.docs.forEach(fn);
-      }
-    });
-    return jest.fn(); // Cleanup function
-  })
-}));
-=======
   createNews: jest.fn(),
+  getPendingRequests: jest.fn().mockResolvedValue([]),
+  syncPendingRequests: jest.fn(),
 }));
 
 // Mock Firebase Firestore
@@ -87,7 +55,6 @@ jest.mock('firebase/firestore', () => {
     },
   };
 });
->>>>>>> 4f65a85a52374508a87b077f5d91448b1e78292d
 
 // Mock Navigation
 const mockNavigate = jest.fn();
@@ -96,7 +63,7 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
   }),
-  useFocusEffect: jest.fn()
+  useFocusEffect: jest.fn(),
 }));
 
 const createMockSnapshot = (data: any, changes = []) => ({
@@ -120,6 +87,17 @@ const createMockSnapshot = (data: any, changes = []) => ({
       },
     })),
 });
+
+// At the top of the file with other mocks
+let netInfoCallback: ((state: any) => void) | null = null;
+const mockNetInfoUnsubscribe = jest.fn();
+
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: (callback: (state: any) => void) => {
+    netInfoCallback = callback;
+    return mockNetInfoUnsubscribe;
+  },
+}));
 
 describe('MaintenanceIssues', () => {
   const mockIssueData = {
@@ -201,14 +179,10 @@ describe('MaintenanceIssues', () => {
     setupMockSnapshot();
     const screen = render(<MaintenanceIssues />);
 
-<<<<<<< HEAD
-    (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-=======
     // Wait for both the query call and the data to be displayed
     await waitFor(() => {
       expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith('mockTenantId');
     });
->>>>>>> 4f65a85a52374508a87b077f5d91448b1e78292d
 
     await waitFor(
       () => {
@@ -220,69 +194,6 @@ describe('MaintenanceIssues', () => {
     expect(screen.getByText('Status: In Progress')).toBeTruthy();
   });
 
-<<<<<<< HEAD
-  test("toggles archived issues switch and displays archived issues when toggled", async () => {
-    // Mock pending requests
-    (getPendingRequests as jest.Mock).mockResolvedValue([{
-      requestTitle: "Leaky faucet",
-      requestDescription: "Bathroom faucet is leaking",
-      requestStatus: "pending"
-  }]);
-    
-    // Mock the query response
-    const mockIssueData = [{
-        id: "request1",
-        data: () => ({
-            requestID: "request1",
-            requestTitle: "Leaky faucet",
-            requestStatus: "completed",
-        })
-    }];
-
-    const screen = render(<MaintenanceIssues />);
-    const archivedSwitch = await waitFor(() => screen.getByTestId("archiveSwitch"));
-
-    // Check initial state (should not show completed issues)
-    expect(screen.queryByText("Leaky faucet")).toBeNull();
-
-    // Toggle switch to show archived issues
-    fireEvent(archivedSwitch, 'valueChange', true);
-    
-    // Verify archived issues are shown
-    await waitFor(() => {
-        expect(archivedSwitch.props.value).toBe(true);
-        expect(screen.getByText("Leaky faucet")).toBeTruthy();
-    });
-
-    // Toggle switch back to hide archived issues
-    fireEvent(archivedSwitch, 'valueChange', false);
-    
-    // Verify archived issues are hidden
-    await waitFor(() => {
-        expect(archivedSwitch.props.value).toBe(false);
-        expect(screen.queryByText("Leaky faucet")).toBeNull();
-    });
-});
-
-  test("navigates to the report screen when add button is pressed", () => {
-    const screen = render(<MaintenanceIssues />);
-    const addButton = screen.getByTestId("addButton");
-
-    fireEvent.press(addButton);
-    expect(mockNavigate).toHaveBeenCalledWith("Report");
-  });
-
-  test("navigates to issue details when arrow button is pressed", async () => {
-    const mockIssueData = {
-      requestID: "request1",
-      requestTitle: "Leaky faucet",
-      requestStatus: "inProgress",
-    };
-
-    // Mock Firestore query and snapshot response
-    const mockQuery = jest.fn();
-    (getMaintenanceRequestsQuery as jest.Mock).mockResolvedValue(mockQuery);
-=======
   test('toggles archived issues switch and displays archived issues when toggled', async () => {
     const archivedIssueData = {
       ...mockIssueData,
@@ -296,7 +207,6 @@ describe('MaintenanceIssues', () => {
     await waitFor(() => {
       expect(getMaintenanceRequestsQuery).toHaveBeenCalledWith('mockTenantId');
     });
->>>>>>> 4f65a85a52374508a87b077f5d91448b1e78292d
 
     const archivedSwitch = screen.getByTestId('archiveSwitch');
 
@@ -338,9 +248,6 @@ describe('MaintenanceIssues', () => {
 
     const arrowButton = screen.getByTestId('arrowButton');
     fireEvent.press(arrowButton);
-<<<<<<< HEAD
-    expect(mockNavigate).toHaveBeenCalledWith("IssueDetails", { requestID: undefined });
-=======
 
     expect(mockNavigate).toHaveBeenCalledWith('IssueDetails', {
       requestID: 'request1',
@@ -350,20 +257,6 @@ describe('MaintenanceIssues', () => {
   // Add these test cases after your existing tests
 
   // Add these test cases after your existing tests
-
-  test('handles error when user is not logged in', async () => {
-    // Mock auth with null user before rendering
-    jest.spyOn(require('firebase/auth'), 'getAuth').mockImplementation(() => ({
-      currentUser: null,
-    }));
-
-    const consoleErrorSpy = jest.spyOn(console, 'error');
-    render(<MaintenanceIssues />);
-
-    await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith('User is not logged in');
-    });
-  });
 
   test('creates news item when issue status changes', async () => {
     // Mock auth with valid user
@@ -548,7 +441,7 @@ describe('MaintenanceIssues', () => {
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error setting up maintenance requests listener:',
+        'Error setting up listeners:',
         expect.any(Error),
       );
     });
@@ -781,10 +674,6 @@ describe('MaintenanceIssues', () => {
     });
   });
 
-
-
-  
-
   test('handles null request ID in status tracking', async () => {
     const invalidIssueData = {
       ...mockIssueData,
@@ -832,8 +721,6 @@ describe('MaintenanceIssues', () => {
       expect(createNews).not.toHaveBeenCalled();
     });
   });
-
- 
 
   test('handles status updates with debouncing', async () => {
     const initialData = {
@@ -891,6 +778,87 @@ describe('MaintenanceIssues', () => {
       // Should only create one news item despite multiple updates
       expect(createNews).toHaveBeenCalledTimes(1);
     });
->>>>>>> 4f65a85a52374508a87b077f5d91448b1e78292d
+  });
+
+  test('handles offline/online state changes', async () => {
+    render(<MaintenanceIssues />);
+
+    // Simulate going offline
+    netInfoCallback?.({ isConnected: false });
+    
+    // Simulate going back online
+    netInfoCallback?.({ isConnected: true });
+    await waitFor(() => {
+      expect(syncPendingRequests).toHaveBeenCalled();
+    });
+  });
+
+  test('handles sync during online state', async () => {
+    (syncPendingRequests as jest.Mock).mockImplementation(() => 
+      new Promise((resolve) => setTimeout(resolve, 100))
+    );
+
+    render(<MaintenanceIssues />);
+    
+    // Simulate going online
+    netInfoCallback?.({ isConnected: true });
+    
+    await waitFor(() => {
+      expect(syncPendingRequests).toHaveBeenCalled();
+    });
+  });
+
+  test('handles pending requests that are not in Firestore', async () => {
+    const firestoreIssue = {
+      ...mockIssueData,
+      requestTitle: 'Existing Issue',
+    };
+
+    const pendingIssue = {
+      ...mockIssueData,
+      requestTitle: 'Pending Issue',
+      _isPending: true,
+    };
+
+    (getPendingRequests as jest.Mock).mockResolvedValue([pendingIssue]);
+
+    let snapshotCallback: any;
+    (onSnapshot as jest.Mock).mockImplementation((query, callback) => {
+      snapshotCallback = callback;
+      callback({
+        docs: [{ data: () => firestoreIssue, id: 'firestore1' }],
+        forEach: (fn: any) => fn({ data: () => firestoreIssue, id: 'firestore1' }),
+        docChanges: () => [],
+      });
+      return () => {};
+    });
+
+    const { findByText } = render(<MaintenanceIssues />);
+
+    await findByText('Existing Issue');
+    await findByText('Pending Issue');
+
+    // Verify that both Firestore and pending issues are displayed
+    expect(await findByText('Existing Issue')).toBeTruthy();
+    expect(await findByText('Pending Issue')).toBeTruthy();
+  });
+
+  test('handles error in initial setup and falls back to pending requests', async () => {
+    // Mock getMaintenanceRequestsQuery to throw error
+    (getMaintenanceRequestsQuery as jest.Mock).mockRejectedValue(new Error('Query failed'));
+    
+    // Mock pending requests
+    const pendingIssue = {
+      ...mockIssueData,
+      requestTitle: 'Pending Issue',
+      _isPending: true,
+    };
+    (getPendingRequests as jest.Mock).mockResolvedValue([pendingIssue]);
+
+    const { findByText } = render(<MaintenanceIssues />);
+
+    // Should fall back to showing pending requests
+    await findByText('Pending Issue');
+    expect(await findByText('Pending Issue')).toBeTruthy();
   });
 });

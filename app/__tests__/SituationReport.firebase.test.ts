@@ -45,6 +45,7 @@ describe("Firestore functions", () => {
     apartments: ["apt123"],
     tenantCodesID: ["code123"],
     situationReportLayout: ["field1", "field2"],
+    pictures: []
   };
 
   const apartmentMock: Apartment = {

@@ -7,6 +7,7 @@ jest.mock('firebase/firestore', () => ({
   initializeFirestore: jest.fn(),
 }));
 
+
 describe('converting backend format to front-end format', () => {
     it('Converting to front-end format should return correct structure for multiple groups', () => {
         const backendJsonString = JSON.stringify({

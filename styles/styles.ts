@@ -20,14 +20,17 @@ export const residenceManagementListStyles = StyleSheet.create({
   addApartmentButton: {
     height: 40,
     backgroundColor: 'white',
+
     borderRadius: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     marginTop: 2,
+
     width: '90%',
     alignSelf: 'flex-start',
     shadowColor: '#000',
+
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -80,8 +83,7 @@ export const residenceManagementListStyles = StyleSheet.create({
 });
 
 export const ButtonDimensions = {
-
-  fullWidthButtonWidth: Dimensions.get("window").width * 0.85,
+  fullWidthButtonWidth: Dimensions.get('window').width * 0.85,
 
 
   veryLargeButtonWidth: 300,
@@ -99,6 +101,7 @@ export const ButtonDimensions = {
 
   smallerButtonWidth: 90,
   smallerButtonHeight: 40,
+
 
 };
 
@@ -142,7 +145,8 @@ export const Color = {
   GrayGroupBackground: '#f2f2f2',
 
   IssueTextBackground: "#FFFFFF",
-  CancelColor: "#E74C3C",
+  CancelColor: "#E74C3C",  
+  EditColor: '#FFA500',
   ShadowColor: "#171717",
 
   GrayText: '#666666',
@@ -197,6 +201,7 @@ export const Color = {
   availableBubble: "green",
   inUseBubble: "orange",
   underMaintenanceBubble: "red",
+
 };
 
 export const chatStyles = StyleSheet.create({
@@ -300,7 +305,6 @@ export const appStyles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: Color.GrayGroupMargin /* Purple border */,
     borderRadius: 15 /* Rounded corners */,
-
     justifyContent: "center",
     padding: "2%",
     marginBottom: "3%",
@@ -351,6 +355,41 @@ export const appStyles = StyleSheet.create({
     borderRadius: 8,
     borderColor: "lightgrey",
     borderWidth: 0.5,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Color.TextInputText,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+    color: Color.HeaderText,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  postTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Color.TextInputText,
+    marginBottom: 4,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+
+  timestamp: {
+    fontSize: 12,
+    color: Color.GrayText,
+    marginTop: 4,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
   },
 
   // Date and Time
@@ -451,6 +490,7 @@ export const appStyles = StyleSheet.create({
     color: '#0f5257',
     flex: 1,
     textAlign: 'center',
+
   },
 
   // Section Header in a form
@@ -459,15 +499,18 @@ export const appStyles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 10,
     color: Color.HeaderText,
+
   },
 
   // General Screen
   screenContainer: {
+
     flex: 0.75,
 
     paddingVertical: "6%",
 
     padding : '6%',
+
   },
 
   emptyListText: {
@@ -514,8 +557,10 @@ export const appStyles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 20,
 
+
     width: "95%",
     alignSelf: "center",
+
 
     marginBottom: 500,
   },
@@ -559,7 +604,9 @@ export const appStyles = StyleSheet.create({
     width: "90%",
     marginTop: 10,
 
+
     flexDirection: "row",
+
 
   },
 
@@ -929,6 +976,7 @@ export const stylesForHeaderScreens = StyleSheet.create({
   tickingBox: {
     borderRadius: 5,
 
+
   }
 });
 
@@ -1213,3 +1261,4 @@ export const stylesForResidenceList = StyleSheet.create({
     color: 'white',
   },
 });
+

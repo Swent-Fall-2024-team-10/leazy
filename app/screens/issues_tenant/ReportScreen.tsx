@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, Alert, Image, Modal, Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import InputField from '../../components/forms/text_input';
 import Spacer from '../../components/Spacer';
 import SubmitButton from '../../components/buttons/SubmitButton';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   appStyles,
   ButtonDimensions,
@@ -33,21 +33,21 @@ import {
   updateMaintenanceRequest,
   updateTenant,
   getApartment,
+  createNews,
 } from '../../../firebase/firestore/firestore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
-
   const { user } = useAuth();
-
   const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
+  const [loading, setLoading] = useState(false);
+
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
   const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
@@ -63,12 +63,12 @@ export default function ReportScreen() {
     clearFiles(pictureList);
     resetPictureList();
   }
+
   const handleClose = () => {
     setIsVisible(true);
   };
 
   useEffect(() => {
-    // Reset picture list when navigating away from the screen
     return () => {
       resetPictureList();
     };

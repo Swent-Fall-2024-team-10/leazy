@@ -4,6 +4,7 @@ import CustomDrawerContent from '../components/drawer/CustomDrawer';
 import HomepageScreen from '../screens/tenant/HomepageScreen';
 import IssueStackNavigator from '../Navigators/IssueStackNavigator';
 import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
+import ViewNewsfeedScreen from '../screens/newsfeed/ViewNewsfeedScreen';
 import { Color, appStyles } from '../../styles/styles';
 import SnitchModeScreen from '../screens/SnitchMode/SnitchModeScreen';
 import SettingsStackNavigator from './SettingsStackNavigator';
@@ -26,7 +27,7 @@ const TenantHomeDrawerNavigator = () => {
                 drawerLabelStyle: appStyles.drawerLabel,
             }}
         >
-            <Drawer.Screen name="Home" component={HomepageScreen} />
+            <Drawer.Screen name="Home" component={ViewNewsfeedScreen} />
             <Drawer.Screen
                 name="Maintenance Requests"
                 component={IssueStackNavigator}

@@ -23,7 +23,6 @@ import {
 } from '../../../firebase/firestore/firestore';
 import SubmitButton from '../../components/buttons/SubmitButton';
 import CustomTextField from '../../components/CustomTextField';
-import { LandlordProvider } from '../../context/LandlordContext';
 import { useAuth } from '../../context/AuthContext';
 
 interface NewsModalProps {
@@ -150,18 +149,19 @@ const NewsModal: React.FC<NewsModalProps> = ({
               />
             </View>
           </View>
-
-          <TouchableOpacity
-            testID='submit-button'
-            style={[
+          <View style={{ height: '90%' }}>
+            <TouchableOpacity
+              testID='submit-button'
+              style={[
               styles.submitButton,
               (!content.trim() || !title.trim()) && { opacity: 0.5 },
             ]}
             onPress={handleSubmit}
             disabled={!content.trim() || !title.trim()}
           >
-            <Text style={appStyles.submitButtonText}>Add to newsfeed</Text>
+            <Text style={appStyles.submitButtonText} >Add to newsfeed</Text>
           </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -181,7 +181,10 @@ const NewsfeedManagementScreen = () => {
   const fetchNews = async () => {
     try {
       const newsItems = await getNewsByReceiver('all');
-      setNews(newsItems);
+      const filteredNews = newsItems.filter(
+        (item) => item.SenderID === landlord?.userId
+      );
+      setNews(filteredNews);
     } catch (error) {
       console.error('Error fetching news:', error);
       Alert.alert(

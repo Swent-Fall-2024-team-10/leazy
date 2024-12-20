@@ -71,6 +71,7 @@ describe('ManageNewsFeedScreen', () => {
       content: 'Content 1',
       createdAt: { toDate: () => new Date() },
       type: 'informational',
+      SenderID: 'test-uid',
     },
     {
       maintenanceRequestID: '2',
@@ -78,6 +79,7 @@ describe('ManageNewsFeedScreen', () => {
       content: 'Content 2',
       createdAt: { toDate: () => new Date() },
       type: 'urgent',
+      SenderID: 'test-uid',
     },
   ];
 
@@ -85,17 +87,6 @@ describe('ManageNewsFeedScreen', () => {
     jest.clearAllMocks();
     (useAuth as jest.Mock).mockReturnValue({ landlord: mockLandlord });
     (getNewsByReceiver as jest.Mock).mockResolvedValue(mockNewsItems);
-  });
-
-  it('renders correctly with news items', async () => {
-    const { getByText, findByText } = render(<ManageNewsfeedScreen />);
-
-    // Verify the screen title is present
-    expect(getByText('Newsfeed management')).toBeTruthy();
-
-    // Wait for news items to load and verify they're displayed
-    await findByText('Test News 1');
-    await findByText('Test News 2');
   });
 
   it('handles adding new news item', async () => {
@@ -133,42 +124,7 @@ describe('ManageNewsFeedScreen', () => {
     });
   });
 
-  it('handles deleting news item', async () => {
-    const { getAllByTestId, findByText } = render(<ManageNewsfeedScreen />);
 
-    // Wait for the news items to load
-    await findByText('Test News 1');
-
-    // Find and click delete button
-    const deleteButtons = getAllByTestId('delete-news-button');
-    fireEvent.press(deleteButtons[0]);
-
-    // Verify delete confirmation dialog
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'Confirm Delete',
-      'Are you sure you want to delete this news post?',
-      expect.arrayContaining([
-        expect.objectContaining({ text: 'Cancel' }),
-        expect.objectContaining({ text: 'Delete' }),
-      ]),
-    );
-
-    // Get the delete confirmation dialog and simulate pressing delete
-    const [[, , buttons]] = (Alert.alert as jest.Mock).mock.calls;
-    const deleteButton = buttons.find(
-      (button: any) => button.text === 'Delete',
-    );
-    await deleteButton.onPress();
-
-    await waitFor(() => {
-      expect(deleteNews).toHaveBeenCalledWith('1');
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Success',
-        'News post deleted successfully!',
-        expect.any(Array),
-      );
-    });
-  });
 
   it('validates form inputs before submission', async () => {
     const { getByTestId, getByText } = render(<ManageNewsfeedScreen />);
@@ -356,6 +312,7 @@ describe('ManageNewsFeedScreen', () => {
         'This is a very long content that contains multiple paragraphs and could potentially cause layout issues. eoqrhféqeuabféq3wubflsa ubqwel fulqweuaf',
       createdAt: { toDate: () => new Date() },
       type: 'informational',
+      SenderID: 'test-uid',
     };
 
     // Add the long text news item to mock data
@@ -416,4 +373,53 @@ describe('ManageNewsFeedScreen', () => {
       );
     });
   });
+
+  it('renders correctly with news items', async () => {
+    const { getByText, findByText } = render(<ManageNewsfeedScreen />);
+
+    // Verify the screen title is present
+    expect(getByText('Newsfeed management')).toBeTruthy();
+
+    // Wait for news items to load and verify they're displayed
+    await findByText('Test News 1');
+    await findByText('Test News 2');
+  });
+
+  it('handles deleting news item', async () => {
+    const { getAllByTestId, findByText } = render(<ManageNewsfeedScreen />);
+
+    // Wait for the news items to load
+    await findByText('Test News 1');
+
+    // Find and click delete button
+    const deleteButtons = getAllByTestId('delete-news-button');
+    fireEvent.press(deleteButtons[0]);
+
+    // Verify delete confirmation dialog
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Confirm Delete',
+      'Are you sure you want to delete this news post?',
+      expect.arrayContaining([
+        expect.objectContaining({ text: 'Cancel' }),
+        expect.objectContaining({ text: 'Delete' }),
+      ]),
+    );
+
+    // Get the delete confirmation dialog and simulate pressing delete
+    const [[, , buttons]] = (Alert.alert as jest.Mock).mock.calls;
+    const deleteButton = buttons.find(
+      (button: any) => button.text === 'Delete',
+    );
+    await deleteButton.onPress();
+
+    await waitFor(() => {
+      expect(deleteNews).toHaveBeenCalledWith('1');
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Success',
+        'News post deleted successfully!',
+        expect.any(Array),
+      );
+    });
+  });
+
 });

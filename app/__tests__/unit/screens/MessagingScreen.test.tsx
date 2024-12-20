@@ -13,14 +13,12 @@ jest.mock('../../../../firebase/firebase', () => ({
   db: {}, // Mock Firestore database object
 }));
 
-
 // Mock chat functions
 jest.mock('../../../../firebase/firestore/firestore', () => ({
   createChatIfNotPresent: jest.fn(),
   sendMessage: jest.fn(),
-  getUser: jest.fn().mockResolvedValue({ type: 'tenant' }), // Add this line
+  getUser: jest.fn().mockResolvedValue({ type: 'landlord' }), // Changed to landlord to get tenant userType
   subscribeToMessages: jest.fn((chatID, callback) => {
-    // Simulate initial messages load
     callback([
       {
         _id: '1',
@@ -29,46 +27,45 @@ jest.mock('../../../../firebase/firestore/firestore', () => ({
         user: { _id: 'testUID' },
       },
     ]);
-    // Return mock unsubscribe function
     return jest.fn();
   }),
 }));
 
 // Mock navigation
+const mockNavigate = jest.fn();
+const mockGoBack = jest.fn();
+
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
-    navigate: jest.fn(),
-    goBack: jest.fn(),
+    navigate: mockNavigate,
+    goBack: mockGoBack,
   }),
   useRoute: () => ({
     params: { chatID: 'mockChatID' },
   }),
 }));
 
-// Mock authentication context
+// Rest of the mocks remain the same...
 jest.mock('../../../context/AuthContext', () => ({
   useAuth: jest.fn(() => ({
     user: { uid: 'testUID' },
   })),
 }));
 
-// Mock Keyboard.dismiss
 jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {
   return;
 });
 
-// Mock custom components
 jest.mock('../../../components/Header', () => 'Header');
 jest.mock('../../../components/messaging/CustomInputToolbar', () => 'CustomInputToolbar');
 jest.mock('../../../components/messaging/CustomBubble', () => 'CustomBubble');
 
-// Mock GiftedChat
 jest.mock('react-native-gifted-chat', () => {
   const React = require('react');
   const { TouchableOpacity, Text } = require('react-native');
   
-  const GiftedChat = ({ onSend, user, messages }: { onSend: Function; user: any; messages: any[] }) => (
+  const GiftedChat = ({ onSend, user, messages }) => (
     <TouchableOpacity
       testID="send-button"
       onPress={() =>
@@ -107,19 +104,38 @@ describe('MessagingScreen', () => {
     expect(subscribeToMessages).toHaveBeenCalledWith('mockChatID', expect.any(Function));
   });
 
-  it('navigates back and dismisses keyboard when pressing the back button', () => {
-    const mockGoBack = jest.fn();
-    jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
-      navigate: jest.fn(),
-      goBack: mockGoBack,
-    });
+  it('navigates back and dismisses keyboard when pressing the back button for tenant user', async () => {
+    // Mock getUser to return landlord type (which sets userType to "Tenant")
+    const { getUser } = require('../../../../firebase/firestore/firestore');
+    getUser.mockResolvedValue({ type: 'landlord' });
 
     const { getByTestId } = render(<MessagingScreen />);
+    
+    // Wait for userType to be set after getUser resolves
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     const backButton = getByTestId('arrow-left');
     fireEvent.press(backButton);
 
     expect(Keyboard.dismiss).toHaveBeenCalled();
     expect(mockGoBack).toHaveBeenCalled();
+  });
+
+  it('navigates to Issues screen and dismisses keyboard when pressing the back button for landlord user', async () => {
+    // Mock getUser to return tenant type (which sets userType to "Landlord")
+    const { getUser } = require('../../../../firebase/firestore/firestore');
+    getUser.mockResolvedValue({ type: 'tenant' });
+
+    const { getByTestId } = render(<MessagingScreen />);
+    
+    // Wait for userType to be set after getUser resolves
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
+    const backButton = getByTestId('arrow-left');
+    fireEvent.press(backButton);
+
+    expect(Keyboard.dismiss).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('Issues');
   });
 
   it('should handle send message error gracefully', async () => {

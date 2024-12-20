@@ -877,6 +877,8 @@ export async function addSituationReport(situationReport: SituationReport, apart
  * @param news - The news object to be added to the 'news' collection.
  */
 export async function createNews(news: News) {
+  const isOnline = useNetworkStore.getState().isOnline;
+  if (!isOnline) {return;}
   const docRef = doc(db, "news", news.maintenanceRequestID);
   try {
     await setDoc(docRef, news);

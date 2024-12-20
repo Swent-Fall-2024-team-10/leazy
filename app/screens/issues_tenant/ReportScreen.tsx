@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, Alert, Image, Modal, Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import InputField from '../../components/forms/text_input';
 import Spacer from '../../components/Spacer';
 import SubmitButton from '../../components/buttons/SubmitButton';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   appStyles,
   ButtonDimensions,
@@ -17,7 +17,7 @@ import { ReportStackParamList } from "../../../types/types"; // Import or define
 import CameraButton from "../../components/buttons/CameraButton";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import CloseConfirmation from "../../components/buttons/CloseConfirmation";
-import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
+import { collection, addDoc, Timestamp } from "firebase/firestore"; // Import Firestore functions
 import { MaintenanceRequest } from "../../../types/types";
 import { db } from "../../../firebase/firebase";
 import Header from "../../components/Header";
@@ -35,19 +35,21 @@ import {
   getApartment,
   createNews,
 } from '../../../firebase/firestore/firestore';
+import { useNetworkStore } from '../../../app/stores/NetworkStore';
 
 // portions of this code were generated with chatGPT as an AI assistant
 
 export default function ReportScreen() {
   const navigation = useNavigation<NavigationProp<ReportStackParamList>>();
+
   const { user } = useAuth();
+
   const [room, setRoom] = useState('');
   const [issue, setIssue] = useState('');
   const [description, setDescription] = useState('');
   const [tick, setTick] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false); // Add loading state in case we want to show a spinner
   const currentDay = new Date();
   const day = currentDay.getDate().toString().padStart(2, '0');
   const month = (currentDay.getMonth() + 1).toString().padStart(2, '0');
@@ -63,12 +65,12 @@ export default function ReportScreen() {
     clearFiles(pictureList);
     resetPictureList();
   }
-
   const handleClose = () => {
     setIsVisible(true);
   };
 
   useEffect(() => {
+    // Reset picture list when navigating away from the screen
     return () => {
       resetPictureList();
     };
@@ -123,7 +125,35 @@ export default function ReportScreen() {
         requestStatus: 'notStarted',
       };
       const requestID = await createMaintenanceRequest(newRequest);
+      await createNews({
+        maintenanceRequestID: `news_${requestID}_${Date.now()}`,
+        title: 'Maintenance Request Status Update',
+        content: `Your maintenance request "${issue}" has been opened`,
+        type: 'informational',
+        isRead: false,
+        createdAt: Timestamp.now(),
+        UpdatedAt: Timestamp.now(),
+        ReadAt: null,
+        ReceiverID: tenant.userId,
+        SenderID: 'system',
+      });
 
+      await updateTenant(tenant.userId, {
+        maintenanceRequests: [...tenant.maintenanceRequests, requestID],
+      });
+    const isOnline = useNetworkStore.getState().isOnline;
+      if (isOnline) {
+        const apartment = await getApartment(tenant.apartmentId);
+
+        if (!apartment) {
+          throw new Error('Apartment not found');
+        }
+
+        await updateApartment(tenant.apartmentId, {
+          maintenanceRequests: [...apartment.maintenanceRequests, requestID],
+        });
+      }
+     
       Alert.alert('Success', 'Your maintenance request has been submitted.');
 
       resetStates();

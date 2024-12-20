@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -27,13 +27,10 @@ import { appStyles, Color, IconDimension } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from '@react-native-community/netinfo';
-import { Timestamp } from 'firebase/firestore';
-import { useRef } from 'react';
-
 
 interface IssueItemProps {
   issue: MaintenanceRequest;
-  onStatusChange: (status: MaintenanceRequest['requestStatus']) => void;
+  onStatusChange: (status: MaintenanceRequest["requestStatus"]) => void;
   onArchive: () => void;
   isArchived: boolean;
 }
@@ -50,57 +47,33 @@ const IssueItem: React.FC<IssueItemProps> = ({
   return (
     <View style={styles.issueItem}>
       <View style={styles.issueContent}>
+
         <View style={styles.issueTextContainer}>
-          <Text style={styles.issueText} numberOfLines={1}>
-            {issue.requestTitle}
-          </Text>
-        </View>
+          <Text style={styles.issueText} numberOfLines={1}>{issue.requestTitle}</Text>
+        </View >
 
         <View style={[styles.statusTextContainer, {backgroundColor: issue._isPending ? '#FFA500' : getIssueStatusColor(status)}]}>
            <Text style={styles.statusText}>Status: {issue._isPending ? 'Waiting to Sync' : getIssueStatusText(status)}</Text>
         </View>
       </View>
-
+      
       {issue.requestStatus === 'completed' && !isArchived && (
-        <TouchableOpacity
-          onPress={onArchive}
-          style={styles.archiveButton}
-          testID='archiveButton'
-        >
-          <Feather name='archive' size={24} color='#2C3E50' />
+        <TouchableOpacity onPress={onArchive} style={styles.archiveButton} testID="archiveButton">
+          <Feather name="archive" size={24} color="#2C3E50" />
         </TouchableOpacity>
       )}
 
       <TouchableOpacity
-        testID='arrowButton'
+        testID="arrowButton"
         onPress={() =>
-          navigation.navigate('IssueDetails', { requestID: issue.requestID })
+          navigation.navigate("IssueDetails", { requestID: issue.requestID })
         }
         style={styles.arrowButton}
       >
-        <Icon
-          name='chevron-right'
-          size={IconDimension.mediumIcon}
-          color='black'
-        />
+        <Icon name="chevron-right" size={IconDimension.mediumIcon} color="black" />
       </TouchableOpacity>
     </View>
   );
-};
-
-const getStatusUpdateMessage = (title: string, newStatus: string) => {
-  switch (newStatus) {
-    case 'inProgress':
-      return `Work has begun on your maintenance request "${title}"`;
-    case 'completed':
-      return `Your maintenance request "${title}" has been completed`;
-    case 'rejected':
-      return `Your maintenance request "${title}" has been rejected`;
-    case 'notStarted':
-      return `Your maintenance request "${title}" has been opened`;
-    default:
-      return `Your maintenance request "${title}" has been updated to status: ${newStatus}`;
-  }
 };
 
 const MaintenanceIssues = () => {
@@ -109,10 +82,7 @@ const MaintenanceIssues = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [statusChangeTracking, setStatusChangeTracking] = useState<
-    Record<string, string>
-  >({});
-  const statusTrackingRef = useRef<Record<string, string>>({});
+
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -142,68 +112,16 @@ const MaintenanceIssues = () => {
     }
   };
 
-  // Helper function to check for recent updates
-  const hasRecentlyUpdated = (requestId: string, status: string) => {
-    // Implementation of your hasRecentlyUpdated logic here
-    return false; // Placeholder implementation
-  };
-
   // Set up Firestore listener and merge with pending requests
   const fetchIssues = async () => {
     if (!userId) return () => {};
 
     try {
       const query = await getMaintenanceRequestsQuery(userId);
-      let isInitialized = false;
       
       // Set up real-time listener for Firestore
       const unsubscribe = onSnapshot(query, 
         async (querySnapshot) => {
-
-          // Initialize the status tracking ref
-        let isInitialized = false;
-
-        const unsubscribe = onSnapshot(query, (querySnapshot) => {
-          console.log('Snapshot update received');
-        
-          // One-time initialization of status tracking
-          if (!isInitialized) {
-            querySnapshot.docs.forEach((doc) => {
-              const data = doc.data() as MaintenanceRequest;
-              if (data.requestID) {
-                statusTrackingRef.current[data.requestID] = data.requestStatus;
-              }
-            });
-            isInitialized = true;
-          }
-        
-          // Process modified changes for status updates
-          querySnapshot.docChanges().forEach((change) => {
-            if (change.type !== 'modified') return;
-            const newData = change.doc.data() as MaintenanceRequest;
-            if (!newData.requestID) return;
-
-            const oldStatus = statusTrackingRef.current[newData.requestID];
-            const newStatus = newData.requestStatus;
-
-            console.log('Processing status change:', {
-              requestID: newData.requestID,
-              oldStatus,
-              newStatus,
-            });
-
-            if (
-              oldStatus &&
-              oldStatus !== newStatus &&
-              !hasRecentlyUpdated(newData.requestID, newStatus)
-            ) {
-              console.log('Creating single news item');
-              createStatusChangeNews(newData, userId);
-              statusTrackingRef.current[newData.requestID] = newStatus;
-            }
-          });
-        });
-
           const firestoreIssues = querySnapshot.docs.map(doc => ({
             ...doc.data(),
             requestID: doc.id
@@ -263,72 +181,19 @@ const MaintenanceIssues = () => {
     setupListeners();
   }, [userId]);
 
-  const createStatusChangeNews = async (
-    request: MaintenanceRequest,
-    userId: string,
-  ) => {
-    try {
-      console.log('Creating news item for request:', request.requestID);
-      const newsItem = {
-        maintenanceRequestID: `news_${request.requestID}_${Date.now()}`,
-        title: 'Maintenance Request Status Update',
-        content: getStatusUpdateMessage(
-          request.requestTitle,
-          request.requestStatus,
-        ),
-        type: request.requestStatus === 'rejected' ? 'urgent' : 'informational',
-        isRead: false,
-        createdAt: Timestamp.now(),
-        UpdatedAt: Timestamp.now(),
-        ReadAt: null,
-        images: request.picture || [],
-        ReceiverID: userId,
-        SenderID: 'system',
-      } as const;
-
-      await createNews(newsItem);
-      console.log('Successfully created news item');
-    } catch (error) {
-      console.error('Error creating status change news:', error);
-    }
-  };
-
-  const handleStatusChange = async (
-    requestID: string,
-    newStatus: MaintenanceRequest['requestStatus'],
-    title: string,
-  ) => {
-    if (!userId) return;
-    try {
-      await updateMaintenanceRequest(requestID, { requestStatus: newStatus });
-    } catch (error) {
-      console.error('Error updating issue status:', error);
-    }
-  };
-
-  const archiveIssue = async (requestID: string) => {
-    if (!userId) return;
-
-    try {
-      const issue = issues.find((issue) => issue.requestID === requestID);
-      if (!issue) return;
-
-      await handleStatusChange(requestID, 'completed', issue.requestTitle);
-
-      setIssues(
-        issues.map((issue) =>
-          issue.requestID === requestID
-            ? { ...issue, requestStatus: 'completed' }
-            : issue,
-        ),
-      );
-    } catch (error) {
-      console.error('Error archiving issue:', error);
-    }
+  const archiveIssue = (requestID: string) => {
+    setIssues(
+      issues.map((issue) =>
+        issue.requestID === requestID
+          ? { ...issue, requestStatus: "completed" }
+          : issue
+      )
+    );
+    updateMaintenanceRequest(requestID, { requestStatus: "completed" });
   };
 
   const filteredIssues = issues.filter(
-    (issue) => issue.requestStatus !== 'completed' || showArchived,
+    (issue) => issue.requestStatus !== "completed" || showArchived
   );
 
   return (
@@ -341,17 +206,12 @@ const MaintenanceIssues = () => {
             </View>
 
             <View style={styles.switchContainer}>
-              <Text>Archived Issues</Text>
+              <Text> Archived Issues</Text>
               <Switch
-                style={[
-                  { marginLeft: 8 },
-                  { marginRight: 8 },
-                  { marginBottom: 8 },
-                  { marginTop: 8 },
-                ]}
+                style={[{ marginLeft: 8 }, {marginRight: 8}, {marginBottom: 8}, {marginTop: 8}]}
                 value={showArchived}
                 onValueChange={setShowArchived}
-                testID='archiveSwitch'
+                testID="archiveSwitch"
               />
             </View>
 
@@ -360,30 +220,24 @@ const MaintenanceIssues = () => {
                 <IssueItem
                   key={issue.requestID}
                   issue={issue}
-                  onStatusChange={(newStatus) =>
-                    handleStatusChange(
-                      issue.requestID,
-                      newStatus,
-                      issue.requestTitle,
-                    )
-                  }
+                  onStatusChange={(newStatus) => updateMaintenanceRequest(issue.requestID, { requestStatus: newStatus })}
                   onArchive={() => archiveIssue(issue.requestID)}
                   isArchived={issue.requestStatus === 'completed'}
                 />
               ))}
             </View>
 
-            <View style={[styles.viewBoxContainer, { height: 100 }]} />
+            <View style={[styles.viewBoxContainer, {height: 100}]}/>
           </View>
         </ScrollView>
       </Header>
 
       <TouchableOpacity
-        testID='addButton'
+        testID="addButton"
         style={styles.addButton}
-        onPress={() => navigation.navigate('Report')}
+        onPress={() => navigation.navigate("Report")}
       >
-        <Feather name='plus' size={IconDimension.smallIcon} color='white' />
+        <Feather name="plus" size={IconDimension.smallIcon} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -393,6 +247,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   statusTextContainer: {
     borderRadius: 25,
     paddingVertical: 5,
@@ -400,45 +255,48 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: '8%',
   },
+
   titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    alignSelf: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    alignSelf: "center",
   },
   switchContainer: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignSelf: "center",
+    alignItems: "center",
   },
   scrollView: {
     flex: 1,
     paddingTop: '6%',
   },
+
   issueItem: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: Color.IssueBackground,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: Color.IssueBorder,
-    width: 340,
-    height: 110,
+    backgroundColor: Color.IssueBackground, 
+    borderRadius: 30,           
+    borderWidth: 1,             
+    borderColor: Color.IssueBorder,     
+    width: 340,                 
+    height: 110,                
     marginBottom: '2%',
     padding: '4%',
   },
   issueContent: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: "space-between",
+    alignItems: "center",
     flex: 1,
   },
+
   issueTextContainer: {
-    width: '100%',
+    width: "100%",
     height: 32,
     borderRadius: 25,
     backgroundColor: Color.IssueTextBackground,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 12,
   },
   issueText: {
@@ -452,7 +310,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   statusText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
   },
   archiveButton: {
@@ -460,7 +318,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     width: 40,
     height: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   addButton: {
     position: 'absolute',
@@ -475,6 +333,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 1,
   },
+  
   viewBoxContainer: {
     marginBottom: 80,
     paddingBottom: 80,
@@ -483,8 +342,8 @@ const styles = StyleSheet.create({
     marginLeft: '4%',
     width: '15%',
     height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

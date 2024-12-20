@@ -16,6 +16,7 @@ import {
   serverTimestamp,
   orderBy,
   arrayRemove,
+  arrayUnion,
 } from "firebase/firestore";
 
 // Import type definitions used throughout the functions.
@@ -413,12 +414,28 @@ export async function createLaundryMachine(
   residenceId: string,
   machine: LaundryMachine
 ) {
-  const docRef = doc(
-    db,
-    `residences/${residenceId}/laundryMachines`,
-    machine.laundryMachineId
-  );
-  await setDoc(docRef, machine);
+  try {
+    // Create the laundry machine document in the residence's subcollection
+    const machineRef = doc(
+      db,
+      'residences',
+      residenceId,
+      'laundryMachines',
+      machine.laundryMachineId
+    );
+    await setDoc(machineRef, machine);
+
+    // Update the residence's laundryMachineIds array
+    const residenceRef = doc(db, 'residences', residenceId);
+    await updateDoc(residenceRef, {
+      laundryMachineIds: arrayUnion(machine.laundryMachineId)
+    });
+
+    console.log(`Created machine ${machine.laundryMachineId} in residence ${residenceId}`);
+  } catch (error) {
+    console.error("Error creating laundry machine:", error);
+    throw error;
+  }
 }
 
 /**
@@ -476,12 +493,26 @@ export async function deleteLaundryMachine(
   residenceId: string,
   machineId: string
 ) {
-  const docRef = doc(
-    db,
-    `residences/${residenceId}/laundryMachines`,
-    machineId
-  );
-  await deleteDoc(docRef);
+  try {
+    // Delete the machine document from the subcollection
+    const docRef = doc(
+      db,
+      `residences/${residenceId}/laundryMachines`,
+      machineId
+    );
+    await deleteDoc(docRef);
+
+    // Remove the machine ID from the residence's laundryMachineIds array
+    const residenceRef = doc(db, 'residences', residenceId);
+    await updateDoc(residenceRef, {
+      laundryMachineIds: arrayRemove(machineId)
+    });
+
+    console.log(`Deleted machine ${machineId} from residence ${residenceId}`);
+  } catch (error) {
+    console.error("Error deleting laundry machine:", error);
+    throw error;
+  }
 }
 
 export async function generate_unique_code(
@@ -611,19 +642,23 @@ export function getLaundryMachinesQuery(residenceId: string) {
  * @param residenceId - The unique identifier of the residence.
  * @returns An array of laundry machine objects.
  */
-export async function getAllLaundryMachines(residenceId: string) {
-  if (!residenceId || typeof residenceId !== "string") {
-    throw new Error("Invalid residence ID");
+export async function getAllLaundryMachines(residenceId: string): Promise<LaundryMachine[]> {
+  try {
+    // Get all machines from the residence's subcollection
+    const machinesRef = collection(db, 'residences', residenceId, 'laundryMachines');
+    const querySnapshot = await getDocs(machinesRef);
+    
+    const machines: LaundryMachine[] = [];
+    querySnapshot.forEach((doc) => {
+      machines.push({ ...doc.data(), laundryMachineId: doc.id } as LaundryMachine);
+    });
+    
+    console.log(`Found ${machines.length} machines for residence ${residenceId}`);
+    return machines;
+  } catch (error) {
+    console.error("Error getting laundry machines:", error);
+    throw error;
   }
-
-  const querySnapshot = await getDocs(
-    collection(db, `residences/${residenceId}/laundryMachines`)
-  );
-  const machines: LaundryMachine[] = [];
-  querySnapshot.forEach((doc) => {
-    machines.push(doc.data() as LaundryMachine);
-  });
-  return machines;
 }
 
 /**

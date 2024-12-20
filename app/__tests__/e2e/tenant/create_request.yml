@@ -1,0 +1,51 @@
+appId: "com.leazy.swent"
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "emailInput"
+- inputText: "messaging@tenant.com"
+
+- tapOn:
+    id: "passwordInput"
+- inputText: "123456"
+
+- tapOn:
+    id: "signInButton"
+  
+- tapOn: "OK"
+
+- tapOn:
+    point: "7%,6%" # Drawer
+
+- tapOn: "Maintenance Requests"
+
+- tapOn : 
+      id: "addButton"
+
+- tapOn:
+      id: "testIssueNameField"
+- inputText: "Test issue"
+- hideKeyboard
+
+- tapOn:
+      id: "testRoomNameField"
+- inputText: "Test room"
+- hideKeyboard
+
+- tapOn:
+      id: "testDescriptionField"
+- inputText: "Test room"
+- hideKeyboard
+
+
+- scrollUntilVisible:
+    element:
+      id: "testSubmitButton"
+    direction: DOWN
+
+- tapOn:
+    id: "testSubmitButton"
+
+- tapOn: "Ok"

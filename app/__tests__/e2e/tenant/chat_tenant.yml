@@ -1,0 +1,78 @@
+appId: "com.leazy.swent"
+---
+- runFlow:
+    file: "open_request_tenant.yml"
+
+# Open chat
+- tapOn: "Open chat about this subject"
+
+# Test sending the first message
+- tapOn:
+    id: "input-field"
+- inputText: "Test message 1"
+- hideKeyboard
+- tapOn:
+    id: "send-button"
+- assertVisible: "Test message 1"
+
+# Test sending a second message
+- tapOn:
+    id: "input-field"
+- inputText: "Test message 2"
+- hideKeyboard
+- tapOn:
+    id: "send-button"
+- assertVisible: "Test message 2"
+
+# Test message persistence (ensure previous messages are still visible)
+- assertVisible: "Test message 1"
+- assertVisible: "Test message 2"
+
+# Test long message
+- tapOn:
+    id: "input-field"
+- inputText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non tempor turpis. Suspendisse et tincidunt eros. Maecenas id ornare justo. Proin suscipit luctus scelerisque. Nullam et mi non elit blandit hendrerit quis a elit. Sed semper ligula congue mattis varius. Integer ullamcorper sed velit sit amet ultrices. Morbi aliquet felis ligula, mattis laoreet massa tempus vitae. Sed in dui ac nunc commodo ullamcorper eu eu sem. Interdum et malesuada fames ac ante ipsum primis in faucibus. In et sem vitae massa dapibus sodales. Donec non turpis rutrum, venenatis est quis, placerat lacus. Nunc maximus lacus id nisi egestas vehicula. Nunc id consectetur lacus. Morbi placerat luctus ante. Donec suscipit, ex vitae elementum feugiat, massa nibh interdum magna, eget fringilla tortor nisl et sapien."
+- tapOn:
+    id: "send-button"
+- hideKeyboard
+# I couldn't find a way to test if the long message is visible in the chat interface (i.e. something that doesn't care about line breaks)
+
+# Test scrolling through the chat 
+# Scroll up until "Test message 1" is visible
+- scrollUntilVisible:
+    element:
+      text: "Test message 1"
+    direction: UP
+
+# Add a last message to test scrolling down
+- tapOn:
+    id: "input-field"
+- inputText: "Test message 3"
+- hideKeyboard
+- tapOn:
+    id: "send-button"
+
+# Scroll down until "This is the last message" is visible
+- scrollUntilVisible:
+    element:
+      text: "Test message 3"
+    direction: DOWN
+
+- tapOn:
+    id: "arrowButton"
+
+- tapOn: "Open chat about this subject"
+
+- assertVisible: "Test message 3"
+
+# Test reloading the chat and ensuring messages persist when exiting app
+# Simulate a relaunch by clearing the app state and restarting
+- stopApp
+
+- launchApp:
+    clearState: false
+
+- runFlow:
+    file: "open_request_tenant.yml"
+- tapOn: "Open chat about this subject"
+- assertVisible: "Test message 3"

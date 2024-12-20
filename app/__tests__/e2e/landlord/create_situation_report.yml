@@ -1,0 +1,83 @@
+appId: "com.leazy.swent"
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "emailInput"
+- inputText: "cccehfe@feopfj.com"
+- hideKeyboard
+- tapOn:
+    id: "passwordInput"
+- inputText: "cccehfe@feopfj.com"
+- hideKeyboard
+- tapOn:
+    id: "signInButton"
+- tapOn: "OK"
+- tapOn:
+    point: "7%,6%" # TODO fix drawer
+- tapOn: "Situation Report Creation"
+#- tapOn:
+#    id: "residence-picker"
+#- tapOn: "Test Residence"
+- tapOn:
+    id: "situation-report-name"
+- inputText: "Test Situation Report"
+- hideKeyboard
+# Verify descriptions are visible
+- assertVisible:
+    id: "OC-description"
+- assertVisible:
+    id: "NW-description"
+- assertVisible:
+    id: "AW-description"
+- tapOn:
+    id: "edit-button"
+# Add new group
+- tapOn:
+    id: "add-group-button"
+- tapOn:
+    id: "group-name-input-0"
+- inputText: "Kitchen"
+- hideKeyboard
+- tapOn:
+    id: "item-name-input-0-0"
+- inputText: "Sink"
+- hideKeyboard
+- tapOn:
+    id: "item-name-input-0-1"
+- inputText: "Counter"
+- hideKeyboard
+# Add another item to the group
+- tapOn:
+    id: "add-item-button-group-0"
+- tapOn:
+    id: "item-name-input-0-2"
+- inputText: "Stove"
+- hideKeyboard
+# Add single item
+- tapOn:
+    id: "add-single-item-button"
+- tapOn:
+    id: "item-name-input-1-0"
+- inputText: "Front Door"
+- hideKeyboard
+# Scroll up to make save button visible
+- scrollUntilVisible:
+    element:
+      id: "save-button"
+    direction: UP
+# Save changes
+- tapOn:
+    id: "save-button"
+
+# Scroll down to make submit button visible
+- scrollUntilVisible:
+    element:
+      id: "submit-button"
+    direction: DOWN
+# Submit the report
+- tapOn:
+    id: "submit-button"
+# Verify success alert and handle it
+- assertVisible: "Situation Report has been created successfully"
+- tapOn: "OK"

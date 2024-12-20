@@ -101,17 +101,31 @@ describe('ResidenceCreationScreen', () => {
 
   describe('Form Rendering', () => {
     it('renders all form fields correctly', () => {
-      const { getByTestId, getByPlaceholderText } = render(<ResidenceCreationScreen />);
+      const { getByTestId } = render(<ResidenceCreationScreen />);
+      
+      // Verify screen title
       expect(getByTestId('screen-title')).toBeTruthy();
-      expect(getByPlaceholderText('Residence Name')).toBeTruthy();
-      expect(getByPlaceholderText('Address')).toBeTruthy();
-      expect(getByPlaceholderText('Street no')).toBeTruthy();
-      expect(getByPlaceholderText('Zip Code')).toBeTruthy();
-      expect(getByPlaceholderText('City')).toBeTruthy();
-      expect(getByPlaceholderText('Province/State')).toBeTruthy();
-      expect(getByPlaceholderText('Country')).toBeTruthy();
-      expect(getByPlaceholderText('Description')).toBeTruthy();
-      expect(getByPlaceholderText('Website (e.g., https://example.com)')).toBeTruthy();
+      
+      // Verify all form fields are present
+      const formFields = [
+        'residence-name',
+        'address',
+        'number',
+        'zip-code',
+        'city',
+        'province-state',
+        'country',
+        'description',
+        'website'
+      ];
+
+      formFields.forEach(fieldId => {
+        expect(getByTestId(fieldId)).toBeTruthy();
+      });
+
+      // Verify buttons
+      expect(getByTestId('next-button')).toBeTruthy();
+      expect(getByTestId('go-back-button')).toBeTruthy();
     });
   });
 

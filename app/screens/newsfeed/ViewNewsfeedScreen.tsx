@@ -1,27 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Image,
-  RefreshControl,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, RefreshControl, Alert } from 'react-native';
 import { Bell, Info, ChevronDown, ChevronUp } from 'lucide-react-native';
 import Header from '../../../app/components/Header';
 import { appStyles, Color } from '../../../styles/styles';
 import { Timestamp } from 'firebase/firestore';
 import { News } from '../../../types/types';
-import {
-  getNewsByReceiver,
-  markNewsAsRead,
-  deleteNews,
-} from '../../../firebase/firestore/firestore';
+import { getNewsByReceiver, markNewsAsRead, deleteNews } from '../../../firebase/firestore/firestore';
 import { useAuth } from '../../context/AuthContext';
 
+// Constants and Types
+const TEN_MINUTES_IN_SECONDS = 600;
 interface NewsfeedSectionProps {
   title: string;
   news: News[];
@@ -29,84 +17,52 @@ interface NewsfeedSectionProps {
   isExpandable?: boolean;
 }
 
-const TEN_MINUTES_IN_SECONDS = 600;
+// Utility Functions
+const isPostVisible = (news: News) => 
+  !news.isRead || !news.ReadAt || 
+  (Timestamp.now().seconds - news.ReadAt.seconds) < TEN_MINUTES_IN_SECONDS;
 
-const isPostVisible = (news: News) => {
-  if (!news.isRead || !news.ReadAt) return true;
+const formatDate = (timestamp: Timestamp) => 
+  timestamp.toDate().toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
 
-  const readAtSeconds = news.ReadAt.seconds;
-  const currentSeconds = Timestamp.now().seconds;
-  return currentSeconds - readAtSeconds < TEN_MINUTES_IN_SECONDS;
-};
-
-const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
-  title,
-  news,
-  onNewsPress,
-  isExpandable = false,
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // Filter out posts that were read more than an hour ago
-  const visibleNews = news.filter(isPostVisible);
-
-  // Deduplicate news items
-  const deduplicatedNews = visibleNews.reduce((unique: News[], item) => {
-    // Check if we already have a news item with the same content and timestamp
-    const isDuplicate = unique.some(
-      (existingItem) =>
-        existingItem.content === item.content &&
-        existingItem.createdAt.seconds === item.createdAt.seconds,
-    );
-
-    if (!isDuplicate) {
+const deduplicateNews = (news: News[]) => {
+  const seen = new Map();
+  return news.reduce((unique: News[], item) => {
+    const key = `${item.content}_${item.createdAt.seconds}`;
+    if (!seen.has(key)) {
+      seen.set(key, true);
       unique.push(item);
     }
     return unique;
   }, []);
+};
 
-  // sorting logic: urgent first, then unread, then by date
-  const sortedNews = [...deduplicatedNews].sort((a, b) => {
-    // First sort by urgent status
-    if (a.type === 'urgent' && b.type !== 'urgent') return -1;
-    if (a.type !== 'urgent' && b.type === 'urgent') return 1;
-
-    // Within same type (urgent/non-urgent), sort by read status
-    if (a.isRead !== b.isRead) {
-      return a.isRead ? 1 : -1;
-    }
-
-    // Finally sort by date within each group
+const sortNews = (news: News[]) => 
+  [...news].sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'urgent' ? -1 : 1;
+    if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
     return b.createdAt.seconds - a.createdAt.seconds;
   });
 
-  const displayedNews = isExpandable
-    ? isExpanded
-      ? sortedNews
-      : sortedNews.slice(0, 2)
-    : sortedNews;
+// Components
+const NewsIcon: React.FC<{ type: News['type'] }> = ({ type }) => (
+  <View style={styles.icon}>
+    {type === 'urgent' ? 
+      <Bell size={24} color='#FF6B6B' /> : 
+      <Info size={24} color={Color.HeaderText} />}
+  </View>
+);
 
-  const formatDate = (timestamp: Timestamp) => {
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({ title, news, onNewsPress, isExpandable = false }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const visibleNews = sortNews(deduplicateNews(news.filter(isPostVisible)));
+  const displayedNews = isExpandable ? (isExpanded ? visibleNews : visibleNews.slice(0, 2)) : visibleNews;
 
-  const NewsIcon = ({ type }: { type: News['type'] }) => {
-    if (type === 'urgent') {
-      return <Bell size={24} color='#FF6B6B' style={styles.icon} />;
-    }
-    return <Info size={24} color={Color.HeaderText} style={styles.icon} />;
-  };
-
-  // Say there are no news
-  if (visibleNews.length === 0) {
+  if (!visibleNews.length) {
     return (
-      <View style={{ marginBottom: 20 }}>
+      <View style={styles.sectionContainer}>
         <Text style={appStyles.sectionTitle}>{title}</Text>
         <Text style={appStyles.flatText}>Nothing new to show</Text>
       </View>
@@ -114,44 +70,35 @@ const NewsfeedSection: React.FC<NewsfeedSectionProps> = ({
   }
 
   return (
-    <View style={{ marginBottom: 20 }}>
+    <View style={styles.sectionContainer}>
       <Text style={appStyles.sectionTitle}>{title}</Text>
       <View style={[appStyles.grayGroupBackground, styles.postsContainer]}>
-        {displayedNews.map((item) => (
+        {displayedNews.map(item => (
           <TouchableOpacity
+            testID={`news-item-${item.maintenanceRequestID}`}
             key={item.maintenanceRequestID}
-            style={[
-              styles.postCard,
-              item.isRead && { opacity: 0.4 },
-              !item.isRead && { backgroundColor: '#F8F9FA' },
-            ]}
+            style={[styles.postCard, { opacity: item.isRead ? 0.4 : 1, backgroundColor: item.isRead ? 'white' : '#F8F9FA' }]}
             onPress={() => onNewsPress(item)}
           >
             <View style={styles.postContent}>
               <NewsIcon type={item.type} />
               <View style={{ flex: 1 }}>
                 <View style={styles.titleContainer}>
-                  <Text style={[appStyles.postTitle]}>{item.title}</Text>
+                  <Text style={appStyles.postTitle}>{item.title}</Text>
                   {!item.isRead && <View style={styles.unreadDot} />}
                 </View>
                 <Text style={appStyles.flatText}>{item.content}</Text>
-                <Text style={appStyles.timestamp}>
-                  {formatDate(item.createdAt as Timestamp)}
-                </Text>
+                <Text style={appStyles.timestamp}>{formatDate(item.createdAt as Timestamp)}</Text>
               </View>
             </View>
           </TouchableOpacity>
         ))}
         {isExpandable && visibleNews.length > 2 && (
-          <TouchableOpacity
-            style={styles.expandButton}
-            onPress={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? (
-              <ChevronUp size={24} color={Color.HeaderText} />
-            ) : (
-              <ChevronDown size={24} color={Color.HeaderText} />
-            )}
+          <TouchableOpacity 
+            testID="expand-button"
+            style={styles.expandButton} 
+            onPress={() => setIsExpanded(!isExpanded)}>
+            {isExpanded ? <ChevronUp size={24} color={Color.HeaderText} /> : <ChevronDown size={24} color={Color.HeaderText} />}
           </TouchableOpacity>
         )}
       </View>
@@ -166,163 +113,88 @@ const NewsfeedScreen = () => {
   const [personalNews, setPersonalNews] = useState<News[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Add an effect to periodically check for expired posts
-  useEffect(() => {
-    const checkExpiredPosts = () => {
-      setGeneralNews((prev) => [...prev]); // Force re-render to update visibility
-      setPersonalNews((prev) => [...prev]);
-    };
-
-    const interval = setInterval(checkExpiredPosts, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (tenant) {
-      fetchNews();
-    }
-  }, [tenant]);
-
   const fetchNews = async () => {
     if (!tenant) return;
-
+    
     try {
       const [generalNewsItems, personalNewsItems] = await Promise.all([
         getNewsByReceiver('all'),
         getNewsByReceiver(tenant.userId),
       ]);
 
-      // Function to find and delete duplicates
       const deduplicateNewsInFirestore = async (newsItems: News[]) => {
         const seen = new Map<string, News>();
         const duplicates: string[] = [];
 
-        // Group by content and timestamp
-        newsItems.forEach((item) => {
+        newsItems.forEach(item => {
           const key = `${item.content}_${item.createdAt.seconds}`;
-          if (!seen.has(key)) {
-            seen.set(key, item);
-          } else {
-            // Keep the older item (by maintenanceRequestID)
+          if (seen.has(key)) {
             const existingItem = seen.get(key)!;
-            if (existingItem.maintenanceRequestID > item.maintenanceRequestID) {
-              duplicates.push(existingItem.maintenanceRequestID);
-              seen.set(key, item);
-            } else {
-              duplicates.push(item.maintenanceRequestID);
-            }
+            duplicates.push(existingItem.maintenanceRequestID > item.maintenanceRequestID ? 
+              existingItem.maintenanceRequestID : item.maintenanceRequestID);
+          } else {
+            seen.set(key, item);
           }
         });
 
-        // Delete duplicates from Firestore
-        if (duplicates.length > 0) {
-          try {
-            console.log('Deleting duplicate news items:', duplicates.length);
-            const deletePromises = duplicates.map((id) => deleteNews(id));
-            await Promise.all(deletePromises);
-          } catch (error) {
-            Alert.alert(
-              'Warning',
-              "Some duplicate news items could not be removed. This won't affect your experience.",
-              [{ text: 'OK' }],
-            );
-          }
+        if (duplicates.length) {
+          await Promise.all(duplicates.map(deleteNews))
+            .catch(error => Alert.alert('Warning', 
+              "Some duplicate news items could not be removed. This won't affect your experience."));
         }
 
-        // Return deduplicated array
         return Array.from(seen.values());
       };
 
-      // Deduplicate and update state
-      const deduplicatedGeneralNews =
-        await deduplicateNewsInFirestore(generalNewsItems);
-      const deduplicatedPersonalNews =
-        await deduplicateNewsInFirestore(personalNewsItems);
-
-      setGeneralNews(deduplicatedGeneralNews);
-      setPersonalNews(deduplicatedPersonalNews);
+      setGeneralNews(await deduplicateNewsInFirestore(generalNewsItems));
+      setPersonalNews(await deduplicateNewsInFirestore(personalNewsItems));
     } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to fetch news. Please pull down to refresh and try again.',
-        [{ text: 'OK' }],
-      );
-      console.error('Error fetching news:', error);
+      Alert.alert('Error', 'Failed to fetch news. Please pull down to refresh and try again.');
     }
   };
 
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    fetchNews().finally(() => setRefreshing(false));
-  }, [tenant]);
-
   const handleNewsPress = async (news: News) => {
     if (isUpdating || !tenant) return;
-
+    
     try {
       setIsUpdating(true);
       await markNewsAsRead(news.maintenanceRequestID);
 
       const updateNews = (prev: News[]) =>
-        prev.map((item) =>
-          item.maintenanceRequestID === news.maintenanceRequestID
-            ? {
-                ...item,
-                isRead: true,
-                ReadAt: Timestamp.now(),
-              }
-            : item,
-        );
+        prev.map(item => item.maintenanceRequestID === news.maintenanceRequestID ? 
+          { ...item, isRead: true, ReadAt: Timestamp.now() } : item);
 
-      if (news.ReceiverID === 'all') {
-        setGeneralNews(updateNews);
-      } else {
-        setPersonalNews(updateNews);
-      }
+      news.ReceiverID === 'all' ? setGeneralNews(updateNews) : setPersonalNews(updateNews);
 
-      // Show success alert for urgent news
       if (news.type === 'urgent') {
-        Alert.alert(
-          'Important Notice Acknowledged',
-          'You have marked this urgent notification as read.',
-          [{ text: 'OK' }],
-        );
+        Alert.alert('Important Notice Acknowledged', 'You have marked this urgent notification as read.');
       }
     } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to mark notification as read. Please try again.',
-        [{ text: 'OK' }],
-      );
-      console.error('Error marking news as read:', error);
+      Alert.alert('Error', 'Failed to mark notification as read. Please try again.');
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // Handle loading state
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGeneralNews(prev => [...prev]);
+      setPersonalNews(prev => [...prev]);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (tenant) fetchNews();
+  }, [tenant]);
+
   if (!tenant) {
     return (
       <Header>
-        <View
-          style={{
-            flex: 0.7,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 20,
-          }}
-        >
-          <Text
-            style={[
-              appStyles.flatTitle,
-              { textAlign: 'center', marginBottom: 8 },
-            ]}
-          >
-            Setting Up Your Newsfeed
-          </Text>
-          <Text style={[appStyles.flatText, { textAlign: 'center' }]}>
-            We're getting your latest updates and important notifications ready.
-            This should only take a moment.
+        <View style={styles.loadingContainer}>
+          <Text style={[appStyles.flatTitle, styles.centerText]}>Setting Up Your Newsfeed</Text>
+          <Text style={[appStyles.flatText, styles.centerText]}>
+            We're getting your latest updates and important notifications ready. This should only take a moment.
           </Text>
         </View>
       </Header>
@@ -337,25 +209,23 @@ const NewsfeedScreen = () => {
           style={{ flex: 1 }}
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
+            setRefreshing(true);
+            fetchNews().finally(() => setRefreshing(false));
+          }} />}
         >
           <Text style={appStyles.flatTitle}>Newsfeed</Text>
-
           <NewsfeedSection
             title='Important information regarding your residence'
             news={generalNews}
             onNewsPress={handleNewsPress}
             isExpandable={true}
           />
-
           <NewsfeedSection
             title='Updates for you'
             news={personalNews}
             onNewsPress={handleNewsPress}
           />
-
           <View style={styles.bottomPadding} />
         </ScrollView>
       </View>
@@ -364,16 +234,10 @@ const NewsfeedScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  scrollViewContent: {
-    padding: 20,
-    flexGrow: 1,
-  },
-  postsContainer: {
-    borderRadius: 25,
-    padding: 10,
-  },
+  scrollViewContent: { padding: 20, flexGrow: 1 },
+  sectionContainer: { marginBottom: 20 },
+  postsContainer: { borderRadius: 25, padding: 10 },
   postCard: {
-    backgroundColor: 'white',
     borderRadius: 25,
     padding: 15,
     marginBottom: 10,
@@ -384,36 +248,27 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3,
       },
-      android: {
-        elevation: 3,
-      },
+      android: { elevation: 3 },
     }),
   },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  titleContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: Color.ButtonBackground,
   },
-  postContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  icon: {
-    marginRight: 10,
-  },
-  expandButton: {
+  postContent: { flexDirection: 'row', alignItems: 'flex-start' },
+  icon: { marginRight: 10 },
+  expandButton: { alignItems: 'center', padding: 10 },
+  bottomPadding: { height: 20 },
+  loadingContainer: {
+    flex: 0.7,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
+    padding: 20,
   },
-  bottomPadding: {
-    height: 20,
-  },
+  centerText: { textAlign: 'center', marginBottom: 8 },
 });
 
 export default NewsfeedScreen;

@@ -12,7 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 import CustomInputToolbar from "../../components/messaging/CustomInputToolbar";
 import CustomBubble from "../../components/messaging/CustomBubble";
 
-import {createChatIfNotPresent, sendMessage, subscribeToMessages} from "../../../firebase/firestore/firestore"
+import {createChatIfNotPresent, getUser, sendMessage, subscribeToMessages} from "../../../firebase/firestore/firestore"
 import NetInfo from '@react-native-community/netinfo';
 
 
@@ -22,9 +22,20 @@ export default function MessagingScreen() {
   const { chatID } = route.params;
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isAlertAcknowledged, setIsAlertAcknowledged] = useState(false);
+  const [userType, setUserType] = useState("");
+
   
   useEffect(() => {
     createChatIfNotPresent(chatID);
+
+    const fetchUser = async () => {
+      if (auth.currentUser?.uid) {
+        const user = await getUser(auth.currentUser.uid);
+        setUserType(user?.type === "tenant" ? "Landlord" : "Tenant");
+      }
+    };
+
+    fetchUser();
 
     console.log("Retrieving messages");
   
@@ -85,7 +96,10 @@ export default function MessagingScreen() {
           }}>
               <ArrowLeft size={IconDimension.smallIcon} color={chatStyles.gobackIcon.color} />
             </TouchableOpacity>
-            <Text style={chatStyles.chatTitle}>Apartment manager</Text>
+            <Text style={chatStyles.chatTitle}>
+                {userType}
+            </Text>
+
             <View style={{width:IconDimension.smallIcon}}>
               {/*For the centering of the title*/}
           </View>

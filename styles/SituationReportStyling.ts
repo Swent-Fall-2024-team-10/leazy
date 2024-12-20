@@ -2,6 +2,10 @@ import { Dimensions, StyleSheet } from "react-native";
 import { borderWidth, ButtonDimensions, Color, defaultButtonRadius, FontSizes, FontWeight } from "./styles";
 
 export const situationReportStyles = StyleSheet.create({
+    reportContainer: {
+        marginTop: "5%",
+    },
+
     groupSituationReport: {
         margin : "2%",
     },
@@ -39,6 +43,29 @@ export const situationReportStyles = StyleSheet.create({
     fontSize: FontSizes.TextInputLabel,
     fontWeight: FontWeight.TextInputLabel, // Use a valid fontWeight value
     marginRight: "15%",
+  },
+
+  remarkTextContainer: {
+    backgroundColor: Color.TextInputBackground, /* Light gray background */
+    padding: "5%",
+    borderRadius: 8,
+    marginVertical: 10,
+    marginLeft: "1%",
+    marginRight: "1%",
+
+  },
+
+  backButton: {
+    position: "absolute",
+    top: "2%",
+    left: "5%",
+  },
+
+  remarkText: {
+    color: Color.TextInputText,
+    fontSize: FontSizes.TextInputText,
+    fontWeight: FontWeight.TextInputText,
+    textAlign: "justify",
   },
 
   remark: {
@@ -216,7 +243,12 @@ export const layoutCreationStyles = StyleSheet.create({
         marginBottom: "10%",
         marginTop: "10%",
     },
+});
 
-      
+export const reportConsStyles = StyleSheet.create({
+    reportHeader: {
+      marginLeft: "10%",
+      marginRight: "10%",
+    }
 
 });

@@ -89,15 +89,17 @@ it('renders the SituationReportScreen correctly', () => {
     await waitFor(() => {
       expect(toDatabase).toHaveBeenCalledWith(expect.any(Array), 'Situation Report arrival of John ');
       expect(addSituationReport).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           apartmentId: "",
           arrivingTenant: JSON.stringify({name: "John", surname: ""}),
           leavingTenant: JSON.stringify({name: "Doe", surname: ""}),
           remarks: "Remarks",
           reportForm: "reportFormData",
-          residenceId: undefined
-        }), 
-        "")
+          reportDate: expect.any(String), // This handles the dynamic date
+          residenceId: ""
+        }, 
+        ""
+      );
     });
   });
   

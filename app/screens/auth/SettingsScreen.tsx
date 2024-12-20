@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -8,7 +9,7 @@ import {
   Modal,
   StyleSheet,
 } from 'react-native';
-import { TUser } from '../../../types/types';
+import { SettingsStackParamList, TUser } from '../../../types/types';
 import {
   updateUserEmailAuth,
   changeUserPassword,
@@ -30,8 +31,12 @@ import {
 } from '../../../styles/styles';
 import Spacer from '../../components/Spacer';
 import SeparationLine from '../../components/SeparationLine';
+import { NavigationProp } from '@react-navigation/native';
 
 export default function SettingsScreen() {
+  const navigation = useNavigation<NavigationProp<SettingsStackParamList>>();
+  
+
   type EditModeField =
     | 'name'
     | 'phone'
@@ -425,13 +430,38 @@ export default function SettingsScreen() {
           <View
             style={[
               appStyles.scrollContainer,
-              { paddingBottom: '90%', marginBottom: '10%' },
+              { paddingBottom: '25%', marginBottom: '10%' },
             ]}
-          >
+          > 
+
+
+
             <Text style={[appStyles.appHeader, { letterSpacing: 1 }]}>
               Settings & Profile
             </Text>
             <Spacer height={20} />
+
+            {
+              user?.type === 'tenant' &&
+              <SubmitButton
+                disabled={false}
+                onPress={() => {
+                  navigation.navigate('SituationReportConsultation');
+
+                }}
+                width={ButtonDimensions.smallButtonWidth}
+                height={ButtonDimensions.smallButtonHeight}
+                label='See situation report'
+                testID='see situation report'
+                style={{
+                  alignSelf: 'center',
+                  backgroundColor: Color.ButtonBackground,
+                  marginBottom: 20,
+                }}
+              />
+            }
+
+
 
             <View>
               <Text style={appStyles.sectionHeader}>Profile Information</Text>

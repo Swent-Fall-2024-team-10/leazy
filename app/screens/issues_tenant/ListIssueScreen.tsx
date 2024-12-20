@@ -9,24 +9,27 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Header from "../../components/Header";
-import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
-import { ReportStackParamList, MaintenanceRequest } from "../../../types/types";
+import { useNavigation, NavigationProp, useFocusEffect, useIsFocused } from "@react-navigation/native";
+import { ReportStackParamList, MaintenanceRequest } from "../../../types/types"; // Assuming this also includes navigation types
 import {
   updateMaintenanceRequest,
   getMaintenanceRequestsQuery,
   syncPendingRequests,
-  getPendingRequests,
-  createNews
-} from "../../../firebase/firestore/firestore";
+  getPendingRequests
+} from "../../../firebase/firestore/firestore"; // Firestore functions
 import { getAuth } from "firebase/auth";
-import { onSnapshot, Timestamp } from 'firebase/firestore';
+import { onSnapshot } from "firebase/firestore";
 import {
   getIssueStatusColor,
   getIssueStatusText,
 } from "../../utils/StatusHelper";
 import { appStyles, Color, IconDimension } from "../../../styles/styles";
 import { Icon } from "react-native-elements";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from '@react-native-community/netinfo';
+import { Timestamp } from 'firebase/firestore';
+import { useRef } from 'react';
+
 
 interface IssueItemProps {
   issue: MaintenanceRequest;
@@ -106,118 +109,15 @@ const MaintenanceIssues = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-
-  // Status tracking refs for news updates
-  const statusTrackingRef = React.useRef<Record<string, string>>({});
-  const recentUpdatesRef = React.useRef<Record<string, number>>({});
+  const [statusChangeTracking, setStatusChangeTracking] = useState<
+    Record<string, string>
+  >({});
+  const statusTrackingRef = useRef<Record<string, string>>({});
 
   const auth = getAuth();
   const user = auth.currentUser;
   const userId = user ? user.uid : null;
 
-  const hasRecentlyUpdated = (requestId: string, status: string) => {
-    const key = `${requestId}_${status}`;
-    const lastUpdate = recentUpdatesRef.current[key];
-    const now = Date.now();
-
-    if (lastUpdate && now - lastUpdate < 5000) {
-      console.log('Recent update detected, skipping');
-      return true;
-    }
-
-    recentUpdatesRef.current[key] = now;
-    return false;
-  };
-
-  // Function to handle syncing
-  const handleSync = async () => {
-    if (isSyncing) return;
-    
-    try {
-      setIsSyncing(true);
-      await syncPendingRequests();
-    } catch (error) {
-      console.error("Sync error:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  // Set up Firestore listener and merge with pending requests
-  const fetchIssues = async () => {
-    if (!userId) return () => {};
-
-    try {
-      const query = await getMaintenanceRequestsQuery(userId);
-      
-      // Set up real-time listener for Firestore
-      const unsubscribe = onSnapshot(query, 
-        async (querySnapshot) => {
-          // Track if this is the first initialization
-          let isInitialized = !statusTrackingRef.current.initialized;
-          
-          const firestoreIssues = querySnapshot.docs.map(doc => ({
-            ...doc.data(),
-            requestID: doc.id
-          })) as MaintenanceRequest[];
-
-          // Initialize status tracking on first load
-          if (isInitialized) {
-            firestoreIssues.forEach((issue) => {
-              if (issue.requestID) {
-                statusTrackingRef.current[issue.requestID] = issue.requestStatus;
-              }
-            });
-            statusTrackingRef.current.initialized = true;
-          }
-
-          // Process status changes for news updates
-          querySnapshot.docChanges().forEach((change) => {
-            if (change.type !== 'modified') return;
-            const newData = change.doc.data() as MaintenanceRequest;
-            if (!newData.requestID) return;
-
-            const oldStatus = statusTrackingRef.current[newData.requestID];
-            const newStatus = newData.requestStatus;
-
-            if (
-              oldStatus &&
-              oldStatus !== newStatus &&
-              !hasRecentlyUpdated(newData.requestID, newStatus)
-            ) {
-              createStatusChangeNews(newData, userId);
-              statusTrackingRef.current[newData.requestID] = newStatus;
-            }
-          });
-
-          // Get and merge pending requests
-          const pendingRequests = await getPendingRequests();
-          const filteredPendingRequests = pendingRequests.filter(pending => 
-            !firestoreIssues.some(fire => 
-              fire.requestTitle === pending.requestTitle && 
-              fire.requestDescription === pending.requestDescription &&
-              fire.tenantId === pending.tenantId
-            )
-          );
-
-          setIssues([...firestoreIssues, ...filteredPendingRequests]);
-        },
-        (error) => {
-          console.error("Firestore error:", error);
-          getPendingRequests().then(setIssues);
-        }
-      );
-
-      return unsubscribe;
-    } catch (error) {
-      console.error("Error setting up listeners:", error);
-      const pendingRequests = await getPendingRequests();
-      setIssues(pendingRequests);
-      return () => {};
-    }
-  };
-
-  // Set up effect hooks
   useFocusEffect(
     React.useCallback(() => {
       if (userId) {
@@ -226,9 +126,125 @@ const MaintenanceIssues = () => {
     }, [userId])
   );
 
+    // Function to handle syncing - now returns a promise
+  const handleSync = async () => {
+    if (isSyncing) return;
+    
+    try {
+      setIsSyncing(true);
+      await syncPendingRequests();
+      // Remove the onSnapshot here - we don't need it because fetchIssues already has one
+      // await fetchIssues();
+    } catch (error) {
+      console.error("Sync error:", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Helper function to check for recent updates
+  const hasRecentlyUpdated = (requestId: string, status: string) => {
+    // Implementation of your hasRecentlyUpdated logic here
+    return false; // Placeholder implementation
+  };
+
+  // Set up Firestore listener and merge with pending requests
+  const fetchIssues = async () => {
+    if (!userId) return () => {};
+
+    try {
+      const query = await getMaintenanceRequestsQuery(userId);
+      let isInitialized = false;
+      
+      // Set up real-time listener for Firestore
+      const unsubscribe = onSnapshot(query, 
+        async (querySnapshot) => {
+
+          // Initialize the status tracking ref
+        let isInitialized = false;
+
+        const unsubscribe = onSnapshot(query, (querySnapshot) => {
+          console.log('Snapshot update received');
+        
+          // One-time initialization of status tracking
+          if (!isInitialized) {
+            querySnapshot.docs.forEach((doc) => {
+              const data = doc.data() as MaintenanceRequest;
+              if (data.requestID) {
+                statusTrackingRef.current[data.requestID] = data.requestStatus;
+              }
+            });
+            isInitialized = true;
+          }
+        
+          // Process modified changes for status updates
+          querySnapshot.docChanges().forEach((change) => {
+            if (change.type !== 'modified') return;
+            const newData = change.doc.data() as MaintenanceRequest;
+            if (!newData.requestID) return;
+
+            const oldStatus = statusTrackingRef.current[newData.requestID];
+            const newStatus = newData.requestStatus;
+
+            console.log('Processing status change:', {
+              requestID: newData.requestID,
+              oldStatus,
+              newStatus,
+            });
+
+            if (
+              oldStatus &&
+              oldStatus !== newStatus &&
+              !hasRecentlyUpdated(newData.requestID, newStatus)
+            ) {
+              console.log('Creating single news item');
+              createStatusChangeNews(newData, userId);
+              statusTrackingRef.current[newData.requestID] = newStatus;
+            }
+          });
+        });
+
+          const firestoreIssues = querySnapshot.docs.map(doc => ({
+            ...doc.data(),
+            requestID: doc.id
+          })) as MaintenanceRequest[];
+
+          // Get pending requests
+      const pendingRequests = await getPendingRequests();
+    
+      // Ne garder que les pending requests qui n'ont pas leur équivalent dans Firestore
+      const filteredPendingRequests = pendingRequests.filter(pending => 
+        !firestoreIssues.some(fire => 
+          fire.requestTitle === pending.requestTitle && 
+          fire.requestDescription === pending.requestDescription &&
+          fire.tenantId === pending.tenantId
+        )
+      );
+
+      // Merge and set all issues
+      setIssues([...firestoreIssues, ...filteredPendingRequests]);
+        },
+        (error) => {
+          console.error("Firestore error:", error);
+          // On error, just load pending requests
+          getPendingRequests().then(setIssues);
+        }
+      );
+
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error setting up listeners:", error);
+      // If initial setup fails, load pending requests
+      const pendingRequests = await getPendingRequests();
+      setIssues(pendingRequests);
+      return () => {};  // return no-op cleanup si erreur
+    }
+  };
+
   useEffect(() => {
     if (!userId) return;
 
+    // Set up network listener
     const unsubscribeNetInfo = NetInfo.addEventListener(state => {
       setIsOnline(!!state.isConnected);
       if (state.isConnected) {
@@ -252,6 +268,7 @@ const MaintenanceIssues = () => {
     userId: string,
   ) => {
     try {
+      console.log('Creating news item for request:', request.requestID);
       const newsItem = {
         maintenanceRequestID: `news_${request.requestID}_${Date.now()}`,
         title: 'Maintenance Request Status Update',
@@ -270,6 +287,7 @@ const MaintenanceIssues = () => {
       } as const;
 
       await createNews(newsItem);
+      console.log('Successfully created news item');
     } catch (error) {
       console.error('Error creating status change news:', error);
     }
@@ -296,6 +314,7 @@ const MaintenanceIssues = () => {
       if (!issue) return;
 
       await handleStatusChange(requestID, 'completed', issue.requestTitle);
+
       setIssues(
         issues.map((issue) =>
           issue.requestID === requestID
@@ -460,4 +479,13 @@ const styles = StyleSheet.create({
     marginBottom: 80,
     paddingBottom: 80,
   },
-})
+  arrowButton: {
+    marginLeft: '4%',
+    width: '15%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+export default MaintenanceIssues;

@@ -3,7 +3,7 @@ import {
   cacheFile,
   getFileBlob,
   clearFiles,
-} from "../utils/cache"; // Adjust the import path as needed
+} from "../../../utils/cache"; // Adjust the import path as needed
 
 // Mock dependencies
 import * as FileSystem from "expo-file-system";

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import ResidenceStack from '../Navigators/ResidenceStack';
+import ResidenceStack from '../../../Navigators/ResidenceStack';
 
 // Enhanced mock for navigation hooks
 jest.mock('@react-navigation/native', () => {
@@ -28,9 +28,9 @@ jest.mock('@react-navigation/stack', () => ({
 }));
 
 // Screen component mocks
-jest.mock('../screens/landlord/ResidenceListScreen', () => 'ResidencesListScreen');
-jest.mock('../screens/landlord/ResidenceCreationScreen', () => 'CreateResidenceForm');
-jest.mock('../screens/landlord/FlatDetails', () => 'FlatDetails');
+jest.mock('../../../screens/landlord/ResidenceListScreen', () => 'ResidencesListScreen');
+jest.mock('../../../screens/landlord/ResidenceCreationScreen', () => 'CreateResidenceForm');
+jest.mock('../../../screens/landlord/FlatDetails', () => 'FlatDetails');
 
 describe('ResidenceStack Navigation', () => {
   const mockNavigate = jest.fn();

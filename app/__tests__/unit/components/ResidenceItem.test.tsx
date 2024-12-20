@@ -1,15 +1,15 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import ResidenceItem from '../components/ResidenceItem';
+import ResidenceItem from '../../../components/ResidenceItem';
 import {
   createApartment,
   updateResidence,
   deleteApartment,
-} from '../../firebase/firestore/firestore';
-import { ResidenceWithId, ApartmentWithId } from '../../types/types';
+} from '../../../../firebase/firestore/firestore';
+import { ResidenceWithId, ApartmentWithId } from '../../../../types/types';
 
 // Mock the firebase functions
-jest.mock('../../firebase/firestore/firestore', () => ({
+jest.mock('../../../../firebase/firestore/firestore', () => ({
   createApartment: jest.fn(),
   updateResidence: jest.fn(),
   deleteApartment: jest.fn(),

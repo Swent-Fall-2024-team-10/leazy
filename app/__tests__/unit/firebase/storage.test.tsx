@@ -3,8 +3,8 @@ import {
     uploadVideo,
     deleteImage,
     deleteVideo,
-  } from '../../firebase/storage/storage';
-  import { storage } from '../../firebase/firebase';
+  } from '../../../../firebase/storage/storage';
+  import { storage } from '../../../../firebase/firebase';
   import {
     ref,
     uploadBytesResumable,
@@ -23,7 +23,7 @@ import {
   }));
   
   // Mock firebase instance
-  jest.mock('../../firebase/firebase', () => ({
+  jest.mock('../../../../firebase/firebase', () => ({
     storage: {},
   }));
   

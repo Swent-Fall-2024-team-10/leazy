@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import IssueStackLandlord from '../Navigators/IssueStackLandlord';
+import IssueStackLandlord from '../../../Navigators/IssueStackLandlord';
 
 // Mock the navigation stack
 jest.mock('@react-navigation/stack', () => ({
@@ -14,10 +14,10 @@ jest.mock('@react-navigation/stack', () => ({
 }));
 
 // Mock the screen components
-jest.mock('../screens/landlord/LandlordDashboard', () => 'LandlordDashboard');
-jest.mock('../screens/issues_landlord/LandlordListIssuesScreen', () => 'LandlordListIssuesScreen');
-jest.mock('../screens/issues_tenant/IssueDetailsScreen', () => 'IssueDetailsScreen');
-jest.mock('../screens/messaging/MessagingScreen', () => 'MessagingScreen');
+jest.mock('../../../screens/landlord/LandlordDashboard', () => 'LandlordDashboard');
+jest.mock('../../../screens/issues_landlord/LandlordListIssuesScreen', () => 'LandlordListIssuesScreen');
+jest.mock('../../../screens/issues_tenant/IssueDetailsScreen', () => 'IssueDetailsScreen');
+jest.mock('../../../screens/messaging/MessagingScreen', () => 'MessagingScreen');
 
 describe('IssueStackLandlord', () => {
   it('renders without crashing', () => {

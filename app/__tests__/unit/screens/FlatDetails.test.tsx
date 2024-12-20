@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import FlatDetails from '../screens/landlord/FlatDetails';
-import { getUser, updateApartment } from '../../firebase/firestore/firestore';
-import { useProperty } from '../context/LandlordContext';
+import FlatDetails from '../../../screens/landlord/FlatDetails';
+import { getUser, updateApartment } from '../../../../firebase/firestore/firestore';
+import { useProperty } from '../../../context/LandlordContext';
 
 // Mock the navigation
 const mockNavigation = {
@@ -26,12 +26,12 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: () => mockRoute,
 }));
 
-jest.mock('../../firebase/firestore/firestore', () => ({
+jest.mock('../../../../firebase/firestore/firestore', () => ({
   getUser: jest.fn(),
   updateApartment: jest.fn(),
 }));
 
-jest.mock('../context/LandlordContext', () => ({
+jest.mock('../../../context/LandlordContext', () => ({
   useProperty: jest.fn(),
 }));
 

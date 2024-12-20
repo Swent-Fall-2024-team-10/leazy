@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import CustomBubble from '../components/messaging/CustomBubble';
-import { chatStyles } from '../../styles/styles';
+import CustomBubble from '../../../components/messaging/CustomBubble';
+import { chatStyles } from '../../../../styles/styles';
 import { Bubble } from 'react-native-gifted-chat';
 
 // Mock react-native-gifted-chat

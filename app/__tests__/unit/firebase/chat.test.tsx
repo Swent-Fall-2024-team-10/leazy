@@ -2,9 +2,9 @@ import {
   sendMessage, 
   subscribeToMessages, 
   createChatIfNotPresent 
-} from '../../firebase/chat/chat';
-import { auth } from '../../firebase/firebase';
-import { getUser } from '../../firebase/firestore/firestore';
+} from '../../../../firebase/chat/chat';
+import { auth } from '../../../../firebase/firebase';
+import { getUser } from '../../../../firebase/firestore/firestore';
 import { 
   doc, 
   getDoc, 
@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 
 // Mock Firebase modules
-jest.mock('../../firebase/firebase', () => ({
+jest.mock('../../../../firebase/firebase', () => ({
   db: {},
   auth: {
     get currentUser() { return this._currentUser; },
@@ -37,7 +37,7 @@ jest.mock('firebase/firestore', () => ({
   orderBy: jest.fn()
 }));
 
-jest.mock('../../firebase/firestore/firestore', () => ({
+jest.mock('../../../../firebase/firestore/firestore', () => ({
   getUser: jest.fn()
 }));
 

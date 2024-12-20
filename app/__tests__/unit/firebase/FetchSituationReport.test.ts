@@ -1,6 +1,6 @@
-import { fetchSituationReportLayout } from '../utils/SituationReport';
-import { getResidence } from "../../firebase/firestore/firestore";
-import { ResidenceWithId } from "../../types/types";
+import { fetchSituationReportLayout } from '../../../utils/SituationReport';
+import { getResidence } from "../../../../firebase/firestore/firestore";
+import { ResidenceWithId } from "../../../../types/types";
 import { 
     getDoc, 
     getDocs,
@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 
 // Mock Firebase
-jest.mock("../../firebase/firestore/firestore", () => ({
+jest.mock("../../../../firebase/firestore/firestore", () => ({
     getResidence: jest.fn()
 }));
 

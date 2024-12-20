@@ -7,21 +7,21 @@ import {
   act,
 } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import WashingMachineScreen from '../screens/laundry_machines/WashingMachineScreen';
+import WashingMachineScreen from '../../../screens/laundry_machines/WashingMachineScreen';
 import {
   getLaundryMachine,
   getTenant,
   updateLaundryMachine,
-} from '../../firebase/firestore/firestore';
+} from '../../../../firebase/firestore/firestore';
 import { getAuth } from 'firebase/auth';
 import { onSnapshot, Timestamp } from 'firebase/firestore';
 import * as Notifications from 'expo-notifications';
 import { NotificationPermissionsStatus } from 'expo-notifications';
-import { LaundryMachine } from '../../types/types';
+import { LaundryMachine } from '../../../../types/types';
 // Import the mocked functions
 import {
   getLaundryMachinesQuery,
-} from '../../firebase/firestore/firestore';
+} from '../../../../firebase/firestore/firestore';
 
 // Mock expo-linear-gradient
 jest.mock('expo-linear-gradient', () => ({
@@ -36,7 +36,7 @@ jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(() => {}),
 }));
 
-jest.mock('../../firebase/firestore/firestore', () => ({
+jest.mock('../../../../firebase/firestore/firestore', () => ({
   getLaundryMachine: jest.fn(),
   updateLaundryMachine: jest.fn(),
   getLaundryMachinesQuery: jest.fn(),

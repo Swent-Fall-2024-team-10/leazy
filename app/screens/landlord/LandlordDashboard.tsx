@@ -359,10 +359,8 @@ const LandlordDashboard: React.FC = () => {
                       >
                         <Image
                           source={{
-                            uri:
-                              residence?.pictures?.[0] ||
-                              'https://www.forster-profile.ch/fileadmin/_processed_/b/4/csm_21_06_00_lay_Vortex-Lausanne_fcc7b3683d.jpg',
-                          }}
+                            uri: residence.pictures?.[0] || "https://www.forster-profile.ch/fileadmin/_processed_/b/4/csm_21_06_00_lay_Vortex-Lausanne_fcc7b3683d.jpg",                          }}
+
                           style={appStyles.smallThumbnailImage}
                           testID={`LandlordDashboard_ResidenceImage_${index}`}
                         />

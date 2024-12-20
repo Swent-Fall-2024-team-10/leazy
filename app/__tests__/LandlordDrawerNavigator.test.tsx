@@ -77,6 +77,7 @@ describe('LandlordDrawerNavigator', () => {
     const expectedScreens = [
       'Dashboard',
       'List Issues',
+      'Manage Newsfeed',
       'Manage Machines',
       'Residence Stack',
       'Situation Report Creation',

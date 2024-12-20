@@ -106,6 +106,7 @@ jest.mock('../../firebase/firestore/firestore', () => ({
   getTenant: jest.fn(),
   updateTenant: jest.fn(),
   updateMaintenanceRequest: jest.fn(),
+  createNews: jest.fn(),
   getApartment: jest.fn().mockResolvedValue({
     id: 'test-apartment-id',
     apartmentName: 'Test Apartment',
@@ -114,29 +115,7 @@ jest.mock('../../firebase/firestore/firestore', () => ({
     maintenanceRequests: [],
     situationReportId: [''],
   }),
-}));
-
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  addDoc: jest.fn(),
-  getFirestore: jest.fn(),
-  doc: jest.fn(),
-  updateDoc: jest.fn(),
-}));
-
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(),
-  initializeAuth: jest.fn(),
-  getReactNativePersistence: jest.fn(),
-}));
-
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  AsyncStorage: jest.fn(),
-}));
-
-jest.mock('firebase/app', () => ({
-  initializeApp: jest.fn(),
-  getApp: jest.fn(),
+  updateApartment: jest.fn(),
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -148,7 +127,14 @@ jest.mock('firebase/firestore', () => ({
   getDocs: jest.fn(),
   query: jest.fn(),
   where: jest.fn(),
+  Timestamp: {
+    now: () => ({
+      seconds: 1234567890,
+      nanoseconds: 123456789,
+    }),
+  },
 }));
+
 jest.mock('../utils/cache');
 
 describe('ReportScreen', () => {
@@ -168,15 +154,12 @@ describe('ReportScreen', () => {
 
   const mockGetTenant = FirestoreModule.getTenant as jest.Mock;
   const mockUpdateTenant = FirestoreModule.updateTenant as jest.Mock;
-  const mockUpdateMaintenanceRequest =
-    FirestoreModule.updateMaintenanceRequest as jest.Mock;
+  const mockUpdateMaintenanceRequest = FirestoreModule.updateMaintenanceRequest as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     (AuthContext.useAuth as jest.Mock).mockReturnValue({ user: mockUser });
-    (PictureContext.usePictureContext as jest.Mock).mockReturnValue(
-      mockPictureContext,
-    );
+    (PictureContext.usePictureContext as jest.Mock).mockReturnValue(mockPictureContext);
     mockGetTenant.mockResolvedValue(mockTenant);
     mockUpdateTenant.mockResolvedValue(undefined);
     mockUpdateMaintenanceRequest.mockResolvedValue(undefined);
@@ -203,10 +186,7 @@ describe('ReportScreen', () => {
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
     expect(submitButton.props.disabled).toBe(true);
 
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
     expect(submitButton.props.disabled).toBe(false);
   });
 
@@ -222,10 +202,7 @@ describe('ReportScreen', () => {
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
     expect(submitButton.props.disabled).toBe(true);
 
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
     expect(submitButton.props.disabled).toBe(false);
   });
 
@@ -236,10 +213,7 @@ describe('ReportScreen', () => {
 
     fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
 
     fireEvent.press(getByTestId('testSubmitButton'));
 
@@ -258,10 +232,7 @@ describe('ReportScreen', () => {
 
     fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
 
     await fireEvent.press(getByTestId('testSubmitButton'));
 
@@ -273,16 +244,11 @@ describe('ReportScreen', () => {
   it('handles picture upload failure', async () => {
     const { getByTestId } = render(<ReportScreen />);
 
-    (CacheUtils.getFileBlob as jest.Mock).mockRejectedValue(
-      new Error('Upload failed'),
-    );
+    (CacheUtils.getFileBlob as jest.Mock).mockRejectedValue(new Error('Upload failed'));
 
     fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
 
     await fireEvent.press(getByTestId('testSubmitButton'));
 
@@ -291,35 +257,12 @@ describe('ReportScreen', () => {
     });
   });
 
-  it('handles picture upload failure', async () => {
-    const { getByTestId } = render(<ReportScreen />);
-
-    (CacheUtils.getFileBlob as jest.Mock).mockRejectedValue(
-      new Error('Upload failed'),
-    );
-
-    fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
-    fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
-
-    await fireEvent.press(getByTestId('testSubmitButton'));
-
-    await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Error', expect.any(String));
-    });
-  });
   it('resets states properly', async () => {
     const { getByTestId } = render(<ReportScreen />);
 
     fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
     fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
 
     fireEvent.press(getByTestId('close-button'));
     fireEvent.press(getByTestId('yes-close-button'));
@@ -335,97 +278,89 @@ describe('ReportScreen', () => {
 
   it('handles useEffect cleanup properly', () => {
     const { unmount } = render(<ReportScreen />);
-
     unmount();
-
     expect(mockPictureContext.resetPictureList).toHaveBeenCalled();
   });
 
   it('handles successful submission with pictures', async () => {
-    // Mock all required Firebase functions
+    console.log('Starting test setup');
+
+    const mockAddDoc = jest.fn().mockImplementation(async () => {
+      console.log('mockAddDoc called');
+      return { id: 'test-id' };
+    });
+    
+    const mockUpdateApartment = FirestoreModule.updateApartment as jest.Mock;
+    mockUpdateApartment.mockResolvedValue(undefined);
+
+    jest.spyOn(require('firebase/firestore'), 'collection').mockReturnValue('test-collection');
+    jest.spyOn(require('firebase/firestore'), 'addDoc').mockImplementation(mockAddDoc);
+
     const mockNavigate = jest.fn();
-    jest
-      .spyOn(require('@react-navigation/native'), 'useNavigation')
-      .mockReturnValue({
-        navigate: mockNavigate,
-      });
+    jest.spyOn(require('@react-navigation/native'), 'useNavigation')
+      .mockReturnValue({ navigate: mockNavigate });
 
-    // Mock updateApartment function
-    jest.mock('../../firebase/firestore/firestore', () => ({
-      ...jest.requireActual('../../firebase/firestore/firestore'),
-      updateApartment: jest.fn().mockResolvedValue(undefined),
-    }));
-
-    const { getByTestId } = render(<ReportScreen />);
-
-    // Fill in form fields
-    fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
-    fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-    fireEvent.changeText(
-      getByTestId('testDescriptionField'),
-      'Test Description',
-    );
-
-    // Mock file blob
-    const mockBlob = new Blob(['test'], { type: 'image/jpeg' });
-    (CacheUtils.getFileBlob as jest.Mock).mockResolvedValue(mockBlob);
-
-    // Mock Firebase storage operations
-    const mockStorageRef = { toString: () => 'storage-ref' };
-    const mockUploadResult = {};
-    const mockDownloadURL = 'test-url';
-
-    require('firebase/storage').ref.mockReturnValue(mockStorageRef);
-    require('firebase/storage').uploadBytes.mockResolvedValue(mockUploadResult);
-    require('firebase/storage').getDownloadURL.mockResolvedValue(
-      mockDownloadURL,
-    );
+    // Mock tenant data
+    const mockTenant = {
+      userId: 'test-uid',
+      residenceId: 'test-residence',
+      apartmentId: 'test-apartment',
+      maintenanceRequests: [],
+    };
 
     // Mock Firestore operations
-    const mockRequest = { id: 'test-id' };
-    const mockFirestore = require('firebase/firestore');
-    mockFirestore.addDoc.mockResolvedValue(mockRequest);
+    (FirestoreModule.getTenant as jest.Mock).mockResolvedValue(mockTenant);
+    (FirestoreModule.updateTenant as jest.Mock).mockResolvedValue(undefined);
+    (FirestoreModule.updateMaintenanceRequest as jest.Mock).mockResolvedValue(undefined);
+    (FirestoreModule.createNews as jest.Mock).mockResolvedValue(undefined);
+    
+    // Mock file and storage operations
+    (CacheUtils.getFileBlob as jest.Mock).mockResolvedValue(new Blob(['test']));
+    
+    const { getByTestId } = render(<ReportScreen />);
 
+    // Fill form
+    fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
+    fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
+
+    // Submit form
     await fireEvent.press(getByTestId('testSubmitButton'));
 
+    // Verify results
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         'Success',
-        'Your maintenance request has been submitted.',
+        'Your maintenance request has been submitted.'
       );
+      expect(FirestoreModule.createNews).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('Issues');
     });
   });
-});
 
-it('navigates to the correct screen based on tick state after submission', async () => {
-  const mockNavigate = jest.fn();
-  jest
-    .spyOn(require('@react-navigation/native'), 'useNavigation')
-    .mockReturnValue({
-      navigate: mockNavigate,
-    });
+  it('navigates to the correct screen based on tick state after submission', async () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('@react-navigation/native'), 'useNavigation')
+      .mockReturnValue({ navigate: mockNavigate });
 
-  const { getByTestId } = render(<ReportScreen />);
+    const { getByTestId } = render(<ReportScreen />);
 
-  // Fill out the required fields
-  fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
-  fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
-  fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
+    // Fill form fields
+    fireEvent.changeText(getByTestId('testIssueNameField'), 'Test Issue');
+    fireEvent.changeText(getByTestId('testRoomNameField'), 'Test Room');
+    fireEvent.changeText(getByTestId('testDescriptionField'), 'Test Description');
 
-  const mockRequest = { id: 'test-id' };
-  const mockFirestore = require('firebase/firestore');
-  mockFirestore.addDoc.mockResolvedValueOnce(mockRequest);
+    // Check the messaging checkbox
+    fireEvent(getByTestId('messaging-checkbox'), 'press', true);
 
-  // Simulate tick being checked
-  fireEvent(getByTestId('messaging-checkbox'), 'press', true);
+    // Submit the form
+    await fireEvent.press(getByTestId('testSubmitButton'));
 
-  // Submit the form
-  await fireEvent.press(getByTestId('testSubmitButton'));
-
-  // Wait for navigation
-  await waitFor(() => {
-    expect(mockNavigate).toHaveBeenCalledWith('Messaging', {
-      chatID: 'test-id',
+    // Verify navigation
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('Messaging', {
+        chatID: 'test-id',
+      });
     });
   });
 });

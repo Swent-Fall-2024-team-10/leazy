@@ -24,6 +24,7 @@ export default function MessagingScreen() {
   const [isAlertAcknowledged, setIsAlertAcknowledged] = useState(false);
   const [userType, setUserType] = useState("");
 
+
   
   useEffect(() => {
     createChatIfNotPresent(chatID);
@@ -90,7 +91,12 @@ export default function MessagingScreen() {
             onPress={() => {
               console.log("navigating to issues")
               Keyboard.dismiss();
-              navigation.goBack();
+              console.log(userType)
+              if (userType === "Landlord") {
+                navigation.navigate("Issues");
+              } else if (userType === "Tenant") {
+                navigation.goBack();
+              }
             }}
             style={{padding: 10
           }}>

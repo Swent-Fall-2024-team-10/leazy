@@ -386,7 +386,7 @@ const WashingMachineScreen = () => {
               >
                 {machine.isAvailable && machine.isFunctional && (
                   <SubmitButton
-                    width={200}
+                    width={150}
                     height={40}
                     disabled={false}
                     textStyle={{ fontSize: 16 }}
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   machineTitle: {
-    fontSize: 25,
+    fontSize: 20,
     color: "#0F5257",
     fontWeight: "600",
   },

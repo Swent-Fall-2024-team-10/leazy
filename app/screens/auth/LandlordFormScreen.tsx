@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inputField: {
-    backgroundColor: Color.HeaderBackground, // Adjusted for soft purple
+    backgroundColor: Color.TextInputBackground, // Adjusted for soft purple
     borderRadius: 100,
     paddingHorizontal: 10,
     height: 40,

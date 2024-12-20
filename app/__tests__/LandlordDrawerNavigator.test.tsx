@@ -78,7 +78,6 @@ describe('LandlordDrawerNavigator', () => {
       'Dashboard',
       'List Issues',
       'Manage Machines',
-      'Washing Machine',
       'Residence Stack',
       'Situation Report Creation',
       'Situation Report Form',
